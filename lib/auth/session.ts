@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase/admin";
 import { env } from "@/lib/env";
+import { isAllowedAccount, parseAllowedDomains } from "./domains";
 
 export const SESSION_COOKIE = "__session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 5; // 5 days
@@ -29,15 +30,12 @@ export async function createSessionCookie(idToken: string): Promise<{
     throw new AuthError("Your Google account email is not verified.");
   }
 
-  const allowedDomain = env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN.toLowerCase();
-  if (allowedDomain) {
-    const emailDomain = email.split("@")[1] ?? "";
-    const hd = typeof decoded.hd === "string" ? decoded.hd.toLowerCase() : null;
-    if (emailDomain !== allowedDomain || (hd !== null && hd !== allowedDomain)) {
-      throw new AuthError(
-        `This app is restricted to ${allowedDomain} accounts. Sign in with your work account.`
-      );
-    }
+  const allowedDomains = parseAllowedDomains(env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN);
+  const hd = typeof decoded.hd === "string" ? decoded.hd : null;
+  if (!isAllowedAccount(email, hd, allowedDomains)) {
+    throw new AuthError(
+      `This app is restricted to ${allowedDomains.join(", ")} accounts. Sign in with your work account.`
+    );
   }
 
   const cookieValue = await adminAuth().createSessionCookie(idToken, {

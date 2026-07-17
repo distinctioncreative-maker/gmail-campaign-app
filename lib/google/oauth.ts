@@ -2,6 +2,7 @@ import "server-only";
 import { google } from "googleapis";
 import type { OAuth2Client } from "googleapis-common";
 import { env } from "@/lib/env";
+import { parseAllowedDomains } from "@/lib/auth/domains";
 
 /**
  * OAuth client for the Gmail-connect flow (separate from app sign-in).
@@ -31,6 +32,9 @@ export function oauthClient(): OAuth2Client {
 }
 
 export function buildGmailConsentUrl(state: string, loginHint: string): string {
+  // hd can hint only a single domain; with a multi-domain allowlist the
+  // account picker is left unrestricted (the server still enforces the list).
+  const allowed = parseAllowedDomains(env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN);
   return oauthClient().generateAuthUrl({
     access_type: "offline",
     prompt: "consent", // guarantee a refresh token on (re)connect
@@ -38,6 +42,6 @@ export function buildGmailConsentUrl(state: string, loginHint: string): string {
     include_granted_scopes: true,
     state,
     login_hint: loginHint,
-    hd: env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN || undefined,
+    hd: allowed.length === 1 ? allowed[0] : undefined,
   });
 }
