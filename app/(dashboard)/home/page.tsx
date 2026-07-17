@@ -34,22 +34,39 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
-        <h2 className="font-medium">Continue setup</h2>
-        <ol className="mt-3 space-y-2 text-sm text-slate-600">
-          <li className={gmailConnected ? "text-green-600" : ""}>
-            {gmailConnected ? "✓" : "1."} Connect your Gmail account
-          </li>
-          <li>2. Import your first leads (paste from Salesforce)</li>
-          <li>3. Create a campaign — coming in the next release</li>
-        </ol>
-        <Link
-          href="/leads"
-          className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
-        >
-          Import leads
-        </Link>
-      </div>
+      {ctx.user.onboardingStatus !== "COMPLETE" ? (
+        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="font-medium">Finish setting up</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            A short guided setup connects your Gmail, fills in your signature, and sends
+            you a test email.
+          </p>
+          <Link
+            href="/onboarding"
+            className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+          >
+            Continue setup
+          </Link>
+        </div>
+      ) : (
+        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="font-medium">Quick actions</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href="/leads"
+              className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+            >
+              Import leads
+            </Link>
+            <Link
+              href="/templates"
+              className="rounded-xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Templates
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
