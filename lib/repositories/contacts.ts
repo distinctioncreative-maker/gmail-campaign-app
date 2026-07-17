@@ -43,6 +43,14 @@ export async function listContacts(
   return snap.docs.map((d) => ContactSchema.parse(d.data()));
 }
 
+export async function getContact(
+  ctx: AuthContext,
+  contactId: string
+): Promise<Contact | null> {
+  const snap = await contactsRef(ctx).doc(contactId).get();
+  return snap.exists ? ContactSchema.parse(snap.data()) : null;
+}
+
 function parseSourceTimestamp(value: string | null): number | null {
   if (!value) return null;
   const t = Date.parse(value.replace(",", ""));

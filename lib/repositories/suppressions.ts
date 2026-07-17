@@ -81,3 +81,50 @@ export async function listSuppressions(ctx: AuthContext, limit = 200): Promise<S
     .get();
   return snap.docs.map((d) => SuppressionSchema.parse(d.data()));
 }
+
+export async function listOrgSuppressions(
+  ctx: AuthContext,
+  limit = 200
+): Promise<Suppression[]> {
+  const snap = await orgSuppressionsRef(ctx)
+    .orderBy("createdAt", "desc")
+    .limit(limit)
+    .get();
+  return snap.docs.map((d) => SuppressionSchema.parse(d.data()));
+}
+
+/**
+ * Deactivate (never delete) a suppression. Caller must have verified role
+ * for ORGANIZATION scope. Writes an audit event alongside.
+ */
+export async function deactivateSuppression(
+  ctx: AuthContext,
+  suppressionId: string,
+  scope: Suppression["scope"],
+  reason: string
+): Promise<boolean> {
+  const ref =
+    scope === "ORGANIZATION"
+      ? orgSuppressionsRef(ctx).doc(suppressionId)
+      : userSuppressionsRef(ctx).doc(suppressionId);
+  const snap = await ref.get();
+  if (!snap.exists) return false;
+
+  const now = Date.now();
+  await ref.update({ active: false, updatedAt: now });
+  await firestore()
+    .collection("users")
+    .doc(ctx.userId)
+    .collection("auditEvents")
+    .add({
+      type: "SUPPRESSION_REMOVED",
+      ownerUserId: ctx.userId,
+      organizationId: ctx.organizationId,
+      createdByUserId: ctx.userId,
+      suppressionId,
+      scope,
+      reason,
+      createdAt: now,
+    });
+  return true;
+}
