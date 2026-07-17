@@ -1,0 +1,56 @@
+import { z } from "zod";
+import { EpochMillis } from "./common";
+
+export const ContactSchema = z.object({
+  contactId: z.string().min(1),
+  ownerUserId: z.string().min(1),
+  organizationId: z.string().min(1),
+  normalizedEmail: z.string().min(3),
+  email: z.string().email(),
+  firstName: z.string().default(""),
+  lastName: z.string().default(""),
+  fullName: z.string().default(""),
+  businessName: z.string().default(""),
+  normalizedBusinessName: z.string().default(""),
+  phone: z.string().default(""),
+  normalizedPhone: z.string().default(""),
+  region: z.string().default(""),
+  requestedAmount: z.number().nullable().default(null),
+  leadSource: z.string().default(""),
+  sourceCreatedAt: EpochMillis.nullable().default(null),
+  sourceUpdatedAt: EpochMillis.nullable().default(null),
+  sourceRecordId: z.string().nullable().default(null),
+  emailOptOut: z.boolean().default(false),
+  neverSwitchedFromNew: z.boolean().nullable().default(null),
+  rawSource: z.string().default(""),
+  importId: z.string().nullable().default(null),
+  firstSeenAt: EpochMillis,
+  lastSeenAt: EpochMillis,
+  campaignCount: z.number().int().nonnegative().default(0),
+  lastCampaignId: z.string().nullable().default(null),
+  lastCampaignName: z.string().nullable().default(null),
+  lastCampaignAt: EpochMillis.nullable().default(null),
+  lastOutcome: z.string().nullable().default(null),
+  repliedAt: EpochMillis.nullable().default(null),
+  bouncedAt: EpochMillis.nullable().default(null),
+  unsubscribedAt: EpochMillis.nullable().default(null),
+  suppressed: z.boolean().default(false),
+  suppressionReason: z.string().nullable().default(null),
+  createdAt: EpochMillis,
+  updatedAt: EpochMillis,
+});
+export type Contact = z.infer<typeof ContactSchema>;
+
+export const LeadClassificationSchema = z.enum([
+  "NEW",
+  "EXISTING_NOT_CONTACTED",
+  "CONTACTED_BEFORE",
+  "REPLIED_BEFORE",
+  "BOUNCED",
+  "UNSUBSCRIBED",
+  "SUPPRESSED",
+  "EMAIL_OPT_OUT",
+  "TEAM_COLLISION",
+  "INVALID",
+]);
+export type LeadClassification = z.infer<typeof LeadClassificationSchema>;
