@@ -1,7 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
 import { firestore } from "@/lib/firebase/admin";
-import type { AuthContext } from "@/lib/auth/requireUser";
+import type { Scope } from "@/lib/repositories/scope";
 import {
   TemplateSchema,
   type Template,
@@ -9,12 +9,12 @@ import {
 } from "@/schemas/template";
 import { sanitizeEmailHtml, htmlToPlainText } from "@/lib/sanitize/html";
 
-function templatesRef(ctx: AuthContext) {
+function templatesRef(ctx: Scope) {
   return firestore().collection("users").doc(ctx.userId).collection("templates");
 }
 
 export async function listTemplates(
-  ctx: AuthContext,
+  ctx: Scope,
   opts: { includeArchived?: boolean } = {}
 ): Promise<Template[]> {
   const snap = await templatesRef(ctx).orderBy("updatedAt", "desc").limit(200).get();
@@ -22,13 +22,13 @@ export async function listTemplates(
   return opts.includeArchived ? all : all.filter((t) => t.active);
 }
 
-export async function getTemplate(ctx: AuthContext, templateId: string): Promise<Template | null> {
+export async function getTemplate(ctx: Scope, templateId: string): Promise<Template | null> {
   const snap = await templatesRef(ctx).doc(templateId).get();
   return snap.exists ? TemplateSchema.parse(snap.data()) : null;
 }
 
 /** Create a template. HTML is sanitized at the storage boundary. */
-export async function createTemplate(ctx: AuthContext, input: TemplateInput): Promise<Template> {
+export async function createTemplate(ctx: Scope, input: TemplateInput): Promise<Template> {
   const now = Date.now();
   const templateId = crypto.randomUUID();
   const html = sanitizeEmailHtml(input.htmlTemplate);
@@ -54,7 +54,7 @@ export async function createTemplate(ctx: AuthContext, input: TemplateInput): Pr
 
 /** Update = new version. Previous content is kept in a versions subcollection. */
 export async function updateTemplate(
-  ctx: AuthContext,
+  ctx: Scope,
   templateId: string,
   input: TemplateInput
 ): Promise<Template | null> {
@@ -89,7 +89,7 @@ export async function updateTemplate(
 }
 
 export async function duplicateTemplate(
-  ctx: AuthContext,
+  ctx: Scope,
   templateId: string
 ): Promise<Template | null> {
   const existing = await getTemplate(ctx, templateId);
@@ -105,7 +105,7 @@ export async function duplicateTemplate(
 }
 
 export async function setTemplateActive(
-  ctx: AuthContext,
+  ctx: Scope,
   templateId: string,
   active: boolean
 ): Promise<void> {

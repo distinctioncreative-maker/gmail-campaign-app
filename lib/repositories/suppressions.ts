@@ -2,13 +2,13 @@ import "server-only";
 import crypto from "node:crypto";
 import { firestore } from "@/lib/firebase/admin";
 import { SuppressionSchema, type Suppression } from "@/schemas/suppression";
-import type { AuthContext } from "@/lib/auth/requireUser";
+import type { Scope } from "@/lib/repositories/scope";
 
-function userSuppressionsRef(ctx: AuthContext) {
+function userSuppressionsRef(ctx: Scope) {
   return firestore().collection("users").doc(ctx.userId).collection("suppressions");
 }
 
-function orgSuppressionsRef(ctx: AuthContext) {
+function orgSuppressionsRef(ctx: Scope) {
   return firestore()
     .collection("organizations")
     .doc(ctx.organizationId)
@@ -18,7 +18,7 @@ function orgSuppressionsRef(ctx: AuthContext) {
 /** A lead is suppressed if an active suppression exists at either the
  * user scope or the organization scope. */
 export async function isSuppressed(
-  ctx: AuthContext,
+  ctx: Scope,
   normalizedEmail: string
 ): Promise<Suppression | null> {
   const [userSnap, orgSnap] = await Promise.all([
@@ -38,7 +38,7 @@ export async function isSuppressed(
 }
 
 export async function addSuppression(
-  ctx: AuthContext,
+  ctx: Scope,
   input: {
     email: string;
     normalizedEmail: string;
@@ -74,7 +74,7 @@ export async function addSuppression(
   return suppression;
 }
 
-export async function listSuppressions(ctx: AuthContext, limit = 200): Promise<Suppression[]> {
+export async function listSuppressions(ctx: Scope, limit = 200): Promise<Suppression[]> {
   const snap = await userSuppressionsRef(ctx)
     .orderBy("createdAt", "desc")
     .limit(limit)
@@ -83,7 +83,7 @@ export async function listSuppressions(ctx: AuthContext, limit = 200): Promise<S
 }
 
 export async function listOrgSuppressions(
-  ctx: AuthContext,
+  ctx: Scope,
   limit = 200
 ): Promise<Suppression[]> {
   const snap = await orgSuppressionsRef(ctx)
@@ -98,7 +98,7 @@ export async function listOrgSuppressions(
  * for ORGANIZATION scope. Writes an audit event alongside.
  */
 export async function deactivateSuppression(
-  ctx: AuthContext,
+  ctx: Scope,
   suppressionId: string,
   scope: Suppression["scope"],
   reason: string

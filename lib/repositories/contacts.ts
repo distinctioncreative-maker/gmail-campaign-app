@@ -2,7 +2,7 @@ import "server-only";
 import crypto from "node:crypto";
 import { firestore } from "@/lib/firebase/admin";
 import { ContactSchema, type Contact } from "@/schemas/contact";
-import type { AuthContext } from "@/lib/auth/requireUser";
+import type { Scope } from "@/lib/repositories/scope";
 import type { ParsedLead } from "@/schemas/parsedLead";
 import {
   normalizeBusinessName,
@@ -16,12 +16,12 @@ import {
  * query can never cross into another user's data.
  */
 
-function contactsRef(ctx: AuthContext) {
+function contactsRef(ctx: Scope) {
   return firestore().collection("users").doc(ctx.userId).collection("contacts");
 }
 
 export async function findByNormalizedEmail(
-  ctx: AuthContext,
+  ctx: Scope,
   normalizedEmail: string
 ): Promise<Contact | null> {
   const snap = await contactsRef(ctx)
@@ -33,7 +33,7 @@ export async function findByNormalizedEmail(
 }
 
 export async function listContacts(
-  ctx: AuthContext,
+  ctx: Scope,
   opts: { limit?: number } = {}
 ): Promise<Contact[]> {
   const snap = await contactsRef(ctx)
@@ -44,7 +44,7 @@ export async function listContacts(
 }
 
 export async function getContact(
-  ctx: AuthContext,
+  ctx: Scope,
   contactId: string
 ): Promise<Contact | null> {
   const snap = await contactsRef(ctx).doc(contactId).get();
@@ -62,7 +62,7 @@ function parseSourceTimestamp(value: string | null): number | null {
  * Returns the contact plus whether it already existed.
  */
 export async function upsertFromParsedLead(
-  ctx: AuthContext,
+  ctx: Scope,
   lead: ParsedLead,
   importId: string
 ): Promise<{ contact: Contact; existed: boolean }> {

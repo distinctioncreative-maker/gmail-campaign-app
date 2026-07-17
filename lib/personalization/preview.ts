@@ -1,5 +1,5 @@
 import "server-only";
-import type { AuthContext } from "@/lib/auth/requireUser";
+import type { Scope } from "@/lib/repositories/scope";
 import { getContact } from "@/lib/repositories/contacts";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import {
@@ -21,7 +21,7 @@ export interface RenderedEmail {
  * always layering in the user's sender profile values.
  */
 export async function renderForPreview(
-  ctx: AuthContext,
+  ctx: Scope,
   subjectTemplate: string,
   htmlTemplate: string,
   contactId?: string | null

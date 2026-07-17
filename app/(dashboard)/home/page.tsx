@@ -53,8 +53,14 @@ export default async function HomePage() {
           <h2 className="font-medium">Quick actions</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
+              href="/campaigns/new"
+              className="rounded-xl bg-primary px-6 py-3 text-lg font-medium text-white hover:bg-primary-hover"
+            >
+              Create campaign
+            </Link>
+            <Link
               href="/leads"
-              className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+              className="rounded-xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
             >
               Import leads
             </Link>

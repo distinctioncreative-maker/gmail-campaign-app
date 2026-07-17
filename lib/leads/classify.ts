@@ -1,5 +1,5 @@
 import "server-only";
-import type { AuthContext } from "@/lib/auth/requireUser";
+import type { Scope } from "@/lib/repositories/scope";
 import type { LeadClassification } from "@/schemas/contact";
 import { normalizeEmail } from "@/lib/parser/normalize";
 import { findByNormalizedEmail } from "@/lib/repositories/contacts";
@@ -17,7 +17,7 @@ export interface ClassifiedLeadInfo {
  * launch — the classification is never trusted from an earlier stage.
  */
 export async function classifyLead(
-  ctx: AuthContext,
+  ctx: Scope,
   lead: { email: string | null; emailValid: boolean; emailOptOut: boolean | null }
 ): Promise<ClassifiedLeadInfo> {
   if (!lead.email || !lead.emailValid) {
