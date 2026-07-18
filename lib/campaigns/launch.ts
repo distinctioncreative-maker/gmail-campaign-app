@@ -18,6 +18,7 @@ import {
   updateQueueItem,
 } from "@/lib/repositories/campaigns";
 import { enqueueTask, tasksConfigured } from "@/lib/tasks/enqueue";
+import { checkCollision } from "@/lib/campaigns/collision";
 import { firestore } from "@/lib/firebase/admin";
 
 export function idempotencyKey(
@@ -146,6 +147,22 @@ export async function launchCampaign(
       }
     }
 
+    // Team collision (privacy-preserving; no-op when policy is OFF).
+    let teamCollisionWarning = false;
+    if (included) {
+      const collision = await checkCollision(
+        ctx.organizationId,
+        ctx.userId,
+        contact.normalizedEmail,
+        false
+      );
+      teamCollisionWarning = collision.collision;
+      if (collision.block) {
+        included = false;
+        exclusionReason = "TEAM_COLLISION";
+      }
+    }
+
     if (!included) excluded++;
 
     recipients.push({
@@ -163,7 +180,7 @@ export async function launchCampaign(
       sourceRecordIdSnapshot: contact.sourceRecordId,
       priorCampaignCount: contact.campaignCount,
       priorCampaignWarning: classification === "CONTACTED_BEFORE" || classification === "REPLIED_BEFORE",
-      teamCollisionWarning: false,
+      teamCollisionWarning,
       included,
       exclusionReason,
       overrideReason: sel.overrideReason,

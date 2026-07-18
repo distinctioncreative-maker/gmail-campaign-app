@@ -69,6 +69,12 @@ export function nextValidTime(at: number, cfg: WindowConfig): number {
   return LIMIT; // Degenerate config; callers treat this as "far future".
 }
 
+/** Today's local calendar day key in the given timezone (reads the clock;
+ * kept out of React components so render stays pure). */
+export function currentDayKey(timezone: string): string {
+  return localDayKey(Date.now(), timezone);
+}
+
 /** Local calendar day key (YYYY-MM-DD) in the campaign timezone — used for
  * daily send counters. */
 export function localDayKey(at: number, timezone: string): string {

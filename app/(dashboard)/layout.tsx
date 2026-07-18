@@ -4,15 +4,30 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { SignOutButton } from "@/components/SignOutButton";
 import { NotificationBell } from "@/components/NotificationBell";
 
-const NAV = [
+const BASE_NAV = [
   { href: "/home", label: "Home" },
   { href: "/campaigns", label: "Campaigns" },
   { href: "/leads", label: "Leads" },
   { href: "/templates", label: "Templates" },
   { href: "/sequences", label: "Follow-Ups" },
   { href: "/suppressions", label: "Do Not Email" },
+  { href: "/reports", label: "Reports" },
   { href: "/settings", label: "Settings" },
+  { href: "/help", label: "Help" },
 ] as const;
+
+const MANAGER_NAV = [{ href: "/team", label: "Team" }] as const;
+const ADMIN_NAV = [
+  { href: "/team", label: "Team" },
+  { href: "/admin", label: "Administration" },
+  { href: "/system-health", label: "System Health" },
+] as const;
+
+function navForRole(role: string): ReadonlyArray<{ href: string; label: string }> {
+  if (role === "ADMIN") return [...BASE_NAV, ...ADMIN_NAV];
+  if (role === "MANAGER") return [...BASE_NAV, ...MANAGER_NAV];
+  return BASE_NAV;
+}
 
 export default async function DashboardLayout({
   children,
@@ -28,6 +43,8 @@ export default async function DashboardLayout({
   } catch {
     redirect("/sign-in");
   }
+
+  const NAV = navForRole(role);
 
   return (
     <div className="flex min-h-screen">

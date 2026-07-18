@@ -32,6 +32,7 @@ import { sendEmail } from "@/lib/gmail/send";
 import { localDayKey, nextValidTime } from "@/lib/scheduling/window";
 import { enqueueTask } from "@/lib/tasks/enqueue";
 import { scheduleNextFollowup } from "@/lib/campaigns/followups";
+import { recordCollisionContact } from "@/lib/campaigns/collision";
 
 const PayloadSchema = z.object({
   organizationId: z.string().min(1),
@@ -258,6 +259,9 @@ export async function POST(req: NextRequest) {
         item.sequenceStep === 0 ? { sentCount: 1 } : { followupSentCount: 1 }
       ),
     ]);
+
+    // Record org-scoped collision hash (no-op unless a team policy is on).
+    await recordCollisionContact(owner.organizationId, owner.userId, recipient.normalizedEmailSnapshot);
 
     // 9. Schedule the next follow-up step, if a sequence is attached.
     await scheduleNextFollowup(owner, campaign, item.recipientId, item.sequenceStep);
