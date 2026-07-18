@@ -1,29 +1,28 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
-import { SignOutButton } from "@/components/SignOutButton";
 import { NotificationBell } from "@/components/NotificationBell";
+import { Sidebar, type NavItem } from "@/components/Sidebar";
 
-const BASE_NAV = [
-  { href: "/home", label: "Home" },
-  { href: "/campaigns", label: "Campaigns" },
-  { href: "/leads", label: "Leads" },
-  { href: "/templates", label: "Templates" },
-  { href: "/sequences", label: "Follow-Ups" },
-  { href: "/suppressions", label: "Do Not Email" },
-  { href: "/reports", label: "Reports" },
-  { href: "/settings", label: "Settings" },
-  { href: "/help", label: "Help" },
-] as const;
+const BASE_NAV: NavItem[] = [
+  { href: "/home", label: "Home", icon: "🏠" },
+  { href: "/campaigns", label: "Campaigns", icon: "🚀" },
+  { href: "/leads", label: "Leads", icon: "👥" },
+  { href: "/templates", label: "Templates", icon: "✉️" },
+  { href: "/sequences", label: "Follow-Ups", icon: "🔁" },
+  { href: "/suppressions", label: "Do Not Email", icon: "🚫" },
+  { href: "/reports", label: "Reports", icon: "📊" },
+  { href: "/settings", label: "Settings", icon: "⚙️" },
+  { href: "/help", label: "Help", icon: "💬" },
+];
 
-const MANAGER_NAV = [{ href: "/team", label: "Team" }] as const;
-const ADMIN_NAV = [
-  { href: "/team", label: "Team" },
-  { href: "/admin", label: "Administration" },
-  { href: "/system-health", label: "System Health" },
-] as const;
+const MANAGER_NAV: NavItem[] = [{ href: "/team", label: "Team", icon: "📈" }];
+const ADMIN_NAV: NavItem[] = [
+  { href: "/team", label: "Team", icon: "📈" },
+  { href: "/admin", label: "Administration", icon: "🛠️" },
+  { href: "/system-health", label: "System Health", icon: "❤️" },
+];
 
-function navForRole(role: string): ReadonlyArray<{ href: string; label: string }> {
+function navForRole(role: string): NavItem[] {
   if (role === "ADMIN") return [...BASE_NAV, ...ADMIN_NAV];
   if (role === "MANAGER") return [...BASE_NAV, ...MANAGER_NAV];
   return BASE_NAV;
@@ -44,47 +43,16 @@ export default async function DashboardLayout({
     redirect("/sign-in");
   }
 
-  const NAV = navForRole(role);
+  const nav = navForRole(role);
 
   return (
     <div className="flex min-h-screen">
-      <aside className="hidden w-56 shrink-0 flex-col border-r border-slate-200 bg-white p-4 sm:flex">
-        <div className="mb-8 px-2 text-lg font-semibold text-primary">Outreach</div>
-        <nav className="flex flex-col gap-1" aria-label="Main">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto border-t border-slate-200 pt-4">
-          <p className="truncate px-2 text-sm font-medium text-slate-800">{displayName}</p>
-          <p className="px-2 text-xs text-slate-500">{role.replace("_", " ").toLowerCase()}</p>
-          <SignOutButton />
-        </div>
-      </aside>
-      <div className="flex-1">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:hidden">
-          <span className="font-semibold text-primary">Outreach</span>
-          <div className="flex items-center gap-2">
-            <nav className="flex gap-3" aria-label="Main">
-              {NAV.map((item) => (
-                <Link key={item.href} href={item.href} className="text-sm text-slate-700">
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <NotificationBell />
-          </div>
-        </header>
-        <div className="hidden items-center justify-end border-b border-slate-200 bg-white px-6 py-2 sm:flex">
+      <Sidebar items={nav} displayName={displayName} role={role} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="hidden items-center justify-end border-b border-border bg-white/60 px-6 py-2.5 backdrop-blur sm:flex">
           <NotificationBell />
         </div>
-        <main className="mx-auto max-w-6xl p-6">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">{children}</main>
       </div>
     </div>
   );
