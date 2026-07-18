@@ -72,6 +72,7 @@ export function CampaignWizard() {
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
   const [priorPolicy, setPriorPolicy] = useState("ONLY_NEW");
   const [confirmText, setConfirmText] = useState("");
+  const [testMode, setTestMode] = useState<boolean | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -91,6 +92,8 @@ export function CampaignWizard() {
       const sRes = await fetch("/api/sequences");
       const sBody = await sRes.json();
       setSequences(sBody.sequences ?? []);
+      const mRes = await fetch("/api/sending-mode");
+      if (mRes.ok) setTestMode((await mRes.json()).testMode);
     })();
   }, []);
 
@@ -445,6 +448,17 @@ export function CampaignWizard() {
               {counts.selected} emails will be {draftStrategy === "SEND" ? "sent" : "drafted"}{" "}
               at the pace you chose.
             </p>
+            {testMode === true && (
+              <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+                🛡️ You&apos;re in test mode — these emails go only to your test address, not real
+                recipients. Perfect for a practice run.
+              </p>
+            )}
+            {testMode === false && (
+              <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+                ● Live mode — these emails will be sent to real recipients.
+              </p>
+            )}
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 onClick={() => void launch(true)}
