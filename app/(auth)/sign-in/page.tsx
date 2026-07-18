@@ -36,11 +36,11 @@ export default function SignInPage() {
         <div className="mb-6 flex items-center justify-center gap-3">
           <span
             aria-hidden
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent text-lg font-bold text-white shadow-md"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent text-sm font-bold text-white shadow-md"
           >
-            O
+            ML
           </span>
-          <span className="text-2xl font-semibold tracking-tight text-slate-900">Outreach</span>
+          <span className="text-2xl font-semibold tracking-tight text-slate-900">MassLeader</span>
         </div>
 
         <div className="card p-8">

@@ -22,7 +22,9 @@ export function sanitizeEmailHtml(html: string): string {
       font: ["face", "size", "color"],
     },
     allowedSchemes: ["http", "https", "mailto", "tel"],
-    allowedSchemesByTag: { img: ["http", "https"] },
+    // Allow inline data: images so pasted Gmail signatures keep embedded
+    // logos. data:image URIs cannot execute script, so this is XSS-safe.
+    allowedSchemesByTag: { img: ["http", "https", "data"] },
     disallowedTagsMode: "discard",
     transformTags: {
       a: (tagName, attribs) => ({

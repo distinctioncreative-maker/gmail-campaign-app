@@ -3,9 +3,20 @@ import crypto from "node:crypto";
 import { firestore } from "@/lib/firebase/admin";
 import type { Scope } from "@/lib/repositories/scope";
 import { SequenceSchema, type Sequence, type SequenceInput } from "@/schemas/sequence";
+import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
 function sequencesRef(ctx: Scope) {
   return firestore().collection("users").doc(ctx.userId).collection("sequences");
+}
+
+/** Normalize + sanitize each step's inline custom body at the storage
+ * boundary, and stamp step IDs. */
+function prepareSteps(steps: SequenceInput["steps"]): Sequence["steps"] {
+  return steps.map((s) => ({
+    ...s,
+    stepId: s.stepId ?? crypto.randomUUID(),
+    customHtml: s.bodyMode === "CUSTOM" ? sanitizeEmailHtml(s.customHtml ?? "") : (s.customHtml ?? ""),
+  })) as Sequence["steps"];
 }
 
 export async function listSequences(ctx: Scope): Promise<Sequence[]> {
@@ -34,7 +45,7 @@ export async function createSequence(ctx: Scope, input: SequenceInput): Promise<
     stopOnSuppression: true,
     outOfOfficePolicy: input.outOfOfficePolicy,
     outOfOfficePauseDays: input.outOfOfficePauseDays,
-    steps: input.steps.map((s) => ({ ...s, stepId: s.stepId ?? crypto.randomUUID() })),
+    steps: prepareSteps(input.steps),
     createdAt: now,
     updatedAt: now,
   });
@@ -52,7 +63,7 @@ export async function updateSequence(
   const updated = SequenceSchema.parse({
     ...existing,
     ...input,
-    steps: input.steps.map((s) => ({ ...s, stepId: s.stepId ?? crypto.randomUUID() })),
+    steps: prepareSteps(input.steps),
     updatedAt: Date.now(),
   });
   await sequencesRef(ctx).doc(sequenceId).set(updated);

@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { STARTER_LAYOUTS } from "./starterLayouts";
+import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
+import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -56,6 +58,11 @@ export function TemplateEditor({
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cssWarnings, setCssWarnings] = useState<string[]>([]);
+
+  const { restored, clear, dismissRestored } = useDraftAutosave(
+    `draft.template.${templateId ?? "new"}`,
+    { name, subject, html, mode }
+  );
 
   // Keep the visual editor's DOM in sync when html changes from outside it.
   useEffect(() => {
@@ -180,6 +187,7 @@ export function TemplateEditor({
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Could not save the template.");
       if (body.cssWarnings?.length) setCssWarnings(body.cssWarnings);
+      clear();
       router.push("/templates");
       router.refresh();
     } catch (err) {
@@ -191,7 +199,24 @@ export function TemplateEditor({
   const canSave = subject.trim() !== "" && html.trim() !== "";
 
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div>
+      {restored && (
+        <RestoreDraftBanner
+          what="template"
+          onRestore={() => {
+            setName(restored.name);
+            setSubject(restored.subject);
+            setHtml(restored.html);
+            setMode(restored.mode);
+            dismissRestored();
+          }}
+          onDiscard={() => {
+            clear();
+            dismissRestored();
+          }}
+        />
+      )}
+      <div className="grid gap-6 xl:grid-cols-2">
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         {notice && <p className="mb-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
         {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -442,6 +467,7 @@ export function TemplateEditor({
             Click Preview to see this email with example lead data filled in.
           </p>
         )}
+      </div>
       </div>
     </div>
   );

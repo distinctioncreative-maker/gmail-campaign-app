@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
+import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 
 interface Step {
   delayValue: number;
   delayUnit: "MINUTES" | "HOURS" | "DAYS" | "BUSINESS_DAYS";
+  bodyMode: "SAME" | "TEMPLATE" | "CUSTOM";
   templateId: string | null;
+  customHtml: string;
   subjectMode: "KEEP" | "RE" | "CUSTOM";
   customSubject: string;
   sameThread: boolean;
@@ -21,7 +25,9 @@ interface TemplateOption {
 const emptyStep = (): Step => ({
   delayValue: 2,
   delayUnit: "BUSINESS_DAYS",
+  bodyMode: "SAME",
   templateId: null,
+  customHtml: "<p>Hi {{first_name}},</p><p></p>",
   subjectMode: "RE",
   customSubject: "",
   sameThread: true,
@@ -53,6 +59,20 @@ export function SequenceBuilder({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { restored, clear, dismissRestored } = useDraftAutosave(
+    `draft.sequence.${sequenceId ?? "new"}`,
+    { name, description, steps, oooPolicy }
+  );
+
+  function applyRestored() {
+    if (!restored) return;
+    setName(restored.name);
+    setDescription(restored.description);
+    setSteps(restored.steps);
+    setOooPolicy(restored.oooPolicy);
+    dismissRestored();
+  }
+
   function updateStep(i: number, patch: Partial<Step>) {
     setSteps((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
   }
@@ -76,6 +96,7 @@ export function SequenceBuilder({
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Could not save the sequence.");
+      clear();
       router.push("/sequences");
       router.refresh();
     } catch (err) {
@@ -89,6 +110,16 @@ export function SequenceBuilder({
 
   return (
     <div className="max-w-2xl">
+      {restored && (
+        <RestoreDraftBanner
+          what="sequence"
+          onRestore={applyRestored}
+          onDiscard={() => {
+            clear();
+            dismissRestored();
+          }}
+        />
+      )}
       {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <div className="rounded-2xl bg-white p-6 shadow-sm">
@@ -150,42 +181,87 @@ export function SequenceBuilder({
               <span className="text-slate-500">then send:</span>
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-medium text-slate-700">
-                Email template
+            <div className="mt-3">
+              <p className="text-sm font-medium text-slate-700">What to send</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {(
+                  [
+                    ["SAME", "Reuse the first email"],
+                    ["TEMPLATE", "Pick a saved template"],
+                    ["CUSTOM", "Write it here"],
+                  ] as Array<[Step["bodyMode"], string]>
+                ).map(([mode, label]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => updateStep(i, { bodyMode: mode })}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+                      step.bodyMode === mode
+                        ? "bg-primary text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {step.bodyMode === "TEMPLATE" && (
+              <label className="mt-3 block text-sm font-medium text-slate-700">
+                Template
                 <select
                   value={step.templateId ?? ""}
                   onChange={(e) => updateStep(i, { templateId: e.target.value || null })}
                   className={`w-full ${input}`}
                 >
-                  <option value="">Same as initial email</option>
+                  <option value="">Choose a template…</option>
                   {templates.map((t) => (
                     <option key={t.templateId} value={t.templateId}>{t.name}</option>
                   ))}
                 </select>
               </label>
+            )}
+
+            {step.bodyMode === "CUSTOM" && (
+              <label className="mt-3 block text-sm font-medium text-slate-700">
+                Follow-up message
+                <span className="block text-xs font-normal text-slate-500">
+                  Write it here. Use placeholders like {"{{first_name}}"} and {"{{signature}}"} —
+                  basic HTML is allowed.
+                </span>
+                <textarea
+                  value={step.customHtml}
+                  onChange={(e) => updateStep(i, { customHtml: e.target.value })}
+                  rows={6}
+                  placeholder={"Hi {{first_name}},\n\nJust circling back…\n\n{{signature}}"}
+                  className={`w-full font-mono ${input}`}
+                />
+              </label>
+            )}
+
+            <div className="mt-3">
               <label className="text-sm font-medium text-slate-700">
                 Subject line
                 <select
                   value={step.subjectMode}
                   onChange={(e) => updateStep(i, { subjectMode: e.target.value as Step["subjectMode"] })}
-                  className={`w-full ${input}`}
+                  className={`block w-full ${input}`}
                 >
                   <option value="RE">Reply in same thread (Re:)</option>
                   <option value="KEEP">Keep original subject</option>
                   <option value="CUSTOM">Custom subject</option>
                 </select>
               </label>
+              {step.subjectMode === "CUSTOM" && (
+                <input
+                  value={step.customSubject}
+                  onChange={(e) => updateStep(i, { customSubject: e.target.value })}
+                  placeholder="Custom subject line"
+                  className={`mt-2 w-full ${input}`}
+                />
+              )}
             </div>
-
-            {step.subjectMode === "CUSTOM" && (
-              <input
-                value={step.customSubject}
-                onChange={(e) => updateStep(i, { customSubject: e.target.value })}
-                placeholder="Custom subject line"
-                className={`mt-2 w-full ${input}`}
-              />
-            )}
 
             <label className="mt-3 flex items-center gap-2 text-sm text-slate-600">
               <input

@@ -34,7 +34,9 @@ export default async function EditSequencePage({
             steps: sequence.steps.map((s) => ({
               delayValue: s.delayValue,
               delayUnit: s.delayUnit,
+              bodyMode: s.bodyMode,
               templateId: s.templateId,
+              customHtml: s.customHtml,
               subjectMode: s.subjectMode,
               customSubject: s.customSubject,
               sameThread: s.sameThread,

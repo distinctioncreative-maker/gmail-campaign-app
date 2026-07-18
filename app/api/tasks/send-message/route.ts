@@ -155,25 +155,46 @@ export async function POST(req: NextRequest) {
       return fail(eligibility.reason, false);
     }
 
-    // 4. Resolve the template for this step. Follow-up steps may use their
-    // own template and subject behavior; they fall back to the initial one.
+    // 4. Resolve the email body for this step. Follow-up steps may reuse the
+    // initial email, use their own saved template, or use a custom body
+    // written inline in the sequence builder.
     const isFollowup = item.sequenceStep > 0;
     let step = null;
     if (isFollowup && campaign.sequenceId) {
       const sequence = await getSequence(owner, campaign.sequenceId);
       step = sequence?.steps[item.sequenceStep - 1] ?? null;
     }
-    const templateId = step?.templateId ?? campaign.initialTemplateId;
-    const template = templateId ? await getTemplate(owner, templateId) : null;
-    if (!template) {
+
+    const initialTemplate = campaign.initialTemplateId
+      ? await getTemplate(owner, campaign.initialTemplateId)
+      : null;
+
+    const pauseMissingBody = async () => {
       await setCampaignStatus(owner, campaignId, "PAUSED", { pausedAt: Date.now() });
       await recordEvent(owner, campaignId, {
         type: "AUTO_PAUSE",
-        message: "Campaign paused: the email template is no longer available.",
+        message: "Campaign paused: the email content is no longer available.",
         severity: "ERROR",
         recipientEmail: null,
       });
       return fail("TEMPLATE_MISSING", false);
+    };
+
+    let bodyHtmlTemplate: string;
+    let plainText: string | undefined;
+    let baseSubject: string;
+
+    if (step && step.bodyMode === "CUSTOM") {
+      bodyHtmlTemplate = step.customHtml || "<p></p>";
+      plainText = undefined;
+      baseSubject = step.customSubject || initialTemplate?.subjectTemplate || "Following up";
+    } else {
+      const tId = step?.bodyMode === "TEMPLATE" ? step.templateId : campaign.initialTemplateId;
+      const template = tId ? await getTemplate(owner, tId) : initialTemplate;
+      if (!template) return pauseMissingBody();
+      bodyHtmlTemplate = template.htmlTemplate;
+      plainText = template.plainTextTemplate || undefined;
+      baseSubject = template.subjectTemplate;
     }
 
     const profile = await getSenderProfile(owner);
@@ -194,13 +215,10 @@ export async function POST(req: NextRequest) {
 
     // Subject: follow-up steps can keep the original, prefix "Re:", or use
     // a custom subject line.
-    let subjectTemplate = template.subjectTemplate;
+    let subjectTemplate = baseSubject;
     if (step) {
       if (step.subjectMode === "KEEP" || step.subjectMode === "RE") {
-        subjectTemplate = campaign.initialTemplateId
-          ? (await getTemplate(owner, campaign.initialTemplateId))?.subjectTemplate ??
-            template.subjectTemplate
-          : template.subjectTemplate;
+        subjectTemplate = initialTemplate?.subjectTemplate ?? baseSubject;
       } else if (step.subjectMode === "CUSTOM" && step.customSubject) {
         subjectTemplate = step.customSubject;
       }
@@ -210,7 +228,7 @@ export async function POST(req: NextRequest) {
       step?.subjectMode === "RE" && !/^re:/i.test(subjectRender.output)
         ? `Re: ${subjectRender.output}`
         : subjectRender.output;
-    const body = renderTemplate(template.htmlTemplate, values);
+    const body = renderTemplate(bodyHtmlTemplate, values);
 
     // 5. Reserve the idempotency key BEFORE sending (transactional).
     const reserved = await reserveIdempotencyKey(owner, campaignId, item.idempotencyKey, {
@@ -228,7 +246,7 @@ export async function POST(req: NextRequest) {
       to: recipient.emailSnapshot,
       subject: subjectOutput,
       htmlBody: body.output,
-      textBody: template.plainTextTemplate || undefined,
+      textBody: plainText,
       testMode,
       threadId: threaded ? recipient.gmailThreadId ?? undefined : undefined,
       inReplyToMessageId: threaded ? recipient.initialMessageId ?? undefined : undefined,

@@ -7,9 +7,15 @@ export const SequenceStepSchema = z.object({
   stepId: z.string().min(1),
   delayValue: z.number().int().min(0).max(365),
   delayUnit: DelayUnitSchema.default("BUSINESS_DAYS"),
+  // How the follow-up's email body is chosen:
+  //  SAME     → reuse the campaign's initial email
+  //  TEMPLATE → use the saved template in templateId
+  //  CUSTOM   → use customHtml written inline in the sequence builder
+  bodyMode: z.enum(["SAME", "TEMPLATE", "CUSTOM"]).default("SAME"),
   templateId: z.string().nullable().default(null),
-  subjectMode: z.enum(["KEEP", "RE", "CUSTOM"]).default("RE"),
   customSubject: z.string().max(500).default(""),
+  customHtml: z.string().max(500_000).default(""),
+  subjectMode: z.enum(["KEEP", "RE", "CUSTOM"]).default("RE"),
   sameThread: z.boolean().default(true),
   enabled: z.boolean().default(true),
 });

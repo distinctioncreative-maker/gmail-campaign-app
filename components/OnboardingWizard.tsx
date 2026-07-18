@@ -56,9 +56,9 @@ export function OnboardingWizard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subjectTemplate: "Your Outreach setup test",
+          subjectTemplate: "Your MassLeader setup test",
           htmlTemplate:
-            "<p>Hi {{sender_name}},</p><p>This is your setup test from Outreach. If you can read this, your Gmail connection works.</p><p>{{unsubscribe_text}}</p>",
+            "<p>Hi {{sender_name}},</p><p>This is your setup test from MassLeader. If you can read this, your Gmail connection works.</p><p>{{unsubscribe_text}}</p>",
         }),
       });
       const body = await res.json();

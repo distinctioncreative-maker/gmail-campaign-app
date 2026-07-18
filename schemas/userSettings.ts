@@ -32,7 +32,7 @@ export const SenderProfileSchema = z.object({
   companyName: z.string().max(200).default(""),
   companyWebsite: z.string().max(300).default(""),
   physicalAddress: z.string().max(500).default(""),
-  signature: z.string().max(5000).default(""),
+  signature: z.string().max(200_000).default(""),
   unsubscribeText: z
     .string()
     .max(1000)

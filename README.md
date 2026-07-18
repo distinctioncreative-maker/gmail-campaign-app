@@ -1,4 +1,4 @@
-# Outreach — Multi-User Gmail Campaign Platform
+# MassLeader — Multi-User Gmail Campaign Platform
 
 Internal web app that lets each salesperson connect their own Gmail, import
 leads (pasted Salesforce lists, Google Sheets, CSV), build personalized

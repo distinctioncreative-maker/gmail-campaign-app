@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { badgeFor } from "@/components/imports/leadBadges";
 import { HelpTip } from "@/components/HelpTip";
+import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
+import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -73,6 +75,40 @@ export function CampaignWizard() {
   const [priorPolicy, setPriorPolicy] = useState("ONLY_NEW");
   const [confirmText, setConfirmText] = useState("");
   const [testMode, setTestMode] = useState<boolean | null>(null);
+
+  // Lead picker (step 2) controls.
+  const [leadSearch, setLeadSearch] = useState("");
+  const [leadFilter, setLeadFilter] = useState<"all" | "ready" | "used" | "excluded">("all");
+  const [leadSort, setLeadSort] = useState<"name" | "business" | "status">("name");
+
+  const { restored, clear, dismissRestored } = useDraftAutosave(
+    "draft.campaign.new",
+    {
+      step,
+      name,
+      description,
+      selected: [...selected],
+      templateId,
+      sequenceId,
+      preset,
+      draftStrategy,
+      priorPolicy,
+    }
+  );
+
+  function applyRestored() {
+    if (!restored) return;
+    setStep(restored.step);
+    setName(restored.name);
+    setDescription(restored.description);
+    setSelected(new Set(restored.selected));
+    setTemplateId(restored.templateId);
+    setSequenceId(restored.sequenceId);
+    setPreset(restored.preset);
+    setDraftStrategy(restored.draftStrategy);
+    setPriorPolicy(restored.priorPolicy);
+    dismissRestored();
+  }
 
   useEffect(() => {
     void (async () => {
@@ -162,6 +198,7 @@ export function CampaignWizard() {
       const launchBody = await launchRes.json();
       if (!launchRes.ok) throw new Error(launchBody.error ?? "Could not start the campaign.");
 
+      clear();
       router.push(`/campaigns/${campaignId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -178,6 +215,37 @@ export function CampaignWizard() {
     });
   }
 
+  // Filtered + sorted view of the contacts in the lead picker.
+  const visibleContacts = useMemo(() => {
+    const list = contacts ?? [];
+    const q = leadSearch.trim().toLowerCase();
+    const isExcluded = (c: WizardContact) =>
+      ["EMAIL_OPT_OUT", "UNSUBSCRIBED", "BOUNCED", "SUPPRESSED", "INVALID"].includes(
+        c.classification
+      );
+    const isUsed = (c: WizardContact) =>
+      ["CONTACTED_BEFORE", "REPLIED_BEFORE"].includes(c.classification);
+
+    const filtered = list.filter((c) => {
+      if (q && !(`${c.fullName} ${c.businessName} ${c.email}`.toLowerCase().includes(q)))
+        return false;
+      if (leadFilter === "ready") return !isExcluded(c) && !isUsed(c);
+      if (leadFilter === "used") return isUsed(c);
+      if (leadFilter === "excluded") return isExcluded(c);
+      return true;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (leadSort === "business") return a.businessName.localeCompare(b.businessName);
+      if (leadSort === "status") return a.classification.localeCompare(b.classification);
+      return (a.fullName || a.email).localeCompare(b.fullName || b.email);
+    });
+  }, [contacts, leadSearch, leadFilter, leadSort]);
+
+  function selectableIds(list: WizardContact[]): string[] {
+    return list.filter((c) => badgeFor(c.classification).selectable).map((c) => c.contactId);
+  }
+
   const nextDisabled =
     (step === 0 && name.trim() === "") ||
     (step === 1 && selected.size === 0) ||
@@ -185,6 +253,16 @@ export function CampaignWizard() {
 
   return (
     <div className="mx-auto max-w-4xl">
+      {restored && (
+        <RestoreDraftBanner
+          what="campaign"
+          onRestore={applyRestored}
+          onDiscard={() => {
+            clear();
+            dismissRestored();
+          }}
+        />
+      )}
       <ol className="flex flex-wrap gap-2 text-xs" aria-label="Campaign steps">
         {STEPS.map((s, i) => (
           <li
@@ -241,36 +319,93 @@ export function CampaignWizard() {
                 You have no contacts yet — import leads first.
               </p>
             ) : (
-              <div className="mt-4 max-h-96 overflow-y-auto rounded-xl border border-slate-200">
-                <table className="w-full text-left text-sm">
-                  <tbody>
-                    {contacts.map((c) => {
-                      const badge = badgeFor(c.classification);
-                      return (
-                        <tr key={c.contactId} className="border-b border-slate-100 last:border-0">
-                          <td className="px-3 py-2">
-                            <input
-                              type="checkbox"
-                              aria-label={`Include ${c.fullName || c.email}`}
-                              checked={selected.has(c.contactId)}
-                              disabled={!badge.selectable}
-                              onChange={() => toggleContact(c.contactId)}
-                            />
-                          </td>
-                          <td className="px-3 py-2 font-medium">{c.fullName || "—"}</td>
-                          <td className="px-3 py-2 text-slate-600">{c.businessName}</td>
-                          <td className="px-3 py-2 text-slate-600">{c.email}</td>
-                          <td className="px-3 py-2">
-                            <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
-                              {badge.label}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <input
+                    type="search"
+                    value={leadSearch}
+                    onChange={(e) => setLeadSearch(e.target.value)}
+                    placeholder="Search name, business, or email"
+                    aria-label="Search leads"
+                    className="w-56 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  />
+                  <select
+                    value={leadFilter}
+                    onChange={(e) => setLeadFilter(e.target.value as typeof leadFilter)}
+                    aria-label="Filter leads"
+                    className="rounded-xl border border-slate-200 px-2 py-2 text-sm"
+                  >
+                    <option value="all">All</option>
+                    <option value="ready">Ready</option>
+                    <option value="used">Used before</option>
+                    <option value="excluded">Excluded</option>
+                  </select>
+                  <select
+                    value={leadSort}
+                    onChange={(e) => setLeadSort(e.target.value as typeof leadSort)}
+                    aria-label="Sort leads"
+                    className="rounded-xl border border-slate-200 px-2 py-2 text-sm"
+                  >
+                    <option value="name">Sort: Name</option>
+                    <option value="business">Sort: Business</option>
+                    <option value="status">Sort: Status</option>
+                  </select>
+                  <div className="ml-auto flex gap-2 text-sm">
+                    <button
+                      onClick={() =>
+                        setSelected((prev) => new Set([...prev, ...selectableIds(visibleContacts)]))
+                      }
+                      className="rounded-lg px-3 py-1.5 font-medium text-primary hover:bg-primary-soft"
+                    >
+                      Select all shown
+                    </button>
+                    <button
+                      onClick={() => {
+                        const shown = new Set(visibleContacts.map((c) => c.contactId));
+                        setSelected((prev) => new Set([...prev].filter((id) => !shown.has(id))));
+                      }}
+                      className="rounded-lg px-3 py-1.5 font-medium text-slate-500 hover:bg-slate-100"
+                    >
+                      Clear shown
+                    </button>
+                  </div>
+                </div>
+
+                <p className="mt-2 text-xs text-slate-500">
+                  Showing {visibleContacts.length} of {contacts.length} · {selected.size} selected
+                </p>
+
+                <div className="mt-2 max-h-96 overflow-y-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-left text-sm">
+                    <tbody>
+                      {visibleContacts.map((c) => {
+                        const badge = badgeFor(c.classification);
+                        return (
+                          <tr key={c.contactId} className="border-b border-slate-100 last:border-0">
+                            <td className="px-3 py-2">
+                              <input
+                                type="checkbox"
+                                aria-label={`Include ${c.fullName || c.email}`}
+                                checked={selected.has(c.contactId)}
+                                disabled={!badge.selectable}
+                                onChange={() => toggleContact(c.contactId)}
+                              />
+                            </td>
+                            <td className="px-3 py-2 font-medium">{c.fullName || "—"}</td>
+                            <td className="px-3 py-2 text-slate-600">{c.businessName}</td>
+                            <td className="px-3 py-2 text-slate-600">{c.email}</td>
+                            <td className="px-3 py-2">
+                              <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
+                                {badge.label}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </>
         )}

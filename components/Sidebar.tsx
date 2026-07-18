@@ -45,11 +45,11 @@ function Brand() {
     <div className="flex items-center gap-2 px-2">
       <span
         aria-hidden
-        className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-sm font-bold text-white shadow-sm"
+        className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-xs font-bold text-white shadow-sm"
       >
-        O
+        ML
       </span>
-      <span className="text-lg font-semibold tracking-tight text-slate-900">Outreach</span>
+      <span className="text-lg font-semibold tracking-tight text-slate-900">MassLeader</span>
     </div>
   );
 }
