@@ -23,6 +23,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
             key={item.href}
             href={item.href}
             onClick={onNavigate}
+            data-tour={`nav-${item.href.replace("/", "")}`}
             aria-current={active ? "page" : undefined}
             className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
               active

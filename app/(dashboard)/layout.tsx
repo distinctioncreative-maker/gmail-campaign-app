@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { resolveSendingState } from "@/lib/sending/mode";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
+import { ProductTour } from "@/components/tour/ProductTour";
 
 const BASE_NAV: NavItem[] = [
   { href: "/home", label: "Home", icon: "🏠" },
@@ -70,6 +71,7 @@ export default async function DashboardLayout({
         </div>
         <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">{children}</main>
       </div>
+      <ProductTour />
     </div>
   );
 }

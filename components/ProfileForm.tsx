@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { SenderProfile } from "@/schemas/userSettings";
+import { HelpTip } from "@/components/HelpTip";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -96,6 +97,7 @@ export function ProfileForm({
 
       <label className="mt-4 block text-sm font-medium text-slate-700">
         Company mailing address
+        <HelpTip text="US anti-spam law (CAN-SPAM) requires a real physical mailing address in marketing emails. A PO box or suite is fine." />
         <span className="block text-xs font-normal text-slate-500">
           Shown in the footer of your emails — required for commercial email rules.
         </span>
@@ -183,6 +185,7 @@ export function ProfileForm({
             </label>
             <label className="text-sm font-medium text-slate-700">
               Daily limit
+              <HelpTip text="The most emails a campaign will send per day. Gmail limits how many you can send, and lower numbers look more personal. 50–150 is a safe range." />
               <input
                 type="number" min={1} max={2000}
                 value={profile.sendingDefaults.dailySendLimit}

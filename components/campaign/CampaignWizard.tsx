@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { badgeFor } from "@/components/imports/leadBadges";
+import { HelpTip } from "@/components/HelpTip";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -289,6 +290,7 @@ export function CampaignWizard() {
             </div>
             <label className="mt-6 block text-sm font-medium text-slate-700">
               People you contacted before
+              <HelpTip text="If a lead is already in one of your past campaigns, this decides whether to email them again. 'Only new people' is safest and avoids annoying repeat contacts." />
               <select
                 value={priorPolicy}
                 onChange={(e) => setPriorPolicy(e.target.value)}
@@ -408,6 +410,7 @@ export function CampaignWizard() {
                   onChange={(e) => setDraftStrategy(e.target.checked ? "DRAFT_ONLY" : "SEND")}
                 />
                 Create Gmail drafts only — I&apos;ll review and send them myself
+                <HelpTip text="Instead of sending automatically, the app prepares each email as a draft in your Gmail. You open and send them yourself. Good for extra control on important lists." />
               </label>
             </div>
           </>
