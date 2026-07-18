@@ -40,6 +40,12 @@ echo "── Update the Cloud Run service env ──"
 gcloud run services update "$SERVICE" --region "$REGION" \
   --update-env-vars "^##^CLOUD_TASKS_QUEUE=campaign-sends##CLOUD_TASKS_SERVICE_ACCOUNT=${TASKS_SA}##CLOUD_TASKS_WORKER_AUDIENCE=${SERVICE_URL}##APP_BASE_URL=${SERVICE_URL}"
 
+# Clear the legacy TEST_MODE env lock so the in-app admin switch governs
+# sending. The org still defaults to TEST until an admin flips it in-app,
+# so this does not send any real email on its own.
+gcloud run services update "$SERVICE" --region "$REGION" \
+  --remove-env-vars TEST_MODE 2>/dev/null || true
+
 echo "── Cloud Scheduler sweeps ──"
 # Periodic system sweeps hit the OIDC-protected /api/cron/sweep endpoint.
 create_job() {

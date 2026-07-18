@@ -8,6 +8,13 @@ export interface SendEmailInput {
   subject: string;
   htmlBody: string;
   textBody?: string;
+  /**
+   * REQUIRED. When true the message is redirected to the configured test
+   * address with a [TEST] subject. Resolve it from the org's sending mode
+   * (`lib/sending/mode.ts`) for campaign sends, or pass `true` for any
+   * test/onboarding email that should always go only to the user.
+   */
+  testMode: boolean;
   /** For threaded follow-ups: reply within an existing Gmail thread. */
   threadId?: string;
   inReplyToMessageId?: string;
@@ -68,7 +75,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   effectiveTo: string;
   effectiveSubject: string;
 }> {
-  const safe = applySendSafety({ to: input.to, subject: input.subject });
+  const safe = applySendSafety({ to: input.to, subject: input.subject }, input.testMode);
   const gmail = await gmailForUser(input.userId);
 
   const res = await gmail.users.messages.send({

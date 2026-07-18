@@ -16,14 +16,24 @@ const EnvSchema = z.object({
   CLOUD_TASKS_WORKER_AUDIENCE: z.string().default(""),
   APP_BASE_URL: z.string().default("http://localhost:3000"),
   DEFAULT_ORGANIZATION_NAME: z.string().default("My Organization"),
-  TEST_MODE: z.string().default("true"),
+  // Optional deployment-level lock: when "true", the app is forced into
+  // test mode and the in-app live switch is disabled (use on staging).
+  // Production leaves this unset so an admin controls sending in-app.
+  FORCE_TEST_MODE: z.string().default(""),
+  // Legacy: still read as a lock for backward compatibility.
+  TEST_MODE: z.string().default(""),
   TEST_EMAIL_DESTINATION: z.string().default(""),
   NODE_ENV: z.string().default("development"),
 });
 
 export const env = EnvSchema.parse(process.env);
 
-/** Real sending is opt-out: anything but the literal string "false" keeps test mode on. */
-export function isTestMode(): boolean {
-  return env.TEST_MODE.toLowerCase() !== "false";
+/** Deployment-level test-mode lock. When true, no in-app toggle can enable
+ * real sending. Both FORCE_TEST_MODE and the legacy TEST_MODE=true act as
+ * locks. */
+export function envForcesTestMode(): boolean {
+  return (
+    env.FORCE_TEST_MODE.toLowerCase() === "true" ||
+    env.TEST_MODE.toLowerCase() === "true"
+  );
 }

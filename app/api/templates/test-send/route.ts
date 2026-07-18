@@ -34,6 +34,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     to: ctx.email,
     subject: `[TEST] ${rendered.subject}`,
     htmlBody: rendered.html,
+    testMode: true, // a "send me a test" email always goes only to the user
   });
 
   if (ctx.user.onboardingStatus === "DEFAULTS_SET") {

@@ -1,4 +1,4 @@
-import { env, isTestMode } from "@/lib/env";
+import { env } from "@/lib/env";
 
 export interface OutboundEnvelope {
   to: string;
@@ -8,7 +8,7 @@ export interface OutboundEnvelope {
 export class TestModeConfigError extends Error {
   constructor() {
     super(
-      "Test mode is on but TEST_EMAIL_DESTINATION is not configured. Set it before sending anything."
+      "Test mode is on but no test email address is configured. Set TEST_EMAIL_DESTINATION before sending anything."
     );
   }
 }
@@ -17,13 +17,17 @@ export class TestModeConfigError extends Error {
  * Global outbound safety gate. EVERY email leaving the app must pass
  * through this function immediately before the Gmail API call.
  *
- * While TEST_MODE is on (the default everywhere except an explicit
- * production opt-out), the destination is forced to the configured test
- * account and the subject is prefixed with [TEST]. No recipient address
- * from real data can receive mail in test mode.
+ * `testMode` is decided by the caller and is REQUIRED — there is no
+ * implicit default — so no send path can accidentally skip the decision.
+ * When true, the destination is forced to the configured test account and
+ * the subject is prefixed `[TEST]`; no address from real data can receive
+ * mail. See `lib/sending/mode.ts` for how the mode is resolved.
  */
-export function applySendSafety(envelope: OutboundEnvelope): OutboundEnvelope {
-  if (!isTestMode()) return envelope;
+export function applySendSafety(
+  envelope: OutboundEnvelope,
+  testMode: boolean
+): OutboundEnvelope {
+  if (!testMode) return envelope;
 
   const destination = env.TEST_EMAIL_DESTINATION.trim();
   if (!destination) throw new TestModeConfigError();

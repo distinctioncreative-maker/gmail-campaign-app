@@ -33,6 +33,7 @@ import { localDayKey, nextValidTime } from "@/lib/scheduling/window";
 import { enqueueTask } from "@/lib/tasks/enqueue";
 import { scheduleNextFollowup } from "@/lib/campaigns/followups";
 import { recordCollisionContact } from "@/lib/campaigns/collision";
+import { isTestModeForOrg } from "@/lib/sending/mode";
 
 const PayloadSchema = z.object({
   organizationId: z.string().min(1),
@@ -219,6 +220,8 @@ export async function POST(req: NextRequest) {
     if (!reserved) return fail("ALREADY_SENT", false);
 
     // 6. Send through the user's Gmail (safety gate inside sendEmail).
+    // Test vs real is the ORG's current sending mode, resolved fresh here.
+    const testMode = await isTestModeForOrg(organizationId);
     const threaded = isFollowup && step?.sameThread && recipient.gmailThreadId;
     const result = await sendEmail({
       userId: ownerUserId,
@@ -226,6 +229,7 @@ export async function POST(req: NextRequest) {
       subject: subjectOutput,
       htmlBody: body.output,
       textBody: template.plainTextTemplate || undefined,
+      testMode,
       threadId: threaded ? recipient.gmailThreadId ?? undefined : undefined,
       inReplyToMessageId: threaded ? recipient.initialMessageId ?? undefined : undefined,
     });

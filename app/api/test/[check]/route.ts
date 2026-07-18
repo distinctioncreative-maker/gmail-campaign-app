@@ -39,6 +39,7 @@ export const POST = handleApiErrors(
           to: ctx.email,
           subject: "Test Center check",
           htmlBody: "<p>This is a Test Center email. If you received it, sending works.</p>",
+          testMode: true, // Test Center emails always go only to the user
         });
         result = {
           pass: true,

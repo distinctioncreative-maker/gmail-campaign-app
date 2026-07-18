@@ -4,7 +4,8 @@ import { firestore } from "@/lib/firebase/admin";
 import { listMembers } from "@/lib/repositories/orgSettings";
 import { listCampaigns } from "@/lib/repositories/campaigns";
 import { getConnection } from "@/lib/repositories/gmailConnections";
-import { env, isTestMode } from "@/lib/env";
+import { resolveSendingState } from "@/lib/sending/mode";
+import { env } from "@/lib/env";
 
 async function loadHealth(organizationId: string, ownerUserId: string) {
   const owner = { userId: ownerUserId, organizationId };
@@ -23,9 +24,10 @@ async function loadHealth(organizationId: string, ownerUserId: string) {
 
   const campaigns = await listCampaigns(owner, 200);
   const sweepData = sweeps.data() ?? {};
+  const sending = await resolveSendingState(organizationId);
 
   return {
-    testMode: isTestMode(),
+    testMode: sending.testMode,
     tasksConfigured: Boolean(env.CLOUD_TASKS_SERVICE_ACCOUNT && env.APP_BASE_URL.startsWith("https://")),
     kmsConfigured: Boolean(env.TOKEN_KMS_KEY_RESOURCE),
     members: members.length,

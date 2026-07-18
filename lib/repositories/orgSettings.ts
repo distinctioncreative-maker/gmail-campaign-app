@@ -18,6 +18,11 @@ export interface OrgSettings {
   collisionPolicy: Organization["collisionPolicy"];
   collisionBlockDays: number;
   sendConfirmThreshold: number;
+  /** Sending mode: TEST (default, safe) or LIVE. Only an admin can set
+   * LIVE, and only when no deployment lock is active. */
+  sendingMode: "TEST" | "LIVE";
+  liveEnabledAt: number | null;
+  liveEnabledBy: string | null;
 }
 
 export async function getOrgSettings(organizationId: string): Promise<OrgSettings> {
@@ -28,17 +33,49 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
     collisionPolicy: (data.collisionPolicy as Organization["collisionPolicy"]) ?? org?.collisionPolicy ?? "OFF",
     collisionBlockDays: (data.collisionBlockDays as number) ?? org?.collisionBlockDays ?? 30,
     sendConfirmThreshold: (data.sendConfirmThreshold as number) ?? 100,
+    sendingMode: data.sendingMode === "LIVE" ? "LIVE" : "TEST",
+    liveEnabledAt: (data.liveEnabledAt as number) ?? null,
+    liveEnabledBy: (data.liveEnabledBy as string) ?? null,
   };
 }
 
 export async function updateOrgSettings(
   organizationId: string,
-  patch: Partial<OrgSettings>
+  patch: Partial<Pick<OrgSettings, "collisionPolicy" | "collisionBlockDays" | "sendConfirmThreshold">>
 ): Promise<void> {
   await orgRef(organizationId)
     .collection("organizationSettings")
     .doc("main")
     .set({ ...patch, updatedAt: Date.now() }, { merge: true });
+}
+
+/** Flip the whole organization between TEST and LIVE sending. Callers must
+ * verify the actor is an admin and that no env lock is active. */
+export async function setSendingMode(
+  organizationId: string,
+  mode: "TEST" | "LIVE",
+  actorUserId: string
+): Promise<void> {
+  const now = Date.now();
+  await orgRef(organizationId)
+    .collection("organizationSettings")
+    .doc("main")
+    .set(
+      {
+        sendingMode: mode,
+        liveEnabledAt: mode === "LIVE" ? now : null,
+        liveEnabledBy: mode === "LIVE" ? actorUserId : null,
+        updatedAt: now,
+      },
+      { merge: true }
+    );
+  // Audit trail for this high-impact action.
+  await orgRef(organizationId).collection("organizationSettings").doc("main")
+    .collection("modeChanges").add({
+      mode,
+      actorUserId,
+      at: now,
+    });
 }
 
 /**
