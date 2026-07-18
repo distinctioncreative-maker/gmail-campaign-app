@@ -1,8 +1,13 @@
 rules_version = '2';
 
 // Defense-in-depth: the app's server routes are the primary access path
-// (Admin SDK bypasses these rules). These rules exist so that any direct
-// client SDK access can never cross user or organization boundaries.
+// (Admin SDK bypasses these rules). These rules exist so any direct client
+// SDK access can never cross user or organization boundaries.
+//
+// IMPORTANT: Firestore grants access if ANY matching rule allows it — a
+// separate `allow read: if false` block cannot revoke a grant made by a
+// broader wildcard. Sensitive collections are therefore excluded *inside*
+// the wildcard's condition, not in a separate deny block.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -14,47 +19,39 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
-    // A user's own profile document (no role/org escalation from client).
+    // Collections that must NEVER be client-readable, even by the owner.
+    function isSensitive(name) {
+      return name == 'gmailConnections' || name == 'counters';
+    }
+
     match /users/{userId} {
       allow read: if isSelf(userId);
-      allow write: if false; // server-only
+      allow write: if false; // all mutations are server-only
 
-      // Sensitive: encrypted Gmail tokens — never client-readable.
-      match /gmailConnections/{connectionId} {
-        allow read, write: if false;
-      }
-
-      // Queue internals are server-only.
-      match /campaigns/{campaignId}/queue/{queueItemId} {
-        allow read, write: if false;
-      }
-
-      // All other user-owned data: readable only by that user.
-      // Mutations go through authenticated server routes.
+      // Direct user subcollections: readable only by the owner, and never
+      // the sensitive ones (Gmail tokens, send counters).
       match /{collection}/{docId} {
-        allow read: if isSelf(userId);
+        allow read: if isSelf(userId) && !isSensitive(collection);
         allow write: if false;
       }
 
+      // Campaign subcollections: readable by the owner except the queue
+      // (internal task/lock data). Deeper nesting (e.g. template versions)
+      // is not client-readable — the server reads it via the Admin SDK.
       match /campaigns/{campaignId}/{sub}/{docId} {
-        allow read: if isSelf(userId)
-          && sub != 'queue';
+        allow read: if isSelf(userId) && sub != 'queue';
         allow write: if false;
       }
     }
 
     match /organizations/{orgId} {
-      // Membership check reads own member doc only.
+      // A member may read only their own membership document.
       match /members/{userId} {
         allow read: if isSelf(userId);
         allow write: if false;
       }
-
-      // Collision hashes and org settings are server-only.
-      match /teamCollisionHashes/{hash} {
-        allow read, write: if false;
-      }
-      match /organizationSettings/{docId} {
+      // Collision hashes, org settings, and suppressions are server-only.
+      match /{path=**} {
         allow read, write: if false;
       }
       allow read, write: if false;

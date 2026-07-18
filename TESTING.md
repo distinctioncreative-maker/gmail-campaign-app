@@ -3,38 +3,55 @@
 ## Commands
 
 ```bash
-npm test              # vitest unit suite
+npm test              # vitest unit suite (109 tests)
+npm run test:emulator # Firestore rules isolation suite (needs Java)
 npm run typecheck     # tsc --noEmit (strict)
 npm run lint          # eslint
 npm run build         # production build (Turbopack)
 ```
 
-## Current automated coverage (37 tests)
+## Unit coverage (109 tests, `tests/unit/`)
 
-- **Salesforce parser** (`tests/unit/salesforce-parser.test.ts`): the ten
-  required fixtures — complete record, missing amount, missing source ID,
-  extra tabs, extra blank lines, invalid email, opt-out true, multiple
-  records, unexpected extra line, missing timestamp — plus the
-  no-marker error path, all against the verbatim spec sample.
-- **Normalization** (`normalize.test.ts`): email casing/tags, phone
-  country-code, business suffixes, name splitting.
-- **Send safety** (`send-safety.test.ts`): test-mode destination
-  override, `[TEST]` prefixing, fail-closed behavior on missing config,
-  literal-`false` opt-out semantics.
-- **Token encryption boundary** (`kms-crypto.test.ts`): round-trip,
-  fresh-IV, tamper rejection, production refusal of the dev cipher,
-  fail-closed on missing config.
+- **Salesforce parser**: ten required fixtures (complete, no amount, no
+  source ID, extra tabs, extra blank lines, invalid email, opt-out true,
+  multiple records, unexpected extra line, missing timestamp) + no-marker
+  path, against the verbatim spec sample.
+- **CSV import**: header auto-detection, explicit mapping, opt-out
+  parsing, invalid-email flagging, full-name splitting.
+- **Normalization**: email casing/tags, phone country-code, business
+  suffixes, name splitting.
+- **Send safety**: test-mode destination override, `[TEST]` prefixing,
+  fail-closed on missing config, literal-`false` semantics.
+- **Token encryption boundary**: round-trip, fresh IV, tamper rejection,
+  production refusal of the dev cipher.
+- **Scheduling** (`window.test.ts`): 8 PM rollover, weekend rollover,
+  daily-cap rollover, batch/spacing timestamps, business-day math,
+  timezone day keys.
+- **Eligibility**: every pre-send block reason incl. replay safety and
+  idempotency; retryable vs terminal.
+- **Personalization**: 17 placeholders, unresolved detection, fake-data
+  preview coverage.
+- **HTML sanitization**: script/handler stripping, table/inline-style
+  preservation, `javascript:` blocking, plain-text fallback.
+- **Reply/bounce classification**: human/unsub/OOO/auto detection
+  (header-first), hard/soft bounce codes, failed-recipient parsing.
+- **Collision HMAC**: keyed, deterministic, not a plain hash, one-way.
+
+## Emulator coverage (`tests/emulator/isolation.test.ts`)
+
+Six tests against `firestore.rules` in the Firestore emulator prove: a
+user reads only their own data; cannot read another user's contacts or
+campaigns; **Gmail connections are never client-readable even by the
+owner**; all client writes are denied; unauthenticated reads are denied.
+(This suite caught and fixed a real rules bug where a broad wildcard
+OR-granted reads a separate deny block could not revoke.)
 
 ## Test-mode guarantee
 
-No automated test sends email. `sendEmail` is never invoked by tests, and
-even manual runs are governed by `TEST_MODE` (default on) which forces
-all mail to `TEST_EMAIL_DESTINATION` with a `[TEST]` subject.
+No automated test sends real email. Every send path funnels through
+`applySendSafety`, which — while `TEST_MODE` is on (the default) — forces
+mail to `TEST_EMAIL_DESTINATION` with a `[TEST]` subject.
 
-## Planned (later phases)
+## Recommended next
 
-- Firebase Emulator Suite tests proving one salesperson cannot read
-  another's documents under `firestore.rules`
-- Playwright e2e for sign-in → paste → import → campaign wizard
-- Idempotency/replay tests for the Cloud Tasks worker
-- Schedule-window, business-day, and daily-cap rollover tests
+- Playwright e2e (sign-in mocked) for the wizard against the emulator, in CI.

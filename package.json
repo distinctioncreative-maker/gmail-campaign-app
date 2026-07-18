@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:emulator": "firebase emulators:exec --only firestore --project outreach-rules-test \"vitest run --config vitest.emulator.config.ts\""
   },
   "dependencies": {
     "@google-cloud/firestore": "^8.6.0",
@@ -33,6 +34,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/papaparse": "^5.5.2",
@@ -42,6 +44,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "firebase-tools": "^15.24.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

@@ -14,12 +14,15 @@ Secret Manager · Cloud KMS · Gmail API.
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Auth, org membership, per-user isolation, Gmail connect (KMS-encrypted tokens), dashboard shell | ✅ Built |
-| 2 | Salesforce paste parser + preview/import, contacts, suppressions | ✅ Built (Sheet/CSV import pending) |
-| 3 | Templates + personalization | 🔜 |
-| 4 | Campaign wizard, Cloud Tasks sending engine, idempotency | 🔜 |
-| 5 | Follow-ups, reply/bounce detection | 🔜 |
-| 6 | Team/admin, collision warnings | 🔜 |
-| 7 | Emulator isolation tests, e2e, deployment automation | 🔜 |
+| 2 | Salesforce paste parser + CSV import, contacts, prior-contact detection, suppressions | ✅ Built |
+| 3 | Templates (visual / starter / paste HTML / Gmail draft), personalization, onboarding, sender profile | ✅ Built |
+| 4 | Campaign wizard, Cloud Tasks sending engine, idempotency, windows/caps, pause/resume/cancel controls | ✅ Built |
+| 5 | Follow-up sequences, reply detection, unsubscribe + bounce handling, notifications | ✅ Built |
+| 6 | Reports, Test Center, roles/admin, privacy-preserving team collision, system health | ✅ Built |
+| 7 | Emulator isolation tests, deployment automation | ✅ Built |
+
+Google Sheet import + audit-mirror spreadsheet are intentionally deferred
+(CSV import covers file imports; the import chooser reserves the slot).
 
 ## Quick start
 
@@ -27,11 +30,16 @@ Secret Manager · Cloud KMS · Gmail API.
 npm install
 cp .env.example .env        # fill in values — see SETUP.md
 npm run dev                 # http://localhost:3000
-npm test                    # unit tests (parser, crypto, send safety)
+npm test                    # unit tests (109) — parser, scheduling, eligibility, safety…
+npm run test:emulator       # Firestore rules isolation tests (needs Java)
 npm run typecheck
 npm run lint
 npm run build
 ```
+
+After the first Cloud Run deploy, run `bash scripts/setup-cloud.sh PROJECT_ID`
+once to provision the Cloud Tasks queue, service accounts/IAM, and the
+Cloud Scheduler sweeps (reply/bounce/repair).
 
 ## Email safety (read this first)
 
