@@ -116,6 +116,23 @@ export function ProfileForm({
       </label>
 
       <label className="mt-4 block text-sm font-medium text-slate-700">
+        Your email signature
+        <span className="block text-xs font-normal text-slate-500">
+          Paste your own signature (plain text or HTML from Gmail). Drop{" "}
+          <code className="rounded bg-slate-100 px-1">{"{{signature}}"}</code> into any template
+          where you want it to appear — then you don&apos;t need to fill in the name/title/phone
+          fields above unless a template uses those placeholders directly.
+        </span>
+        <textarea
+          value={profile.signature}
+          onChange={(e) => set("signature", e.target.value)}
+          rows={5}
+          placeholder={"Jane Doe\nFunding Advisor, Alpine Funding\n(555) 123-4567 · jane@alpinefundings.com"}
+          className={`${input} font-mono`}
+        />
+      </label>
+
+      <label className="mt-4 block text-sm font-medium text-slate-700">
         Timezone
         <select value={profile.timezone} onChange={(e) => set("timezone", e.target.value)} className={input}>
           {TIMEZONES.map((tz) => (

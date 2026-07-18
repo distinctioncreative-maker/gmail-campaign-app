@@ -22,6 +22,7 @@ const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{company_website}}", label: "Company website" },
   { token: "{{physical_address}}", label: "Company address" },
   { token: "{{unsubscribe_text}}", label: "Unsubscribe text" },
+  { token: "{{signature}}", label: "My signature" },
 ];
 
 type Mode = "visual" | "starter" | "html" | "gmail";

@@ -20,6 +20,7 @@ export const PLACEHOLDERS = [
   "company_website",
   "physical_address",
   "unsubscribe_text",
+  "signature",
 ] as const;
 export type Placeholder = (typeof PLACEHOLDERS)[number];
 
@@ -58,6 +59,7 @@ export function valuesFromSenderProfile(profile: SenderProfile): PlaceholderValu
     company_website: profile.companyWebsite,
     physical_address: profile.physicalAddress,
     unsubscribe_text: profile.unsubscribeText,
+    signature: profile.signature,
   };
 }
 
@@ -79,6 +81,7 @@ export const FAKE_PREVIEW_VALUES: PlaceholderValues = {
   company_website: "https://yourcompany.com",
   physical_address: "123 Main St, Suite 400, New York, NY 10001",
   unsubscribe_text: "If you'd prefer not to hear from me again, just reply and let me know.",
+  signature: "Alex Salesperson · Funding Advisor · Your Company",
 };
 
 export interface RenderResult {

@@ -8,7 +8,10 @@ export interface StarterLayout {
 
 const FOOTER = `<p style="font-size:12px;color:#888;margin-top:32px">{{company_name}} · {{physical_address}}<br>{{unsubscribe_text}}</p>`;
 
-const SIGNATURE = `<p style="margin-top:24px">Best regards,<br><strong>{{sender_name}}</strong><br>{{sender_title}}, {{company_name}}<br>{{sender_phone}} · {{sender_email}}</p>`;
+// Uses {{signature}} (your pasted signature from Settings). If you'd rather
+// build one from individual fields, swap in {{sender_name}}, {{sender_title}},
+// {{sender_phone}}, {{sender_email}} instead.
+const SIGNATURE = `<p style="margin-top:24px">Best regards,<br>{{signature}}</p>`;
 
 export const STARTER_LAYOUTS: StarterLayout[] = [
   {
