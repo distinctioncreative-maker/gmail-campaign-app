@@ -24,6 +24,12 @@ interface WizardTemplate {
   active: boolean;
 }
 
+interface WizardSequence {
+  sequenceId: string;
+  name: string;
+  steps: unknown[];
+}
+
 const PRESETS = {
   conservative: {
     label: "Conservative",
@@ -58,6 +64,9 @@ export function CampaignWizard() {
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ subject: string; html: string } | null>(null);
 
+  const [sequences, setSequences] = useState<WizardSequence[]>([]);
+  const [sequenceId, setSequenceId] = useState<string | null>(null);
+
   const [preset, setPreset] = useState<keyof typeof PRESETS>("balanced");
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
   const [priorPolicy, setPriorPolicy] = useState("ONLY_NEW");
@@ -78,6 +87,9 @@ export function CampaignWizard() {
         )
       );
       setTemplates((tBody.templates ?? []).filter((t: WizardTemplate) => t.active));
+      const sRes = await fetch("/api/sequences");
+      const sBody = await sRes.json();
+      setSequences(sBody.sequences ?? []);
     })();
   }, []);
 
@@ -120,6 +132,7 @@ export function CampaignWizard() {
           name,
           description,
           initialTemplateId: templateId,
+          sequenceId,
           schedule: PRESETS[preset].schedule,
           priorContactPolicy: priorPolicy,
           draftStrategy,
@@ -363,6 +376,30 @@ export function CampaignWizard() {
               Sending happens 9:00 AM–8:00 PM on weekdays in your timezone (change defaults in
               Settings). Unsent emails automatically roll to the next allowed time.
             </p>
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <label className="block text-sm font-medium text-slate-700">
+                Automatic follow-ups
+                <select
+                  value={sequenceId ?? ""}
+                  onChange={(e) => setSequenceId(e.target.value || null)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <option value="">No follow-ups</option>
+                  {sequences.map((s) => (
+                    <option key={s.sequenceId} value={s.sequenceId}>
+                      {s.name} ({s.steps.length} follow-up{s.steps.length === 1 ? "" : "s"})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="mt-1 text-xs text-slate-500">
+                Follow-ups stop automatically when someone replies.{" "}
+                <a href="/sequences/new" target="_blank" className="text-primary hover:underline">
+                  Build a sequence
+                </a>
+              </p>
+            </div>
+
             <div className="mt-5">
               <label className="flex items-center gap-2 text-sm text-slate-700">
                 <input

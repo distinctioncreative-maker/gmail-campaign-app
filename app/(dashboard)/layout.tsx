@@ -2,12 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { SignOutButton } from "@/components/SignOutButton";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const NAV = [
   { href: "/home", label: "Home" },
   { href: "/campaigns", label: "Campaigns" },
   { href: "/leads", label: "Leads" },
   { href: "/templates", label: "Templates" },
+  { href: "/sequences", label: "Follow-Ups" },
   { href: "/suppressions", label: "Do Not Email" },
   { href: "/settings", label: "Settings" },
 ] as const;
@@ -51,14 +53,20 @@ export default async function DashboardLayout({
       <div className="flex-1">
         <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:hidden">
           <span className="font-semibold text-primary">Outreach</span>
-          <nav className="flex gap-3" aria-label="Main">
-            {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className="text-sm text-slate-700">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav className="flex gap-3" aria-label="Main">
+              {NAV.map((item) => (
+                <Link key={item.href} href={item.href} className="text-sm text-slate-700">
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <NotificationBell />
+          </div>
         </header>
+        <div className="hidden items-center justify-end border-b border-slate-200 bg-white px-6 py-2 sm:flex">
+          <NotificationBell />
+        </div>
         <main className="mx-auto max-w-6xl p-6">{children}</main>
       </div>
     </div>

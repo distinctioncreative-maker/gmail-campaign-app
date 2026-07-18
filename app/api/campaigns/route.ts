@@ -24,6 +24,7 @@ const CreateSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(1000).default(""),
   initialTemplateId: z.string().nullable().default(null),
+  sequenceId: z.string().nullable().default(null),
   schedule: CampaignScheduleSchema.partial().default({}),
   priorContactPolicy: PriorContactPolicySchema.default("ONLY_NEW"),
   priorContactExcludeDays: z.number().int().min(1).max(365).default(30),
@@ -42,7 +43,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     description: input.description,
     status: "DRAFT",
     initialTemplateId: input.initialTemplateId,
-    sequenceId: null,
+    sequenceId: input.sequenceId,
     sourceType: "CONTACTS",
     sourceReference: null,
     schedule: CampaignScheduleSchema.parse({

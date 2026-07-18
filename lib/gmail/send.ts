@@ -8,21 +8,39 @@ export interface SendEmailInput {
   subject: string;
   htmlBody: string;
   textBody?: string;
+  /** For threaded follow-ups: reply within an existing Gmail thread. */
+  threadId?: string;
+  inReplyToMessageId?: string;
+  references?: string;
 }
 
 function encodeMessage(raw: string): string {
   return Buffer.from(raw).toString("base64url");
 }
 
-function buildMime(input: { to: string; subject: string; htmlBody: string; textBody?: string }): string {
+function buildMime(input: {
+  to: string;
+  subject: string;
+  htmlBody: string;
+  textBody?: string;
+  inReplyToMessageId?: string;
+  references?: string;
+}): string {
   const boundary = `b_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
   const encodedSubject = `=?UTF-8?B?${Buffer.from(input.subject, "utf8").toString("base64")}?=`;
   const text = input.textBody ?? input.htmlBody.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  return [
+  const headers = [
     `To: ${input.to}`,
     `Subject: ${encodedSubject}`,
     "MIME-Version: 1.0",
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+  ];
+  if (input.inReplyToMessageId) {
+    headers.push(`In-Reply-To: ${input.inReplyToMessageId}`);
+    headers.push(`References: ${input.references ?? input.inReplyToMessageId}`);
+  }
+  headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+  return [
+    ...headers,
     "",
     `--${boundary}`,
     "Content-Type: text/plain; charset=UTF-8",
@@ -56,12 +74,15 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   const res = await gmail.users.messages.send({
     userId: "me",
     requestBody: {
+      threadId: input.threadId,
       raw: encodeMessage(
         buildMime({
           to: safe.to,
           subject: safe.subject,
           htmlBody: input.htmlBody,
           textBody: input.textBody,
+          inReplyToMessageId: input.inReplyToMessageId,
+          references: input.references,
         })
       ),
     },

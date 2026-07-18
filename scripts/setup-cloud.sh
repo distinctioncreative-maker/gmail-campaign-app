@@ -40,6 +40,27 @@ echo "── Update the Cloud Run service env ──"
 gcloud run services update "$SERVICE" --region "$REGION" \
   --update-env-vars "^##^CLOUD_TASKS_QUEUE=campaign-sends##CLOUD_TASKS_SERVICE_ACCOUNT=${TASKS_SA}##CLOUD_TASKS_WORKER_AUDIENCE=${SERVICE_URL}##APP_BASE_URL=${SERVICE_URL}"
 
+echo "── Cloud Scheduler sweeps ──"
+# Periodic system sweeps hit the OIDC-protected /api/cron/sweep endpoint.
+create_job() {
+  local NAME="$1" SCHEDULE="$2" JOB="$3"
+  gcloud scheduler jobs create http "$NAME" \
+    --location="$REGION" \
+    --schedule="$SCHEDULE" \
+    --uri="${SERVICE_URL}/api/cron/sweep?job=${JOB}" \
+    --http-method=POST \
+    --oidc-service-account-email="$TASKS_SA" \
+    --oidc-token-audience="$SERVICE_URL" 2>/dev/null \
+    || gcloud scheduler jobs update http "$NAME" \
+      --location="$REGION" --schedule="$SCHEDULE" \
+      --uri="${SERVICE_URL}/api/cron/sweep?job=${JOB}" \
+      --oidc-service-account-email="$TASKS_SA" \
+      --oidc-token-audience="$SERVICE_URL"
+}
+create_job outreach-reply-sweep  "*/10 * * * *" reply
+create_job outreach-bounce-sweep "*/30 * * * *" bounce
+create_job outreach-repair       "0 * * * *"    repair
+create_job outreach-metrics      "0 6 * * *"    metrics
+
 echo
-echo "Done. Background sending is configured."
-echo "Cloud Scheduler sweeps (reply/bounce checks) are added in the follow-ups release."
+echo "Done. Background sending, reply/bounce sweeps, and repair are configured."

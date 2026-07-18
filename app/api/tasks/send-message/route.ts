@@ -21,6 +21,7 @@ import { checkEligibility } from "@/lib/campaigns/eligibility";
 import { getConnection } from "@/lib/repositories/gmailConnections";
 import { isSuppressed } from "@/lib/repositories/suppressions";
 import { getTemplate } from "@/lib/repositories/templates";
+import { getSequence } from "@/lib/repositories/sequences";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import {
   renderTemplate,
@@ -152,10 +153,16 @@ export async function POST(req: NextRequest) {
       return fail(eligibility.reason, false);
     }
 
-    // 4. Render the personalized message.
-    const template = campaign.initialTemplateId
-      ? await getTemplate(owner, campaign.initialTemplateId)
-      : null;
+    // 4. Resolve the template for this step. Follow-up steps may use their
+    // own template and subject behavior; they fall back to the initial one.
+    const isFollowup = item.sequenceStep > 0;
+    let step = null;
+    if (isFollowup && campaign.sequenceId) {
+      const sequence = await getSequence(owner, campaign.sequenceId);
+      step = sequence?.steps[item.sequenceStep - 1] ?? null;
+    }
+    const templateId = step?.templateId ?? campaign.initialTemplateId;
+    const template = templateId ? await getTemplate(owner, templateId) : null;
     if (!template) {
       await setCampaignStatus(owner, campaignId, "PAUSED", { pausedAt: Date.now() });
       await recordEvent(owner, campaignId, {
@@ -182,7 +189,25 @@ export async function POST(req: NextRequest) {
       }),
       ...valuesFromSenderProfile(profile),
     };
-    const subject = renderTemplate(template.subjectTemplate, values);
+
+    // Subject: follow-up steps can keep the original, prefix "Re:", or use
+    // a custom subject line.
+    let subjectTemplate = template.subjectTemplate;
+    if (step) {
+      if (step.subjectMode === "KEEP" || step.subjectMode === "RE") {
+        subjectTemplate = campaign.initialTemplateId
+          ? (await getTemplate(owner, campaign.initialTemplateId))?.subjectTemplate ??
+            template.subjectTemplate
+          : template.subjectTemplate;
+      } else if (step.subjectMode === "CUSTOM" && step.customSubject) {
+        subjectTemplate = step.customSubject;
+      }
+    }
+    const subjectRender = renderTemplate(subjectTemplate, values);
+    const subjectOutput =
+      step?.subjectMode === "RE" && !/^re:/i.test(subjectRender.output)
+        ? `Re: ${subjectRender.output}`
+        : subjectRender.output;
     const body = renderTemplate(template.htmlTemplate, values);
 
     // 5. Reserve the idempotency key BEFORE sending (transactional).
@@ -193,12 +218,15 @@ export async function POST(req: NextRequest) {
     if (!reserved) return fail("ALREADY_SENT", false);
 
     // 6. Send through the user's Gmail (safety gate inside sendEmail).
+    const threaded = isFollowup && step?.sameThread && recipient.gmailThreadId;
     const result = await sendEmail({
       userId: ownerUserId,
       to: recipient.emailSnapshot,
-      subject: subject.output,
+      subject: subjectOutput,
       htmlBody: body.output,
       textBody: template.plainTextTemplate || undefined,
+      threadId: threaded ? recipient.gmailThreadId ?? undefined : undefined,
+      inReplyToMessageId: threaded ? recipient.initialMessageId ?? undefined : undefined,
     });
 
     // 7–8. Record results.
