@@ -42,7 +42,7 @@ export default async function TemplatesPage() {
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {active.map((t) => (
-            <div key={t.templateId} className="flex flex-col rounded-2xl bg-white p-5 shadow-sm">
+            <div key={t.templateId} className="flex flex-col card p-5">
               <Link href={`/templates/${t.templateId}`} className="font-medium hover:underline">
                 {t.name}
               </Link>

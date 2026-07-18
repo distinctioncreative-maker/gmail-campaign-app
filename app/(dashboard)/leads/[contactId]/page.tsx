@@ -46,7 +46,7 @@ export default async function ContactDetailPage({
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
+        <div className="card p-6">
           <h2 className="font-medium">Details</h2>
           <dl className="mt-3 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
             <dt className="text-slate-500">Email</dt>
@@ -70,7 +70,7 @@ export default async function ContactDetailPage({
           </dl>
         </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
+        <div className="card p-6">
           <h2 className="font-medium">Campaign history</h2>
           {contact.campaignCount === 0 ? (
             <p className="mt-3 text-sm text-slate-500">

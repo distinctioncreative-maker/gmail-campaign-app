@@ -217,7 +217,7 @@ export function TemplateEditor({
         />
       )}
       <div className="grid gap-6 xl:grid-cols-2">
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="card p-6">
         {notice && <p className="mb-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
         {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {cssWarnings.map((w) => (
@@ -429,7 +429,7 @@ export function TemplateEditor({
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="card p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-medium">Preview</h2>
           <label className="flex items-center gap-2 text-xs text-slate-500">

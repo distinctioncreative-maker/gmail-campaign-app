@@ -41,7 +41,7 @@ export default async function SettingsPage({
           connectedEmail={connection?.status === "CONNECTED" ? connection.connectedEmail : null}
           lastRefreshAt={connection?.status === "CONNECTED" ? connection.lastRefreshAt : null}
         />
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
+        <div className="card p-6">
           <h2 className="font-medium">Sender profile &amp; sending defaults</h2>
           <p className="mt-1 text-sm text-slate-600">
             Fills in your signature, footer, and default campaign pacing.

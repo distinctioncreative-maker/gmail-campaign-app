@@ -122,7 +122,7 @@ export function SequenceBuilder({
       )}
       {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="card p-6">
         <label className="block text-sm font-medium text-slate-700">
           Sequence name
           <input value={name} onChange={(e) => setName(e.target.value)} className={`w-full ${input}`} placeholder="e.g. Two-touch follow-up" />
@@ -133,7 +133,7 @@ export function SequenceBuilder({
         </label>
       </div>
 
-      <div className="mt-4 rounded-2xl bg-white p-6 shadow-sm">
+      <div className="mt-4 card p-6">
         <div className="mb-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
           📧 Initial email is sent first. Then:
         </div>
@@ -284,7 +284,7 @@ export function SequenceBuilder({
         )}
       </div>
 
-      <div className="mt-4 rounded-2xl bg-white p-6 shadow-sm">
+      <div className="mt-4 card p-6">
         <h3 className="font-medium">Stop rules</h3>
         <p className="mt-1 text-sm text-slate-500">
           Follow-ups always stop when someone replies, unsubscribes, or bounces. These can&apos;t

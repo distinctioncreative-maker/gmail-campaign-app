@@ -57,7 +57,7 @@ export default async function TeamPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {cards.map(([label, value]) => (
-          <div key={label} className="rounded-2xl bg-white p-5 shadow-sm">
+          <div key={label} className="card p-5">
             <p className="text-sm text-slate-500">{label}</p>
             <p className="mt-1 text-2xl font-semibold">{value}</p>
           </div>
@@ -65,7 +65,7 @@ export default async function TeamPage() {
       </div>
 
       <h2 className="mt-10 mb-3 font-medium">Campaigns</h2>
-      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
+      <div className="overflow-x-auto card">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
             <tr>

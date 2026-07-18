@@ -92,7 +92,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
             : "No contacts match this search."}
         </p>
       ) : (
-        <div className="mt-3 overflow-x-auto rounded-2xl bg-white shadow-sm">
+        <div className="mt-3 overflow-x-auto card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
               <tr>

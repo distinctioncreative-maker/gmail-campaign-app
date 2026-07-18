@@ -51,7 +51,7 @@ export function CampaignControls({
     "rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50";
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="card p-4">
       {message && <p className="mb-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">{message}</p>}
       {error && <p className="mb-3 rounded-lg bg-red-50 p-2 text-sm text-red-700">{error}</p>}
 

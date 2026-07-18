@@ -90,7 +90,7 @@ export function OnboardingWizard({
         ))}
       </ol>
 
-      <div className="mt-6 rounded-2xl bg-white p-8 shadow-sm">
+      <div className="mt-6 card p-8">
         {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
         {step === 0 && (

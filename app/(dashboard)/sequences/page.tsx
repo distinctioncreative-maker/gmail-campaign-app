@@ -49,7 +49,7 @@ export default async function SequencesPage() {
             <Link
               key={s.sequenceId}
               href={`/sequences/${s.sequenceId}`}
-              className="rounded-2xl bg-white p-5 shadow-sm hover:shadow-md"
+              className="card p-5 hover:shadow-md"
             >
               <p className="font-medium">{s.name}</p>
               <p className="mt-1 text-sm text-slate-500">

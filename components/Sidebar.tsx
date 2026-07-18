@@ -25,13 +25,24 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
             onClick={onNavigate}
             data-tour={`nav-${item.href.replace("/", "")}`}
             aria-current={active ? "page" : undefined}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
+            className={`group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
               active
-                ? "bg-primary-soft text-primary"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                ? "bg-primary-soft text-primary shadow-sm"
+                : "text-slate-500 hover:bg-white hover:text-slate-900"
             }`}
           >
-            <span aria-hidden className="text-base leading-none">{item.icon}</span>
+            {active && (
+              <span
+                aria-hidden
+                className="brand-gradient absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full"
+              />
+            )}
+            <span
+              aria-hidden
+              className={`text-base leading-none transition ${active ? "" : "opacity-70 group-hover:opacity-100"}`}
+            >
+              {item.icon}
+            </span>
             {item.label}
           </Link>
         );
@@ -42,10 +53,10 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2 px-2">
+    <div className="flex items-center gap-2.5 px-2">
       <span
         aria-hidden
-        className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-xs font-bold text-white shadow-sm"
+        className="brand-gradient flex h-9 w-9 items-center justify-center rounded-2xl text-xs font-bold text-white shadow-md"
       >
         ML
       </span>
@@ -68,15 +79,25 @@ export function Sidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-white/70 p-4 backdrop-blur sm:flex">
-        <div className="mb-6 mt-1">
+      <aside className="glass sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border p-4 sm:flex">
+        <div className="mb-7 mt-1">
           <Brand />
         </div>
         <NavLinks items={items} />
-        <div className="mt-auto rounded-xl border border-border bg-white p-3">
-          <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
-          <p className="text-xs capitalize text-slate-500">{role.replace("_", " ").toLowerCase()}</p>
-          <SignOutButton />
+        <div className="mt-auto flex items-center gap-3 rounded-2xl border border-border bg-white/80 p-3">
+          <span
+            aria-hidden
+            className="brand-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+          >
+            {displayName.trim().charAt(0).toUpperCase() || "U"}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
+            <p className="text-xs capitalize text-slate-500">{role.replace("_", " ").toLowerCase()}</p>
+          </div>
+          <div className="ml-auto">
+            <SignOutButton />
+          </div>
         </div>
       </aside>
 
@@ -113,12 +134,22 @@ export function Sidebar({
               </button>
             </div>
             <NavLinks items={items} onNavigate={() => setMobileOpen(false)} />
-            <div className="mt-auto rounded-xl border border-border bg-white p-3">
-              <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
-              <p className="text-xs capitalize text-slate-500">
-                {role.replace("_", " ").toLowerCase()}
-              </p>
-              <SignOutButton />
+            <div className="mt-auto flex items-center gap-3 rounded-2xl border border-border bg-white p-3">
+              <span
+                aria-hidden
+                className="brand-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+              >
+                {displayName.trim().charAt(0).toUpperCase() || "U"}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
+                <p className="text-xs capitalize text-slate-500">
+                  {role.replace("_", " ").toLowerCase()}
+                </p>
+              </div>
+              <div className="ml-auto">
+                <SignOutButton />
+              </div>
             </div>
           </div>
         </div>

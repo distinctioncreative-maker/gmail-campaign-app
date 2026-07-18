@@ -66,7 +66,7 @@ export default async function SystemHealthPage() {
     <div>
       <h1 className="text-2xl font-semibold">System health</h1>
       <p className="mt-1 text-sm text-slate-600">Diagnostics for administrators.</p>
-      <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+      <div className="mt-6 overflow-hidden card">
         <table className="w-full text-left text-sm">
           <tbody>
             {rows.map(([label, value, ok]) => (

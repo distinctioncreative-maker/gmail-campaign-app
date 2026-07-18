@@ -64,7 +64,7 @@ export function AdminPanel({
     <div className="space-y-6">
       {notice && <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">{notice}</p>}
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="card p-6">
         <h2 className="font-medium">Team members</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -111,7 +111,7 @@ export function AdminPanel({
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="card p-6">
         <h2 className="font-medium">Organization policies</h2>
 
         <label className="mt-4 block text-sm font-medium text-slate-700">

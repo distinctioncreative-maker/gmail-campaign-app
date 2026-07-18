@@ -77,12 +77,17 @@ export default async function HomePage() {
       {/* Stat cards */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="card p-5">
+          <div key={s.label} className="card card-hover overflow-hidden p-5">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-500">{s.label}</p>
-              <span aria-hidden className="text-lg opacity-80">{s.icon}</span>
+              <p className="text-sm font-medium text-slate-500">{s.label}</p>
+              <span
+                aria-hidden
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-base"
+              >
+                {s.icon}
+              </span>
             </div>
-            <p className={`mt-2 text-3xl font-semibold tracking-tight ${s.tone}`}>{s.value}</p>
+            <p className={`mt-3 text-3xl font-semibold tracking-tight ${s.tone}`}>{s.value}</p>
           </div>
         ))}
       </div>
@@ -106,9 +111,14 @@ export default async function HomePage() {
             { href: "/leads", icon: "👥", title: "Import leads", desc: "Paste from Salesforce or upload a CSV." },
             { href: "/templates/new", icon: "✉️", title: "Build a template", desc: "Design a reusable, personalized email." },
           ].map((a) => (
-            <Link key={a.href} href={a.href} className="card group p-5 transition hover:-translate-y-0.5">
-              <span aria-hidden className="text-2xl">{a.icon}</span>
-              <p className="mt-2 font-medium group-hover:text-primary">{a.title}</p>
+            <Link key={a.href} href={a.href} className="card card-hover group p-5">
+              <span
+                aria-hidden
+                className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-xl shadow-md"
+              >
+                {a.icon}
+              </span>
+              <p className="mt-3 font-semibold group-hover:text-primary">{a.title}</p>
               <p className="mt-1 text-sm text-slate-500">{a.desc}</p>
             </Link>
           ))}

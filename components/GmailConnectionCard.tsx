@@ -22,7 +22,7 @@ export function GmailConnectionCard({
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm">
+    <div className="card p-6">
       <h2 className="font-medium">Gmail connection</h2>
       <p className="mt-1 text-sm text-slate-600">
         Campaigns send through your own Gmail account. The app can create and send

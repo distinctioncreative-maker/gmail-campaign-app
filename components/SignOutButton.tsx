@@ -10,9 +10,11 @@ export function SignOutButton() {
         await fetch("/api/auth/session", { method: "DELETE" });
         router.push("/sign-in");
       }}
-      className="mt-2 w-full rounded-lg px-2 py-1.5 text-left text-sm text-slate-500 hover:bg-slate-100"
+      aria-label="Sign out"
+      title="Sign out"
+      className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
     >
-      Sign out
+      <span aria-hidden>⎋</span>
     </button>
   );
 }

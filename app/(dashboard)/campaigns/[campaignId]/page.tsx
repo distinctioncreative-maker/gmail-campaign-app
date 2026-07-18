@@ -87,7 +87,7 @@ export default async function CampaignDetailPage({
         </div>
         <div>
           <h2 className="mb-3 font-medium">Activity</h2>
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <div className="card p-4">
             {events.length === 0 ? (
               <p className="text-sm text-slate-500">Nothing yet.</p>
             ) : (

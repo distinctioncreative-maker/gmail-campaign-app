@@ -77,7 +77,7 @@ export function RecipientTable({
   const canSkip = ["ACTIVE", "PAUSED", "READY", "DRAFT"].includes(campaignStatus);
 
   return (
-    <div className="rounded-2xl bg-white shadow-sm">
+    <div className="card">
       <div className="flex gap-1 border-b border-slate-100 p-3">
         {FILTERS.map((f) => (
           <button

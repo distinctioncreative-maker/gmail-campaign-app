@@ -56,20 +56,22 @@ export default async function DashboardLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Always-visible sending-mode banner so no one is ever unsure. */}
         {sending.testMode ? (
-          <div className="flex items-center justify-center gap-2 bg-amber-50 px-4 py-1.5 text-center text-xs font-medium text-amber-800">
+          <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-50 to-amber-100/60 px-4 py-1.5 text-center text-xs font-medium text-amber-800">
             <span aria-hidden>🛡️</span>
             Test mode — emails only go to your test address, never real recipients.
           </div>
         ) : (
-          <div className="flex items-center justify-center gap-2 bg-green-600 px-4 py-1.5 text-center text-xs font-semibold text-white">
+          <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 px-4 py-1.5 text-center text-xs font-semibold text-white">
             <span aria-hidden>●</span>
             Live — campaigns send real emails to real recipients.
           </div>
         )}
-        <div className="hidden items-center justify-end border-b border-border bg-white/60 px-6 py-2.5 backdrop-blur sm:flex">
+        <div className="glass sticky top-0 z-10 hidden items-center justify-end border-b border-border px-6 py-2.5 sm:flex">
           <NotificationBell />
         </div>
-        <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">
+          <div className="animate-rise">{children}</div>
+        </main>
       </div>
       <ProductTour />
     </div>

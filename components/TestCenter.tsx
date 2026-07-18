@@ -49,7 +49,7 @@ export function TestCenter() {
         {CHECKS.map((c) => {
           const st = status[c.id] ?? "idle";
           return (
-            <div key={c.id} className="rounded-2xl bg-white p-5 shadow-sm">
+            <div key={c.id} className="card p-5">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-medium">{c.label}</p>
