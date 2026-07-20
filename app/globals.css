@@ -137,6 +137,36 @@ h1, h2, h3 {
 }
 .btn-ghost:hover { background: #f6f7fb; border-color: #dfe3ee; }
 
+/* ── Form controls ───────────────────────────────────────── */
+/* Consistent feel across every input without touching each component. */
+input, select, textarea {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+input::placeholder, textarea::placeholder { color: #98a2b3; }
+select {
+  background-color: var(--surface);
+  cursor: pointer;
+}
+/* Softer, on-brand focus glow for text-like controls. */
+input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
+
+/* Optional shared field class for new forms. */
+.field-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background: var(--surface);
+}
+
 /* Subtle entrance for page content. */
 @keyframes rise {
   from { opacity: 0; transform: translateY(6px); }

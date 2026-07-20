@@ -274,20 +274,41 @@ export function CampaignWizard() {
           }}
         />
       )}
-      <ol className="flex flex-wrap gap-2 text-xs" aria-label="Campaign steps">
+      <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
+        <span className="font-medium text-slate-600">
+          Step {step + 1} of {STEPS.length} · {STEPS[step]}
+        </span>
+        <span>{Math.round(((step + 1) / STEPS.length) * 100)}%</span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+        <div
+          className="h-full rounded-full brand-gradient transition-all duration-300"
+          style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+        />
+      </div>
+      <ol className="mt-3 hidden flex-wrap gap-1.5 text-xs sm:flex" aria-label="Campaign steps">
         {STEPS.map((s, i) => (
-          <li
-            key={s}
-            className={`rounded-full px-3 py-1 ${
-              i < step ? "bg-green-100 text-green-700" : i === step ? "bg-primary text-white" : "bg-slate-100 text-slate-400"
-            }`}
-          >
-            {s}
+          <li key={s}>
+            <button
+              type="button"
+              onClick={() => i <= step && setStep(i)}
+              disabled={i > step}
+              className={`rounded-full px-3 py-1 transition ${
+                i < step
+                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  : i === step
+                    ? "bg-primary text-white"
+                    : "bg-slate-100 text-slate-400"
+              }`}
+            >
+              {i < step && "✓ "}
+              {s}
+            </button>
           </li>
         ))}
       </ol>
 
-      <div className="mt-6 card p-8">
+      <div className="mt-5 card animate-rise p-8">
         {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
         {step === 0 && (
@@ -687,7 +708,7 @@ export function CampaignWizard() {
             <button
               onClick={() => setStep((s) => s + 1)}
               disabled={nextDisabled}
-              className="rounded-xl bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+              className="btn-primary px-6 py-2 text-sm disabled:opacity-50"
             >
               Continue →
             </button>
