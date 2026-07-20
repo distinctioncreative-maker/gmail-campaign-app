@@ -24,6 +24,15 @@ export function PasteLeads() {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Could not read that list.");
+      if (!body.leads || body.leads.length === 0) {
+        // Don't switch to an empty preview table — keep the paste box and
+        // explain what to try instead.
+        setError(
+          body.globalWarnings?.[0] ??
+            "We couldn’t find any leads in that text. Paste the list straight from Salesforce and try again."
+        );
+        return;
+      }
       setLeads(body.leads);
       setGlobalWarnings(body.globalWarnings);
     } catch (err) {
@@ -44,12 +53,20 @@ export function PasteLeads() {
           <label htmlFor="paste-box" className="block text-sm font-medium text-slate-700">
             Paste your Salesforce lead list
           </label>
+          <p className="mt-1 text-sm text-slate-500">
+            Copy your leads straight out of Salesforce and paste them here — either
+            format works: the list view with columns (First Name, Last Name, Email…)
+            or the row-by-row layout that starts each lead with “Select Item”. We’ll
+            figure out the columns for you.
+          </p>
           <textarea
             id="paste-box"
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={10}
-            placeholder={"Select Item 1\nJason Main\nMainmastics Llc\n…"}
+            placeholder={
+              "Paste from Salesforce here.\n\nWorks with the column list view:\nFirst Name  Last Name  Email  Phone …\n1  Jason  Main  jason@example.com …\n\nor the row layout:\nSelect Item 1\nJason Main\nMainmastics Llc\n…"
+            }
             className="mt-2 w-full rounded-xl border border-slate-200 p-3 font-mono text-sm focus:border-primary focus:outline-none"
           />
           <button

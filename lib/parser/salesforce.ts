@@ -165,11 +165,19 @@ export function parseSalesforceText(text: string): ParseResult {
   const records = markerSplit.slice(1);
 
   if (records.length === 0) {
+    // No "Select Item N" markers. Try the column / grid list-view format,
+    // where a row of column-name headers is followed by numbered records.
+    const columnResult = parseSalesforceColumns(normalized);
+    if (columnResult) return columnResult;
+
     return {
       leads: [],
       totalRecords: 0,
       globalWarnings: [
-        'No records found. Expected each lead to start with a "Select Item N" line — paste the list exactly as copied from Salesforce.',
+        "No leads found. Paste your Salesforce list two ways: either with each " +
+          'record starting on a "Select Item N" line, or copied straight from the ' +
+          "column list view (a header row like First Name, Last Name, Email… " +
+          "followed by numbered rows).",
       ],
     };
   }
@@ -180,4 +188,205 @@ export function parseSalesforceText(text: string): ParseResult {
 
   const leads = records.map((record, i) => parseRecord(record, i));
   return { leads, totalRecords: leads.length, globalWarnings };
+}
+
+/* ------------------------------------------------------------------ *
+ * Column / grid list-view format
+ *
+ * Salesforce list views copy as a header row of column names followed by
+ * one row per lead. Each data row begins with a bare row-number line, then
+ * one cell per column (in header order). Empty cells copy as "-". Example
+ * (after tabs are turned into line breaks):
+ *
+ *   Time Zone
+ *   Create Date
+ *   First Name
+ *   … (rest of the column names)
+ *   Email Opt Out
+ *   1
+ *   (GMT-05:00) Eastern
+ *   7/1/2026, 9:00 AM
+ *   Jason
+ *   … (rest of row 1's cells)
+ *   feature not included
+ *   2
+ *   …
+ * ------------------------------------------------------------------ */
+
+type GridField =
+  | "firstName"
+  | "lastName"
+  | "fullName"
+  | "businessName"
+  | "email"
+  | "phone"
+  | "region"
+  | "requestedAmount"
+  | "leadSource"
+  | "sourceCreatedAt"
+  | "sourceUpdatedAt"
+  | "sourceRecordId"
+  | "emailOptOut"
+  | "skip";
+
+const GRID_HEADER_PATTERNS: Array<[RegExp, GridField]> = [
+  [/^first ?name$/i, "firstName"],
+  [/^last ?name$/i, "lastName"],
+  [/^(full ?name|name|contact(?: full)? name)$/i, "fullName"],
+  [/^(business|company|company ?\/? ?account|account(?: name)?|business ?name|company ?name)$/i, "businessName"],
+  [/^(e-?mail|email address)$/i, "email"],
+  [/^(phone|phone ?number|mobile|telephone)$/i, "phone"],
+  [/^(region|time ?zone|territory)$/i, "region"],
+  [/^(amount ?requested|requested ?amount|amount|funding ?amount|loan ?amount)$/i, "requestedAmount"],
+  [/^(lead ?source|source)$/i, "leadSource"],
+  [/^(create(?:d)? ?date|created(?: at)?)$/i, "sourceCreatedAt"],
+  [/^(last ?modified|modified|updated(?: date| at)?)$/i, "sourceUpdatedAt"],
+  [/^(record ?id|source ?id|lead ?id|id)$/i, "sourceRecordId"],
+  [/^(email ?opt ?out|opt ?out|opted ?out|do ?not ?email)$/i, "emailOptOut"],
+];
+
+function matchGridHeader(line: string): GridField | null {
+  const trimmed = line.trim();
+  const match = GRID_HEADER_PATTERNS.find(([re]) => re.test(trimmed));
+  return match ? match[1] : null;
+}
+
+const BARE_INT_RE = /^\d{1,7}$/;
+
+/** A copied cell is empty when Salesforce shows a dash. */
+function cleanCell(value: string): string {
+  const v = value.trim();
+  return v === "-" || v === "—" || v === "--" ? "" : v;
+}
+
+function parseGridOptOut(value: string): boolean | null {
+  const v = cleanCell(value).toLowerCase();
+  if (!v) return null;
+  // "feature not included" appears when the org hasn't enabled the opt-out
+  // feature — nobody is opted out, so treat it as false.
+  if (v.includes("feature not included") || v.includes("not included")) return false;
+  if (["true", "yes", "y", "1", "checked", "✓"].includes(v)) return true;
+  if (["false", "no", "n", "0", "unchecked"].includes(v)) return false;
+  return null;
+}
+
+/**
+ * Parse the column / grid list-view format. Returns null when the text
+ * doesn't look like that format so the caller can report a helpful error.
+ */
+export function parseSalesforceColumns(normalized: string): ParseResult | null {
+  const lines = normalized
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  // The header row is everything before the first bare row-number line.
+  const firstRowIdx = lines.findIndex((l) => BARE_INT_RE.test(l));
+  if (firstRowIdx < 2) return null; // need at least a couple of header cells
+
+  const headerLines = lines.slice(0, firstRowIdx);
+  const columns = headerLines.map(matchGridHeader);
+  const recognized = columns.filter((c) => c !== null) as GridField[];
+
+  // Confidence gate: must recognize a few columns, and enough to identify a
+  // person (email and/or a name). Otherwise this isn't the grid format.
+  const hasEmail = recognized.includes("email");
+  const hasName =
+    recognized.includes("firstName") ||
+    recognized.includes("lastName") ||
+    recognized.includes("fullName");
+  if (recognized.length < 3 || !(hasEmail || hasName)) return null;
+
+  const numColumns = columns.length;
+  const globalWarnings: string[] = [];
+
+  // Data rows: [rowNumber][cell × numColumns] repeated.
+  const records: string[][] = [];
+  let i = firstRowIdx;
+  while (i < lines.length) {
+    if (!BARE_INT_RE.test(lines[i])) {
+      // Alignment slipped — skip the stray line and resync on the next number.
+      i += 1;
+      continue;
+    }
+    i += 1; // consume the row-number marker
+    const cells = lines.slice(i, i + numColumns);
+    i += numColumns;
+    if (cells.some((c) => c.length > 0)) records.push(cells);
+  }
+
+  if (records.length === 0) return null;
+
+  const leads = records.map((cells, index) => buildGridLead(cells, columns, index));
+  return { leads, totalRecords: leads.length, globalWarnings };
+}
+
+function buildGridLead(
+  cells: string[],
+  columns: (GridField | null)[],
+  index: number
+): ParsedLead {
+  const warnings: string[] = [];
+  let confidence = 1;
+
+  const raw = new Map<GridField, string>();
+  columns.forEach((field, col) => {
+    if (!field || field === "skip") return;
+    const value = cleanCell(cells[col] ?? "");
+    if (value && !raw.has(field)) raw.set(field, value);
+  });
+  const get = (f: GridField): string => raw.get(f) ?? "";
+
+  let firstName = get("firstName");
+  let lastName = get("lastName");
+  let fullName = get("fullName");
+  if (!fullName && (firstName || lastName)) {
+    fullName = [firstName, lastName].filter(Boolean).join(" ");
+  } else if (fullName && !firstName && !lastName) {
+    ({ firstName, lastName } = splitFullName(fullName));
+  }
+  if (!fullName) {
+    warnings.push("Missing contact name");
+    confidence -= 0.3;
+  }
+
+  const email = get("email") || null;
+  const emailValid = email !== null && isValidEmail(email);
+  if (!email) {
+    warnings.push("Missing email address");
+    confidence -= 0.35;
+  } else if (!emailValid) {
+    warnings.push(`Email looks invalid: ${email}`);
+    confidence -= 0.3;
+  }
+
+  const businessName = get("businessName");
+  if (!businessName) {
+    warnings.push("Missing business name");
+    confidence -= 0.1;
+  }
+
+  const emailOptOut = parseGridOptOut(get("emailOptOut"));
+
+  return {
+    index,
+    fullName,
+    firstName,
+    lastName,
+    businessName,
+    phone: get("phone") || null,
+    region: get("region") || null,
+    requestedAmount: parseAmount(get("requestedAmount")),
+    email,
+    emailValid,
+    emailOptOut,
+    neverSwitchedFromNew: null,
+    leadSource: get("leadSource") || null,
+    sourceCreatedAt: get("sourceCreatedAt") || null,
+    sourceUpdatedAt: get("sourceUpdatedAt") || null,
+    sourceRecordId: get("sourceRecordId") || null,
+    rawText: cells.join(" | "),
+    warnings,
+    confidence: Math.max(0, Math.round(confidence * 100) / 100),
+  };
 }

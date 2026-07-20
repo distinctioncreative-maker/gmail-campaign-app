@@ -33,6 +33,25 @@ describe("renderTemplate", () => {
     expect(unresolved).toEqual(["phone"]);
   });
 
+  it("drops an empty signature instead of reporting it unresolved", () => {
+    const { output, unresolved } = renderTemplate("Thanks,\n{{signature}}", {
+      signature: "",
+    });
+    expect(output).toBe("Thanks,\n");
+    expect(unresolved).toEqual([]);
+  });
+
+  it("drops a missing signature (no value supplied at all)", () => {
+    const { output, unresolved } = renderTemplate("Cheers {{signature}}", {});
+    expect(output).toBe("Cheers ");
+    expect(unresolved).toEqual([]);
+  });
+
+  it("still fills the signature when a value is present", () => {
+    const { output } = renderTemplate("{{signature}}", { signature: "Alex · Advisor" });
+    expect(output).toBe("Alex · Advisor");
+  });
+
   it("fake preview data covers every spec placeholder", () => {
     const template =
       "{{first_name}}{{last_name}}{{full_name}}{{business_name}}{{email}}{{phone}}{{region}}{{requested_amount}}{{lead_source}}{{sender_name}}{{sender_title}}{{sender_phone}}{{sender_email}}{{company_name}}{{company_website}}{{physical_address}}{{unsubscribe_text}}";

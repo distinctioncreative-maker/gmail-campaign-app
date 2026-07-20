@@ -121,7 +121,10 @@ export function TemplateEditor({
       setHtml(body.draft.htmlBody);
       if (!name) setName(body.draft.subject);
       setMode("visual");
-      setNotice("Draft imported — you can now personalize it with placeholders.");
+      setNotice(
+        "Draft imported — you can now personalize it with placeholders. Your signature " +
+          "is already part of this draft, so don’t add {{signature}}; we won’t append one."
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not import that draft.");
     } finally {

@@ -26,6 +26,14 @@ export type Placeholder = (typeof PLACEHOLDERS)[number];
 
 export type PlaceholderValues = Partial<Record<Placeholder, string>>;
 
+/**
+ * Placeholders that quietly disappear when they have no value, instead of
+ * being reported unresolved and blocking a launch. The signature is optional:
+ * leaving it blank in Settings (or when a Gmail draft already includes your
+ * own signature) simply removes {{signature}} rather than printing it.
+ */
+export const OPTIONAL_PLACEHOLDERS: ReadonlySet<string> = new Set(["signature"]);
+
 const PLACEHOLDER_RE = /\{\{\s*([a-z_]+)\s*\}\}/g;
 
 export function valuesFromContact(
@@ -99,6 +107,9 @@ export function renderTemplate(template: string, values: PlaceholderValues): Ren
   const output = template.replace(PLACEHOLDER_RE, (whole, name: string) => {
     const value = values[name as Placeholder];
     if (value === undefined || value === "") {
+      // Optional placeholders (e.g. the signature) collapse to nothing when
+      // empty so a blank signature turns the tag off instead of blocking.
+      if (OPTIONAL_PLACEHOLDERS.has(name)) return "";
       unresolved.add(name);
       return whole;
     }

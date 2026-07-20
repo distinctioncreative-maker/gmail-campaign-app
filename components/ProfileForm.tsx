@@ -123,7 +123,12 @@ export function ProfileForm({
           Paste your own signature (plain text or HTML from Gmail). Drop{" "}
           <code className="rounded bg-slate-100 px-1">{"{{signature}}"}</code> into any template
           where you want it to appear — then you don&apos;t need to fill in the name/title/phone
-          fields above unless a template uses those placeholders directly.
+          fields above unless a template uses those placeholders directly.{" "}
+          <strong>Leave this blank to turn the signature off</strong> — handy when your email
+          already includes a signature (for example, a Gmail draft you imported). A blank
+          signature just removes{" "}
+          <code className="rounded bg-slate-100 px-1">{"{{signature}}"}</code> instead of
+          printing it.
         </span>
         <textarea
           value={profile.signature}
