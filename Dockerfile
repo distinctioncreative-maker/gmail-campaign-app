@@ -8,6 +8,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Give the build room on memory-constrained Cloud Build machines so the
+# Next production build doesn't OOM ("Ineffective mark-compacts near heap
+# limit").
+ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN npm run build
 
 FROM node:22-slim AS runner
