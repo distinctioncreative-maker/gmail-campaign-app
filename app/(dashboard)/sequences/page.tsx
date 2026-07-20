@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listSequences } from "@/lib/repositories/sequences";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const UNIT_LABEL: Record<string, string> = {
   MINUTES: "min",
@@ -15,23 +16,18 @@ export default async function SequencesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Follow-up sequences</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Automatic follow-ups that stop the moment someone replies.
-          </p>
-        </div>
-        <Link
-          href="/sequences/new"
-          className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
-        >
-          New sequence
-        </Link>
-      </div>
+      <PageHeader
+        title="Follow-up sequences"
+        description="Automatic follow-ups that stop the moment someone replies."
+        actions={
+          <Link href="/sequences/new" className="btn-primary px-5 py-2.5 text-sm">
+            New sequence
+          </Link>
+        }
+      />
 
       {sequences.length === 0 ? (
-        <div className="mt-6 rounded-2xl bg-white p-10 text-center shadow-sm">
+        <div className="card p-10 text-center">
           <p className="text-slate-600">No sequences yet.</p>
           <p className="mt-1 text-sm text-slate-500">
             Build a timeline of follow-ups once, then reuse it in any campaign.

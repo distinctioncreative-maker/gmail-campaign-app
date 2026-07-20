@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { listTemplates } from "@/lib/repositories/templates";
 import { TemplateListActions } from "@/components/templates/TemplateListActions";
 import { LocalTime } from "@/components/LocalTime";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function TemplatesPage() {
   const ctx = await requireUser();
@@ -12,23 +13,18 @@ export default async function TemplatesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Templates</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Reusable emails with placeholders that fill in each lead&apos;s details.
-          </p>
-        </div>
-        <Link
-          href="/templates/new"
-          className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
-        >
-          New template
-        </Link>
-      </div>
+      <PageHeader
+        title="Templates"
+        description="Reusable emails with placeholders that fill in each lead's details."
+        actions={
+          <Link href="/templates/new" className="btn-primary px-5 py-2.5 text-sm">
+            New template
+          </Link>
+        }
+      />
 
       {active.length === 0 ? (
-        <div className="mt-6 rounded-2xl bg-white p-10 text-center shadow-sm">
+        <div className="card p-10 text-center">
           <p className="text-slate-600">No templates yet.</p>
           <p className="mt-1 text-sm text-slate-500">
             Start from a ready-made layout, paste your own HTML, or import a Gmail draft.

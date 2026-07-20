@@ -4,6 +4,7 @@ import {
   listSuppressions,
 } from "@/lib/repositories/suppressions";
 import { SuppressionsManager } from "@/components/SuppressionsManager";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function SuppressionsPage() {
   const ctx = await requireUser();
@@ -25,14 +26,11 @@ export default async function SuppressionsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Do-not-email list</h1>
-      <p className="mt-1 text-sm text-slate-600">
-        People on this list are automatically excluded from every campaign — imports,
-        sends, and follow-ups all check it. Entries are never removed automatically.
-      </p>
-      <div className="mt-6">
-        <SuppressionsManager rows={rows} isAdmin={ctx.role === "ADMIN"} />
-      </div>
+      <PageHeader
+        title="Do-not-email list"
+        description="People on this list are automatically excluded from every campaign — imports, sends, and follow-ups all check it. Entries are never removed automatically."
+      />
+      <SuppressionsManager rows={rows} isAdmin={ctx.role === "ADMIN"} />
     </div>
   );
 }

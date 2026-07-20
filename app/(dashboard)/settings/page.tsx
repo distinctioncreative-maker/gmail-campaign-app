@@ -3,6 +3,7 @@ import { getConnectionPublic } from "@/lib/repositories/gmailConnections";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { GmailConnectionCard } from "@/components/GmailConnectionCard";
 import { ProfileForm } from "@/components/ProfileForm";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function SettingsPage({
   searchParams,
@@ -18,7 +19,7 @@ export default async function SettingsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Settings</h1>
+      <PageHeader title="Settings" description="Your Gmail connection, sender profile, signature, and default pacing." />
 
       {gmail === "connected" && (
         <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">

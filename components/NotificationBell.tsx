@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/ui/Icon";
+import { LocalTime } from "@/components/LocalTime";
 
 interface Notification {
   notificationId: string;
@@ -60,7 +62,7 @@ export function NotificationBell() {
         aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
         className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100"
       >
-        <span aria-hidden className="text-lg">🔔</span>
+        <Icon name="bell" size={20} />
         {unread > 0 && (
           <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white">
             {unread}
@@ -79,9 +81,7 @@ export function NotificationBell() {
                 <div key={n.notificationId} className="border-b border-slate-50 px-4 py-3 last:border-0">
                   <p className="text-sm font-medium">{n.title}</p>
                   <p className="text-sm text-slate-600">{n.body}</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {new Date(n.createdAt).toLocaleString()}
-                  </p>
+                  <LocalTime value={n.createdAt} className="mt-1 block text-xs text-slate-400" />
                 </div>
               ))
             )}

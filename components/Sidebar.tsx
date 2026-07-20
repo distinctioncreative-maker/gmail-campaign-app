@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SignOutButton } from "@/components/SignOutButton";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 export interface NavItem {
   href: string;
   label: string;
-  icon: string;
+  icon: IconName;
 }
 
 function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
@@ -37,12 +38,11 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
                 className="brand-gradient absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full"
               />
             )}
-            <span
-              aria-hidden
-              className={`text-base leading-none transition ${active ? "" : "opacity-70 group-hover:opacity-100"}`}
-            >
-              {item.icon}
-            </span>
+            <Icon
+              name={item.icon}
+              size={18}
+              className={`shrink-0 transition ${active ? "" : "opacity-60 group-hover:opacity-100"}`}
+            />
             {item.label}
           </Link>
         );

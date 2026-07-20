@@ -6,22 +6,22 @@ import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ProductTour } from "@/components/tour/ProductTour";
 
 const BASE_NAV: NavItem[] = [
-  { href: "/home", label: "Home", icon: "🏠" },
-  { href: "/campaigns", label: "Campaigns", icon: "🚀" },
-  { href: "/leads", label: "Leads", icon: "👥" },
-  { href: "/templates", label: "Templates", icon: "✉️" },
-  { href: "/sequences", label: "Follow-Ups", icon: "🔁" },
-  { href: "/suppressions", label: "Do Not Email", icon: "🚫" },
-  { href: "/reports", label: "Reports", icon: "📊" },
-  { href: "/settings", label: "Settings", icon: "⚙️" },
-  { href: "/help", label: "Help", icon: "💬" },
+  { href: "/home", label: "Home", icon: "home" },
+  { href: "/campaigns", label: "Campaigns", icon: "rocket" },
+  { href: "/leads", label: "Leads", icon: "users" },
+  { href: "/templates", label: "Templates", icon: "mail" },
+  { href: "/sequences", label: "Follow-Ups", icon: "repeat" },
+  { href: "/suppressions", label: "Do Not Email", icon: "ban" },
+  { href: "/reports", label: "Reports", icon: "chart" },
+  { href: "/settings", label: "Settings", icon: "settings" },
+  { href: "/help", label: "Help", icon: "help" },
 ];
 
-const MANAGER_NAV: NavItem[] = [{ href: "/team", label: "Team", icon: "📈" }];
+const MANAGER_NAV: NavItem[] = [{ href: "/team", label: "Team", icon: "team" }];
 const ADMIN_NAV: NavItem[] = [
-  { href: "/team", label: "Team", icon: "📈" },
-  { href: "/admin", label: "Administration", icon: "🛠️" },
-  { href: "/system-health", label: "System Health", icon: "❤️" },
+  { href: "/team", label: "Team", icon: "team" },
+  { href: "/admin", label: "Administration", icon: "admin" },
+  { href: "/system-health", label: "System Health", icon: "health" },
 ];
 
 function navForRole(role: string): NavItem[] {

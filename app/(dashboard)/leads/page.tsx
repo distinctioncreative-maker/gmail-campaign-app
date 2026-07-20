@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { listContacts } from "@/lib/repositories/contacts";
 import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function LeadsPage() {
   const ctx = await requireUser();
@@ -22,14 +23,9 @@ export default async function LeadsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Leads</h1>
-      <p className="mt-1 text-sm text-slate-600">
-        Import leads, then review who is ready to contact.
-      </p>
+      <PageHeader title="Leads" description="Import leads, then review who is ready to contact." />
 
-      <div className="mt-6">
-        <ImportChooser />
-      </div>
+      <ImportChooser />
 
       <div className="mt-10">
         <h2 className="mb-3 font-medium">Your contacts ({rows.length})</h2>
