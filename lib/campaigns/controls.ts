@@ -1,6 +1,6 @@
 import "server-only";
 import type { AuthContext } from "@/lib/auth/requireUser";
-import type { Campaign, QueueItem } from "@/schemas/campaign";
+import { CampaignScheduleSchema, type Campaign, type CampaignSchedule, type QueueItem } from "@/schemas/campaign";
 import {
   getCampaign,
   listQueueItems,
@@ -97,6 +97,61 @@ export async function stopCampaign(ctx: AuthContext, campaign: Campaign): Promis
     recipientEmail: null,
   });
   return "Campaign stopped.";
+}
+
+/**
+ * Change a campaign's sending pace (daily limit, batch size, per-email delay,
+ * inter-batch gap, send window) after launch, and re-space every remaining
+ * email with the new settings. Also the "override daily limit" path: raise
+ * dailySendLimit and the emails parked for tomorrow are pulled back to today.
+ */
+export async function updatePace(
+  ctx: AuthContext,
+  campaign: Campaign,
+  patch: Partial<CampaignSchedule>
+): Promise<string> {
+  const owner = ownerFromCtx(ctx);
+  const schedule = CampaignScheduleSchema.parse({ ...campaign.schedule, ...patch });
+  await updateCampaign(owner, campaign.campaignId, { schedule });
+
+  // Only ACTIVE campaigns have live tasks to re-space; for others the new
+  // pace is saved and applied when they next resume.
+  if (campaign.status !== "ACTIVE") {
+    return "Sending pace updated. It applies the next time this campaign sends.";
+  }
+
+  const open = await listQueueItems(owner, campaign.campaignId, [...OPEN_STATUSES]);
+  const times = computeSendTimestamps(Date.now() + 30_000, open.length, schedule);
+  for (let i = 0; i < open.length; i++) {
+    const item = open[i];
+    if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
+    await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+      status: "SCHEDULED",
+      scheduledAt: times[i],
+      lastError: null,
+    });
+    const taskName = await enqueueTask(
+      "send-message",
+      {
+        organizationId: owner.organizationId,
+        ownerUserId: owner.userId,
+        campaignId: campaign.campaignId,
+        queueItemId: item.queueItemId,
+      },
+      times[i]
+    );
+    if (taskName) {
+      await updateQueueItem(owner, campaign.campaignId, item.queueItemId, { cloudTaskName: taskName });
+    }
+  }
+
+  await recordEvent(owner, campaign.campaignId, {
+    type: "PACE_UPDATED",
+    message: `Sending pace updated — up to ${schedule.dailySendLimit}/day, ${schedule.emailsPerBatch} per batch. ${open.length} remaining emails rescheduled.`,
+    severity: "INFO",
+    recipientEmail: null,
+  });
+  return `Pace updated. ${open.length} remaining emails rescheduled.`;
 }
 
 export async function cancelRemaining(ctx: AuthContext, campaign: Campaign): Promise<string> {

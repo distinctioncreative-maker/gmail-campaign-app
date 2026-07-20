@@ -91,6 +91,13 @@ export default async function CampaignDetailPage({
           campaignId={campaign.campaignId}
           status={campaign.status}
           followupsPaused={campaign.followupsPaused}
+          pace={{
+            dailySendLimit: campaign.schedule.dailySendLimit,
+            emailsPerBatch: campaign.schedule.emailsPerBatch,
+            minDelaySeconds: campaign.schedule.minDelaySeconds,
+            maxDelaySeconds: campaign.schedule.maxDelaySeconds,
+            interBatchDelayMinutes: campaign.schedule.interBatchDelayMinutes,
+          }}
         />
       </div>
 

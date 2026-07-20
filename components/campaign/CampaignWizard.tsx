@@ -52,6 +52,8 @@ const PRESETS = {
   },
 } as const;
 
+type PresetKey = keyof typeof PRESETS | "custom";
+
 export function CampaignWizard() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -71,7 +73,14 @@ export function CampaignWizard() {
   const [sequences, setSequences] = useState<WizardSequence[]>([]);
   const [sequenceId, setSequenceId] = useState<string | null>(null);
 
-  const [preset, setPreset] = useState<keyof typeof PRESETS>("balanced");
+  const [preset, setPreset] = useState<PresetKey>("balanced");
+  const [customPace, setCustomPace] = useState({
+    emailsPerBatch: 5,
+    minDelaySeconds: 5,
+    maxDelaySeconds: 10,
+    interBatchDelayMinutes: 2,
+    dailySendLimit: 100,
+  });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
   const [priorPolicy, setPriorPolicy] = useState("ONLY_NEW");
   const [confirmText, setConfirmText] = useState("");
@@ -92,6 +101,7 @@ export function CampaignWizard() {
       templateId,
       sequenceId,
       preset,
+      customPace,
       draftStrategy,
       priorPolicy,
     }
@@ -106,6 +116,7 @@ export function CampaignWizard() {
     setTemplateId(restored.templateId);
     setSequenceId(restored.sequenceId);
     setPreset(restored.preset);
+    if (restored.customPace) setCustomPace(restored.customPace);
     setDraftStrategy(restored.draftStrategy);
     setPriorPolicy(restored.priorPolicy);
     dismissRestored();
@@ -176,7 +187,7 @@ export function CampaignWizard() {
             description,
             initialTemplateId: templateId,
             sequenceId,
-            schedule: PRESETS[preset].schedule,
+            schedule: preset === "custom" ? customPace : PRESETS[preset].schedule,
             priorContactPolicy: priorPolicy,
             draftStrategy,
           }),
@@ -496,14 +507,14 @@ export function CampaignWizard() {
         {step === 4 && (
           <>
             <h2 className="text-xl font-semibold">Pace and schedule</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {(Object.entries(PRESETS) as Array<[keyof typeof PRESETS, (typeof PRESETS)[keyof typeof PRESETS]]>).map(
                 ([key, p]) => (
                   <button
                     key={key}
                     onClick={() => setPreset(key)}
-                    className={`rounded-xl border p-4 text-left ${
-                      preset === key ? "border-primary bg-blue-50" : "border-slate-200 hover:border-primary"
+                    className={`rounded-xl border p-4 text-left transition ${
+                      preset === key ? "border-primary bg-primary-soft" : "border-slate-200 hover:border-primary"
                     }`}
                   >
                     <p className="font-medium">{p.label}</p>
@@ -511,7 +522,53 @@ export function CampaignWizard() {
                   </button>
                 )
               )}
+              <button
+                onClick={() => setPreset("custom")}
+                className={`rounded-xl border p-4 text-left transition ${
+                  preset === "custom" ? "border-primary bg-primary-soft" : "border-slate-200 hover:border-primary"
+                }`}
+              >
+                <p className="font-medium">Custom</p>
+                <p className="mt-1 text-xs text-slate-500">Set the numbers yourself</p>
+              </button>
             </div>
+
+            {preset === "custom" && (
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <p className="text-sm font-semibold text-slate-700">Your sending rules</p>
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                  {([
+                    ["dailySendLimit", "Emails per day", "Cap for one day", 1, 2000],
+                    ["emailsPerBatch", "Per batch", "Emails per burst", 1, 50],
+                    ["minDelaySeconds", "Min gap (sec)", "Between emails", 1, 600],
+                    ["maxDelaySeconds", "Max gap (sec)", "Between emails", 1, 600],
+                    ["interBatchDelayMinutes", "Batch gap (min)", "Between batches", 0, 240],
+                  ] as Array<[keyof typeof customPace, string, string, number, number]>).map(
+                    ([k, label, hint, min, max]) => (
+                      <label key={k} className="block text-xs font-medium text-slate-600">
+                        {label}
+                        <input
+                          type="number"
+                          min={min}
+                          max={max}
+                          value={customPace[k]}
+                          onChange={(e) =>
+                            setCustomPace((c) => ({ ...c, [k]: Math.max(0, Number(e.target.value) || 0) }))
+                          }
+                          className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                        />
+                        <span className="mt-0.5 block text-[11px] font-normal text-slate-400">{hint}</span>
+                      </label>
+                    )
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  Higher numbers send faster but can hurt deliverability — Gmail limits how much you
+                  can send per day. You can change all of this later on the campaign page.
+                </p>
+              </div>
+            )}
+
             <p className="mt-3 text-xs text-slate-500">
               Sending happens 9:00 AM–8:00 PM on weekdays in your timezone (change defaults in
               Settings). Unsent emails automatically roll to the next allowed time.
@@ -560,7 +617,12 @@ export function CampaignWizard() {
             <ul className="mt-4 space-y-2 text-sm text-slate-700">
               <li>✅ {counts.selected} people will receive this email</li>
               <li>✅ {counts.excluded} excluded automatically for safety</li>
-              <li>✅ Pace: {PRESETS[preset].detail}</li>
+              <li>
+                ✅ Pace:{" "}
+                {preset === "custom"
+                  ? `${customPace.emailsPerBatch} per batch · ${customPace.minDelaySeconds}–${customPace.maxDelaySeconds}s apart · ${customPace.interBatchDelayMinutes} min between batches · ${customPace.dailySendLimit}/day`
+                  : PRESETS[preset].detail}
+              </li>
               <li>✅ Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</li>
             </ul>
             {counts.selected > 100 && (

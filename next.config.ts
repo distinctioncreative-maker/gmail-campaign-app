@@ -7,10 +7,10 @@ const nextConfig: NextConfig = {
   // ("Ineffective mark-compacts near heap limit"). We already run `tsc
   // --noEmit` and `eslint` in the local quality gate before every commit, so
   // skipping the redundant in-build passes keeps type/lint safety while
-  // letting the image build within memory. Do NOT rely on these as the only
-  // check — the pre-commit gate is the source of truth.
+  // letting the image build within memory. Do NOT rely on this as the only
+  // check — the pre-commit gate is the source of truth. (Next 16 no longer
+  // runs ESLint during build, so only the TypeScript pass needs disabling.)
   typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
   serverExternalPackages: [
     "firebase-admin",
     "@google-cloud/kms",

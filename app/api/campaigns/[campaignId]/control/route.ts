@@ -14,7 +14,18 @@ import {
   skipRecipient,
   stopCampaign,
   toggleFollowups,
+  updatePace,
 } from "@/lib/campaigns/controls";
+
+const PaceSchema = z.object({
+  dailySendLimit: z.number().int().min(1).max(2000).optional(),
+  emailsPerBatch: z.number().int().min(1).max(50).optional(),
+  minDelaySeconds: z.number().int().min(1).max(600).optional(),
+  maxDelaySeconds: z.number().int().min(1).max(600).optional(),
+  interBatchDelayMinutes: z.number().min(0).max(240).optional(),
+  sendWindowStart: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  sendWindowEnd: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+});
 
 const BodySchema = z.object({
   action: z.enum([
@@ -29,8 +40,10 @@ const BodySchema = z.object({
     "pause_followups",
     "resume_followups",
     "clone",
+    "update_pace",
   ]),
   recipientId: z.string().optional(),
+  pace: PaceSchema.optional(),
 });
 
 export const POST = handleApiErrors(async (req: NextRequest, { params }: { params: Promise<{ campaignId: string }> }) => {
@@ -39,7 +52,7 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
   const campaign = await getCampaign(ownerFromCtx(ctx), campaignId);
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
 
-  const { action, recipientId } = BodySchema.parse(await req.json());
+  const { action, recipientId, pace } = BodySchema.parse(await req.json());
 
   switch (action) {
     case "pause":
@@ -74,6 +87,13 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
     case "clone": {
       const newId = await cloneCampaign(ctx, campaign);
       return NextResponse.json({ message: "Campaign duplicated.", campaignId: newId });
+    }
+    case "update_pace": {
+      if (!pace || Object.keys(pace).length === 0)
+        return NextResponse.json({ error: "No pace changes were provided." }, { status: 400 });
+      if (pace.maxDelaySeconds !== undefined && pace.minDelaySeconds !== undefined && pace.maxDelaySeconds < pace.minDelaySeconds)
+        return NextResponse.json({ error: "Max delay must be greater than or equal to min delay." }, { status: 400 });
+      return NextResponse.json({ message: await updatePace(ctx, campaign, pace) });
     }
   }
 });
