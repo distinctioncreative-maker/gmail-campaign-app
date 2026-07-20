@@ -73,6 +73,7 @@ export default async function CampaignDetailPage({
           <RecipientTable
             campaignId={campaign.campaignId}
             campaignStatus={campaign.status}
+            emailsPerBatch={campaign.schedule.emailsPerBatch}
             recipients={recipients.map((r) => ({
               recipientId: r.recipientId,
               fullName: r.fullNameSnapshot,

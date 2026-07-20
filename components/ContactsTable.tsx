@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSort } from "@/lib/hooks/useSort";
+import { SortTh } from "@/components/SortTh";
 
 export interface ContactRow {
   contactId: string;
@@ -57,6 +59,21 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
     );
   }, [contacts, search, filter]);
 
+  const statusRank = (c: ContactRow) =>
+    c.suppressed || c.emailOptOut ? 3 : c.repliedAt ? 2 : c.campaignCount > 0 ? 1 : 0;
+
+  const { sorted, sort, toggle } = useSort<ContactRow, "name" | "business" | "email" | "phone" | "status">(
+    visible,
+    {
+      name: (c) => c.fullName || c.email,
+      business: (c) => c.businessName,
+      email: (c) => c.email,
+      phone: (c) => c.phone,
+      status: (c) => statusRank(c),
+    },
+    { key: "name", dir: "asc" }
+  );
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
@@ -96,15 +113,15 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
               <tr>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Business</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Phone</th>
-                <th className="px-4 py-3">Status</th>
+                <SortTh label="Name" sortKey="name" sort={sort} onToggle={toggle} />
+                <SortTh label="Business" sortKey="business" sort={sort} onToggle={toggle} />
+                <SortTh label="Email" sortKey="email" sort={sort} onToggle={toggle} />
+                <SortTh label="Phone" sortKey="phone" sort={sort} onToggle={toggle} />
+                <SortTh label="Status" sortKey="status" sort={sort} onToggle={toggle} />
               </tr>
             </thead>
             <tbody>
-              {visible.map((c) => (
+              {sorted.map((c) => (
                 <tr key={c.contactId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/leads/${c.contactId}`} className="hover:underline">

@@ -1,6 +1,6 @@
 import "server-only";
 import type { AuthContext } from "@/lib/auth/requireUser";
-import type { Campaign } from "@/schemas/campaign";
+import type { Campaign, QueueItem } from "@/schemas/campaign";
 import {
   getCampaign,
   listQueueItems,
@@ -153,27 +153,63 @@ export async function cancelAndDeleteDrafts(
 
 export async function sendNextBatchNow(ctx: AuthContext, campaign: Campaign): Promise<string> {
   const owner = ownerFromCtx(ctx);
-  const open = await listQueueItems(owner, campaign.campaignId, ["SCHEDULED", "PENDING"]);
-  const batch = open.slice(0, campaign.schedule.emailsPerBatch);
+  const open = await listQueueItems(owner, campaign.campaignId, [
+    "SCHEDULED",
+    "PENDING",
+    "RETRY_SCHEDULED",
+  ]);
+  const perBatch = Math.max(1, campaign.schedule.emailsPerBatch);
+  const batch = open.slice(0, perBatch);
+  const rest = open.slice(perBatch);
   const now = Date.now();
-  for (let i = 0; i < batch.length; i++) {
-    const at = now + i * 7000; // ~7s spacing
-    await updateQueueItem(owner, campaign.campaignId, batch[i].queueItemId, {
+  const spacingMs = Math.max(3, campaign.schedule.minDelaySeconds) * 1000;
+
+  // Reschedule an item: cancel its old task, set the new time, enqueue a new
+  // task. Used for both the immediate batch and the shifted remainder.
+  const reschedule = async (item: QueueItem, at: number) => {
+    if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
+    await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
       scheduledAt: at,
       status: "SCHEDULED",
     });
-    await enqueueTask(
+    const taskName = await enqueueTask(
       "send-message",
       {
         organizationId: owner.organizationId,
         ownerUserId: owner.userId,
         campaignId: campaign.campaignId,
-        queueItemId: batch[i].queueItemId,
+        queueItemId: item.queueItemId,
       },
       at
     );
+    if (taskName) {
+      await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+        cloudTaskName: taskName,
+      });
+    }
+  };
+
+  // Send the next batch right away, spaced by the per-email delay.
+  let lastBatchTime = now;
+  for (let i = 0; i < batch.length; i++) {
+    lastBatchTime = now + i * spacingMs;
+    await reschedule(batch[i], lastBatchTime);
   }
-  return `Sending the next ${batch.length} emails now.`;
+
+  // Shift every remaining email so the following batches keep their pacing
+  // (inter-batch gap + windows) starting after this batch, instead of firing
+  // at their original times and bunching up.
+  if (rest.length > 0) {
+    const restStart = lastBatchTime + campaign.schedule.interBatchDelayMinutes * 60_000;
+    const times = computeSendTimestamps(restStart, rest.length, campaign.schedule);
+    for (let i = 0; i < rest.length; i++) {
+      await reschedule(rest[i], times[i]);
+    }
+  }
+
+  return rest.length > 0
+    ? `Sending the next ${batch.length} now; ${rest.length} remaining emails were rescheduled to follow.`
+    : `Sending the final ${batch.length} emails now.`;
 }
 
 export async function retryFailed(ctx: AuthContext, campaign: Campaign): Promise<string> {

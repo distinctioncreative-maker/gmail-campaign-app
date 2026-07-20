@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listCampaigns, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
-import { LocalTime } from "@/components/LocalTime";
+import { CampaignsTable } from "@/components/campaign/CampaignsTable";
 
 export default async function CampaignsPage() {
   const ctx = await requireUser();
@@ -39,45 +39,22 @@ export default async function CampaignsPage() {
           </Link>
         </div>
       ) : (
-        <div className="mt-6 overflow-x-auto card">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-3">Campaign</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Recipients</th>
-                <th className="px-4 py-3">Sent</th>
-                <th className="px-4 py-3">Replies</th>
-                <th className="px-4 py-3">Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.map((c) => {
-                const badge = CAMPAIGN_STATUS_LABELS[c.status];
-                return (
-                  <tr key={c.campaignId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium">
-                      <Link href={`/campaigns/${c.campaignId}`} className="hover:underline">
-                        {c.name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
-                        {badge.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">{c.eligibleRecipients}</td>
-                    <td className="px-4 py-3">{c.sentCount + c.followupSentCount}</td>
-                    <td className="px-4 py-3">{c.replyCount}</td>
-                    <td className="px-4 py-3 text-slate-500">
-                      <LocalTime value={c.updatedAt} options={{ dateStyle: "medium" }} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <CampaignsTable
+          campaigns={campaigns.map((c) => {
+            const badge = CAMPAIGN_STATUS_LABELS[c.status];
+            return {
+              campaignId: c.campaignId,
+              name: c.name,
+              status: c.status,
+              statusLabel: badge.label,
+              statusClass: badge.className,
+              recipients: c.eligibleRecipients,
+              sent: c.sentCount + c.followupSentCount,
+              replies: c.replyCount,
+              updatedAt: c.updatedAt,
+            };
+          })}
+        />
       )}
     </div>
   );
