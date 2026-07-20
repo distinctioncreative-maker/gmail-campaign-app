@@ -15,6 +15,7 @@ import {
   stopCampaign,
   toggleFollowups,
   updatePace,
+  releaseLeads,
 } from "@/lib/campaigns/controls";
 
 const PaceSchema = z.object({
@@ -41,6 +42,7 @@ const BodySchema = z.object({
     "resume_followups",
     "clone",
     "update_pace",
+    "release_leads",
   ]),
   recipientId: z.string().optional(),
   pace: PaceSchema.optional(),
@@ -95,5 +97,7 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
         return NextResponse.json({ error: "Max delay must be greater than or equal to min delay." }, { status: 400 });
       return NextResponse.json({ message: await updatePace(ctx, campaign, pace) });
     }
+    case "release_leads":
+      return NextResponse.json({ message: await releaseLeads(ctx, campaign) });
   }
 });

@@ -77,6 +77,47 @@ export async function markContacted(
     });
 }
 
+/**
+ * Release the "contacted" mark that a campaign put on contacts that never
+ * actually received an email (e.g. a cancelled/stopped campaign, or leads
+ * marked by the old launch-time behaviour). Only touches contacts whose most
+ * recent campaign is this one, and decrements the count (floored at 0) so a
+ * contact reached by an earlier real campaign stays counted. Returns how many
+ * were freed.
+ */
+export async function releaseContactsForCampaign(
+  ctx: Scope,
+  campaignId: string,
+  contactIds: string[]
+): Promise<number> {
+  if (contactIds.length === 0) return 0;
+  const db = firestore();
+  const now = Date.now();
+  let released = 0;
+  for (let i = 0; i < contactIds.length; i += 200) {
+    const refs = contactIds.slice(i, i + 200).map((id) => contactsRef(ctx).doc(id));
+    const snaps = await db.getAll(...refs);
+    const batch = db.batch();
+    let inBatch = 0;
+    for (const snap of snaps) {
+      if (!snap.exists) continue;
+      const data = snap.data() as { campaignCount?: number; lastCampaignId?: string | null };
+      if (data.lastCampaignId !== campaignId) continue;
+      batch.update(snap.ref, {
+        campaignCount: Math.max(0, (data.campaignCount ?? 0) - 1),
+        lastCampaignId: null,
+        lastCampaignName: null,
+        lastCampaignAt: null,
+        updatedAt: now,
+      });
+      inBatch++;
+      released++;
+    }
+    if (inBatch > 0) await batch.commit();
+  }
+  return released;
+}
+
 function parseSourceTimestamp(value: string | null): number | null {
   if (!value) return null;
   const t = Date.parse(value.replace(",", ""));

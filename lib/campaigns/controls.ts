@@ -17,6 +17,8 @@ import {
 import { computeSendTimestamps } from "@/lib/scheduling/window";
 import { deleteTask, enqueueTask } from "@/lib/tasks/enqueue";
 import { gmailForUser } from "@/lib/gmail/client";
+import { listRecipients } from "@/lib/repositories/campaigns";
+import { releaseContactsForCampaign } from "@/lib/repositories/contacts";
 
 const OPEN_STATUSES = ["PENDING", "SCHEDULED", "RETRY_SCHEDULED"] as const;
 
@@ -31,6 +33,32 @@ async function cancelOpenQueueItems(
     if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
   }
   return open.length;
+}
+
+/** Free the leads a campaign never actually emailed so they're usable again. */
+async function releaseUnsentContacts(ctx: AuthContext, campaign: Campaign): Promise<number> {
+  const owner = ownerFromCtx(ctx);
+  const recipients = await listRecipients(owner, campaign.campaignId);
+  const unsentContactIds = recipients
+    .filter((r) => r.initialSentAt === null)
+    .map((r) => r.contactId);
+  return releaseContactsForCampaign(ctx, campaign.campaignId, unsentContactIds);
+}
+
+/** Standalone "free the leads" action for an already-cancelled/stopped campaign. */
+export async function releaseLeads(ctx: AuthContext, campaign: Campaign): Promise<string> {
+  const freed = await releaseUnsentContacts(ctx, campaign);
+  if (freed > 0) {
+    await recordEvent(ownerFromCtx(ctx), campaign.campaignId, {
+      type: "LEADS_RELEASED",
+      message: `${freed} leads that were never emailed are available for new campaigns again.`,
+      severity: "INFO",
+      recipientEmail: null,
+    });
+  }
+  return freed > 0
+    ? `${freed} leads freed — they can be used in new campaigns again.`
+    : "No leads needed freeing — everyone in this campaign was actually emailed.";
 }
 
 export async function pauseCampaign(ctx: AuthContext, campaign: Campaign): Promise<string> {
@@ -89,14 +117,15 @@ export async function resumeCampaign(ctx: AuthContext, campaign: Campaign): Prom
 export async function stopCampaign(ctx: AuthContext, campaign: Campaign): Promise<string> {
   const owner = ownerFromCtx(ctx);
   const cancelled = await cancelOpenQueueItems(owner, campaign.campaignId);
+  const freed = await releaseUnsentContacts(ctx, campaign);
   await setCampaignStatus(owner, campaign.campaignId, "STOPPED", { stoppedAt: Date.now() });
   await recordEvent(owner, campaign.campaignId, {
     type: "STOPPED",
-    message: `Campaign stopped permanently. ${cancelled} unsent emails were cancelled; sent emails and drafts are untouched.`,
+    message: `Campaign stopped permanently. ${cancelled} unsent emails were cancelled; sent emails and drafts are untouched.${freed > 0 ? ` ${freed} un-emailed leads freed for reuse.` : ""}`,
     severity: "INFO",
     recipientEmail: null,
   });
-  return "Campaign stopped.";
+  return freed > 0 ? `Campaign stopped. ${freed} un-emailed leads freed.` : "Campaign stopped.";
 }
 
 /**
@@ -157,14 +186,15 @@ export async function updatePace(
 export async function cancelRemaining(ctx: AuthContext, campaign: Campaign): Promise<string> {
   const owner = ownerFromCtx(ctx);
   const cancelled = await cancelOpenQueueItems(owner, campaign.campaignId);
+  const freed = await releaseUnsentContacts(ctx, campaign);
   await setCampaignStatus(owner, campaign.campaignId, "CANCELLED", { stoppedAt: Date.now() });
   await recordEvent(owner, campaign.campaignId, {
     type: "CANCELLED",
-    message: `${cancelled} remaining emails cancelled. Gmail drafts were kept.`,
+    message: `${cancelled} remaining emails cancelled. Gmail drafts were kept.${freed > 0 ? ` ${freed} un-emailed leads freed for reuse.` : ""}`,
     severity: "INFO",
     recipientEmail: null,
   });
-  return `${cancelled} remaining emails cancelled.`;
+  return `${cancelled} remaining emails cancelled.${freed > 0 ? ` ${freed} leads freed.` : ""}`;
 }
 
 export async function cancelAndDeleteDrafts(
@@ -196,14 +226,15 @@ export async function cancelAndDeleteDrafts(
     }
   }
 
+  const freed = await releaseUnsentContacts(ctx, campaign);
   await setCampaignStatus(owner, campaign.campaignId, "CANCELLED", { stoppedAt: Date.now() });
   await recordEvent(owner, campaign.campaignId, {
     type: "CANCELLED_DRAFTS_DELETED",
-    message: `${cancelled} remaining emails cancelled and ${deleted} unsent Gmail drafts deleted.`,
+    message: `${cancelled} remaining emails cancelled and ${deleted} unsent Gmail drafts deleted.${freed > 0 ? ` ${freed} un-emailed leads freed for reuse.` : ""}`,
     severity: "INFO",
     recipientEmail: null,
   });
-  return `Cancelled ${cancelled} emails and deleted ${deleted} drafts.`;
+  return `Cancelled ${cancelled} emails and deleted ${deleted} drafts.${freed > 0 ? ` ${freed} leads freed.` : ""}`;
 }
 
 export async function sendNextBatchNow(ctx: AuthContext, campaign: Campaign): Promise<string> {

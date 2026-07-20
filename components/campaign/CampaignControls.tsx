@@ -145,6 +145,20 @@ export function CampaignControls({
         <button onClick={() => act("clone")} disabled={busy} className={btn}>
           Duplicate campaign
         </button>
+        {["STOPPED", "CANCELLED", "COMPLETED", "ERROR"].includes(status) && (
+          <button
+            onClick={() =>
+              act(
+                "release_leads",
+                "Free the leads this campaign never emailed so they can be used in new campaigns? Leads that actually received an email stay marked as contacted."
+              )
+            }
+            disabled={busy}
+            className={btn}
+          >
+            Free unused leads
+          </button>
+        )}
       </div>
 
       {showPace && (status === "ACTIVE" || status === "PAUSED") && (
