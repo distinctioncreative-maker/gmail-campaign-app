@@ -29,32 +29,59 @@ export default async function CampaignDetailPage({
   ]);
   const badge = CAMPAIGN_STATUS_LABELS[campaign.status];
 
+  const totalToSend = campaign.eligibleRecipients;
+  const doneCount = campaign.sentCount;
+  const pct = totalToSend > 0 ? Math.min(100, Math.round((doneCount / totalToSend) * 100)) : 0;
+  const remaining = Math.max(0, totalToSend - doneCount);
+
+  const stats: Array<{ label: string; value: number; tone: string }> = [
+    { label: "Recipients", value: campaign.eligibleRecipients, tone: "text-slate-900" },
+    { label: "Sent", value: campaign.sentCount, tone: "text-green-600" },
+    { label: "Follow-ups", value: campaign.followupSentCount, tone: "text-slate-900" },
+    { label: "Replies", value: campaign.replyCount, tone: "text-indigo-600" },
+    { label: "Excluded", value: campaign.excludedRecipients, tone: "text-amber-600" },
+    { label: "Problems", value: campaign.errorCount, tone: campaign.errorCount > 0 ? "text-red-600" : "text-slate-400" },
+  ];
+
   return (
-    <div>
+    <div className="animate-rise">
       <Link href="/campaigns" className="text-sm text-slate-500 hover:underline">
         ← All campaigns
       </Link>
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">{campaign.name}</h1>
-          {campaign.description && <p className="text-sm text-slate-500">{campaign.description}</p>}
+          <h1 className="text-2xl font-semibold tracking-tight">{campaign.name}</h1>
+          {campaign.description && <p className="mt-0.5 text-sm text-slate-500">{campaign.description}</p>}
         </div>
-        <span className={`rounded-full px-3 py-1 text-sm ${badge.className}`}>{badge.label}</span>
+        <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>{badge.label}</span>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {[
-          ["Recipients", campaign.eligibleRecipients],
-          ["Sent", campaign.sentCount],
-          ["Follow-ups", campaign.followupSentCount],
-          ["Replies", campaign.replyCount],
-          ["Excluded", campaign.excludedRecipients],
-          ["Problems", campaign.errorCount],
-        ].map(([label, value]) => (
-          <div key={label as string} className="rounded-xl bg-white p-4 text-center shadow-sm">
-            <p className="text-2xl font-semibold">{value}</p>
-            <p className="mt-1 text-xs text-slate-500">{label}</p>
+      {/* Progress */}
+      {totalToSend > 0 && (
+        <div className="mt-5 card p-5">
+          <div className="flex items-baseline justify-between">
+            <p className="text-sm font-medium text-slate-700">
+              {doneCount} of {totalToSend} sent
+            </p>
+            <p className="text-sm text-slate-500">
+              {pct}% · {remaining} to go
+            </p>
+          </div>
+          <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full brand-gradient transition-all"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {stats.map((s) => (
+          <div key={s.label} className="card card-hover p-4 text-center">
+            <p className={`text-2xl font-semibold tabular-nums ${s.tone}`}>{s.value}</p>
+            <p className="mt-1 text-xs text-slate-500">{s.label}</p>
           </div>
         ))}
       </div>
