@@ -188,10 +188,13 @@ export async function retryFailed(ctx: AuthContext, campaign: Campaign): Promise
   ]);
   const toRetry = candidates.filter((item) => item.status === "ERROR" || !item.cloudTaskName);
 
-  const now = Date.now();
+  // Re-space with the campaign's real pacing (batches, per-email delay,
+  // inter-batch gap, send window) — not a flat interval — so a retry throttles
+  // exactly like a fresh launch.
+  const times = computeSendTimestamps(Date.now() + 30_000, toRetry.length, campaign.schedule);
   let requeued = 0;
   for (let i = 0; i < toRetry.length; i++) {
-    const at = now + i * 10_000;
+    const at = times[i];
     await updateQueueItem(owner, campaign.campaignId, toRetry[i].queueItemId, {
       status: "RETRY_SCHEDULED",
       scheduledAt: at,

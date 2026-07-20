@@ -10,6 +10,7 @@ import {
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { CampaignControls } from "@/components/campaign/CampaignControls";
 import { RecipientTable } from "@/components/campaign/RecipientTable";
+import { LocalTime } from "@/components/LocalTime";
 
 export default async function CampaignDetailPage({
   params,
@@ -105,9 +106,7 @@ export default async function CampaignDetailPage({
                     >
                       {e.message}
                     </p>
-                    <p className="text-xs text-slate-400">
-                      {new Date(e.createdAt).toLocaleString()}
-                    </p>
+                    <LocalTime value={e.createdAt} className="text-xs text-slate-400" />
                   </li>
                 ))}
               </ul>

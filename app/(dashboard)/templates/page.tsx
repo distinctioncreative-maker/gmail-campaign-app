@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listTemplates } from "@/lib/repositories/templates";
 import { TemplateListActions } from "@/components/templates/TemplateListActions";
+import { LocalTime } from "@/components/LocalTime";
 
 export default async function TemplatesPage() {
   const ctx = await requireUser();
@@ -48,7 +49,8 @@ export default async function TemplatesPage() {
               </Link>
               <p className="mt-1 line-clamp-2 text-sm text-slate-500">{t.subjectTemplate}</p>
               <p className="mt-2 text-xs text-slate-400">
-                v{t.version} · updated {new Date(t.updatedAt).toLocaleDateString()}
+                v{t.version} · updated{" "}
+                <LocalTime value={t.updatedAt} options={{ dateStyle: "medium" }} />
               </p>
               <div className="mt-auto pt-3">
                 <TemplateListActions templateId={t.templateId} archived={false} />

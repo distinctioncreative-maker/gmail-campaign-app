@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { getContact } from "@/lib/repositories/contacts";
 import { isSuppressed } from "@/lib/repositories/suppressions";
+import { LocalTime } from "@/components/LocalTime";
 
-function fmt(ms: number | null): string {
-  return ms ? new Date(ms).toLocaleString() : "—";
+function fmt(ms: number | null) {
+  return ms ? <LocalTime value={ms} /> : "—";
 }
 
 export default async function ContactDetailPage({

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listCampaigns, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
+import { LocalTime } from "@/components/LocalTime";
 
 export default async function CampaignsPage() {
   const ctx = await requireUser();
@@ -69,7 +70,7 @@ export default async function CampaignsPage() {
                     <td className="px-4 py-3">{c.sentCount + c.followupSentCount}</td>
                     <td className="px-4 py-3">{c.replyCount}</td>
                     <td className="px-4 py-3 text-slate-500">
-                      {new Date(c.updatedAt).toLocaleDateString()}
+                      <LocalTime value={c.updatedAt} options={{ dateStyle: "medium" }} />
                     </td>
                   </tr>
                 );
