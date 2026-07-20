@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseSalesforceText } from "@/lib/parser/salesforce";
 import { SPEC_SAMPLE } from "../fixtures/salesforce-sample";
+import { REAL_ROW_PASTE, REAL_MARKDOWN_PASTE } from "../fixtures/salesforce-real-pastes";
 
 describe("parseSalesforceText", () => {
   it("parses a complete record with every field", () => {
@@ -248,5 +249,61 @@ describe("parseSalesforceText — column/grid format", () => {
     const result = parseSalesforceText("one\ntwo\nthree\n1\nfour\nfive");
     expect(result.totalRecords).toBe(0);
     expect(result.globalWarnings[0]).toContain("Select Item");
+  });
+});
+
+describe("parseSalesforceText — real Alpine pastes", () => {
+  it("parses the plain row paste (trailing tabs, amounts, source ids)", () => {
+    const result = parseSalesforceText(REAL_ROW_PASTE);
+    expect(result.totalRecords).toBe(4);
+
+    const jessica = result.leads[0];
+    expect(jessica.fullName).toBe("Jessica Brown");
+    expect(jessica.businessName).toBe("Rock Bottom tattoos and treasures");
+    expect(jessica.phone).toBe("(936) 933-1231");
+    expect(jessica.email).toBe("rbtattoosandtreasures@gmail.com");
+    expect(jessica.leadSource).toBe("Texas Loans");
+    expect(jessica.emailOptOut).toBe(false);
+
+    // Amount inserted mid-record must not shift the email/source fields.
+    const chris = result.leads[1];
+    expect(chris.fullName).toBe("Christopher Patrick");
+    expect(chris.requestedAmount).toBe(35);
+    expect(chris.email).toBe("chrispatrick832@gmail.com");
+    expect(chris.leadSource).toBe("Alpine Website");
+
+    // Dashless phone number.
+    const reese = result.leads[2];
+    expect(reese.phone).toBe("708-613-5098");
+    expect(reese.email).toBe("williereesejr1506@gmail.com");
+
+    // Record with both an amount and a source record id.
+    const fred = result.leads[3];
+    expect(fred.requestedAmount).toBe(50000);
+    expect(fred.sourceRecordId).toBe("1795");
+    expect(fred.email).toBe("richardsfred63@yahoo.com");
+  });
+
+  it("parses the markdown-link paste (Lightning hyperlinked cells)", () => {
+    const result = parseSalesforceText(REAL_MARKDOWN_PASTE);
+    expect(result.totalRecords).toBe(3);
+
+    const jessica = result.leads[0];
+    expect(jessica.fullName).toBe("Jessica Brown");
+    expect(jessica.firstName).toBe("Jessica");
+    expect(jessica.lastName).toBe("Brown");
+    expect(jessica.businessName).toBe("Rock Bottom tattoos and treasures");
+    expect(jessica.email).toBe("rbtattoosandtreasures@gmail.com");
+    expect(jessica.emailValid).toBe(true);
+    expect(jessica.leadSource).toBe("Texas Loans");
+
+    const chris = result.leads[1];
+    expect(chris.email).toBe("chrispatrick832@gmail.com");
+    expect(chris.requestedAmount).toBe(35);
+
+    const fred = result.leads[2];
+    expect(fred.email).toBe("richardsfred63@yahoo.com");
+    expect(fred.requestedAmount).toBe(50000);
+    expect(fred.sourceRecordId).toBe("1795");
   });
 });

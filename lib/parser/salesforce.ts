@@ -54,10 +54,17 @@ export function normalizeRawText(text: string): string {
   return text
     .replace(/\r\n?/g, "\n")
     .replace(/ /g, " ")
+    // Salesforce Lightning cells often paste as markdown links. Unwrap them:
+    //   [name@x.com](mailto:name@x.com) -> name@x.com  (prefer the address)
+    //   [Jessica Brown](https://…/view) -> Jessica Brown
+    .replace(/\[([^\]\n]+)\]\(\s*mailto:([^)\s?]+)[^)]*\)/gi, (_m, _label, addr) => addr)
+    .replace(/\[([^\]\n]+)\]\([^)\n]*\)/g, (_m, label) => label)
     // Salesforce table copies separate cells with tabs; treat each cell as a line.
     .replace(/\t+/g, "\n")
     // Common copied UI chrome that carries no data.
-    .replace(/^\s*(Edit|More Actions|Show Actions|Change Owner)\s*$/gim, "");
+    .replace(/^\s*(Edit|More Actions|Show Actions|Change Owner)\s*$/gim, "")
+    // Bare record-link URLs left on their own line carry no data.
+    .replace(/^\s*https?:\/\/\S+\s*$/gim, "");
 }
 
 function parseBoolPrefix(value: string, re: RegExp): boolean {
