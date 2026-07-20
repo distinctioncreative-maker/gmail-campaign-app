@@ -178,27 +178,48 @@ export async function sendNextBatchNow(ctx: AuthContext, campaign: Campaign): Pr
 
 export async function retryFailed(ctx: AuthContext, campaign: Campaign): Promise<string> {
   const owner = ownerFromCtx(ctx);
-  const failed = await listQueueItems(owner, campaign.campaignId, ["ERROR"]);
+  // Recover two situations: emails that errored while sending, and emails that
+  // were scheduled but never actually enqueued (e.g. the sending service was
+  // briefly misconfigured at launch, leaving them without a Cloud Task).
+  const candidates = await listQueueItems(owner, campaign.campaignId, [
+    "ERROR",
+    "SCHEDULED",
+    "RETRY_SCHEDULED",
+  ]);
+  const toRetry = candidates.filter((item) => item.status === "ERROR" || !item.cloudTaskName);
+
   const now = Date.now();
-  for (let i = 0; i < failed.length; i++) {
+  let requeued = 0;
+  for (let i = 0; i < toRetry.length; i++) {
     const at = now + i * 10_000;
-    await updateQueueItem(owner, campaign.campaignId, failed[i].queueItemId, {
+    await updateQueueItem(owner, campaign.campaignId, toRetry[i].queueItemId, {
       status: "RETRY_SCHEDULED",
       scheduledAt: at,
       lastError: null,
     });
-    await enqueueTask(
+    const taskName = await enqueueTask(
       "send-message",
       {
         organizationId: owner.organizationId,
         ownerUserId: owner.userId,
         campaignId: campaign.campaignId,
-        queueItemId: failed[i].queueItemId,
+        queueItemId: toRetry[i].queueItemId,
       },
       at
     );
+    if (taskName) {
+      await updateQueueItem(owner, campaign.campaignId, toRetry[i].queueItemId, {
+        cloudTaskName: taskName,
+      });
+      requeued++;
+    }
   }
-  return `Retrying ${failed.length} failed emails.`;
+
+  if (toRetry.length === 0) return "Nothing needs retrying — every email is already scheduled.";
+  if (requeued < toRetry.length) {
+    return `Re-scheduled ${requeued} of ${toRetry.length} emails. The sending service is still not reachable — check Cloud Tasks setup and try again.`;
+  }
+  return `Re-scheduled ${requeued} emails to send.`;
 }
 
 export async function skipRecipient(
