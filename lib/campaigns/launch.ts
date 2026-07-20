@@ -19,7 +19,6 @@ import {
 } from "@/lib/repositories/campaigns";
 import { enqueueTask, tasksConfigured } from "@/lib/tasks/enqueue";
 import { checkCollision } from "@/lib/campaigns/collision";
-import { firestore } from "@/lib/firebase/admin";
 
 export function idempotencyKey(
   organizationId: string,
@@ -102,13 +101,11 @@ export async function launchCampaign(
   const now = Date.now();
 
   const recipients: Recipient[] = [];
-  const contactCampaignCounts = new Map<string, number>();
   let excluded = 0;
 
   for (const sel of selections) {
     const contact = await getContact(ctx, sel.contactId);
     if (!contact) continue;
-    contactCampaignCounts.set(contact.contactId, contact.campaignCount);
 
     const { classification } = await classifyLead(ctx, {
       email: contact.email,
@@ -240,25 +237,10 @@ export async function launchCampaign(
   await batchCreateRecipients(owner, campaign.campaignId, recipients);
   await batchCreateQueueItems(owner, campaign.campaignId, queueItems);
 
-  // Update contact campaign history right away (drives prior-contact
-  // detection for future imports even before sends complete).
-  const db = firestore();
-  for (let i = 0; i < eligibleRecipients.length; i += 450) {
-    const batch = db.batch();
-    for (const r of eligibleRecipients.slice(i, i + 450)) {
-      batch.update(
-        db.collection("users").doc(ctx.userId).collection("contacts").doc(r.contactId),
-        {
-          campaignCount: (contactCampaignCounts.get(r.contactId) ?? 0) + 1,
-          lastCampaignId: campaign.campaignId,
-          lastCampaignName: campaign.name,
-          lastCampaignAt: now,
-          updatedAt: now,
-        }
-      );
-    }
-    await batch.commit();
-  }
+  // NOTE: contacts are marked "contacted" only when an email actually sends
+  // (in the send worker), never here at launch — otherwise recipients who are
+  // paused, cancelled, or skipped before sending would be wrongly treated as
+  // contacted and excluded from future campaigns.
 
   // Enqueue one Cloud Task per email. A failure here (e.g. queue not yet
   // provisioned) must not abort the launch after we've written recipients and

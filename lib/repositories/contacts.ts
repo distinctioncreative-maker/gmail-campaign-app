@@ -1,5 +1,6 @@
 import "server-only";
 import crypto from "node:crypto";
+import { FieldValue } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
 import { ContactSchema, type Contact } from "@/schemas/contact";
 import type { Scope } from "@/lib/repositories/scope";
@@ -49,6 +50,31 @@ export async function getContact(
 ): Promise<Contact | null> {
   const snap = await contactsRef(ctx).doc(contactId).get();
   return snap.exists ? ContactSchema.parse(snap.data()) : null;
+}
+
+/**
+ * Mark a contact as actually contacted — called when an email is genuinely
+ * sent (not at launch), so prior-contact detection reflects real sends and
+ * recipients who were cancelled/skipped are never counted as contacted.
+ * The campaign count increments atomically.
+ */
+export async function markContacted(
+  ctx: Scope,
+  contactId: string,
+  info: { campaignId: string; campaignName: string; at: number }
+): Promise<void> {
+  await contactsRef(ctx)
+    .doc(contactId)
+    .update({
+      campaignCount: FieldValue.increment(1),
+      lastCampaignId: info.campaignId,
+      lastCampaignName: info.campaignName,
+      lastCampaignAt: info.at,
+      updatedAt: info.at,
+    })
+    .catch(() => {
+      // Contact may have been deleted between launch and send — ignore.
+    });
 }
 
 function parseSourceTimestamp(value: string | null): number | null {

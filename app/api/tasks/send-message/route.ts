@@ -18,6 +18,7 @@ import {
   type OwnerRef,
 } from "@/lib/repositories/campaigns";
 import { checkEligibility } from "@/lib/campaigns/eligibility";
+import { markContacted } from "@/lib/repositories/contacts";
 import { getConnection } from "@/lib/repositories/gmailConnections";
 import { isSuppressed } from "@/lib/repositories/suppressions";
 import { getTemplate } from "@/lib/repositories/templates";
@@ -281,6 +282,16 @@ export async function POST(req: NextRequest) {
         item.sequenceStep === 0 ? { sentCount: 1 } : { followupSentCount: 1 }
       ),
     ]);
+
+    // Mark the contact as genuinely contacted (initial send only) so
+    // prior-contact detection reflects real sends, not launch-time intent.
+    if (item.sequenceStep === 0) {
+      await markContacted(owner, recipient.contactId, {
+        campaignId,
+        campaignName: campaign.name,
+        at: now,
+      });
+    }
 
     // Record org-scoped collision hash (no-op unless a team policy is on).
     await recordCollisionContact(owner.organizationId, owner.userId, recipient.normalizedEmailSnapshot);
