@@ -260,20 +260,34 @@ export async function launchCampaign(
     await batch.commit();
   }
 
+  // Enqueue one Cloud Task per email. A failure here (e.g. queue not yet
+  // provisioned) must not abort the launch after we've written recipients and
+  // queue items — the items stay SCHEDULED and the repair sweep / manual retry
+  // re-enqueues them. We record the failure so it's visible instead of a 500.
+  let enqueueFailures = 0;
   for (const item of queueItems) {
-    const taskName = await enqueueTask(
-      "send-message",
-      {
-        organizationId: ctx.organizationId,
-        ownerUserId: ctx.userId,
+    try {
+      const taskName = await enqueueTask(
+        "send-message",
+        {
+          organizationId: ctx.organizationId,
+          ownerUserId: ctx.userId,
+          campaignId: campaign.campaignId,
+          queueItemId: item.queueItemId,
+        },
+        item.scheduledAt
+      );
+      if (taskName) {
+        await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+          cloudTaskName: taskName,
+        });
+      }
+    } catch (err) {
+      enqueueFailures++;
+      console.error("[launch] enqueue failed", {
         campaignId: campaign.campaignId,
         queueItemId: item.queueItemId,
-      },
-      item.scheduledAt
-    );
-    if (taskName) {
-      await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
-        cloudTaskName: taskName,
+        message: err instanceof Error ? err.message : String(err),
       });
     }
   }
@@ -285,12 +299,15 @@ export async function launchCampaign(
     startedAt: now,
   });
 
+  const launchMessage = !tasksConfigured()
+    ? `Campaign created with ${eligibleRecipients.length} recipients, but background sending is not configured yet — an administrator must set up Cloud Tasks.`
+    : enqueueFailures > 0
+      ? `Campaign started, but ${enqueueFailures} of ${eligibleRecipients.length} emails could not be scheduled with the sending service. Use “Retry failed” once it's fixed — nothing was lost.`
+      : `Campaign started: ${eligibleRecipients.length} emails scheduled, ${excluded} excluded for safety.`;
   await recordEvent(owner, campaign.campaignId, {
     type: "LAUNCHED",
-    message: tasksConfigured()
-      ? `Campaign started: ${eligibleRecipients.length} emails scheduled, ${excluded} excluded for safety.`
-      : `Campaign created with ${eligibleRecipients.length} recipients, but background sending is not configured yet — an administrator must set up Cloud Tasks.`,
-    severity: tasksConfigured() ? "INFO" : "WARNING",
+    message: launchMessage,
+    severity: !tasksConfigured() || enqueueFailures > 0 ? "WARNING" : "INFO",
     recipientEmail: null,
   });
 

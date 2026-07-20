@@ -7,6 +7,7 @@ import { badgeFor } from "@/components/imports/leadBadges";
 import { HelpTip } from "@/components/HelpTip";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
+import { fetchJson } from "@/lib/fetchJson";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -165,24 +166,25 @@ export function CampaignWizard() {
     setBusy(true);
     setError(null);
     try {
-      const createRes = await fetch("/api/campaigns", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          description,
-          initialTemplateId: templateId,
-          sequenceId,
-          schedule: PRESETS[preset].schedule,
-          priorContactPolicy: priorPolicy,
-          draftStrategy,
-        }),
-      });
-      const createBody = await createRes.json();
-      if (!createRes.ok) throw new Error(createBody.error ?? "Could not create the campaign.");
-      const campaignId = createBody.campaign.campaignId as string;
+      const createBody = await fetchJson<{ campaign: { campaignId: string } }>(
+        "/api/campaigns",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            description,
+            initialTemplateId: templateId,
+            sequenceId,
+            schedule: PRESETS[preset].schedule,
+            priorContactPolicy: priorPolicy,
+            draftStrategy,
+          }),
+        }
+      );
+      const campaignId = createBody.campaign.campaignId;
 
-      const launchRes = await fetch(`/api/campaigns/${campaignId}/launch`, {
+      await fetchJson(`/api/campaigns/${campaignId}/launch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -195,8 +197,6 @@ export function CampaignWizard() {
           confirmText: confirmText || undefined,
         }),
       });
-      const launchBody = await launchRes.json();
-      if (!launchRes.ok) throw new Error(launchBody.error ?? "Could not start the campaign.");
 
       clear();
       router.push(`/campaigns/${campaignId}`);

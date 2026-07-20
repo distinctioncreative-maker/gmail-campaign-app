@@ -1,10 +1,18 @@
 import "server-only";
-import { CloudTasksClient } from "@google-cloud/tasks";
+import type { CloudTasksClient } from "@google-cloud/tasks";
 import { env } from "@/lib/env";
 
+// The @google-cloud/tasks client pulls in a heavy gRPC/protobuf stack. Import
+// it lazily and only when Cloud Tasks is actually configured, so routes that
+// merely reference this module (e.g. the campaign launch route) don't load it
+// on every request — which on a small Cloud Run instance can spike memory and
+// get the container OOM-killed mid-request (surfacing as a bare 500).
 let client: CloudTasksClient | undefined;
-function tasks(): CloudTasksClient {
-  client ??= new CloudTasksClient();
+async function tasks(): Promise<CloudTasksClient> {
+  if (!client) {
+    const { CloudTasksClient: Ctor } = await import("@google-cloud/tasks");
+    client = new Ctor();
+  }
   return client;
 }
 
@@ -46,28 +54,33 @@ export async function enqueueTask(
     return null;
   }
 
-  const parent = tasks().queuePath(
+  const client = await tasks();
+  const parent = client.queuePath(
     env.GOOGLE_CLOUD_PROJECT_ID,
     env.GOOGLE_CLOUD_REGION,
     env.CLOUD_TASKS_QUEUE
   );
 
-  const [task] = await tasks().createTask({
-    parent,
-    task: {
-      scheduleTime: { seconds: Math.floor(scheduleAtMs / 1000) },
-      httpRequest: {
-        httpMethod: "POST",
-        url: `${env.APP_BASE_URL}/api/tasks/${path}`,
-        headers: { "Content-Type": "application/json" },
-        body: Buffer.from(JSON.stringify(payload)).toString("base64"),
-        oidcToken: {
-          serviceAccountEmail: env.CLOUD_TASKS_SERVICE_ACCOUNT,
-          audience: env.CLOUD_TASKS_WORKER_AUDIENCE || env.APP_BASE_URL,
+  const [task] = await client.createTask(
+    {
+      parent,
+      task: {
+        scheduleTime: { seconds: Math.floor(scheduleAtMs / 1000) },
+        httpRequest: {
+          httpMethod: "POST",
+          url: `${env.APP_BASE_URL}/api/tasks/${path}`,
+          headers: { "Content-Type": "application/json" },
+          body: Buffer.from(JSON.stringify(payload)).toString("base64"),
+          oidcToken: {
+            serviceAccountEmail: env.CLOUD_TASKS_SERVICE_ACCOUNT,
+            audience: env.CLOUD_TASKS_WORKER_AUDIENCE || env.APP_BASE_URL,
+          },
         },
       },
     },
-  });
+    // Bound the call so a misconfigured queue can't hang the request.
+    { timeout: 15_000 }
+  );
 
   return task.name ?? null;
 }
@@ -77,7 +90,8 @@ export async function enqueueTask(
 export async function deleteTask(cloudTaskName: string): Promise<void> {
   if (!tasksConfigured()) return;
   try {
-    await tasks().deleteTask({ name: cloudTaskName });
+    const client = await tasks();
+    await client.deleteTask({ name: cloudTaskName }, { timeout: 15_000 });
   } catch {
     // Already dispatched or gone — the worker's re-check handles it.
   }
