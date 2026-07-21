@@ -75,6 +75,16 @@ export async function validateForLaunch(
     }
   }
 
+  // A/B rotation: every rotation template must still resolve.
+  if (campaign.templateRotation.length > 1) {
+    const resolved = await Promise.all(
+      campaign.templateRotation.map((id) => getTemplate(ctx, id))
+    );
+    if (resolved.some((t) => !t || !t.active)) {
+      problems.push("One of the rotation templates no longer exists — re-check your template selection.");
+    }
+  }
+
   return { ok: problems.length === 0, problems, warnings };
 }
 
@@ -183,6 +193,7 @@ export async function launchCampaign(
       overrideReason: sel.overrideReason,
       currentStep: 0,
       status: included ? "SCHEDULED" : "EXCLUDED",
+      templateIdSnapshot: null,
       initialDraftId: null,
       initialMessageId: null,
       gmailThreadId: null,
@@ -205,8 +216,14 @@ export async function launchCampaign(
   const startAt = startNow ? now : (campaign.schedule.startAt ?? now);
   const timestamps = computeSendTimestamps(startAt, eligibleRecipients.length, campaign.schedule);
 
+  // A/B rotation: spread 2+ templates round-robin across recipients. A single
+  // template (empty rotation) leaves templateIdSnapshot null → worker falls
+  // back to campaign.initialTemplateId.
+  const rotation = campaign.templateRotation.length > 1 ? campaign.templateRotation : [];
+
   const queueItems: QueueItem[] = eligibleRecipients.map((recipient, i) => {
     recipient.initialScheduledAt = timestamps[i];
+    if (rotation.length > 0) recipient.templateIdSnapshot = rotation[i % rotation.length];
     return {
       queueItemId: crypto.randomUUID(),
       organizationId: ctx.organizationId,

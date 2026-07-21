@@ -67,8 +67,16 @@ export function CampaignWizard() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [templates, setTemplates] = useState<WizardTemplate[] | null>(null);
-  const [templateId, setTemplateId] = useState<string | null>(null);
+  // Ordered selection; first = primary. 2+ ⇒ A/B rotation.
+  const [templateIds, setTemplateIds] = useState<string[]>([]);
+  const primaryTemplateId = templateIds[0] ?? null;
   const [preview, setPreview] = useState<{ subject: string; html: string } | null>(null);
+
+  function toggleTemplate(id: string) {
+    setTemplateIds((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
+    );
+  }
 
   const [sequences, setSequences] = useState<WizardSequence[]>([]);
   const [sequenceId, setSequenceId] = useState<string | null>(null);
@@ -98,7 +106,7 @@ export function CampaignWizard() {
       name,
       description,
       selected: [...selected],
-      templateId,
+      templateIds,
       sequenceId,
       preset,
       customPace,
@@ -113,7 +121,7 @@ export function CampaignWizard() {
     setName(restored.name);
     setDescription(restored.description);
     setSelected(new Set(restored.selected));
-    setTemplateId(restored.templateId);
+    setTemplateIds(restored.templateIds ?? []);
     setSequenceId(restored.sequenceId);
     setPreset(restored.preset);
     if (restored.customPace) setCustomPace(restored.customPace);
@@ -185,7 +193,8 @@ export function CampaignWizard() {
           body: JSON.stringify({
             name,
             description,
-            initialTemplateId: templateId,
+            initialTemplateId: primaryTemplateId,
+            templateRotation: templateIds.length > 1 ? templateIds : [],
             sequenceId,
             schedule: preset === "custom" ? customPace : PRESETS[preset].schedule,
             priorContactPolicy: priorPolicy,
@@ -260,7 +269,7 @@ export function CampaignWizard() {
   const nextDisabled =
     (step === 0 && name.trim() === "") ||
     (step === 1 && selected.size === 0) ||
-    (step === 3 && !templateId);
+    (step === 3 && templateIds.length === 0);
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -481,6 +490,10 @@ export function CampaignWizard() {
         {step === 3 && (
           <>
             <h2 className="text-xl font-semibold">Choose the email</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Pick one template — or select two or more to <strong>A/B test</strong>. When you pick
+              several, the app rotates them across your recipients and shows which gets more replies.
+            </p>
             {templates === null ? (
               <p className="mt-4 text-sm text-slate-500">Loading templates…</p>
             ) : templates.length === 0 ? (
@@ -493,22 +506,36 @@ export function CampaignWizard() {
               </p>
             ) : (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {templates.map((t) => (
-                  <button
-                    key={t.templateId}
-                    onClick={() => {
-                      setTemplateId(t.templateId);
-                      void loadPreview(t.templateId);
-                    }}
-                    className={`rounded-xl border p-4 text-left ${
-                      templateId === t.templateId ? "border-primary bg-blue-50" : "border-slate-200 hover:border-primary"
-                    }`}
-                  >
-                    <p className="font-medium">{t.name}</p>
-                    <p className="mt-1 line-clamp-1 text-sm text-slate-500">{t.subjectTemplate}</p>
-                  </button>
-                ))}
+                {templates.map((t) => {
+                  const idx = templateIds.indexOf(t.templateId);
+                  const selected = idx >= 0;
+                  return (
+                    <button
+                      key={t.templateId}
+                      onClick={() => {
+                        toggleTemplate(t.templateId);
+                        if (!selected) void loadPreview(t.templateId);
+                      }}
+                      className={`relative rounded-xl border p-4 text-left transition ${
+                        selected ? "border-primary bg-primary-soft" : "border-slate-200 hover:border-primary"
+                      }`}
+                    >
+                      {selected && (
+                        <span className="absolute right-3 top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
+                          {idx === 0 ? "A" : idx === 1 ? "B" : idx === 2 ? "C" : idx + 1}
+                        </span>
+                      )}
+                      <p className="font-medium">{t.name}</p>
+                      <p className="mt-1 line-clamp-1 text-sm text-slate-500">{t.subjectTemplate}</p>
+                    </button>
+                  );
+                })}
               </div>
+            )}
+            {templateIds.length > 1 && (
+              <p className="mt-3 rounded-lg bg-primary-soft p-2 text-xs font-medium text-primary">
+                A/B test: {templateIds.length} templates will be rotated evenly across recipients.
+              </p>
             )}
             {preview && (
               <div className="mt-5 rounded-xl border border-slate-200 p-4">

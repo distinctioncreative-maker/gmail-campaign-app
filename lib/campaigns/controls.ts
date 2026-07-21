@@ -396,6 +396,7 @@ export async function cloneCampaign(ctx: AuthContext, campaign: Campaign): Promi
     description: campaign.description,
     status: "DRAFT",
     initialTemplateId: campaign.initialTemplateId,
+    templateRotation: campaign.templateRotation,
     sequenceId: campaign.sequenceId,
     sourceType: campaign.sourceType,
     sourceReference: campaign.sourceReference,

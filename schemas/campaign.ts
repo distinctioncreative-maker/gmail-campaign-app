@@ -47,6 +47,9 @@ export const CampaignSchema = z.object({
   description: z.string().max(1000).default(""),
   status: CampaignStatusSchema,
   initialTemplateId: z.string().nullable().default(null),
+  /** Optional A/B rotation: 2+ template IDs sent round-robin across recipients.
+   * Empty ⇒ single-template campaign using initialTemplateId. */
+  templateRotation: z.array(z.string()).default([]),
   sequenceId: z.string().nullable().default(null),
   sourceType: z.string().default("CONTACTS"),
   sourceReference: z.string().nullable().default(null),
@@ -112,6 +115,9 @@ export const RecipientSchema = z.object({
   overrideReason: z.string().nullable().default(null),
   currentStep: z.number().int().nonnegative().default(0),
   status: RecipientStatusSchema.default("PENDING"),
+  /** Which template this recipient was assigned (A/B rotation). Null ⇒ the
+   * campaign's initialTemplateId. */
+  templateIdSnapshot: z.string().nullable().default(null),
   initialDraftId: z.string().nullable().default(null),
   initialMessageId: z.string().nullable().default(null),
   gmailThreadId: z.string().nullable().default(null),

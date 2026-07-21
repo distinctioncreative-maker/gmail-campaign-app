@@ -8,6 +8,7 @@ import {
   ownerFromCtx,
 } from "@/lib/repositories/campaigns";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
+import { listTemplates } from "@/lib/repositories/templates";
 import { CampaignControls } from "@/components/campaign/CampaignControls";
 import { CampaignDiagnostics } from "@/components/campaign/CampaignDiagnostics";
 import { RecipientTable } from "@/components/campaign/RecipientTable";
@@ -29,6 +30,21 @@ export default async function CampaignDetailPage({
     listEvents(owner, campaignId, 50),
   ]);
   const badge = CAMPAIGN_STATUS_LABELS[campaign.status];
+
+  // A/B rotation performance: group recipients by assigned template.
+  const abRows: Array<{ name: string; sent: number; replied: number }> = [];
+  if (campaign.templateRotation.length > 1) {
+    const templates = await listTemplates(ctx, { includeArchived: true });
+    const nameById = new Map(templates.map((t) => [t.templateId, t.name]));
+    for (const tid of campaign.templateRotation) {
+      const group = recipients.filter((r) => r.templateIdSnapshot === tid);
+      abRows.push({
+        name: nameById.get(tid) ?? "Template",
+        sent: group.filter((r) => r.initialSentAt !== null).length,
+        replied: group.filter((r) => r.repliedAt !== null).length,
+      });
+    }
+  }
 
   const totalToSend = campaign.eligibleRecipients;
   const doneCount = campaign.sentCount;
@@ -105,6 +121,54 @@ export default async function CampaignDetailPage({
       <div className="mt-4">
         <CampaignDiagnostics campaignId={campaign.campaignId} />
       </div>
+
+      {abRows.length > 0 && (
+        <div className="mt-4 card p-5">
+          <h2 className="font-medium">Template performance (A/B)</h2>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="py-2 pr-4">Template</th>
+                  <th className="py-2 pr-4">Sent</th>
+                  <th className="py-2 pr-4">Replies</th>
+                  <th className="py-2">Reply rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {abRows.map((r, i) => {
+                  const rate = r.sent > 0 ? (r.replied / r.sent) * 100 : 0;
+                  const best = Math.max(...abRows.map((x) => (x.sent > 0 ? x.replied / x.sent : 0)));
+                  const isBest = r.sent > 0 && r.replied / r.sent === best && best > 0;
+                  return (
+                    <tr key={i} className="border-t border-slate-100">
+                      <td className="py-2 pr-4 font-medium">
+                        <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary-soft text-[10px] font-bold text-primary">
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        {r.name}
+                        {isBest && <span className="ml-2 text-xs font-semibold text-green-600">★ best</span>}
+                      </td>
+                      <td className="py-2 pr-4 tabular-nums">{r.sent}</td>
+                      <td className="py-2 pr-4 tabular-nums">{r.replied}</td>
+                      <td className="py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.min(100, rate)}%` }} />
+                          </div>
+                          <span className="tabular-nums text-xs text-slate-500">
+                            {r.sent > 0 ? `${rate.toFixed(1)}%` : "—"}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[2fr_1fr]">
         <div>

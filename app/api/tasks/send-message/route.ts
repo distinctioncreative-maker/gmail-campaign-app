@@ -166,8 +166,11 @@ export async function POST(req: NextRequest) {
       step = sequence?.steps[item.sequenceStep - 1] ?? null;
     }
 
-    const initialTemplate = campaign.initialTemplateId
-      ? await getTemplate(owner, campaign.initialTemplateId)
+    // A/B rotation: this recipient's assigned template (falls back to the
+    // campaign's primary template for non-rotation campaigns).
+    const initialTemplateId = recipient.templateIdSnapshot ?? campaign.initialTemplateId;
+    const initialTemplate = initialTemplateId
+      ? await getTemplate(owner, initialTemplateId)
       : null;
 
     const pauseMissingBody = async () => {
@@ -190,7 +193,7 @@ export async function POST(req: NextRequest) {
       plainText = undefined;
       baseSubject = step.customSubject || initialTemplate?.subjectTemplate || "Following up";
     } else {
-      const tId = step?.bodyMode === "TEMPLATE" ? step.templateId : campaign.initialTemplateId;
+      const tId = step?.bodyMode === "TEMPLATE" ? step.templateId : initialTemplateId;
       const template = tId ? await getTemplate(owner, tId) : initialTemplate;
       if (!template) return pauseMissingBody();
       bodyHtmlTemplate = template.htmlTemplate;
