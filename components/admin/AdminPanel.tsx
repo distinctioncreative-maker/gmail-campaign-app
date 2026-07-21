@@ -87,7 +87,7 @@ export function AdminPanel({
                       className={input}
                     >
                       <option value="SALES_REP">Sales rep</option>
-                      <option value="MANAGER">Manager</option>
+                      <option value="MANAGER">Team Lead</option>
                       <option value="ADMIN">Admin</option>
                     </select>
                   </td>
@@ -123,7 +123,7 @@ export function AdminPanel({
           >
             <option value="OFF">Off — each rep only sees their own history</option>
             <option value="PRIVATE_WARNING">Warn privately (no names revealed)</option>
-            <option value="MANAGER_VISIBLE">Warn reps; managers can see who contacted</option>
+            <option value="MANAGER_VISIBLE">Warn reps; team leads can see who contacted</option>
             <option value="BLOCK_RECENT_TEAM_CONTACT">Block recently team-contacted leads</option>
           </select>
         </label>

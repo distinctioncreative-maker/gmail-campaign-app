@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { SendingModeCard } from "@/components/admin/SendingModeCard";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function AdminPage() {
   const ctx = await requireUser();
@@ -15,8 +16,10 @@ export default async function AdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Administration</h1>
-      <p className="mt-1 text-sm text-slate-600">Manage your team and organization policies.</p>
+      <PageHeader
+        title="Administration"
+        description="Roles, access, sending mode, and organization policies. Teams are managed on the Team page."
+      />
       <div className="mt-6">
         <SendingModeCard />
       </div>

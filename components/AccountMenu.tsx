@@ -39,7 +39,8 @@ export function AccountMenu({
   }, [open]);
 
   const initial = displayName.trim().charAt(0).toUpperCase() || "U";
-  const roleLabel = role.replace("_", " ").toLowerCase();
+  const roleLabel =
+    role === "ADMIN" ? "Administrator" : role === "MANAGER" ? "Team Lead" : "Sales Rep";
 
   async function switchAccount() {
     setBusy(true);
