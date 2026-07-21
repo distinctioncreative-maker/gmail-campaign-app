@@ -5,6 +5,7 @@ import { getDailyCount, listCampaigns, ownerFromCtx } from "@/lib/repositories/c
 import { currentDayKey } from "@/lib/scheduling/window";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 export default async function HomePage() {
   const ctx = await requireUser();
@@ -22,11 +23,11 @@ export default async function HomePage() {
   const dailyRemaining = Math.max(0, profile.sendingDefaults.dailySendLimit - sentToday);
   const recent = campaigns.slice(0, 5);
 
-  const stats = [
-    { label: "Emails sent today", value: sentToday, icon: "✉️", tone: "text-slate-900" },
-    { label: "Daily allowance left", value: dailyRemaining, icon: "⏳", tone: "text-slate-900" },
-    { label: "Active campaigns", value: active.length, icon: "🚀", tone: "text-slate-900" },
-    { label: "Replies received", value: totalReplies, icon: "💬", tone: "text-green-600" },
+  const stats: Array<{ label: string; value: number; icon: IconName; tone: string }> = [
+    { label: "Emails sent today", value: sentToday, icon: "mail", tone: "text-slate-900" },
+    { label: "Daily allowance left", value: dailyRemaining, icon: "hourglass", tone: "text-slate-900" },
+    { label: "Active campaigns", value: active.length, icon: "rocket", tone: "text-slate-900" },
+    { label: "Replies received", value: totalReplies, icon: "reply", tone: "text-green-600" },
   ];
 
   return (
@@ -82,9 +83,9 @@ export default async function HomePage() {
               <p className="text-sm font-medium text-slate-500">{s.label}</p>
               <span
                 aria-hidden
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-base"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-primary"
               >
-                {s.icon}
+                <Icon name={s.icon} size={18} />
               </span>
             </div>
             <p className={`mt-3 text-3xl font-semibold tracking-tight ${s.tone}`}>{s.value}</p>
@@ -106,17 +107,17 @@ export default async function HomePage() {
         </div>
       ) : (
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          {[
-            { href: "/campaigns/new", icon: "🚀", title: "Create a campaign", desc: "Pick leads, an email, and a schedule." },
-            { href: "/leads", icon: "👥", title: "Import leads", desc: "Paste from Salesforce or upload a CSV." },
-            { href: "/templates/new", icon: "✉️", title: "Build a template", desc: "Design a reusable, personalized email." },
-          ].map((a) => (
+          {([
+            { href: "/campaigns/new", icon: "rocket", title: "Create a campaign", desc: "Pick leads, an email, and a schedule." },
+            { href: "/leads", icon: "users", title: "Import leads", desc: "Paste from Salesforce or upload a CSV." },
+            { href: "/templates/new", icon: "mail", title: "Build a template", desc: "Design a reusable, personalized email." },
+          ] as Array<{ href: string; icon: IconName; title: string; desc: string }>).map((a) => (
             <Link key={a.href} href={a.href} className="card card-hover group p-5">
               <span
                 aria-hidden
-                className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-xl shadow-md"
+                className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-md"
               >
-                {a.icon}
+                <Icon name={a.icon} size={22} />
               </span>
               <p className="mt-3 font-semibold group-hover:text-primary">{a.title}</p>
               <p className="mt-1 text-sm text-slate-500">{a.desc}</p>

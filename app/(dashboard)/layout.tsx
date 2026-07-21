@@ -4,6 +4,7 @@ import { resolveSendingState } from "@/lib/sending/mode";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ProductTour } from "@/components/tour/ProductTour";
+import { UIProviders } from "@/components/ui/UIProviders";
 
 const BASE_NAV: NavItem[] = [
   { href: "/home", label: "Home", icon: "home" },
@@ -51,6 +52,7 @@ export default async function DashboardLayout({
   const sending = await resolveSendingState(organizationId);
 
   return (
+    <UIProviders>
     <div className="flex min-h-screen">
       <Sidebar items={nav} displayName={displayName} role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -75,5 +77,6 @@ export default async function DashboardLayout({
       </div>
       <ProductTour />
     </div>
+    </UIProviders>
   );
 }

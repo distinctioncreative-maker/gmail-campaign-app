@@ -8,6 +8,7 @@ import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
 import { Icon } from "@/components/ui/Icon";
 import { fetchJson } from "@/lib/fetchJson";
+import { useConfirm, useToast } from "@/components/ui/UIProviders";
 
 export interface CampaignRow {
   campaignId: string;
@@ -25,19 +26,26 @@ type SortKey = "name" | "status" | "recipients" | "sent" | "replies" | "updatedA
 
 export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
   const router = useRouter();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   async function deleteDraft(c: CampaignRow) {
-    if (!confirm(`Delete the draft campaign “${c.name}”? This can't be undone.`)) return;
+    const ok = await confirm({
+      title: "Delete this draft?",
+      body: `“${c.name}” will be permanently removed. This can't be undone.`,
+      danger: true,
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
     setBusyId(c.campaignId);
-    setError(null);
     try {
       await fetchJson(`/api/campaigns/${c.campaignId}`, { method: "DELETE" });
+      toast("Draft deleted.", "success");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete that campaign.");
+      toast(err instanceof Error ? err.message : "Could not delete that campaign.", "error");
     } finally {
       setBusyId(null);
     }
@@ -120,7 +128,6 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
           </tbody>
         </table>
       </div>
-      {error && <p className="border-t border-slate-100 p-3 text-sm text-red-600">{error}</p>}
     </div>
   );
 }

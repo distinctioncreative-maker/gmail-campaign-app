@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LocalTime } from "@/components/LocalTime";
 import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
+import { useConfirm, useToast } from "@/components/ui/UIProviders";
 
 interface RecipientRow {
   recipientId: string;
@@ -54,6 +55,8 @@ export function RecipientTable({
   recipients: RecipientRow[];
 }) {
   const router = useRouter();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [filter, setFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
@@ -107,8 +110,13 @@ export function RecipientTable({
   }, [filtered, emailsPerBatch]);
 
   async function skip(recipientId: string, email: string) {
-    if (!confirm(`Remove ${email} from this campaign? They will not receive any more emails from it.`))
-      return;
+    const ok = await confirm({
+      title: "Remove from campaign?",
+      body: `${email} will not receive any more emails from this campaign.`,
+      danger: true,
+      confirmLabel: "Remove",
+    });
+    if (!ok) return;
     setBusy(true);
     await fetch(`/api/campaigns/${campaignId}/control`, {
       method: "POST",
@@ -116,6 +124,7 @@ export function RecipientTable({
       body: JSON.stringify({ action: "skip_recipient", recipientId }),
     });
     setBusy(false);
+    toast(`${email} removed.`, "success");
     router.refresh();
   }
 

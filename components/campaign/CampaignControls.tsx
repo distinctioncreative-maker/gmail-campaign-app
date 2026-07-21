@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchJson } from "@/lib/fetchJson";
+import { useConfirm, useToast } from "@/components/ui/UIProviders";
 
 interface Pace {
   dailySendLimit: number;
@@ -24,17 +25,16 @@ export function CampaignControls({
   pace: Pace;
 }) {
   const router = useRouter();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [showPace, setShowPace] = useState(false);
   const [draft, setDraft] = useState<Pace>(pace);
 
   async function post(body: Record<string, unknown>, confirmMessage?: string) {
-    if (confirmMessage && !confirm(confirmMessage)) return;
+    if (confirmMessage && !(await confirm({ title: "Are you sure?", body: confirmMessage, danger: true, confirmLabel: "Yes, continue" })))
+      return;
     setBusy(true);
-    setError(null);
-    setMessage(null);
     try {
       const res = await fetchJson<{ message?: string; campaignId?: string }>(
         `/api/campaigns/${campaignId}/control`,
@@ -44,14 +44,14 @@ export function CampaignControls({
           body: JSON.stringify(body),
         }
       );
-      setMessage(res.message ?? "Done.");
+      toast(res.message ?? "Done.", "success");
       if (body.action === "clone" && res.campaignId) {
         router.push(`/campaigns/${res.campaignId}`);
         return;
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "That didn't work.");
+      toast(err instanceof Error ? err.message : "That didn't work.", "error");
     } finally {
       setBusy(false);
     }
@@ -60,14 +60,20 @@ export function CampaignControls({
   const act = (action: string, confirmMessage?: string) => post({ action }, confirmMessage);
 
   async function deleteDraft() {
-    if (!confirm("Delete this draft campaign? This can't be undone.")) return;
+    const ok = await confirm({
+      title: "Delete this draft?",
+      body: "This draft campaign will be permanently removed. This can't be undone.",
+      danger: true,
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
     setBusy(true);
-    setError(null);
     try {
       await fetchJson(`/api/campaigns/${campaignId}`, { method: "DELETE" });
+      toast("Draft deleted.", "success");
       router.push("/campaigns");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete that campaign.");
+      toast(err instanceof Error ? err.message : "Could not delete that campaign.", "error");
       setBusy(false);
     }
   }
@@ -93,8 +99,6 @@ export function CampaignControls({
 
   return (
     <div className="card p-4">
-      {message && <p className="mb-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">{message}</p>}
-      {error && <p className="mb-3 rounded-lg bg-red-50 p-2 text-sm text-red-700">{error}</p>}
 
       <div className="flex flex-wrap gap-2">
         {status === "ACTIVE" && (
