@@ -78,6 +78,21 @@ export function CampaignControls({
     }
   }
 
+  async function checkReplies() {
+    setBusy(true);
+    try {
+      const res = await fetchJson<{ message?: string }>(`/api/campaigns/${campaignId}/check-replies`, {
+        method: "POST",
+      });
+      toast(res.message ?? "Checked for replies.", "success");
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not check for replies.", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const btn =
     "rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50";
   const primaryBtn = "btn-primary px-4 py-2 text-sm disabled:opacity-50";
@@ -159,6 +174,9 @@ export function CampaignControls({
             Retry failed
           </button>
         )}
+        <button onClick={() => void checkReplies()} disabled={busy} className={btn}>
+          Check for replies now
+        </button>
         <button onClick={() => act("clone")} disabled={busy} className={btn}>
           Duplicate campaign
         </button>
