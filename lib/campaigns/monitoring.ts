@@ -10,6 +10,7 @@ import {
   updateRecipient,
 } from "@/lib/repositories/campaigns";
 import { getConnection } from "@/lib/repositories/gmailConnections";
+import { recordEngagementByEmail } from "@/lib/repositories/contacts";
 import { addSuppression } from "@/lib/repositories/suppressions";
 import { addNotification } from "@/lib/repositories/notifications";
 import { getInboundAfter, findRecentBounces } from "@/lib/gmail/threads";
@@ -94,6 +95,7 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
           recipientId: r.recipientId,
         });
         await incrementCampaignCounters(owner, campaign.campaignId, { unsubscribeCount: 1 });
+        await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "UNSUBSCRIBED", now);
         await recordEvent(owner, campaign.campaignId, {
           type: "UNSUBSCRIBE",
           message: `${r.emailSnapshot} asked to unsubscribe — added to your do-not-email list.`,
@@ -138,6 +140,7 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
         });
         await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
         await incrementCampaignCounters(owner, campaign.campaignId, { replyCount: 1 });
+        await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "REPLIED", now);
         await recordEvent(owner, campaign.campaignId, {
           type: "REPLY",
           message: `${r.emailSnapshot} replied — follow-ups stopped.`,
@@ -221,6 +224,12 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
     }
 
     await incrementCampaignCounters(owner, match.campaignId, { bounceCount: 1 });
+    await recordEngagementByEmail(
+      owner,
+      match.recipient.normalizedEmailSnapshot,
+      type === "HARD" ? "BOUNCED_HARD" : "BOUNCED_SOFT",
+      now
+    );
     await recordEvent(owner, match.campaignId, {
       type: "BOUNCE",
       message: `${match.recipient.emailSnapshot} ${type === "HARD" ? "hard-bounced — added to your do-not-email list" : "soft-bounced"}.`,

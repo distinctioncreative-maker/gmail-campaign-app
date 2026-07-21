@@ -10,6 +10,11 @@ import {
   normalizeEmail,
   normalizePhone,
 } from "@/lib/parser/normalize";
+import {
+  splitFullName,
+  type ContactPatch,
+  type ContactEngagement,
+} from "@/lib/leads/engagement";
 
 /**
  * All contact access is scoped by the verified AuthContext. The owner's
@@ -116,6 +121,123 @@ export async function releaseContactsForCampaign(
     if (inBatch > 0) await batch.commit();
   }
   return released;
+}
+
+/** Apply a rep's edits from the lead page. Normalized fields are recomputed
+ * so search/dedup keep working; email itself is never editable here. */
+export async function updateContactDetails(
+  ctx: Scope,
+  contactId: string,
+  patch: ContactPatch
+): Promise<void> {
+  const update: Record<string, unknown> = { updatedAt: Date.now() };
+  if (patch.fullName !== undefined) {
+    const { firstName, lastName } = splitFullName(patch.fullName);
+    update.fullName = patch.fullName;
+    update.firstName = firstName;
+    update.lastName = lastName;
+  }
+  if (patch.businessName !== undefined) {
+    update.businessName = patch.businessName;
+    update.normalizedBusinessName = normalizeBusinessName(patch.businessName);
+  }
+  if (patch.phone !== undefined) {
+    update.phone = patch.phone;
+    update.normalizedPhone = patch.phone ? normalizePhone(patch.phone) : "";
+  }
+  if (patch.region !== undefined) update.region = patch.region;
+  if (patch.requestedAmount !== undefined) update.requestedAmount = patch.requestedAmount;
+  if (patch.leadSource !== undefined) update.leadSource = patch.leadSource;
+  if (patch.notes !== undefined) update.notes = patch.notes;
+  if (patch.emailOptOut !== undefined) update.emailOptOut = patch.emailOptOut;
+  await contactsRef(ctx).doc(contactId).update(update);
+}
+
+/** Permanently delete a lead. Campaign snapshots are unaffected (they carry
+ * their own copies), so history stays intact. */
+export async function deleteContact(ctx: Scope, contactId: string): Promise<void> {
+  await contactsRef(ctx).doc(contactId).delete();
+}
+
+/** Count one genuinely sent email (initial or follow-up) on the contact. */
+export async function recordEmailSent(ctx: Scope, contactId: string, at: number): Promise<void> {
+  await contactsRef(ctx)
+    .doc(contactId)
+    .update({ emailsSentCount: FieldValue.increment(1), lastOutcome: "EMAILED", updatedAt: at })
+    .catch(() => {
+      // Contact may have been deleted after launch — ignore.
+    });
+}
+
+export type EngagementEvent = "REPLIED" | "UNSUBSCRIBED" | "BOUNCED_HARD" | "BOUNCED_SOFT";
+
+/** Mirror a campaign engagement event (reply/bounce/unsubscribe) onto the
+ * contact so the Leads pages reflect reality without scanning campaigns. */
+export async function recordEngagementByEmail(
+  ctx: Scope,
+  normalizedEmail: string,
+  event: EngagementEvent,
+  at: number
+): Promise<void> {
+  const contact = await findByNormalizedEmail(ctx, normalizedEmail);
+  if (!contact) return;
+  const ref = contactsRef(ctx).doc(contact.contactId);
+  const base = { updatedAt: at };
+  if (event === "REPLIED") {
+    await ref.update({
+      ...base,
+      replyCount: FieldValue.increment(1),
+      repliedAt: contact.repliedAt ?? at,
+      lastRepliedAt: at,
+      lastOutcome: "REPLIED",
+    });
+  } else if (event === "UNSUBSCRIBED") {
+    await ref.update({
+      ...base,
+      unsubscribedAt: at,
+      lastOutcome: "UNSUBSCRIBED",
+      suppressed: true,
+      suppressionReason: "UNSUBSCRIBED",
+    });
+  } else {
+    await ref.update({
+      ...base,
+      bouncedAt: at,
+      lastOutcome: "BOUNCED",
+      ...(event === "BOUNCED_HARD"
+        ? { suppressed: true, suppressionReason: "HARD_BOUNCE" }
+        : {}),
+    });
+  }
+}
+
+/** Overwrite a contact's engagement fields with authoritative rolled-up
+ * values (used by the reconcile sweep — recipient records win). */
+export async function setContactEngagement(
+  ctx: Scope,
+  contactId: string,
+  e: ContactEngagement
+): Promise<void> {
+  await contactsRef(ctx)
+    .doc(contactId)
+    .update({
+      emailsSentCount: e.emailsSentCount,
+      replyCount: e.replyCount,
+      repliedAt: e.repliedAt,
+      lastRepliedAt: e.lastRepliedAt,
+      bouncedAt: e.bouncedAt,
+      unsubscribedAt: e.unsubscribedAt,
+      lastOutcome: e.lastOutcome,
+      ...(e.unsubscribedAt !== null
+        ? { suppressed: true, suppressionReason: "UNSUBSCRIBED" }
+        : e.hardBounced
+          ? { suppressed: true, suppressionReason: "HARD_BOUNCE" }
+          : {}),
+      updatedAt: Date.now(),
+    })
+    .catch(() => {
+      // Contact deleted since the campaign ran — ignore.
+    });
 }
 
 function parseSourceTimestamp(value: string | null): number | null {

@@ -15,6 +15,8 @@ export default async function LeadsPage() {
     email: c.email,
     phone: c.phone,
     campaignCount: c.campaignCount,
+    emailsSentCount: c.emailsSentCount,
+    replyCount: c.replyCount,
     suppressed: c.suppressed,
     emailOptOut: c.emailOptOut,
     repliedAt: c.repliedAt,

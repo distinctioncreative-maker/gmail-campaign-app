@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { ownerFromCtx } from "@/lib/repositories/campaigns";
 import { processRepliesForUser, processBouncesForUser } from "@/lib/campaigns/monitoring";
+import { reconcileContactEngagement } from "@/lib/leads/reconcile";
 
 /**
  * On-demand reply + bounce scan across the signed-in user's whole mailbox,
@@ -19,6 +20,10 @@ export const POST = handleApiErrors(async (_req: NextRequest) => {
     processBouncesForUser(owner),
   ]);
 
+  // Sync every lead's engagement stats (emails sent, replies back, outcome)
+  // from the campaign records — backfills history, not just new events.
+  const { contactsSynced } = await reconcileContactEngagement(owner);
+
   const parts: string[] = [];
   if (replies.replied > 0) parts.push(`${replies.replied} new repl${replies.replied === 1 ? "y" : "ies"}`);
   if (bounces.bounces > 0) parts.push(`${bounces.bounces} bounce${bounces.bounces === 1 ? "" : "s"}`);
@@ -27,5 +32,5 @@ export const POST = handleApiErrors(async (_req: NextRequest) => {
       ? `Found ${parts.join(" and ")}.`
       : `Checked ${replies.checked} recipient${replies.checked === 1 ? "" : "s"} — no new replies or bounces yet.`;
 
-  return NextResponse.json({ ...replies, ...bounces, message });
+  return NextResponse.json({ ...replies, ...bounces, contactsSynced, message });
 });

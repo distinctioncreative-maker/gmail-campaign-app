@@ -31,6 +31,13 @@ export const ContactSchema = z.object({
   lastCampaignName: z.string().nullable().default(null),
   lastCampaignAt: EpochMillis.nullable().default(null),
   lastOutcome: z.string().nullable().default(null),
+  /** Total individual emails sent to this person (initial + follow-ups). */
+  emailsSentCount: z.number().int().nonnegative().default(0),
+  /** How many times this person has emailed back across all campaigns. */
+  replyCount: z.number().int().nonnegative().default(0),
+  lastRepliedAt: EpochMillis.nullable().default(null),
+  /** Free-form rep notes, editable from the lead page. */
+  notes: z.string().default(""),
   repliedAt: EpochMillis.nullable().default(null),
   bouncedAt: EpochMillis.nullable().default(null),
   unsubscribedAt: EpochMillis.nullable().default(null),

@@ -18,7 +18,7 @@ import {
   type OwnerRef,
 } from "@/lib/repositories/campaigns";
 import { checkEligibility } from "@/lib/campaigns/eligibility";
-import { markContacted } from "@/lib/repositories/contacts";
+import { markContacted, recordEmailSent } from "@/lib/repositories/contacts";
 import { getConnection } from "@/lib/repositories/gmailConnections";
 import { isSuppressed } from "@/lib/repositories/suppressions";
 import { getTemplate } from "@/lib/repositories/templates";
@@ -295,6 +295,9 @@ export async function POST(req: NextRequest) {
         at: now,
       });
     }
+    // Every genuinely sent email (initial or follow-up) counts on the lead's
+    // engagement stats.
+    await recordEmailSent(owner, recipient.contactId, now);
 
     // Record org-scoped collision hash (no-op unless a team policy is on).
     await recordCollisionContact(owner.organizationId, owner.userId, recipient.normalizedEmailSnapshot);

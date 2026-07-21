@@ -12,6 +12,8 @@ export interface ContactRow {
   email: string;
   phone: string;
   campaignCount: number;
+  emailsSentCount: number;
+  replyCount: number;
   suppressed: boolean;
   emailOptOut: boolean;
   repliedAt: number | null;
@@ -62,13 +64,17 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
   const statusRank = (c: ContactRow) =>
     c.suppressed || c.emailOptOut ? 3 : c.repliedAt ? 2 : c.campaignCount > 0 ? 1 : 0;
 
-  const { sorted, sort, toggle } = useSort<ContactRow, "name" | "business" | "email" | "phone" | "status">(
+  const { sorted, sort, toggle } = useSort<
+    ContactRow,
+    "name" | "business" | "email" | "phone" | "engagement" | "status"
+  >(
     visible,
     {
       name: (c) => c.fullName || c.email,
       business: (c) => c.businessName,
       email: (c) => c.email,
       phone: (c) => c.phone,
+      engagement: (c) => c.replyCount * 1000 + c.emailsSentCount,
       status: (c) => statusRank(c),
     },
     { key: "name", dir: "asc" }
@@ -113,6 +119,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
                 <SortTh label="Business" sortKey="business" sort={sort} onToggle={toggle} />
                 <SortTh label="Email" sortKey="email" sort={sort} onToggle={toggle} />
                 <SortTh label="Phone" sortKey="phone" sort={sort} onToggle={toggle} />
+                <SortTh label="Engagement" sortKey="engagement" sort={sort} onToggle={toggle} />
                 <SortTh label="Status" sortKey="status" sort={sort} onToggle={toggle} />
               </tr>
             </thead>
@@ -127,6 +134,18 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
                   <td className="px-4 py-3 text-slate-600">{c.businessName}</td>
                   <td className="px-4 py-3 text-slate-600">{c.email}</td>
                   <td className="px-4 py-3 text-slate-600">{c.phone}</td>
+                  <td className="px-4 py-3 text-xs text-slate-600">
+                    {c.emailsSentCount === 0 && c.campaignCount === 0 ? (
+                      <span className="text-slate-300">—</span>
+                    ) : (
+                      <span className="tabular-nums">
+                        {c.emailsSentCount} sent
+                        {c.replyCount > 0 && (
+                          <span className="font-medium text-green-600"> · {c.replyCount} replied</span>
+                        )}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     {c.suppressed || c.emailOptOut ? (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
