@@ -100,6 +100,7 @@ export async function upsertMember(
     email,
     role,
     active: true,
+    teamId: null,
     createdAt: now,
     updatedAt: now,
   };

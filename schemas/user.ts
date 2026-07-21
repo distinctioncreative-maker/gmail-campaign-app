@@ -31,10 +31,24 @@ export const MemberSchema = z.object({
   email: z.string().email(),
   role: RoleSchema,
   active: z.boolean(),
+  /** Team this member belongs to (null = unassigned). Team Leads manage
+   * membership of their own team; admins manage all. */
+  teamId: z.string().nullable().default(null),
   createdAt: EpochMillis,
   updatedAt: EpochMillis,
 });
 export type Member = z.infer<typeof MemberSchema>;
+
+export const TeamSchema = z.object({
+  teamId: z.string().min(1),
+  organizationId: z.string().min(1),
+  name: z.string().min(1).max(80),
+  /** The MANAGER who leads this team. */
+  leadUserId: z.string().nullable().default(null),
+  createdAt: EpochMillis,
+  updatedAt: EpochMillis,
+});
+export type Team = z.infer<typeof TeamSchema>;
 
 export const OrganizationSchema = z.object({
   organizationId: z.string().min(1),
