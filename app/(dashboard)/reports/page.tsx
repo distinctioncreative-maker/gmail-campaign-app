@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { ReplyHeatmap, TrendChart, BestSendTimes } from "@/components/analytics/Charts";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
+import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
 import {
   totals,
   timeToReply,
@@ -83,13 +84,16 @@ export default async function ReportsPage() {
         title="Analytics"
         description="Reply performance across your campaigns — reply rates, when people reply, and what's working. No open tracking (it's unreliable and hurts deliverability)."
         actions={
-          leaderboard.length > 0 ? (
-            <ExportCsvButton
-              filename="massleader-campaigns.csv"
-              headers={["Campaign", "Status", "Sent", "Replies", "Reply rate", "Bounces", "Unsub"]}
-              rows={csvRows}
-            />
-          ) : null
+          <div className="flex items-center gap-2">
+            <ScanRepliesButton />
+            {leaderboard.length > 0 ? (
+              <ExportCsvButton
+                filename="massleader-campaigns.csv"
+                headers={["Campaign", "Status", "Sent", "Replies", "Reply rate", "Bounces", "Unsub"]}
+                rows={csvRows}
+              />
+            ) : null}
+          </div>
         }
       />
 
