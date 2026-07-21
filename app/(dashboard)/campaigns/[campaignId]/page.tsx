@@ -9,6 +9,7 @@ import {
 } from "@/lib/repositories/campaigns";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { CampaignControls } from "@/components/campaign/CampaignControls";
+import { CampaignDiagnostics } from "@/components/campaign/CampaignDiagnostics";
 import { RecipientTable } from "@/components/campaign/RecipientTable";
 import { LocalTime } from "@/components/LocalTime";
 
@@ -99,6 +100,10 @@ export default async function CampaignDetailPage({
             interBatchDelayMinutes: campaign.schedule.interBatchDelayMinutes,
           }}
         />
+      </div>
+
+      <div className="mt-4">
+        <CampaignDiagnostics campaignId={campaign.campaignId} />
       </div>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[2fr_1fr]">
