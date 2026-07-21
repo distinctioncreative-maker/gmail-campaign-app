@@ -179,14 +179,12 @@ export function RecipientTable({
             {filter === "Batches" ? `${batches.length} batches` : `${sorted.length} shown`}
           </span>
         </div>
-        <div className="mt-2 flex flex-wrap gap-1">
+        <div className="segmented mt-2 flex flex-wrap">
           {FILTERS.map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                filter === f ? "bg-primary text-white" : "text-slate-600 hover:bg-slate-100"
-              }`}
+              className={`seg-btn ${filter === f ? "is-active" : ""}`}
             >
               {f}
             </button>

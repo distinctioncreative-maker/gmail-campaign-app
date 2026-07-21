@@ -85,16 +85,12 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
           aria-label="Search contacts"
           className="w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
-        <div className="flex gap-1">
+        <div className="segmented flex">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                filter === f.id
-                  ? "bg-primary text-white"
-                  : "bg-white text-slate-600 hover:bg-slate-100"
-              }`}
+              className={`seg-btn ${filter === f.id ? "is-active" : ""}`}
             >
               {f.label}
             </button>
