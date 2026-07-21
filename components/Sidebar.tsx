@@ -4,8 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationBell";
-import { SignOutButton } from "@/components/SignOutButton";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { AccountMenu } from "@/components/AccountMenu";
 
 export interface NavItem {
   href: string;
@@ -68,10 +68,12 @@ function Brand() {
 export function Sidebar({
   items,
   displayName,
+  email,
   role,
 }: {
   items: NavItem[];
   displayName: string;
+  email: string;
   role: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -84,20 +86,8 @@ export function Sidebar({
           <Brand />
         </div>
         <NavLinks items={items} />
-        <div className="mt-auto flex items-center gap-3 rounded-2xl border border-border bg-white/80 p-3">
-          <span
-            aria-hidden
-            className="brand-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-          >
-            {displayName.trim().charAt(0).toUpperCase() || "U"}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
-            <p className="text-xs capitalize text-slate-500">{role.replace("_", " ").toLowerCase()}</p>
-          </div>
-          <div className="ml-auto">
-            <SignOutButton />
-          </div>
+        <div className="mt-auto">
+          <AccountMenu displayName={displayName} email={email} role={role} />
         </div>
       </aside>
 
@@ -134,22 +124,8 @@ export function Sidebar({
               </button>
             </div>
             <NavLinks items={items} onNavigate={() => setMobileOpen(false)} />
-            <div className="mt-auto flex items-center gap-3 rounded-2xl border border-border bg-white p-3">
-              <span
-                aria-hidden
-                className="brand-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-              >
-                {displayName.trim().charAt(0).toUpperCase() || "U"}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
-                <p className="text-xs capitalize text-slate-500">
-                  {role.replace("_", " ").toLowerCase()}
-                </p>
-              </div>
-              <div className="ml-auto">
-                <SignOutButton />
-              </div>
+            <div className="mt-auto">
+              <AccountMenu displayName={displayName} email={email} role={role} />
             </div>
           </div>
         </div>

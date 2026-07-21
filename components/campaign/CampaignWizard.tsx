@@ -9,6 +9,7 @@ import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { fetchJson } from "@/lib/fetchJson";
 import { SkeletonList } from "@/components/ui/Skeleton";
+import { SpamCheck } from "@/components/spam/SpamCheck";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -678,6 +679,12 @@ export function CampaignWizard() {
               </li>
               <li>✅ Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</li>
             </ul>
+
+            {preview && (
+              <div className="mt-5 rounded-xl border border-slate-200 p-4">
+                <SpamCheck subject={preview.subject} html={preview.html} />
+              </div>
+            )}
             {counts.selected > 100 && (
               <label className="mt-4 block text-sm font-medium text-slate-700">
                 This is a large campaign — type <strong>SEND</strong> to confirm

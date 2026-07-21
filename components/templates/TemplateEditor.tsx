@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { STARTER_LAYOUTS } from "./starterLayouts";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
+import { SpamCheck } from "@/components/spam/SpamCheck";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -52,6 +53,7 @@ export function TemplateEditor({
   const [html, setHtml] = useState(initial?.htmlTemplate ?? "<p>Hi {{first_name}},</p><p></p>");
   const [preview, setPreview] = useState<{ subject: string; html: string; unresolved: string[] } | null>(null);
   const [mobilePreview, setMobilePreview] = useState(false);
+  const [rightTab, setRightTab] = useState<"preview" | "spam">("preview");
   const [drafts, setDrafts] = useState<DraftSummary[] | null>(null);
   const [draftSearch, setDraftSearch] = useState("");
   const [busy, setBusy] = useState(false);
@@ -434,17 +436,36 @@ export function TemplateEditor({
 
       <div className="card p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">Preview</h2>
-          <label className="flex items-center gap-2 text-xs text-slate-500">
-            <input
-              type="checkbox"
-              checked={mobilePreview}
-              onChange={(e) => setMobilePreview(e.target.checked)}
-            />
-            Phone size
-          </label>
+          <div className="flex gap-1 rounded-xl bg-slate-100 p-0.5 text-sm">
+            {(["preview", "spam"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setRightTab(t)}
+                className={`rounded-lg px-3 py-1 font-medium transition ${
+                  rightTab === t ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {t === "preview" ? "Preview" : "Spam check"}
+              </button>
+            ))}
+          </div>
+          {rightTab === "preview" && (
+            <label className="flex items-center gap-2 text-xs text-slate-500">
+              <input
+                type="checkbox"
+                checked={mobilePreview}
+                onChange={(e) => setMobilePreview(e.target.checked)}
+              />
+              Phone size
+            </label>
+          )}
         </div>
-        {preview ? (
+
+        {rightTab === "spam" ? (
+          <div className="mt-4">
+            <SpamCheck subject={subject} html={html} />
+          </div>
+        ) : preview ? (
           <>
             {preview.unresolved.length > 0 && (
               <p className="mt-3 rounded-lg bg-amber-50 p-2 text-xs text-amber-700">

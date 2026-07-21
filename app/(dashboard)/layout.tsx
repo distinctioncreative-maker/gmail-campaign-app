@@ -38,11 +38,13 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   let displayName: string;
+  let email: string;
   let role: string;
   let organizationId: string;
   try {
     const ctx = await requireUser();
     displayName = ctx.user.displayName;
+    email = ctx.email;
     role = ctx.role;
     organizationId = ctx.organizationId;
   } catch {
@@ -55,7 +57,7 @@ export default async function DashboardLayout({
   return (
     <UIProviders>
     <div className="flex min-h-screen">
-      <Sidebar items={nav} displayName={displayName} role={role} />
+      <Sidebar items={nav} displayName={displayName} email={email} role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Always-visible sending-mode banner so no one is ever unsure. */}
         {sending.testMode ? (
