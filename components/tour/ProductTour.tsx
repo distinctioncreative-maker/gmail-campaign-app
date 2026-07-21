@@ -17,7 +17,7 @@ const STORAGE_KEY = "outreach.tourSeen.v1";
 const STEPS: Step[] = [
   {
     emoji: "👋",
-    title: "Welcome to MassLeader",
+    title: "Welcome to Cadence",
     body: "A quick 60-second tour of where everything lives. You can skip any time, and replay this from the Help page.",
   },
   {

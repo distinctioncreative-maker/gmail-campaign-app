@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MassLeader",
+  title: "Cadence",
   description: "Send personal email campaigns through your own Gmail",
 };
 

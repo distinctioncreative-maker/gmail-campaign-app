@@ -34,7 +34,7 @@ configured "External".
 
 ## Option B — Separate deployment (below)
 
-MassLeader can also run **one copy per Google Workspace company**. Each copy
+Cadence can also run **one copy per Google Workspace company**. Each copy
 lives in that company's own Google Cloud project, uses "Internal" Gmail
 permissions (no Google review, long-lived sending), and keeps its
 infrastructure fully separate. Choose this when the companies must not share
@@ -89,7 +89,7 @@ gcloud firestore databases create --location=nam5
 ## 4. OAuth consent + client (3 min)
 
 1. **APIs & Services → OAuth consent screen → Internal** → fill app name
-   (`MassLeader`) + support email → Save.
+   (`Cadence`) + support email → Save.
 2. **Credentials → Create credentials → OAuth client ID → Web application**.
 3. Leave the redirect URI blank for now (you'll add it after the first deploy).
 4. Copy the **Client ID** and **Client secret**.

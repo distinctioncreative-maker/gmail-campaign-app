@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AccountMenu } from "@/components/AccountMenu";
+import { Logo } from "@/components/ui/Logo";
 
 export interface NavItem {
   href: string;
@@ -53,14 +54,8 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2.5 px-2">
-      <span
-        aria-hidden
-        className="brand-gradient flex h-9 w-9 items-center justify-center rounded-2xl text-xs font-bold text-white shadow-md"
-      >
-        ML
-      </span>
-      <span className="text-lg font-semibold tracking-tight text-slate-900">MassLeader</span>
+    <div className="px-2">
+      <Logo size={26} />
     </div>
   );
 }

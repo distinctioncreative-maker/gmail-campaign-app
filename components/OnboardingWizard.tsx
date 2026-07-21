@@ -56,9 +56,9 @@ export function OnboardingWizard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subjectTemplate: "Your MassLeader setup test",
+          subjectTemplate: "Your Cadence setup test",
           htmlTemplate:
-            "<p>Hi {{sender_name}},</p><p>This is your setup test from MassLeader. If you can read this, your Gmail connection works.</p><p>{{unsubscribe_text}}</p>",
+            "<p>Hi {{sender_name}},</p><p>This is your setup test from Cadence. If you can read this, your Gmail connection works.</p><p>{{unsubscribe_text}}</p>",
         }),
       });
       const body = await res.json();
