@@ -59,6 +59,19 @@ export function CampaignControls({
 
   const act = (action: string, confirmMessage?: string) => post({ action }, confirmMessage);
 
+  async function deleteDraft() {
+    if (!confirm("Delete this draft campaign? This can't be undone.")) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await fetchJson(`/api/campaigns/${campaignId}`, { method: "DELETE" });
+      router.push("/campaigns");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete that campaign.");
+      setBusy(false);
+    }
+  }
+
   const btn =
     "rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50";
   const primaryBtn = "btn-primary px-4 py-2 text-sm disabled:opacity-50";
@@ -145,6 +158,11 @@ export function CampaignControls({
         <button onClick={() => act("clone")} disabled={busy} className={btn}>
           Duplicate campaign
         </button>
+        {status === "DRAFT" && (
+          <button onClick={() => void deleteDraft()} disabled={busy} className={dangerBtn}>
+            Delete draft
+          </button>
+        )}
         {["STOPPED", "CANCELLED", "COMPLETED", "ERROR"].includes(status) && (
           <button
             onClick={() =>

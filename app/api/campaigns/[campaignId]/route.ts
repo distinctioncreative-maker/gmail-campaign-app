@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import {
+  deleteCampaign,
   getCampaign,
   listEvents,
   listRecipients,
@@ -55,5 +56,28 @@ export const PATCH = handleApiErrors(async (req: NextRequest, { params }: Params
       ? CampaignScheduleSchema.parse({ ...campaign.schedule, ...patch.schedule })
       : undefined,
   });
+  return NextResponse.json({ ok: true });
+});
+
+/** Permanently delete a campaign. Only DRAFT campaigns (never launched) can be
+ * deleted; anything that has run stays as a record and must be stopped/cancelled. */
+export const DELETE = handleApiErrors(async (_req: NextRequest, { params }: Params) => {
+  const ctx = await requireUser();
+  const { campaignId } = await params;
+  const owner = ownerFromCtx(ctx);
+  const campaign = await getCampaign(owner, campaignId);
+  if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
+
+  if (campaign.status !== "DRAFT") {
+    return NextResponse.json(
+      {
+        error:
+          "Only draft campaigns can be deleted. Stop or cancel a running campaign instead — finished campaigns stay as a record.",
+      },
+      { status: 400 }
+    );
+  }
+
+  await deleteCampaign(owner, campaignId);
   return NextResponse.json({ ok: true });
 });

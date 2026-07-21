@@ -85,6 +85,15 @@ export async function getCampaign(
   return snap.exists ? CampaignSchema.parse(snap.data()) : null;
 }
 
+/**
+ * Permanently delete a campaign and all of its subcollections (recipients,
+ * queue, events, messages). Uses Firestore recursiveDelete so nothing is left
+ * orphaned. Callers must enforce the DRAFT-only policy before calling.
+ */
+export async function deleteCampaign(owner: OwnerRef, campaignId: string): Promise<void> {
+  await firestore().recursiveDelete(campaignRef(owner, campaignId));
+}
+
 export async function listCampaigns(owner: OwnerRef, limit = 100): Promise<Campaign[]> {
   const snap = await campaignsRef(owner).orderBy("updatedAt", "desc").limit(limit).get();
   return snap.docs.map((d) => CampaignSchema.parse(d.data()));

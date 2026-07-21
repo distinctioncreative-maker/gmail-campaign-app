@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LocalTime } from "@/components/LocalTime";
 import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
+import { Icon } from "@/components/ui/Icon";
+import { fetchJson } from "@/lib/fetchJson";
 
 export interface CampaignRow {
   campaignId: string;
@@ -21,7 +24,24 @@ export interface CampaignRow {
 type SortKey = "name" | "status" | "recipients" | "sent" | "replies" | "updatedAt";
 
 export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function deleteDraft(c: CampaignRow) {
+    if (!confirm(`Delete the draft campaign “${c.name}”? This can't be undone.`)) return;
+    setBusyId(c.campaignId);
+    setError(null);
+    try {
+      await fetchJson(`/api/campaigns/${c.campaignId}`, { method: "DELETE" });
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete that campaign.");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const searched = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -62,6 +82,7 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
               <SortTh label="Sent" sortKey="sent" sort={sort} onToggle={toggle} />
               <SortTh label="Replies" sortKey="replies" sort={sort} onToggle={toggle} />
               <SortTh label="Updated" sortKey="updatedAt" sort={sort} onToggle={toggle} />
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -73,21 +94,33 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${c.statusClass}`}>
-                    {c.statusLabel}
-                  </span>
+                  <span className={`badge ${c.statusClass}`}>{c.statusLabel}</span>
                 </td>
-                <td className="px-4 py-3">{c.recipients}</td>
-                <td className="px-4 py-3">{c.sent}</td>
-                <td className="px-4 py-3">{c.replies}</td>
+                <td className="px-4 py-3 tabular-nums">{c.recipients}</td>
+                <td className="px-4 py-3 tabular-nums">{c.sent}</td>
+                <td className="px-4 py-3 tabular-nums">{c.replies}</td>
                 <td className="px-4 py-3 text-slate-500">
                   <LocalTime value={c.updatedAt} options={{ dateStyle: "medium" }} />
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {c.status === "DRAFT" && (
+                    <button
+                      onClick={() => void deleteDraft(c)}
+                      disabled={busyId === c.campaignId}
+                      aria-label={`Delete draft ${c.name}`}
+                      title="Delete draft"
+                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                    >
+                      <Icon name="trash" size={16} />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {error && <p className="border-t border-slate-100 p-3 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
