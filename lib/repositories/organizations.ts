@@ -1,6 +1,7 @@
 import "server-only";
 import { firestore } from "@/lib/firebase/admin";
 import { env } from "@/lib/env";
+import { parseAllowedDomains } from "@/lib/auth/domains";
 import {
   MemberSchema,
   OrganizationSchema,
@@ -11,17 +12,43 @@ import type { Role } from "@/schemas/common";
 
 const DEFAULT_ORG_ID = "default";
 
-export async function getOrCreateDefaultOrganization(): Promise<Organization> {
+/** Email domain → organization id. The first allowed domain (the primary
+ * tenant, e.g. alpinefundings.com) aliases to the existing DEFAULT_ORG_ID so
+ * its admin, members, and settings are preserved. Every other domain gets its
+ * own isolated org. Empty allowlist (dev) ⇒ single default org. */
+/** Pure resolver (testable): domain + allowlist → org id. */
+export function resolveOrgId(domain: string, allowedDomains: string[]): string {
+  const d = domain.trim().toLowerCase();
+  const primary = allowedDomains[0] ?? null;
+  if (!d || primary === null || d === primary) return DEFAULT_ORG_ID;
+  return `org_${d.replace(/[^a-z0-9]+/g, "_")}`;
+}
+
+export function orgIdForDomain(domain: string): string {
+  return resolveOrgId(domain, parseAllowedDomains(env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN));
+}
+
+function orgNameForDomain(domain: string, orgId: string): string {
+  if (orgId === DEFAULT_ORG_ID) return env.DEFAULT_ORGANIZATION_NAME;
+  const label = domain.split(".")[0] ?? domain;
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/** Resolve (creating if needed) the organization for an email domain. */
+export async function getOrCreateOrganizationForDomain(domain: string): Promise<Organization> {
   const db = firestore();
-  const ref = db.collection("organizations").doc(DEFAULT_ORG_ID);
+  const orgId = orgIdForDomain(domain);
+  const ref = db.collection("organizations").doc(orgId);
   const snap = await ref.get();
   if (snap.exists) return OrganizationSchema.parse(snap.data());
 
   const now = Date.now();
   const org: Organization = {
-    organizationId: DEFAULT_ORG_ID,
-    name: env.DEFAULT_ORGANIZATION_NAME,
-    allowedDomain: env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN,
+    organizationId: orgId,
+    name: orgNameForDomain(domain, orgId),
+    // New per-domain orgs allow just their own domain; the default org keeps
+    // the full allowlist for backward compatibility.
+    allowedDomain: orgId === DEFAULT_ORG_ID ? env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN : domain,
     collisionPolicy: "OFF",
     collisionBlockDays: 30,
     createdAt: now,
@@ -29,6 +56,11 @@ export async function getOrCreateDefaultOrganization(): Promise<Organization> {
   };
   await ref.create(org);
   return org;
+}
+
+/** @deprecated single-tenant fallback; kept for callers/tests. */
+export async function getOrCreateDefaultOrganization(): Promise<Organization> {
+  return getOrCreateOrganizationForDomain("");
 }
 
 export async function getMember(

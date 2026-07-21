@@ -4,7 +4,7 @@ import { getUser, createUser, touchLastLogin } from "@/lib/repositories/users";
 import {
   countMembers,
   getMember,
-  getOrCreateDefaultOrganization,
+  getOrCreateOrganizationForDomain,
   upsertMember,
 } from "@/lib/repositories/organizations";
 import type { Role } from "@/schemas/common";
@@ -34,14 +34,17 @@ export class ForbiddenError extends Error {
  * All owner/organization scoping downstream derives from this context —
  * never from client-supplied IDs.
  *
- * First-ever member of the organization becomes ADMIN; everyone else
- * joins as SALES_REP until an admin changes their role.
+ * Users are grouped into an organization by their email domain, so different
+ * Workspace domains (e.g. alpine vs everest) are fully isolated. First-ever
+ * member of each organization becomes ADMIN; everyone else joins as SALES_REP
+ * until an admin changes their role.
  */
 export async function requireUser(): Promise<AuthContext> {
   const identity = await verifySession();
   if (!identity) throw new UnauthorizedError();
 
-  const org = await getOrCreateDefaultOrganization();
+  const domain = identity.email.split("@")[1]?.toLowerCase() ?? "";
+  const org = await getOrCreateOrganizationForDomain(domain);
 
   let user = await getUser(identity.userId);
   let member = await getMember(org.organizationId, identity.userId);

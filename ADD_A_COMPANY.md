@@ -1,8 +1,44 @@
-# Add a Company (separate deployment)
+# Add a Company
 
-MassLeader runs **one copy per Google Workspace company**. Each copy lives in
-that company's own Google Cloud project, uses "Internal" Gmail permissions
-(no Google review, long-lived sending), and keeps its data fully separate.
+There are **two ways** to add a company. Pick based on how separate you need
+the infrastructure to be.
+
+## Option A — Same app, add the domain (fastest) ✅
+
+The app groups users into a **separate organization per email domain**, so you
+can serve multiple companies from **one deployment** with fully isolated orgs
+(each gets its own admin, team, settings, and data; leads/campaigns are always
+per-user private).
+
+To add e.g. **everestbusinessfunding.com**:
+
+1. Add the domain to the allowlist env var (keep the existing/primary domain
+   **first** so nothing migrates):
+   ```bash
+   gcloud run services update outreach --region us-central1 \
+     --update-env-vars ALLOWED_GOOGLE_WORKSPACE_DOMAIN=alpinefundings.com,everestbusinessfunding.com
+   ```
+2. In the **Firebase console → Authentication → Settings → Authorized domains**,
+   nothing changes (same app URL). Everest users sign in at the same URL with
+   their `@everestbusinessfunding.com` Google account.
+3. The **first everest person to sign in becomes that org's admin** and it
+   starts in **test mode** — their admin flips real sending on when ready.
+4. Done. Everest sees none of alpine's org/team; alpine's admin and settings
+   are untouched.
+
+Use this when both companies are fine sharing the same Cloud Run + Firebase
+project (data is still isolated by org and by user). Note: both domains share
+the app's single Google OAuth client, so the OAuth consent screen must permit
+both — easiest if both domains are in the same Workspace, or the client is
+configured "External".
+
+## Option B — Separate deployment (below)
+
+MassLeader can also run **one copy per Google Workspace company**. Each copy
+lives in that company's own Google Cloud project, uses "Internal" Gmail
+permissions (no Google review, long-lived sending), and keeps its
+infrastructure fully separate. Choose this when the companies must not share
+any cloud project or OAuth client.
 
 Use this to stand up a new company (e.g. **everestbusinessfunding.com**). It's
 the same ~30-minute setup you did for the first company. Everything below is
