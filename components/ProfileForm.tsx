@@ -68,6 +68,7 @@ export function ProfileForm({
       {notice && <p className="mb-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
       {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
+      <h3 className="mb-3 text-sm font-semibold text-slate-500">Your identity</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="text-sm font-medium text-slate-700">
           Your name
@@ -95,7 +96,10 @@ export function ProfileForm({
         </label>
       </div>
 
-      <label className="mt-4 block text-sm font-medium text-slate-700">
+      <h3 className="mb-1 mt-6 border-t border-slate-100 pt-5 text-sm font-semibold text-slate-500">
+        Legal footer &amp; signature
+      </h3>
+      <label className="mt-2 block text-sm font-medium text-slate-700">
         Company mailing address
         <HelpTip text="US anti-spam law (CAN-SPAM) requires a real physical mailing address in marketing emails. A PO box or suite is fine." />
         <span className="block text-xs font-normal text-slate-500">
@@ -238,12 +242,8 @@ export function ProfileForm({
         </>
       )}
 
-      <button
-        onClick={save}
-        disabled={busy}
-        className="mt-6 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
-      >
-        {busy ? "Saving…" : "Save"}
+      <button onClick={save} disabled={busy} className="btn-primary mt-6 px-5 py-2.5 text-sm disabled:opacity-50">
+        {busy ? "Saving…" : "Save settings"}
       </button>
     </div>
   );

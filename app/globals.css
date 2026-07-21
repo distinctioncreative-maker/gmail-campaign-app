@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable `dark:` utilities driven by a data-theme attribute on <html>. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --background: #f7f8fc;
   --surface: #ffffff;
@@ -25,6 +28,52 @@
   --shadow-md: 0 4px 12px -4px rgba(16, 24, 40, 0.12), 0 2px 6px -2px rgba(16, 24, 40, 0.06);
   --shadow-lg: 0 24px 48px -24px rgba(31, 27, 89, 0.35), 0 8px 20px -12px rgba(16, 24, 40, 0.12);
 }
+
+/* ── Dark theme ──────────────────────────────────────────────
+   Retrofit dark mode: remap the design tokens, then override the
+   handful of literal Tailwind color utilities the app uses so every
+   surface adapts without editing each component. */
+:root[data-theme="dark"] {
+  --background: #0b1020;
+  --surface: #151b2d;
+  --surface-2: #1b2237;
+  --foreground: #e7ebf3;
+  --muted: #9aa4b8;
+  --border: #273049;
+  --primary-soft: #1e2547;
+  --ring: #6366f1;
+  --shadow-md: 0 4px 12px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 24px 48px -24px rgba(0, 0, 0, 0.7), 0 8px 20px -12px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] .bg-white { background-color: var(--surface); }
+:root[data-theme="dark"] .bg-slate-50 { background-color: var(--surface-2); }
+:root[data-theme="dark"] .bg-slate-100 { background-color: #232c44; }
+:root[data-theme="dark"] .bg-slate-200 { background-color: #2c3654; }
+:root[data-theme="dark"] .text-slate-900 { color: #f1f4fa; }
+:root[data-theme="dark"] .text-slate-800 { color: #e2e8f3; }
+:root[data-theme="dark"] .text-slate-700 { color: #cdd5e5; }
+:root[data-theme="dark"] .text-slate-600 { color: #b3bdd1; }
+:root[data-theme="dark"] .text-slate-500 { color: #9aa4b8; }
+:root[data-theme="dark"] .text-slate-400 { color: #7b869c; }
+:root[data-theme="dark"] .text-slate-300 { color: #5f6a80; }
+:root[data-theme="dark"] .border-slate-100,
+:root[data-theme="dark"] .border-slate-200,
+:root[data-theme="dark"] .border-slate-300 { border-color: var(--border); }
+:root[data-theme="dark"] .divide-slate-50 > :not([hidden]) ~ :not([hidden]),
+:root[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border); }
+:root[data-theme="dark"] .hover\:bg-slate-50:hover { background-color: var(--surface-2); }
+:root[data-theme="dark"] .hover\:bg-slate-100:hover { background-color: #232c44; }
+:root[data-theme="dark"] .hover\:bg-slate-200:hover { background-color: #2c3654; }
+/* Soft status tints → muted dark equivalents */
+:root[data-theme="dark"] .bg-green-50 { background-color: rgba(18,183,106,0.14); }
+:root[data-theme="dark"] .bg-red-50 { background-color: rgba(240,68,56,0.14); }
+:root[data-theme="dark"] .bg-amber-50 { background-color: rgba(247,144,9,0.14); }
+:root[data-theme="dark"] .bg-blue-50 { background-color: rgba(14,165,233,0.14); }
+:root[data-theme="dark"] .text-green-700 { color: #4ade80; }
+:root[data-theme="dark"] .text-red-700 { color: #f87171; }
+:root[data-theme="dark"] .text-amber-700 { color: #fbbf24; }
+:root[data-theme="dark"] .text-blue-700 { color: #60a5fa; }
 
 @theme inline {
   --color-background: var(--background);
@@ -53,6 +102,7 @@ body {
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.006em;
@@ -101,6 +151,14 @@ h1, h2, h3 {
 .glass {
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   backdrop-filter: saturate(1.4) blur(10px);
+}
+
+/* Dark: replace the light brand mesh with a deep, subtle one. */
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(900px 500px at 92% -8%, rgba(139, 92, 246, 0.16), transparent 60%),
+    radial-gradient(800px 480px at -6% 8%, rgba(14, 165, 233, 0.12), transparent 55%),
+    var(--background);
 }
 
 /* ── Brand bits ──────────────────────────────────────────── */

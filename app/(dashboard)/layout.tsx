@@ -5,6 +5,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ProductTour } from "@/components/tour/ProductTour";
 import { UIProviders } from "@/components/ui/UIProviders";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const BASE_NAV: NavItem[] = [
   { href: "/home", label: "Home", icon: "home" },
@@ -68,7 +69,8 @@ export default async function DashboardLayout({
             Live — campaigns send real emails to real recipients.
           </div>
         )}
-        <div className="glass sticky top-0 z-10 hidden items-center justify-end border-b border-border px-6 py-2.5 sm:flex">
+        <div className="glass sticky top-0 z-10 hidden items-center justify-end gap-1 border-b border-border px-6 py-2.5 sm:flex">
+          <ThemeToggle />
           <NotificationBell />
         </div>
         <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">

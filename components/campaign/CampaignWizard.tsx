@@ -8,6 +8,7 @@ import { HelpTip } from "@/components/HelpTip";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { fetchJson } from "@/lib/fetchJson";
+import { SkeletonList } from "@/components/ui/Skeleton";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -354,7 +355,9 @@ export function CampaignWizard() {
               , then come back.
             </p>
             {contacts === null ? (
-              <p className="mt-4 text-sm text-slate-500">Loading your contacts…</p>
+              <div className="mt-4">
+                <SkeletonList rows={5} />
+              </div>
             ) : contacts.length === 0 ? (
               <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
                 You have no contacts yet — import leads first.
@@ -495,7 +498,9 @@ export function CampaignWizard() {
               several, the app rotates them across your recipients and shows which gets more replies.
             </p>
             {templates === null ? (
-              <p className="mt-4 text-sm text-slate-500">Loading templates…</p>
+              <div className="mt-4">
+                <SkeletonList rows={3} />
+              </div>
             ) : templates.length === 0 ? (
               <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
                 No templates yet —{" "}

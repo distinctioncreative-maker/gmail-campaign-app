@@ -54,10 +54,10 @@ export default async function HomePage() {
           <span
             aria-hidden
             className={`flex h-9 w-9 items-center justify-center rounded-full ${
-              gmailConnected ? "bg-green-50" : "bg-amber-50"
+              gmailConnected ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"
             }`}
           >
-            {gmailConnected ? "✅" : "⚠️"}
+            <Icon name={gmailConnected ? "check" : "alert"} size={18} />
           </span>
           <div>
             <p className="text-sm font-medium">
@@ -138,8 +138,10 @@ export default async function HomePage() {
         </div>
         {recent.length === 0 ? (
           <div className="card p-8 text-center">
-            <p className="text-3xl">🚀</p>
-            <p className="mt-2 text-sm text-slate-600">No campaigns yet.</p>
+            <span className="brand-gradient mx-auto flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-md">
+              <Icon name="rocket" size={24} />
+            </span>
+            <p className="mt-3 text-sm text-slate-600">No campaigns yet.</p>
             <Link href="/campaigns/new" className="btn-primary mt-4 inline-block px-5 py-2.5 text-sm">
               Create your first campaign
             </Link>
