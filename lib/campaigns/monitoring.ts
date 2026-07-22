@@ -2,6 +2,7 @@ import "server-only";
 import type { OwnerRef } from "@/lib/repositories/campaigns";
 import {
   incrementCampaignCounters,
+  incrementDailyActivity,
   listCampaigns,
   listQueueItems,
   listRecipients,
@@ -17,7 +18,7 @@ import { getInboundAfter, findRecentBounces } from "@/lib/gmail/threads";
 import { classifyInboundMessage, parseReturnDate } from "@/lib/gmail/classifyReply";
 import { classifyBounce, parseFailedRecipient } from "@/lib/gmail/classifyBounce";
 import { getSequence } from "@/lib/repositories/sequences";
-import { addBusinessDays } from "@/lib/scheduling/window";
+import { addBusinessDays, localDayKey } from "@/lib/scheduling/window";
 import type { Recipient } from "@/schemas/campaign";
 
 const MONITOR_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
@@ -95,6 +96,7 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
           recipientId: r.recipientId,
         });
         await incrementCampaignCounters(owner, campaign.campaignId, { unsubscribeCount: 1 });
+        await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "unsubscribes");
         await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "UNSUBSCRIBED", now);
         await recordEvent(owner, campaign.campaignId, {
           type: "UNSUBSCRIBE",
@@ -140,6 +142,7 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
         });
         await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
         await incrementCampaignCounters(owner, campaign.campaignId, { replyCount: 1 });
+        await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "replies");
         await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "REPLIED", now);
         await recordEvent(owner, campaign.campaignId, {
           type: "REPLY",
@@ -224,6 +227,12 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
     }
 
     await incrementCampaignCounters(owner, match.campaignId, { bounceCount: 1 });
+    const bouncedCampaign = campaigns.find((c) => c.campaignId === match.campaignId);
+    await incrementDailyActivity(
+      owner,
+      localDayKey(now, bouncedCampaign?.schedule.timezone ?? "America/New_York"),
+      "bounces"
+    );
     await recordEngagementByEmail(
       owner,
       match.recipient.normalizedEmailSnapshot,

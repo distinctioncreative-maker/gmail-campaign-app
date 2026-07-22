@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 const BASE_NAV: NavItem[] = [
   { href: "/home", label: "Home", icon: "home" },
   { href: "/campaigns", label: "Campaigns", icon: "rocket" },
+  { href: "/replies", label: "Replies", icon: "check" },
   { href: "/leads", label: "Leads", icon: "users" },
   { href: "/templates", label: "Templates", icon: "mail" },
   { href: "/sequences", label: "Follow-Ups", icon: "repeat" },

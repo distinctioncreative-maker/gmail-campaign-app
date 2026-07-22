@@ -337,6 +337,20 @@ export async function incrementDailyCounter(
   });
 }
 
+/** Cheap per-day activity rollup on the same counters doc the send limiter
+ * uses — replies/bounces/unsubscribes accrue next to `sent`, so daily trend
+ * dashboards never need recipient-level scans. */
+export async function incrementDailyActivity(
+  owner: OwnerRef,
+  dayKey: string,
+  field: "replies" | "bounces" | "unsubscribes"
+): Promise<void> {
+  await userRef(owner)
+    .collection("counters")
+    .doc(dayKey)
+    .set({ [field]: FieldValue.increment(1), updatedAt: Date.now() }, { merge: true });
+}
+
 export async function getDailyCount(owner: OwnerRef, dayKey: string): Promise<number> {
   const snap = await userRef(owner).collection("counters").doc(dayKey).get();
   return (snap.data()?.sent as number | undefined) ?? 0;
