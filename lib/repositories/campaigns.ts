@@ -405,3 +405,37 @@ export async function claimDeferralForDay(
     return true;
   });
 }
+
+export interface DailyActivityRow {
+  day: string; // YYYY-MM-DD
+  sent: number;
+  replied: number;
+}
+
+/** Last-N-days activity from the per-day counter docs — one getAll, no
+ * recipient scans. Powers the Home pulse chart. */
+export async function getDailyActivity(
+  owner: OwnerRef,
+  timezone: string,
+  days = 14
+): Promise<DailyActivityRow[]> {
+  const DAY = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const keys: string[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const key = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(now - i * DAY));
+    if (!keys.includes(key)) keys.push(key);
+  }
+  const refs = keys.map((k) => userRef(owner).collection("counters").doc(k));
+  const snaps = await firestore().getAll(...refs);
+  return snaps.map((snap, i) => ({
+    day: keys[i],
+    sent: (snap.data()?.sent as number | undefined) ?? 0,
+    replied: (snap.data()?.replies as number | undefined) ?? 0,
+  }));
+}

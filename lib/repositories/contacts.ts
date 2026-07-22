@@ -365,3 +365,9 @@ export async function upsertFromParsedLead(
   await contactsRef(ctx).doc(contactId).create(contact);
   return { contact, existed: false };
 }
+
+/** Total number of leads this user has (cheap aggregate count). */
+export async function countContacts(ctx: Scope): Promise<number> {
+  const agg = await contactsRef(ctx).count().get();
+  return agg.data().count;
+}

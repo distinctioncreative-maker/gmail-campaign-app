@@ -293,3 +293,55 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-rise { animation: rise 0.28s ease both; }
+
+/* ── Mission-control Home (JARVIS pulse) ─────────────────────────── */
+.jarvis-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(120% 140% at 85% -10%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 60%),
+    radial-gradient(90% 120% at -5% 110%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 55%),
+    var(--surface);
+}
+.jarvis-hero::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 70%, transparent), transparent);
+}
+/* faint scanline grid, very subtle */
+.jarvis-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px);
+  background-size: 100% 34px;
+  opacity: 0.5;
+  pointer-events: none;
+  mask-image: linear-gradient(180deg, transparent, #000 40%, transparent);
+}
+
+@keyframes pulse-draw { to { stroke-dashoffset: 0; } }
+.pulse-line {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: pulse-draw 1.4s ease-out forwards;
+}
+@keyframes pulse-fade { from { opacity: 0; } to { opacity: 1; } }
+.pulse-area { opacity: 0; animation: pulse-fade 1.2s ease-out 0.5s forwards; }
+@keyframes dot-pop { 0% { opacity: 0; transform: scale(0); } 70% { transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
+.pulse-dot { transform-box: fill-box; transform-origin: center; opacity: 0; animation: dot-pop 0.5s ease-out forwards; }
+@keyframes ring-breathe { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.30; } }
+.pulse-ring { animation: ring-breathe 2.4s ease-in-out infinite; }
+
+/* Live status dot */
+@keyframes live-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.live-dot { animation: live-blink 1.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-line, .pulse-area, .pulse-dot, .pulse-ring, .live-dot { animation: none; opacity: 1; stroke-dashoffset: 0; }
+}
