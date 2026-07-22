@@ -106,9 +106,10 @@ export default async function HomePage() {
           </Link>
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {([
             { href: "/campaigns/new", icon: "rocket", title: "Create a campaign", desc: "Pick leads, an email, and a schedule." },
+            { href: "/replies", icon: "check", title: "See who replied", desc: "Every reply across your campaigns, in one inbox." },
             { href: "/leads", icon: "users", title: "Import leads", desc: "Paste from Salesforce or upload a CSV." },
             { href: "/templates/new", icon: "mail", title: "Build a template", desc: "Design a reusable, personalized email." },
           ] as Array<{ href: string; icon: IconName; title: string; desc: string }>).map((a) => (
