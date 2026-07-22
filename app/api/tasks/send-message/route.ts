@@ -18,6 +18,7 @@ import {
   type OwnerRef,
 } from "@/lib/repositories/campaigns";
 import { checkEligibility } from "@/lib/campaigns/eligibility";
+import { deferCampaignToNextDay } from "@/lib/campaigns/deferral";
 import { markContacted, recordEmailSent } from "@/lib/repositories/contacts";
 import { getConnection } from "@/lib/repositories/gmailConnections";
 import { isSuppressed } from "@/lib/repositories/suppressions";
@@ -72,6 +73,14 @@ export async function POST(req: NextRequest) {
   const item = await claimQueueItem(owner, campaignId, queueItemId);
   if (!item) return NextResponse.json({ ok: true, reason: "NOT_CLAIMABLE" });
 
+  // Stale-delivery guard: if this item was mass-rescheduled to a future
+  // time (e.g. a daily-limit re-spread), release it — the Cloud Task
+  // enqueued for the new time owns it now.
+  if (item.scheduledAt > Date.now() + 5 * 60_000) {
+    await updateQueueItem(owner, campaignId, queueItemId, { status: "SCHEDULED" });
+    return NextResponse.json({ ok: true, reason: "RESCHEDULED_FOR_LATER" });
+  }
+
   const fail = async (reason: string, retryable: boolean, error?: string) => {
     // Map the block reason to what should happen to the queue item:
     // paused/disconnected → stays SCHEDULED so Resume can re-enqueue it;
@@ -116,7 +125,43 @@ export async function POST(req: NextRequest) {
 
     if (!eligibility.eligible) {
       if (eligibility.retryable) {
-        // Outside window or daily cap: reschedule to the next valid time.
+        if (eligibility.reason === "DAILY_LIMIT_REACHED") {
+          // Release our claim, then re-spread the WHOLE remaining queue
+          // across tomorrow with the campaign's pacing. Rescheduling each
+          // blocked email individually to "window open" made them all fire
+          // at the same instant the next morning.
+          await updateQueueItem(owner, campaignId, queueItemId, {
+            status: "SCHEDULED",
+            lastError: eligibility.reason,
+          });
+          const result = await deferCampaignToNextDay(owner, campaign);
+          if (result === null) {
+            // Another task already ran today's re-spread. If it happened
+            // before we released our claim, our item may have been missed —
+            // give it its own next-day slot, preserving its time of day.
+            const base = item.scheduledAt > 0 ? item.scheduledAt : Date.now();
+            let candidate = base;
+            while (candidate <= Date.now()) candidate += 24 * 60 * 60 * 1000;
+            const nextTime = Math.max(
+              nextValidTime(candidate, campaign.schedule),
+              Date.now() + 60_000
+            );
+            await updateQueueItem(owner, campaignId, queueItemId, {
+              status: "SCHEDULED",
+              scheduledAt: nextTime,
+              lastError: eligibility.reason,
+            });
+            await enqueueTask(
+              "send-message",
+              { organizationId, ownerUserId, campaignId, queueItemId },
+              nextTime
+            );
+          }
+          return NextResponse.json({ ok: true, reason: eligibility.reason });
+        }
+
+        // Outside window: push this send forward, keeping its own time of
+        // day when possible so spacing survives.
         const nextTime = Math.max(
           nextValidTime(Date.now() + 60_000, campaign.schedule),
           Date.now() + 60_000
@@ -131,14 +176,6 @@ export async function POST(req: NextRequest) {
           { organizationId, ownerUserId, campaignId, queueItemId },
           nextTime
         );
-        if (eligibility.reason === "DAILY_LIMIT_REACHED") {
-          await recordEvent(owner, campaignId, {
-            type: "DAILY_LIMIT",
-            message: "Daily limit reached; sending resumes tomorrow.",
-            severity: "INFO",
-            recipientEmail: null,
-          });
-        }
         return NextResponse.json({ ok: true, reason: eligibility.reason, rescheduled: nextTime });
       }
       if (eligibility.reason === "GMAIL_NOT_CONNECTED" && campaign.status === "ACTIVE") {

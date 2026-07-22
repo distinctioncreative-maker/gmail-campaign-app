@@ -386,3 +386,22 @@ export async function listEvents(
     .get();
   return snap.docs.map((d) => CampaignEventSchema.parse(d.data()));
 }
+
+/** Claim the once-per-day right to mass-defer a campaign's queue. Returns
+ * true for exactly one caller per (campaign, dayKey) — everyone else gets
+ * false and must not re-spread the queue again. */
+export async function claimDeferralForDay(
+  owner: OwnerRef,
+  campaignId: string,
+  dayKey: string
+): Promise<boolean> {
+  const ref = campaignRef(owner, campaignId);
+  return firestore().runTransaction(async (tx: Transaction) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return false;
+    const current = (snap.data()?.deferredDayKey as string | null) ?? null;
+    if (current === dayKey) return false;
+    tx.update(ref, { deferredDayKey: dayKey, updatedAt: Date.now() });
+    return true;
+  });
+}

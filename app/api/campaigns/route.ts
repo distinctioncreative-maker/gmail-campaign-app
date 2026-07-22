@@ -77,6 +77,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     followupsPaused: false,
     startedAt: null,
     pausedAt: null,
+    deferredDayKey: null,
     resumedAt: null,
     stoppedAt: null,
     completedAt: null,
