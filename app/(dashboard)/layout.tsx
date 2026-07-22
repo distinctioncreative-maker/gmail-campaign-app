@@ -16,6 +16,7 @@ const BASE_NAV: NavItem[] = [
   { href: "/sequences", label: "Follow-Ups", icon: "repeat" },
   { href: "/suppressions", label: "Do Not Email", icon: "ban" },
   { href: "/reports", label: "Reports", icon: "chart" },
+  { href: "/deliverability", label: "Deliverability", icon: "shield" },
   { href: "/settings", label: "Settings", icon: "settings" },
   { href: "/help", label: "Help", icon: "help" },
 ];

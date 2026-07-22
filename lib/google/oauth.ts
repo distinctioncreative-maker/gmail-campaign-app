@@ -14,10 +14,14 @@ import { parseAllowedDomains } from "@/lib/auth/domains";
  *   and bounce detection. Added now because reply detection is a core
  *   safety feature (stops follow-ups); revisit if labels ship (would need
  *   gmail.modify instead).
+ * - postmaster.readonly — read Google Postmaster Tools stats (domain
+ *   reputation, spam rate) for the Deliverability page. Read-only; only
+ *   returns data for domains the user can see in postmaster.google.com.
  */
 export const GMAIL_SCOPES = [
   "https://www.googleapis.com/auth/gmail.compose",
   "https://www.googleapis.com/auth/gmail.readonly",
+  "https://www.googleapis.com/auth/postmaster.readonly",
 ];
 
 export function oauthClient(): OAuth2Client {

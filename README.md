@@ -23,6 +23,7 @@ Secret Manager · Cloud KMS · Gmail API.
 | 8 | Analytics dashboard, template A/B rotation, built-in spam checker, dark mode, Cadence design system | ✅ Built |
 | 9 | Lead command center: editable leads + notes, real engagement tracking (emails sent / times replied), Do-Not-Email, delete | ✅ Built |
 | 10 | Teams (Team Lead dashboards, roster management, read-only drill-down), Replies inbox, admin troubleshooting console, daily activity rollups | ✅ Built |
+| 11 | Deliverability page: live SPF/DKIM/DMARC checks + Google Postmaster Tools integration (domain reputation, spam rate) | ✅ Built |
 
 Google Sheet import + audit-mirror spreadsheet are intentionally deferred
 (CSV import covers file imports; the import chooser reserves the slot).
