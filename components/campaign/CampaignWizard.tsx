@@ -680,6 +680,19 @@ export function CampaignWizard() {
               <li>✅ Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</li>
             </ul>
 
+            <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+              <p className="font-medium text-slate-700">How replies are handled automatically</p>
+              <ul className="mt-1.5 list-disc space-y-1 pl-5">
+                <li>Any reply stops follow-ups for that person — you take the conversation over in Gmail.</li>
+                <li>
+                  Someone is only marked <strong>unsubscribed</strong> (and added to your
+                  do-not-email list) when they explicitly ask — e.g. “unsubscribe” or “remove me
+                  from your list”. Questions and normal replies never trigger it.
+                </li>
+                <li>If one is ever flagged wrong, the campaign page has an Undo next to that person.</li>
+              </ul>
+            </div>
+
             {preview && (
               <div className="mt-5 rounded-xl border border-slate-200 p-4">
                 <SpamCheck subject={preview.subject} html={preview.html} />

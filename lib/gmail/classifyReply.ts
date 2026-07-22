@@ -24,14 +24,49 @@ function header(msg: InboundMessage, name: string): string {
   return key ? msg.headers[key] : "";
 }
 
-const UNSUB_PATTERNS = [
-  /\bunsubscribe\b/i,
-  /\bopt(?:\s|-)?out\b/i,
-  /\bremove me\b/i,
+/**
+ * Cut quoted history out of a reply so classification only sees what the
+ * person actually typed. Without this, a campaign template containing an
+ * opt-out line ("reply 'unsubscribe' to stop") makes EVERY reply look like
+ * an unsubscribe, because Gmail includes the quoted original below the
+ * fresh text.
+ */
+export function stripQuotedText(body: string): string {
+  const lines = body.split(/\r?\n/);
+  const fresh: string[] = [];
+  for (const line of lines) {
+    const l = line.trim();
+    // Quote-block openers: everything from here down is history.
+    if (
+      /^On .{0,200}wrote:\s*$/i.test(l) ||
+      /^-{2,}\s*Original Message\s*-{2,}/i.test(l) ||
+      /^-{2,}\s*Forwarded message\s*-{2,}/i.test(l) ||
+      /^_{10,}\s*$/.test(l) ||
+      /^From:\s.+$/i.test(l)
+    ) {
+      break;
+    }
+    if (l.startsWith(">")) continue; // inline-quoted line
+    fresh.push(line);
+  }
+  return fresh.join("\n").trim();
+}
+
+/** Explicit, directed opt-out requests — honored at any message length. */
+const UNSUB_STRONG_PATTERNS = [
+  /(?:^|\n)\s*(?:please\s+)?unsubscribe(?:\s+me)?\s*[.!]*\s*(?:$|\n)/i,
+  /\b(?:please\s+)?remove me from\b/i,
   /\btake me off\b/i,
-  /\bstop (?:emailing|contacting|messaging)\b/i,
-  /\bdo not (?:email|contact)\b/i,
+  /\bstop (?:emailing|contacting|messaging)\s+me\b/i,
+  /\bdo not (?:email|contact)\s+me\b/i,
+  /\bopt me out\b/i,
+  /\bi (?:want|would like|wish) to (?:unsubscribe|opt[ -]?out)\b/i,
 ];
+
+/** Weaker mentions — only count when the whole fresh reply is a short
+ * opt-out-shaped message, never inside a longer conversation. */
+const UNSUB_WEAK_PATTERNS = [/\bunsubscribe\b/i, /\bopt(?:\s|-)?out\b/i];
+const UNSUB_WEAK_MAX_LENGTH = 160;
 
 const NOT_INTERESTED_PATTERNS = [
   /\bnot interested\b/i,
@@ -56,12 +91,23 @@ export function classifyInboundMessage(msg: InboundMessage): ReplyClass {
   const autoreply = header(msg, "X-Autoreply") || header(msg, "X-Autorespond");
   const precedence = header(msg, "Precedence").toLowerCase();
 
+  // Classify only what the person actually typed — never the quoted
+  // original email underneath their reply.
+  const fresh = stripQuotedText(msg.bodyText || msg.snippet);
   const bodyAndSubject = `${msg.subject}\n${msg.bodyText || msg.snippet}`;
 
-  // Unsubscribe / not-interested take priority even if auto-ish, because a
-  // human deliberately opted out and we must honor it.
-  if (UNSUB_PATTERNS.some((re) => re.test(bodyAndSubject))) return "UNSUBSCRIBE";
-  if (NOT_INTERESTED_PATTERNS.some((re) => re.test(bodyAndSubject))) return "NOT_INTERESTED";
+  // Unsubscribe requires explicit intent: a directed request at any length,
+  // or a short message that is essentially just "unsubscribe". A question
+  // that merely mentions the word is a human reply, not an opt-out.
+  if (UNSUB_STRONG_PATTERNS.some((re) => re.test(fresh))) return "UNSUBSCRIBE";
+  if (
+    fresh.length > 0 &&
+    fresh.length <= UNSUB_WEAK_MAX_LENGTH &&
+    UNSUB_WEAK_PATTERNS.some((re) => re.test(fresh))
+  ) {
+    return "UNSUBSCRIBE";
+  }
+  if (NOT_INTERESTED_PATTERNS.some((re) => re.test(fresh))) return "NOT_INTERESTED";
 
   const looksAutomated =
     (autoSubmitted !== "" && autoSubmitted !== "no") ||

@@ -90,6 +90,30 @@ export function RecipientTable({
     return out;
   }, [filtered, emailsPerBatch]);
 
+  async function undoUnsubscribe(recipientId: string, email: string) {
+    const ok = await confirm({
+      title: "Mark as a real reply?",
+      body: `${email} will be counted as replied (not unsubscribed) and removed from your do-not-email list, so future campaigns can include them again.`,
+      confirmLabel: "Yes, it was a real reply",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `/api/campaigns/${campaignId}/recipients/${recipientId}/undo-unsubscribe`,
+        { method: "POST" }
+      );
+      const data = (await res.json().catch(() => ({}))) as { message?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Could not undo.");
+      toast(data.message ?? "Corrected to a real reply.", "success");
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not undo.", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function skip(recipientId: string, email: string) {
     const ok = await confirm({
       title: "Remove from campaign?",
@@ -131,6 +155,16 @@ export function RecipientTable({
             className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
           >
             Remove
+          </button>
+        )}
+        {r.status === "UNSUBSCRIBED" && (
+          <button
+            onClick={() => void undoUnsubscribe(r.recipientId, r.email)}
+            disabled={busy}
+            title="If this was actually a normal reply, correct it and allow emailing again."
+            className="text-xs font-medium text-amber-600 hover:underline disabled:opacity-50"
+          >
+            Not an unsubscribe? Undo
           </button>
         )}
       </div>

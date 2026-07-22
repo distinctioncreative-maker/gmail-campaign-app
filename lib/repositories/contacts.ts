@@ -211,6 +211,27 @@ export async function recordEngagementByEmail(
   }
 }
 
+/** Reverse a mistaken unsubscribe on the contact: clear the suppression
+ * mirror and count the message as the real reply it was. */
+export async function undoContactUnsubscribe(
+  ctx: Scope,
+  normalizedEmail: string,
+  at: number
+): Promise<void> {
+  const contact = await findByNormalizedEmail(ctx, normalizedEmail);
+  if (!contact) return;
+  await contactsRef(ctx).doc(contact.contactId).update({
+    suppressed: false,
+    suppressionReason: null,
+    unsubscribedAt: null,
+    replyCount: FieldValue.increment(1),
+    repliedAt: contact.repliedAt ?? at,
+    lastRepliedAt: at,
+    lastOutcome: "REPLIED",
+    updatedAt: at,
+  });
+}
+
 /** Overwrite a contact's engagement fields with authoritative rolled-up
  * values (used by the reconcile sweep — recipient records win). */
 export async function setContactEngagement(
