@@ -15,6 +15,7 @@ import { getOrganization } from "@/lib/repositories/orgSettings";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PulseChart } from "@/components/home/PulseChart";
+import { CountUp } from "@/components/home/CountUp";
 import { buildBriefing } from "@/lib/home/briefing";
 
 /** Time-of-day greeting in the user's timezone. */
@@ -78,17 +79,30 @@ export default async function HomePage() {
   const pill = STATUS_PILL[briefing.status];
   const firstName = ctx.user.displayName.split(" ")[0] || "there";
 
-  const orbs: Array<{ label: string; value: string; icon: IconName; accent: string }> = [
-    { label: "Sending now", value: String(active.length), icon: "rocket", accent: "text-primary" },
-    { label: "Replies (all time)", value: String(totalReplies), icon: "reply", accent: "text-green-600" },
-    { label: "Reply rate", value: totalSentAll > 0 ? `${replyRate.toFixed(1)}%` : "—", icon: "chart", accent: "text-indigo-500" },
-    { label: "Leads", value: totalLeads.toLocaleString(), icon: "users", accent: "text-slate-900" },
+  const orbs: Array<{
+    label: string;
+    value: number;
+    decimals?: number;
+    suffix?: string;
+    dash?: boolean;
+    icon: IconName;
+    accent: string;
+  }> = [
+    { label: "Sending now", value: active.length, icon: "rocket", accent: "text-primary" },
+    { label: "Replies (all time)", value: totalReplies, icon: "reply", accent: "text-green-600" },
+    { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "chart", accent: "text-indigo-500" },
+    { label: "Leads", value: totalLeads, icon: "users", accent: "text-slate-900" },
   ];
 
   return (
     <div className="space-y-6">
       {/* ── Mission-control hero ─────────────────────────────── */}
       <section className="jarvis-hero p-6 md:p-8">
+        <div className="aurora" aria-hidden>
+          <span className="aurora-blob b1" />
+          <span className="aurora-blob b2" />
+          <span className="aurora-blob b3" />
+        </div>
         <div className="relative grid gap-6 lg:grid-cols-[1.05fr_1fr] lg:items-center">
           <div>
             <div className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-widest ${pill.className}`}>
@@ -126,8 +140,8 @@ export default async function HomePage() {
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Activity · 14 days</p>
               <p className="text-xs tabular-nums text-slate-500">
-                <span className="font-semibold text-slate-900">{sentThisWeek}</span> sent ·{" "}
-                <span className="font-semibold text-green-600">{repliesThisWeek}</span> replies this week
+                <span className="font-semibold text-slate-900"><CountUp value={sentThisWeek} /></span> sent ·{" "}
+                <span className="font-semibold text-green-600"><CountUp value={repliesThisWeek} /></span> replies this week
               </p>
             </div>
             <PulseChart data={activity} />
@@ -161,7 +175,9 @@ export default async function HomePage() {
                 <Icon name={o.icon} size={16} />
               </span>
             </div>
-            <p className={`mt-3 text-3xl font-semibold tracking-tight tabular-nums ${o.accent}`}>{o.value}</p>
+            <p className={`mt-3 text-3xl font-semibold tracking-tight tabular-nums ${o.accent}`}>
+              {o.dash ? "—" : <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />}
+            </p>
           </div>
         ))}
 
@@ -178,11 +194,13 @@ export default async function HomePage() {
                 className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold tabular-nums"
                 style={{ background: "var(--surface)" }}
               >
-                {Math.round(dailyPct)}%
+                <CountUp value={Math.round(dailyPct)} suffix="%" />
               </div>
             </div>
             <div className="text-sm">
-              <p className="font-semibold tabular-nums">{sentToday} / {dailyLimit}</p>
+              <p className="font-semibold tabular-nums">
+                <CountUp value={sentToday} /> / {dailyLimit}
+              </p>
               <p className="text-xs text-slate-500">{dailyRemaining} left today</p>
             </div>
           </div>

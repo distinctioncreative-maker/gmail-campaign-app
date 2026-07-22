@@ -345,3 +345,30 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 @media (prefers-reduced-motion: reduce) {
   .pulse-line, .pulse-area, .pulse-dot, .pulse-ring, .live-dot { animation: none; opacity: 1; stroke-dashoffset: 0; }
 }
+
+/* ── Premium home: aurora, shimmer, traveling glow ───────────────── */
+.aurora { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.aurora-blob {
+  position: absolute;
+  width: 42%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+.aurora-blob.b1 { background: color-mix(in srgb, var(--primary) 85%, transparent); top: -18%; right: 4%; animation: blob1 18s ease-in-out infinite; }
+.aurora-blob.b2 { background: #22d3ee; bottom: -22%; left: 2%; animation: blob2 22s ease-in-out infinite; }
+.aurora-blob.b3 { background: #7c5cff; top: 18%; left: 34%; opacity: 0.35; animation: blob3 26s ease-in-out infinite; }
+:root[data-theme="dark"] .aurora-blob { opacity: 0.4; }
+@keyframes blob1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-8%, 10%) scale(1.15); } }
+@keyframes blob2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(10%, -8%) scale(1.2); } }
+@keyframes blob3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-12%, -6%) scale(0.9); } }
+
+/* shimmer sweep traveling along the activity line */
+@keyframes sheen-move { 0% { stroke-dasharray: 60 2000; stroke-dashoffset: 2000; } 100% { stroke-dasharray: 60 2000; stroke-dashoffset: 0; } }
+.pulse-sheen { opacity: 0.9; animation: sheen-move 3.4s linear infinite; mix-blend-mode: screen; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob, .pulse-sheen { animation: none; }
+}
