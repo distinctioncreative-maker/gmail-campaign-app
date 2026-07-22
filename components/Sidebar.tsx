@@ -52,10 +52,15 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
   );
 }
 
-function Brand() {
+function Brand({ workspaceName }: { workspaceName?: string }) {
   return (
     <div className="px-2">
       <Logo size={26} />
+      {workspaceName && (
+        <p className="mt-1.5 truncate text-[11px] font-medium uppercase tracking-widest text-slate-400">
+          {workspaceName}
+        </p>
+      )}
     </div>
   );
 }
@@ -65,11 +70,13 @@ export function Sidebar({
   displayName,
   email,
   role,
+  workspaceName,
 }: {
   items: NavItem[];
   displayName: string;
   email: string;
   role: string;
+  workspaceName?: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -78,7 +85,7 @@ export function Sidebar({
       {/* Desktop sidebar */}
       <aside className="glass sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border p-4 sm:flex">
         <div className="mb-7 mt-1">
-          <Brand />
+          <Brand workspaceName={workspaceName} />
         </div>
         <NavLinks items={items} />
         <div className="mt-auto">

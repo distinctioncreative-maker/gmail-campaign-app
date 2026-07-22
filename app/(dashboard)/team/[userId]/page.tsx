@@ -5,6 +5,7 @@ import { listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { listCampaigns } from "@/lib/repositories/campaigns";
 import { canViewRep } from "@/lib/teams/access";
+import { getUser } from "@/lib/repositories/users";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { LocalTime } from "@/components/LocalTime";
 import { formatPercent } from "@/lib/analytics/metrics";
@@ -35,7 +36,11 @@ export default async function RepDetailPage({
   const rep = members.find((m) => m.userId === userId);
   if (!rep) notFound();
 
-  const campaigns = await listCampaigns({ userId, organizationId: ctx.organizationId }, 200);
+  const [repUser, campaigns] = await Promise.all([
+    getUser(userId),
+    listCampaigns({ userId, organizationId: ctx.organizationId }, 200),
+  ]);
+  const repName = repUser?.displayName || rep.email;
   const sent = campaigns.reduce((a, c) => a + c.sentCount + c.followupSentCount, 0);
   const replies = campaigns.reduce((a, c) => a + c.replyCount, 0);
   const bounces = campaigns.reduce((a, c) => a + c.bounceCount, 0);
@@ -55,8 +60,9 @@ export default async function RepDetailPage({
         ← Team
       </Link>
       <div className="mt-2">
-        <h1 className="text-2xl font-semibold">{rep.email}</h1>
+        <h1 className="text-2xl font-semibold">{repName}</h1>
         <p className="mt-1 text-sm text-slate-600">
+          {repName !== rep.email && <>{rep.email} · </>}
           {team ? `Team ${team.name}` : "Not on a team"} · {rep.role === "ADMIN" ? "Administrator" : rep.role === "MANAGER" ? "Team Lead" : "Sales Rep"}
           {!rep.active && " · account disabled"}
         </p>

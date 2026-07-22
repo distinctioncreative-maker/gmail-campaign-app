@@ -3,6 +3,7 @@ import { getConnectionPublic } from "@/lib/repositories/gmailConnections";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { GmailConnectionCard } from "@/components/GmailConnectionCard";
 import { ProfileForm } from "@/components/ProfileForm";
+import { DisplayNameForm } from "@/components/DisplayNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function SettingsPage({
@@ -38,6 +39,15 @@ export default async function SettingsPage({
       )}
 
       <div className="mt-6 max-w-2xl space-y-6">
+        <div className="card p-6">
+          <h2 className="font-medium">Your name</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Shown in the account menu and on Team pages instead of your email address.
+          </p>
+          <div className="mt-4">
+            <DisplayNameForm initial={ctx.user.displayName} />
+          </div>
+        </div>
         <GmailConnectionCard
           connectedEmail={connection?.status === "CONNECTED" ? connection.connectedEmail : null}
           lastRefreshAt={connection?.status === "CONNECTED" ? connection.lastRefreshAt : null}

@@ -4,17 +4,31 @@ import { getConnectionPublic } from "@/lib/repositories/gmailConnections";
 import { getDailyCount, listCampaigns, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { currentDayKey } from "@/lib/scheduling/window";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
+import { getOrganization } from "@/lib/repositories/orgSettings";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { Icon, type IconName } from "@/components/ui/Icon";
+
+/** "Good morning" / "Good afternoon" / "Good evening" in the user's timezone. */
+function greetingFor(timezone: string): string {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-US", { hour: "numeric", hour12: false, timeZone: timezone }).format(
+      new Date()
+    )
+  );
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default async function HomePage() {
   const ctx = await requireUser();
   const owner = ownerFromCtx(ctx);
-  const [connection, campaigns, sentToday, profile] = await Promise.all([
+  const [connection, campaigns, sentToday, profile, org] = await Promise.all([
     getConnectionPublic(ctx.userId),
     listCampaigns(owner, 100),
     getDailyCount(owner, currentDayKey(ctx.user.timezone)),
     getSenderProfile(ctx),
+    getOrganization(ctx.organizationId),
   ]);
 
   const gmailConnected = connection?.status === "CONNECTED";
@@ -35,9 +49,11 @@ export default async function HomePage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Welcome back, {ctx.user.displayName.split(" ")[0]} 👋
+            {greetingFor(ctx.user.timezone)}, {ctx.user.displayName.split(" ")[0]} 👋
           </h1>
-          <p className="mt-1 text-sm text-slate-500">Here&apos;s what&apos;s happening today.</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {org?.name ? `${org.name} workspace · ` : ""}Here&apos;s what&apos;s happening today.
+          </p>
         </div>
         <Link href="/campaigns/new" className="btn-primary px-5 py-2.5 text-sm">
           + Create campaign

@@ -112,3 +112,12 @@ export async function countMembers(organizationId: string): Promise<number> {
     .get();
   return agg.data().count;
 }
+
+/** Rename the workspace (shown in the sidebar and Home). Admin-gated by
+ * the calling route. */
+export async function renameOrganization(organizationId: string, name: string): Promise<void> {
+  await firestore().collection("organizations").doc(organizationId).update({
+    name,
+    updatedAt: Date.now(),
+  });
+}

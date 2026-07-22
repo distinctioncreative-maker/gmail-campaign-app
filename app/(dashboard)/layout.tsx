@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { getOrganization } from "@/lib/repositories/orgSettings";
 import { resolveSendingState } from "@/lib/sending/mode";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
@@ -54,12 +55,22 @@ export default async function DashboardLayout({
   }
 
   const nav = navForRole(role);
-  const sending = await resolveSendingState(organizationId);
+  const [sending, org] = await Promise.all([
+    resolveSendingState(organizationId),
+    getOrganization(organizationId),
+  ]);
+  const workspaceName = org?.name ?? "";
 
   return (
     <UIProviders>
     <div className="flex min-h-screen">
-      <Sidebar items={nav} displayName={displayName} email={email} role={role} />
+      <Sidebar
+        items={nav}
+        displayName={displayName}
+        email={email}
+        role={role}
+        workspaceName={workspaceName}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Always-visible sending-mode banner so no one is ever unsure. */}
         {sending.testMode ? (

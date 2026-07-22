@@ -94,3 +94,71 @@ export async function findRecentBounces(
   }
   return results;
 }
+
+// ── Inbox sweep: catch replies that arrive in NEW threads ────────
+
+export interface RecentInboundRef {
+  messageId: string;
+  threadId: string;
+  fromEmail: string;
+  internalDate: number;
+}
+
+function parseFromEmail(from: string): string {
+  const angled = from.match(/<([^>]+)>/);
+  const raw = (angled ? angled[1] : from).trim().toLowerCase();
+  return raw.includes("@") ? raw : "";
+}
+
+/**
+ * List recent inbox messages with just enough metadata to match senders
+ * against campaign recipients. One list call + bounded-parallel metadata
+ * fetches — this is what lets the scan catch someone who replied by
+ * composing a brand-new email instead of replying in-thread.
+ */
+export async function listRecentInbound(userId: string): Promise<RecentInboundRef[]> {
+  const { mapWithConcurrency } = await import("@/lib/util/pool");
+  const gmail = await gmailForUser(userId);
+  const list = await gmail.users.messages.list({
+    userId: "me",
+    q: "in:inbox newer_than:14d",
+    maxResults: 100,
+  });
+  const refs = (list.data.messages ?? []).filter((m) => m.id && m.threadId);
+  const rows = await mapWithConcurrency(refs, 10, async (ref) => {
+    try {
+      const msg = await gmail.users.messages.get({
+        userId: "me",
+        id: ref.id!,
+        format: "metadata",
+        metadataHeaders: ["From"],
+      });
+      const headers = headerMap(msg.data.payload?.headers);
+      return {
+        messageId: ref.id!,
+        threadId: ref.threadId!,
+        fromEmail: parseFromEmail(headers["From"] ?? ""),
+        internalDate: Number(msg.data.internalDate ?? 0),
+      };
+    } catch {
+      return null;
+    }
+  });
+  return rows.filter((r): r is RecentInboundRef => r !== null && r.fromEmail !== "");
+}
+
+/** Fetch one message in full as a classifiable InboundMessage. */
+export async function getMessageAsInbound(
+  userId: string,
+  messageId: string
+): Promise<InboundMessage> {
+  const gmail = await gmailForUser(userId);
+  const msg = await gmail.users.messages.get({ userId: "me", id: messageId, format: "full" });
+  const headers = headerMap(msg.data.payload?.headers);
+  return {
+    headers,
+    subject: headers["Subject"] ?? "",
+    snippet: msg.data.snippet ?? "",
+    bodyText: extractBodyText(msg.data.payload),
+  };
+}

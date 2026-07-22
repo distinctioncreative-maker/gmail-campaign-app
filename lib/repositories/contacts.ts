@@ -159,6 +159,41 @@ export async function deleteContact(ctx: Scope, contactId: string): Promise<void
   await contactsRef(ctx).doc(contactId).delete();
 }
 
+/** Delete many leads at once (batched, 400 per commit). */
+export async function bulkDeleteContacts(ctx: Scope, contactIds: string[]): Promise<number> {
+  const db = firestore();
+  let deleted = 0;
+  for (let i = 0; i < contactIds.length; i += 400) {
+    const batch = db.batch();
+    for (const id of contactIds.slice(i, i + 400)) {
+      batch.delete(contactsRef(ctx).doc(id));
+      deleted++;
+    }
+    await batch.commit();
+  }
+  return deleted;
+}
+
+/** Set the Do-Not-Email flag on many leads at once. */
+export async function bulkSetOptOut(
+  ctx: Scope,
+  contactIds: string[],
+  emailOptOut: boolean
+): Promise<number> {
+  const db = firestore();
+  const now = Date.now();
+  let updated = 0;
+  for (let i = 0; i < contactIds.length; i += 400) {
+    const batch = db.batch();
+    for (const id of contactIds.slice(i, i + 400)) {
+      batch.update(contactsRef(ctx).doc(id), { emailOptOut, updatedAt: now });
+      updated++;
+    }
+    await batch.commit();
+  }
+  return updated;
+}
+
 /** Count one genuinely sent email (initial or follow-up) on the contact. */
 export async function recordEmailSent(ctx: Scope, contactId: string, at: number): Promise<void> {
   await contactsRef(ctx)

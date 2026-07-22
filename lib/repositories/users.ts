@@ -46,3 +46,10 @@ export async function updateOnboardingStatus(
     updatedAt: Date.now(),
   });
 }
+
+export async function updateDisplayName(userId: string, displayName: string): Promise<void> {
+  await firestore().collection("users").doc(userId).update({
+    displayName,
+    updatedAt: Date.now(),
+  });
+}

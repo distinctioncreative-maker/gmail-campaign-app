@@ -43,6 +43,7 @@ export default async function SystemHealthPage() {
       ]);
       return {
         member: m,
+        displayName: user?.displayName ?? "",
         connectionStatus: conn?.status ?? "DISCONNECTED",
         connectedEmail: conn?.status === "CONNECTED" ? (conn.connectedEmail ?? "") : "",
         lastLoginAt: user?.lastLoginAt ?? null,
@@ -155,8 +156,9 @@ export default async function SystemHealthPage() {
               return (
                 <tr key={m.userId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <td className="px-4 py-3">
-                    <span className="font-medium">{m.email}</span>
+                    <span className="font-medium">{r.displayName || m.email}</span>
                     {!m.active && <span className="ml-2 badge bg-slate-200 text-slate-600">disabled</span>}
+                    {r.displayName && <p className="text-xs text-slate-500">{m.email}</p>}
                   </td>
                   <td className="px-4 py-3">
                     <span

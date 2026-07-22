@@ -14,12 +14,18 @@ import { getConnection } from "@/lib/repositories/gmailConnections";
 import { recordEngagementByEmail } from "@/lib/repositories/contacts";
 import { addSuppression } from "@/lib/repositories/suppressions";
 import { addNotification } from "@/lib/repositories/notifications";
-import { getInboundAfter, findRecentBounces } from "@/lib/gmail/threads";
-import { classifyInboundMessage, parseReturnDate } from "@/lib/gmail/classifyReply";
+import {
+  getInboundAfter,
+  findRecentBounces,
+  listRecentInbound,
+  getMessageAsInbound,
+} from "@/lib/gmail/threads";
+import { classifyInboundMessage, parseReturnDate, type InboundMessage, type ReplyClass } from "@/lib/gmail/classifyReply";
 import { classifyBounce, parseFailedRecipient } from "@/lib/gmail/classifyBounce";
 import { getSequence } from "@/lib/repositories/sequences";
 import { addBusinessDays, localDayKey } from "@/lib/scheduling/window";
-import type { Recipient } from "@/schemas/campaign";
+import { mapWithConcurrency } from "@/lib/util/pool";
+import type { Campaign, Recipient } from "@/schemas/campaign";
 
 const MONITOR_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 const OPEN = ["PENDING", "SCHEDULED", "RETRY_SCHEDULED"] as const;
@@ -44,125 +50,192 @@ function isMonitorable(r: Recipient): boolean {
   );
 }
 
+/** Campaign states worth scanning for replies — includes STOPPED so a
+ * reply to a campaign you halted still gets counted. */
+const REPLY_MONITOR_STATUSES = ["ACTIVE", "PAUSED", "COMPLETED", "STOPPED"];
+
+/** Gmail API fan-out concurrency for the scan. */
+const SCAN_CONCURRENCY = 8;
+
 /**
- * Scan a user's active campaigns for replies. For each monitorable
- * recipient, read the thread and act on inbound messages (spec §16).
+ * Apply the outcome of classified inbound mail for one recipient.
+ * Returns true when the recipient was resolved (replied/unsubscribed).
+ */
+async function actOnInbound(
+  owner: OwnerRef,
+  campaign: Campaign,
+  r: Recipient,
+  classes: ReplyClass[],
+  inbound: InboundMessage[]
+): Promise<boolean> {
+  const now = Date.now();
+
+  if (classes.includes("UNSUBSCRIBE")) {
+    await updateRecipient(owner, campaign.campaignId, r.recipientId, {
+      status: "UNSUBSCRIBED",
+      unsubscribedAt: now,
+    });
+    await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
+    await addSuppression(owner, {
+      email: r.emailSnapshot,
+      normalizedEmail: r.normalizedEmailSnapshot,
+      reason: "UNSUBSCRIBED",
+      scope: "USER",
+      source: "REPLY_MONITOR",
+      campaignId: campaign.campaignId,
+      recipientId: r.recipientId,
+    });
+    await incrementCampaignCounters(owner, campaign.campaignId, { unsubscribeCount: 1 });
+    await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "unsubscribes");
+    await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "UNSUBSCRIBED", now);
+    await recordEvent(owner, campaign.campaignId, {
+      type: "UNSUBSCRIBE",
+      message: `${r.emailSnapshot} asked to unsubscribe — added to your do-not-email list.`,
+      severity: "WARNING",
+      recipientEmail: r.emailSnapshot,
+    });
+    await addNotification(owner, {
+      type: "UNSUBSCRIBE",
+      title: "Unsubscribe received",
+      body: `${r.emailSnapshot} opted out and was added to your do-not-email list.`,
+      severity: "WARNING",
+      campaignId: campaign.campaignId,
+    });
+    return true;
+  }
+
+  if (classes.includes("OUT_OF_OFFICE")) {
+    const sequence = campaign.sequenceId ? await getSequence(owner, campaign.sequenceId) : null;
+    if (sequence?.outOfOfficePolicy === "STOP") {
+      await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
+    } else if (!sequence || sequence.outOfOfficePolicy === "PAUSE_DAYS") {
+      const oooBody = inbound.find((_m, i) => classes[i] === "OUT_OF_OFFICE")?.bodyText ?? "";
+      const returnDate =
+        parseReturnDate(oooBody) ??
+        addBusinessDays(now, sequence?.outOfOfficePauseDays ?? 3, {
+          timezone: campaign.schedule.timezone,
+          allowedWeekdays: campaign.schedule.allowedWeekdays,
+        });
+      await updateRecipient(owner, campaign.campaignId, r.recipientId, {
+        nextFollowupAt: returnDate,
+      });
+    }
+    // OOO is not a human reply — do not stop the sequence outright.
+    return false;
+  }
+
+  if (classes.includes("HUMAN_REPLY") || classes.includes("NOT_INTERESTED")) {
+    await updateRecipient(owner, campaign.campaignId, r.recipientId, {
+      status: "REPLIED",
+      repliedAt: now,
+    });
+    await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
+    await incrementCampaignCounters(owner, campaign.campaignId, { replyCount: 1 });
+    await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "replies");
+    await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "REPLIED", now);
+    await recordEvent(owner, campaign.campaignId, {
+      type: "REPLY",
+      message: `${r.emailSnapshot} replied — follow-ups stopped.`,
+      severity: "INFO",
+      recipientEmail: r.emailSnapshot,
+    });
+    await addNotification(owner, {
+      type: "REPLY",
+      title: "New reply",
+      body: `${r.emailSnapshot} replied to your campaign "${campaign.name}".`,
+      severity: "SUCCESS",
+      campaignId: campaign.campaignId,
+    });
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Scan a user's campaigns for replies (spec §16). Two passes:
+ * 1. Thread pass — read each monitorable recipient's thread, in parallel.
+ * 2. Inbox sweep — match recent inbox senders against still-unreplied
+ *    recipients, so replies composed as NEW emails (not in-thread) are
+ *    caught too.
  */
 export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked: number; replied: number }> {
   const connection = await getConnection(owner.userId);
   if (!connection || connection.status !== "CONNECTED") return { checked: 0, replied: 0 };
 
   const campaigns = (await listCampaigns(owner)).filter((c) =>
-    ["ACTIVE", "PAUSED", "COMPLETED"].includes(c.status)
+    REPLY_MONITOR_STATUSES.includes(c.status)
   );
 
-  let checked = 0;
+  // Collect all monitorable recipients up front (recipient lists in parallel).
+  const lists = await Promise.all(
+    campaigns.map(async (campaign) => ({
+      campaign,
+      recipients: (await listRecipients(owner, campaign.campaignId)).filter(isMonitorable),
+    }))
+  );
+  const targets = lists.flatMap(({ campaign, recipients }) =>
+    recipients.map((r) => ({ campaign, r }))
+  );
+
   let replied = 0;
+  const resolved = new Set<string>(); // recipientIds handled in pass 1
 
-  for (const campaign of campaigns) {
-    const recipients = (await listRecipients(owner, campaign.campaignId)).filter(isMonitorable);
-    for (const r of recipients) {
-      checked++;
-      let result;
+  // Pass 1: same-thread inbound, bounded-parallel.
+  await mapWithConcurrency(targets, SCAN_CONCURRENCY, async ({ campaign, r }) => {
+    let result;
+    try {
+      result = await getInboundAfter(
+        owner.userId,
+        r.gmailThreadId!,
+        r.lastSentAt ?? r.initialSentAt!,
+        connection.connectedEmail
+      );
+    } catch {
+      return; // token/thread issue — try again next sweep
+    }
+    if (result.inbound.length === 0) return;
+    const classes = result.inbound.map(classifyInboundMessage);
+    if (await actOnInbound(owner, campaign, r, classes, result.inbound)) {
+      resolved.add(r.recipientId);
+      replied++;
+    }
+  });
+
+  // Pass 2: inbox sweep for replies sent as brand-new emails.
+  const pending = new Map(
+    targets
+      .filter(({ r }) => !resolved.has(r.recipientId))
+      .map((t) => [t.r.normalizedEmailSnapshot, t] as const)
+  );
+  if (pending.size > 0) {
+    let inboxRefs: Awaited<ReturnType<typeof listRecentInbound>> = [];
+    try {
+      inboxRefs = await listRecentInbound(owner.userId);
+    } catch {
+      // Inbox listing failed — thread-pass results still stand.
+    }
+    const matches = inboxRefs.filter((m) => {
+      const t = pending.get(m.fromEmail);
+      return t !== undefined && m.internalDate > (t.r.lastSentAt ?? t.r.initialSentAt ?? 0);
+    });
+    for (const m of matches.slice(0, 30)) {
+      const t = pending.get(m.fromEmail);
+      if (!t) continue;
       try {
-        result = await getInboundAfter(
-          owner.userId,
-          r.gmailThreadId!,
-          r.lastSentAt ?? r.initialSentAt!,
-          connection.connectedEmail
-        );
-      } catch {
-        continue; // token/thread issue — try again next sweep
-      }
-      if (result.inbound.length === 0) continue;
-
-      // Classify the most relevant inbound message.
-      const classes = result.inbound.map(classifyInboundMessage);
-      const now = Date.now();
-
-      if (classes.includes("UNSUBSCRIBE")) {
-        await updateRecipient(owner, campaign.campaignId, r.recipientId, {
-          status: "UNSUBSCRIBED",
-          unsubscribedAt: now,
-        });
-        await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
-        await addSuppression(owner, {
-          email: r.emailSnapshot,
-          normalizedEmail: r.normalizedEmailSnapshot,
-          reason: "UNSUBSCRIBED",
-          scope: "USER",
-          source: "REPLY_MONITOR",
-          campaignId: campaign.campaignId,
-          recipientId: r.recipientId,
-        });
-        await incrementCampaignCounters(owner, campaign.campaignId, { unsubscribeCount: 1 });
-        await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "unsubscribes");
-        await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "UNSUBSCRIBED", now);
-        await recordEvent(owner, campaign.campaignId, {
-          type: "UNSUBSCRIBE",
-          message: `${r.emailSnapshot} asked to unsubscribe — added to your do-not-email list.`,
-          severity: "WARNING",
-          recipientEmail: r.emailSnapshot,
-        });
-        await addNotification(owner, {
-          type: "UNSUBSCRIBE",
-          title: "Unsubscribe received",
-          body: `${r.emailSnapshot} opted out and was added to your do-not-email list.`,
-          severity: "WARNING",
-          campaignId: campaign.campaignId,
-        });
-        replied++;
-        continue;
-      }
-
-      if (classes.includes("OUT_OF_OFFICE")) {
-        const sequence = campaign.sequenceId ? await getSequence(owner, campaign.sequenceId) : null;
-        if (sequence?.outOfOfficePolicy === "STOP") {
-          await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
-        } else if (!sequence || sequence.outOfOfficePolicy === "PAUSE_DAYS") {
-          const oooBody = result.inbound.find((_m, i) => classes[i] === "OUT_OF_OFFICE")?.bodyText ?? "";
-          const returnDate =
-            parseReturnDate(oooBody) ??
-            addBusinessDays(now, sequence?.outOfOfficePauseDays ?? 3, {
-              timezone: campaign.schedule.timezone,
-              allowedWeekdays: campaign.schedule.allowedWeekdays,
-            });
-          await updateRecipient(owner, campaign.campaignId, r.recipientId, {
-            nextFollowupAt: returnDate,
-          });
+        const inbound = await getMessageAsInbound(owner.userId, m.messageId);
+        const classes = [classifyInboundMessage(inbound)];
+        if (await actOnInbound(owner, t.campaign, t.r, classes, [inbound])) {
+          replied++;
+          pending.delete(m.fromEmail);
         }
-        // OOO is not a human reply — do not stop the sequence outright.
-        continue;
-      }
-
-      if (classes.includes("HUMAN_REPLY") || classes.includes("NOT_INTERESTED")) {
-        await updateRecipient(owner, campaign.campaignId, r.recipientId, {
-          status: "REPLIED",
-          repliedAt: now,
-        });
-        await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
-        await incrementCampaignCounters(owner, campaign.campaignId, { replyCount: 1 });
-        await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "replies");
-        await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "REPLIED", now);
-        await recordEvent(owner, campaign.campaignId, {
-          type: "REPLY",
-          message: `${r.emailSnapshot} replied — follow-ups stopped.`,
-          severity: "INFO",
-          recipientEmail: r.emailSnapshot,
-        });
-        await addNotification(owner, {
-          type: "REPLY",
-          title: "New reply",
-          body: `${r.emailSnapshot} replied to your campaign "${campaign.name}".`,
-          severity: "SUCCESS",
-          campaignId: campaign.campaignId,
-        });
-        replied++;
+      } catch {
+        // Skip this message; the next sweep will retry.
       }
     }
   }
 
-  return { checked, replied };
+  return { checked: targets.length, replied };
 }
 
 /**
@@ -182,15 +255,21 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
   if (bounceMessages.length === 0) return { bounces: 0 };
 
   const campaigns = (await listCampaigns(owner)).filter((c) =>
-    ["ACTIVE", "PAUSED", "COMPLETED"].includes(c.status)
+    REPLY_MONITOR_STATUSES.includes(c.status)
   );
 
   // Build an index of monitorable recipients by normalized email.
   const byEmail = new Map<string, { campaignId: string; recipient: Recipient }>();
-  for (const campaign of campaigns) {
-    for (const r of await listRecipients(owner, campaign.campaignId)) {
+  const recipientLists = await Promise.all(
+    campaigns.map(async (campaign) => ({
+      campaignId: campaign.campaignId,
+      recipients: await listRecipients(owner, campaign.campaignId),
+    }))
+  );
+  for (const { campaignId, recipients } of recipientLists) {
+    for (const r of recipients) {
       if (r.bouncedAt === null && r.initialSentAt !== null) {
-        byEmail.set(r.normalizedEmailSnapshot, { campaignId: campaign.campaignId, recipient: r });
+        byEmail.set(r.normalizedEmailSnapshot, { campaignId, recipient: r });
       }
     }
   }

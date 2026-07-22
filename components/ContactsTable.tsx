@@ -2,8 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
+import { fetchJson } from "@/lib/fetchJson";
+import { useConfirm, useToast } from "@/components/ui/UIProviders";
 
 export interface ContactRow {
   contactId: string;
@@ -46,8 +49,13 @@ function matches(c: ContactRow, filter: Filter): boolean {
 }
 
 export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
+  const router = useRouter();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState(false);
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -80,6 +88,64 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
     { key: "name", dir: "asc" }
   );
 
+  const allVisibleSelected = sorted.length > 0 && sorted.every((c) => selected.has(c.contactId));
+
+  function toggleOne(contactId: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(contactId)) next.delete(contactId);
+      else next.add(contactId);
+      return next;
+    });
+  }
+
+  function toggleAllVisible() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) for (const c of sorted) next.delete(c.contactId);
+      else for (const c of sorted) next.add(c.contactId);
+      return next;
+    });
+  }
+
+  async function bulk(action: "delete" | "optout" | "allow") {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    if (action === "delete") {
+      const ok = await confirm({
+        title: `Delete ${ids.length} lead${ids.length === 1 ? "" : "s"}?`,
+        body: "They're removed from your list permanently. Past campaign emails and history are not affected.",
+        danger: true,
+        confirmLabel: `Delete ${ids.length}`,
+      });
+      if (!ok) return;
+    }
+    if (action === "optout") {
+      const ok = await confirm({
+        title: `Mark ${ids.length} lead${ids.length === 1 ? "" : "s"} Do Not Email?`,
+        body: "They'll be excluded from every future campaign until you allow them again.",
+        danger: true,
+        confirmLabel: "Mark Do Not Email",
+      });
+      if (!ok) return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetchJson<{ message?: string }>("/api/contacts/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, contactIds: ids }),
+      });
+      toast(res.message ?? "Done.", "success");
+      setSelected(new Set());
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "That didn't work — try again.", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
@@ -104,6 +170,30 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
         </div>
       </div>
 
+      {selected.size > 0 && (
+        <div className="glass sticky top-0 z-10 mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-border p-2.5">
+          <span className="px-1 text-sm font-medium">
+            {selected.size} selected
+          </span>
+          <button onClick={() => void bulk("delete")} disabled={busy} className="btn-danger px-3 py-1.5 text-xs">
+            Delete
+          </button>
+          <button onClick={() => void bulk("optout")} disabled={busy} className="btn-secondary px-3 py-1.5 text-xs">
+            Do Not Email
+          </button>
+          <button onClick={() => void bulk("allow")} disabled={busy} className="btn-ghost px-3 py-1.5 text-xs">
+            Allow emailing
+          </button>
+          <button
+            onClick={() => setSelected(new Set())}
+            disabled={busy}
+            className="btn-ghost px-3 py-1.5 text-xs text-slate-500"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {visible.length === 0 ? (
         <p className="mt-3 rounded-2xl bg-white p-6 text-sm text-slate-500 shadow-sm">
           {contacts.length === 0
@@ -115,6 +205,15 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
               <tr>
+                <th className="w-10 px-3 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleAllVisible}
+                    aria-label="Select all shown leads"
+                    className="h-4 w-4 accent-[var(--primary)]"
+                  />
+                </th>
                 <SortTh label="Name" sortKey="name" sort={sort} onToggle={toggle} />
                 <SortTh label="Business" sortKey="business" sort={sort} onToggle={toggle} />
                 <SortTh label="Email" sortKey="email" sort={sort} onToggle={toggle} />
@@ -125,7 +224,21 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
             </thead>
             <tbody>
               {sorted.map((c) => (
-                <tr key={c.contactId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr
+                  key={c.contactId}
+                  className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${
+                    selected.has(c.contactId) ? "bg-primary-soft/40" : ""
+                  }`}
+                >
+                  <td className="px-3 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(c.contactId)}
+                      onChange={() => toggleOne(c.contactId)}
+                      aria-label={`Select ${c.fullName || c.email}`}
+                      className="h-4 w-4 accent-[var(--primary)]"
+                    />
+                  </td>
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/leads/${c.contactId}`} className="hover:underline">
                       {c.fullName || "—"}

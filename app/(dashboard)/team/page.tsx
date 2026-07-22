@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
+import { getUser } from "@/lib/repositories/users";
 import { statsForReps, type RepStats } from "@/lib/teams/stats";
 import { ledTeamIds } from "@/lib/teams/access";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -41,7 +42,7 @@ function Leaderboard({
   teamId,
   canManage,
 }: {
-  rows: Array<{ member: Member; stats: RepStats }>;
+  rows: Array<{ member: Member; stats: RepStats; name: string }>;
   teamId: string | null;
   canManage: boolean;
 }) {
@@ -68,12 +69,15 @@ function Leaderboard({
               </td>
             </tr>
           ) : (
-            sorted.map(({ member: m, stats: s }, i) => (
+            sorted.map(({ member: m, stats: s, name }, i) => (
               <tr key={m.userId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                <td className="px-4 py-3 font-medium">
-                  {i === 0 && s.sent > 0 && <span aria-hidden>🏆 </span>}
-                  {m.email}
+                <td className="px-4 py-3">
+                  <span className="font-medium">
+                    {i === 0 && s.sent > 0 && <span aria-hidden>🏆 </span>}
+                    {name || m.email}
+                  </span>
                   {!m.active && <span className="ml-2 badge bg-slate-200 text-slate-600">disabled</span>}
+                  {name && <p className="text-xs text-slate-500">{m.email}</p>}
                 </td>
                 <td className="px-4 py-3 tabular-nums">
                   {s.campaigns}
@@ -135,9 +139,17 @@ export default async function TeamPage() {
   const visibleMemberIds = isAdmin
     ? members.map((m) => m.userId)
     : members.filter((m) => m.teamId !== null && led.has(m.teamId!)).map((m) => m.userId);
-  const stats = await statsForReps(ctx.organizationId, visibleMemberIds);
+  const [stats, userDocs] = await Promise.all([
+    statsForReps(ctx.organizationId, visibleMemberIds),
+    Promise.all(members.map((m) => getUser(m.userId))),
+  ]);
+  const nameById = new Map(
+    userDocs.filter((u) => u !== null).map((u) => [u.userId, u.displayName] as const)
+  );
   const rowsFor = (list: Member[]) =>
-    list.map((m) => ({ member: m, stats: stats.get(m.userId)! })).filter((r) => r.stats);
+    list
+      .map((m) => ({ member: m, stats: stats.get(m.userId)!, name: nameById.get(m.userId) ?? "" }))
+      .filter((r) => r.stats);
 
   const memberOptions = members
     .filter((m) => m.active)
