@@ -165,3 +165,8 @@ export function formatDuration(ms: number | null): string {
   const h = Math.round((ms % DAY) / HOUR);
   return h > 0 ? `${d}d ${h}h` : `${d}d`;
 }
+
+/** "12.3%" — shared percent formatting for KPI surfaces. */
+export function formatPercent(n: number): string {
+  return `${n.toFixed(1)}%`;
+}

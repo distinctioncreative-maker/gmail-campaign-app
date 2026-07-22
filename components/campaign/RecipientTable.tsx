@@ -6,6 +6,7 @@ import { LocalTime } from "@/components/LocalTime";
 import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
+import { recipientStatusBadge as statusBadge } from "@/lib/campaigns/statusLabels";
 
 interface RecipientRow {
   recipientId: string;
@@ -19,29 +20,9 @@ interface RecipientRow {
   gmailThreadId: string | null;
 }
 
-const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  PENDING: { label: "Waiting", className: "bg-slate-100 text-slate-600" },
-  SCHEDULED: { label: "Scheduled", className: "bg-blue-100 text-blue-700" },
-  DRAFTED: { label: "Draft created", className: "bg-blue-100 text-blue-700" },
-  SENT: { label: "Sent", className: "bg-green-100 text-green-700" },
-  REPLIED: { label: "Replied 🎉", className: "bg-green-100 text-green-700" },
-  BOUNCED: { label: "Bounced", className: "bg-amber-100 text-amber-700" },
-  UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-amber-100 text-amber-700" },
-  SKIPPED: { label: "Removed", className: "bg-slate-200 text-slate-600" },
-  EXCLUDED: { label: "Excluded for safety", className: "bg-amber-100 text-amber-700" },
-  CANCELLED: { label: "Cancelled", className: "bg-slate-200 text-slate-600" },
-  ERROR: { label: "Needs attention", className: "bg-red-100 text-red-700" },
-};
-
 const FILTERS = ["All", "Batches", "Scheduled", "Sent", "Replied", "Excluded", "Problems"] as const;
 type Filter = (typeof FILTERS)[number];
 type SortKey = "fullName" | "email" | "status" | "time";
-
-function statusBadge(status: string) {
-  return (
-    STATUS_LABELS[status] ?? { label: status, className: "bg-slate-100 text-slate-600" }
-  );
-}
 
 export function RecipientTable({
   campaignId,

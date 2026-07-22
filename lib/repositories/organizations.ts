@@ -58,11 +58,6 @@ export async function getOrCreateOrganizationForDomain(domain: string): Promise<
   return org;
 }
 
-/** @deprecated single-tenant fallback; kept for callers/tests. */
-export async function getOrCreateDefaultOrganization(): Promise<Organization> {
-  return getOrCreateOrganizationForDomain("");
-}
-
 export async function getMember(
   organizationId: string,
   userId: string

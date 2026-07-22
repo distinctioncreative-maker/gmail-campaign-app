@@ -65,6 +65,14 @@ const SECTIONS: Array<{ heading: string; items: QA[] }> = [
         q: "Do you track open rates?",
         a: "No. Open tracking needs a hidden tracking pixel, which flags emails as marketing and is wildly inaccurate now (Apple/Gmail pre-load images). We track replies and bounces instead, which actually mean something.",
       },
+      {
+        q: "Someone replied but my reply rate still shows 0%.",
+        a: "Replies are detected on a background sweep, so there can be a delay. Hit 'Scan for replies' on the Replies or Reports page to check right now — it also backfills every lead's engagement stats. If it still finds nothing: the reply must be in the same Gmail thread as your sent email (a brand-new email from them won't auto-link), and your Gmail connection needs read access — reconnect in Settings if it was connected a long time ago.",
+      },
+      {
+        q: "What can my Team Lead or admin see of my work?",
+        a: "Your Team Lead (and admins) can see your campaign performance — what you sent, who replied, statuses — to help coach. They cannot edit or send anything as you, and other reps see none of your data. Your leads, notes, and templates stay yours.",
+      },
     ],
   },
 ];

@@ -9,10 +9,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { TeamManager, RosterActions, RemoveFromTeamButton } from "@/components/team/TeamManager";
 import type { Member, Team } from "@/schemas/user";
+import { formatPercent } from "@/lib/analytics/metrics";
 
-function pct(n: number): string {
-  return `${n.toFixed(1)}%`;
-}
 
 function KpiTiles({ stats }: { stats: RepStats[] }) {
   const sent = stats.reduce((a, s) => a + s.sent, 0);
@@ -22,7 +20,7 @@ function KpiTiles({ stats }: { stats: RepStats[] }) {
   const tiles = [
     ["Emails sent", String(sent)],
     ["Replies", String(replies)],
-    ["Reply rate", sent > 0 ? pct((replies / sent) * 100) : "—"],
+    ["Reply rate", sent > 0 ? formatPercent((replies / sent) * 100) : "—"],
     ["Reps sending now", String(active)],
     ["Bounces", String(bounces)],
   ];
@@ -94,7 +92,7 @@ function Leaderboard({
                       />
                     </div>
                     <span className="tabular-nums text-xs text-slate-500">
-                      {s.sent > 0 ? pct(s.replyRate) : "—"}
+                      {s.sent > 0 ? formatPercent(s.replyRate) : "—"}
                     </span>
                   </div>
                 </td>

@@ -46,7 +46,7 @@ done by a **Google Workspace admin of the new company**.
 
 Throughout, replace:
 - `COMPANY_DOMAIN` → the company's domain (e.g. `everestbusinessfunding.com`)
-- `PROJECT_ID` → a new project id you'll create (e.g. `everest-massleader`)
+- `PROJECT_ID` → a new project id you'll create (e.g. `everest-cadence`)
 - `TEST_EMAIL` → an inbox at that company for safe test sends
 
 ---
@@ -82,7 +82,7 @@ gcloud firestore databases create --location=nam5
    `PROJECT_ID` from the dropdown → continue (Analytics optional).
 2. **Build → Authentication → Get started → Sign-in method → Google → Enable**,
    set a support email, Save.
-3. Gear → **Project settings → Your apps → `</>` (web)** → nickname `massleader`
+3. Gear → **Project settings → Your apps → `</>` (web)** → nickname `cadence`
    → Register. Copy the `apiKey`, `authDomain`, `projectId` values — you'll
    paste them in step 6.
 
@@ -97,12 +97,12 @@ gcloud firestore databases create --location=nam5
 ## 5. Encryption key (1 min)
 
 ```bash
-gcloud kms keyrings create massleader --location=us-central1
+gcloud kms keyrings create cadence --location=us-central1
 gcloud kms keys create gmail-tokens \
-  --keyring=massleader --location=us-central1 --purpose=encryption
+  --keyring=cadence --location=us-central1 --purpose=encryption
 PROJECT_NUMBER=$(gcloud projects describe PROJECT_ID --format='value(projectNumber)')
 gcloud kms keys add-iam-policy-binding gmail-tokens \
-  --keyring=massleader --location=us-central1 \
+  --keyring=cadence --location=us-central1 \
   --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   --role=roles/cloudkms.cryptoKeyEncrypterDecrypter
 ```
@@ -132,20 +132,20 @@ EOF
 ```bash
 SESSION_SECRET=$(openssl rand -base64 48)
 
-gcloud run deploy massleader --source . --region us-central1 --allow-unauthenticated \
+gcloud run deploy cadence --source . --region us-central1 --allow-unauthenticated \
   --memory 1Gi \
-  --set-env-vars "^##^GOOGLE_CLOUD_PROJECT_ID=PROJECT_ID##FIREBASE_PROJECT_ID=PROJECT_ID##ALLOWED_GOOGLE_WORKSPACE_DOMAIN=COMPANY_DOMAIN##SESSION_SECRET=${SESSION_SECRET}##TOKEN_KMS_KEY_RESOURCE=projects/PROJECT_ID/locations/us-central1/keyRings/massleader/cryptoKeys/gmail-tokens##TEST_EMAIL_DESTINATION=TEST_EMAIL##GOOGLE_OAUTH_CLIENT_ID=YOUR_OAUTH_CLIENT_ID##GOOGLE_OAUTH_CLIENT_SECRET=YOUR_OAUTH_CLIENT_SECRET"
+  --set-env-vars "^##^GOOGLE_CLOUD_PROJECT_ID=PROJECT_ID##FIREBASE_PROJECT_ID=PROJECT_ID##ALLOWED_GOOGLE_WORKSPACE_DOMAIN=COMPANY_DOMAIN##SESSION_SECRET=${SESSION_SECRET}##TOKEN_KMS_KEY_RESOURCE=projects/PROJECT_ID/locations/us-central1/keyRings/cadence/cryptoKeys/gmail-tokens##TEST_EMAIL_DESTINATION=TEST_EMAIL##GOOGLE_OAUTH_CLIENT_ID=YOUR_OAUTH_CLIENT_ID##GOOGLE_OAUTH_CLIENT_SECRET=YOUR_OAUTH_CLIENT_SECRET"
 ```
 
 Answer **y** if it asks about Artifact Registry. When it finishes it prints a
-**Service URL** like `https://massleader-xxxx-uc.a.run.app`. Copy it.
+**Service URL** like `https://cadence-xxxx-uc.a.run.app`. Copy it.
 
 ## 8. Wire the URL back into OAuth + Firebase (2 min)
 
 1. Set the redirect URI env vars on the service (replace `SERVICE_URL`):
 
 ```bash
-gcloud run services update massleader --region us-central1 \
+gcloud run services update cadence --region us-central1 \
   --update-env-vars "GOOGLE_OAUTH_REDIRECT_URI=SERVICE_URL/api/gmail/callback,APP_BASE_URL=SERVICE_URL"
 ```
 
@@ -157,7 +157,7 @@ gcloud run services update massleader --region us-central1 \
 ## 9. Turn on background sending (once)
 
 ```bash
-bash scripts/setup-cloud.sh PROJECT_ID us-central1 massleader
+bash scripts/setup-cloud.sh PROJECT_ID us-central1 cadence
 ```
 
 That creates the Cloud Tasks queue, service accounts, and the reply/bounce

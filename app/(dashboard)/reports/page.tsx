@@ -13,12 +13,9 @@ import {
   bestSendTimes,
   dailyTrend,
   formatDuration,
+  formatPercent as pct,
   type RecipientPoint,
 } from "@/lib/analytics/metrics";
-
-function pct(n: number): string {
-  return `${n.toFixed(1)}%`;
-}
 
 // Cap how many campaigns we scan at recipient level so the page stays fast.
 const MAX_CAMPAIGNS_SCANNED = 40;
@@ -88,7 +85,7 @@ export default async function ReportsPage() {
             <ScanRepliesButton />
             {leaderboard.length > 0 ? (
               <ExportCsvButton
-                filename="massleader-campaigns.csv"
+                filename="cadence-campaigns.csv"
                 headers={["Campaign", "Status", "Sent", "Replies", "Reply rate", "Bounces", "Unsub"]}
                 rows={csvRows}
               />

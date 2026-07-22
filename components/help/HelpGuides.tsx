@@ -90,6 +90,45 @@ const GUIDES: Guide[] = [
     ],
     cta: { href: "/sequences/new", label: "Build a sequence" },
   },
+  {
+    id: "replies",
+    icon: "🎉",
+    title: "Work your replies",
+    summary: "Every reply across all campaigns, in one inbox.",
+    steps: [
+      "Open Replies in the sidebar — newest replies first.",
+      "Click 'Open in Gmail' to continue the conversation in the actual thread.",
+      "Click the lead's name to see their full history and add notes.",
+      "Expecting a reply that isn't showing? Hit 'Scan for replies' — it also syncs every lead's stats.",
+    ],
+    cta: { href: "/replies", label: "Open Replies" },
+  },
+  {
+    id: "edit-lead",
+    icon: "✏️",
+    title: "Edit a lead & keep notes",
+    summary: "Fix details, add context, mark Do Not Email.",
+    steps: [
+      "Open Leads and click any lead's name.",
+      "Click 'Edit lead' to fix their name, business, phone, or amount — templates pick up the new values on future sends.",
+      "Add private notes (call outcomes, context, next steps).",
+      "Use 'Do Not Email' to exclude them from all future campaigns, or Delete to remove them entirely.",
+    ],
+    cta: { href: "/leads", label: "Open Leads" },
+  },
+  {
+    id: "teams",
+    icon: "🧭",
+    title: "Teams for leads & admins",
+    summary: "Track your team and move reps around.",
+    steps: [
+      "Admins: on the Team page, create teams and pick each Team Lead (they need the Team Lead role, set in Administration).",
+      "Team Leads: see your team's reply-rate leaderboard, and add or remove reps with 'Add a rep…'.",
+      "Click 'View' on any rep to drill into their campaigns — read-only, for coaching.",
+      "Reps always keep their own private workspace; nothing they own moves when teams change.",
+    ],
+    cta: { href: "/team", label: "Open Team" },
+  },
 ];
 
 export function HelpGuides() {

@@ -7,10 +7,8 @@ import { listCampaigns } from "@/lib/repositories/campaigns";
 import { canViewRep } from "@/lib/teams/access";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { LocalTime } from "@/components/LocalTime";
+import { formatPercent } from "@/lib/analytics/metrics";
 
-function pct(n: number): string {
-  return `${n.toFixed(1)}%`;
-}
 
 /**
  * Team Lead / Admin drill-down into one rep's campaigns. Access is checked
@@ -47,7 +45,7 @@ export default async function RepDetailPage({
     ["Campaigns", String(campaigns.length)],
     ["Emails sent", String(sent)],
     ["Replies", String(replies)],
-    ["Reply rate", sent > 0 ? pct((replies / sent) * 100) : "—"],
+    ["Reply rate", sent > 0 ? formatPercent((replies / sent) * 100) : "—"],
     ["Bounces", String(bounces)],
   ];
 
@@ -106,7 +104,7 @@ export default async function RepDetailPage({
                     <td className="px-4 py-3 tabular-nums">{cSent}</td>
                     <td className="px-4 py-3 tabular-nums">{c.replyCount}</td>
                     <td className="px-4 py-3 tabular-nums text-xs text-slate-500">
-                      {cSent > 0 ? pct((c.replyCount / cSent) * 100) : "—"}
+                      {cSent > 0 ? formatPercent((c.replyCount / cSent) * 100) : "—"}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">
                       <LocalTime value={c.updatedAt} />
