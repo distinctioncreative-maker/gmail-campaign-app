@@ -144,12 +144,24 @@ h1 { font-weight: 600; }
   box-shadow: var(--shadow-sm), var(--shadow-md);
 }
 .card-hover {
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.24s ease;
+  will-change: transform;
 }
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-color: color-mix(in srgb, var(--border) 60%, var(--foreground) 8%);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg), 0 12px 30px -12px color-mix(in srgb, var(--primary) 40%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+}
+.card-hover:active {
+  transform: translateY(-1px) scale(0.994);
+  transition-duration: 0.08s;
+}
+/* Clickable cards: crisp keyboard focus ring, no default outline. */
+a.card-hover:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-lg), 0 0 0 2px var(--surface), 0 0 0 4px var(--primary);
 }
 
 /* Frosted panel (sidebar / top bar). */
@@ -371,4 +383,24 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 
 @media (prefers-reduced-motion: reduce) {
   .aurora-blob, .pulse-sheen { animation: none; }
+}
+
+/* ── Seamless fintech polish ─────────────────────────────────────── */
+/* Smooth, consistent easing on all interactive surfaces. */
+a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease; }
+
+/* Soft staggered rise for grids of cards on entrance. */
+@keyframes rise-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.stagger > * { opacity: 0; animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.stagger > *:nth-child(5) { animation-delay: 0.22s; }
+.stagger > *:nth-child(6) { animation-delay: 0.27s; }
+.stagger > *:nth-child(7) { animation-delay: 0.32s; }
+.stagger > *:nth-child(8) { animation-delay: 0.37s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger > * { opacity: 1; animation: none; }
 }

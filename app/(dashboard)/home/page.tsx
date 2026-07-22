@@ -87,11 +87,12 @@ export default async function HomePage() {
     dash?: boolean;
     icon: IconName;
     accent: string;
+    href: string;
   }> = [
-    { label: "Sending now", value: active.length, icon: "rocket", accent: "text-primary" },
-    { label: "Replies (all time)", value: totalReplies, icon: "reply", accent: "text-green-600" },
-    { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "chart", accent: "text-indigo-500" },
-    { label: "Leads", value: totalLeads, icon: "users", accent: "text-slate-900" },
+    { label: "Sending now", value: active.length, icon: "rocket", accent: "text-primary", href: "/campaigns" },
+    { label: "Replies (all time)", value: totalReplies, icon: "reply", accent: "text-green-600", href: "/replies" },
+    { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "chart", accent: "text-indigo-500", href: "/reports" },
+    { label: "Leads", value: totalLeads, icon: "users", accent: "text-slate-900", href: "/leads" },
   ];
 
   return (
@@ -166,23 +167,26 @@ export default async function HomePage() {
       )}
 
       {/* ── Stat orbs + daily allowance ring ──────────────────── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {orbs.map((o) => (
-          <div key={o.label} className="card card-hover p-5">
+          <Link key={o.label} href={o.href} className="card card-hover group p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-slate-500">{o.label}</p>
-              <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary-soft text-primary">
+              <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary-soft text-primary transition-transform duration-300 group-hover:scale-110">
                 <Icon name={o.icon} size={16} />
               </span>
             </div>
             <p className={`mt-3 text-3xl font-semibold tracking-tight tabular-nums ${o.accent}`}>
               {o.dash ? "—" : <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />}
             </p>
-          </div>
+            <span className="mt-1 flex items-center gap-1 text-xs font-medium text-slate-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:text-primary">
+              View <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+            </span>
+          </Link>
         ))}
 
         {/* Daily allowance ring */}
-        <div className="card p-5">
+        <Link href="/settings" className="card card-hover group p-5">
           <p className="text-sm font-medium text-slate-500">Today&apos;s sending</p>
           <div className="mt-2 flex items-center gap-3">
             <div
@@ -204,7 +208,7 @@ export default async function HomePage() {
               <p className="text-xs text-slate-500">{dailyRemaining} left today</p>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* ── Onboarding vs live campaigns ──────────────────────── */}
