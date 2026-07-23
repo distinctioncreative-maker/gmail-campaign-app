@@ -88,7 +88,7 @@ export default async function DashboardLayout({
           <ThemeToggle />
           <NotificationBell />
         </div>
-        <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">
+        <main className="mx-auto w-full max-w-6xl flex-1 p-4 pb-28 sm:p-6 sm:pb-6 md:p-8">
           <div className="animate-rise">{children}</div>
         </main>
       </div>

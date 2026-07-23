@@ -102,7 +102,40 @@ export default async function RepliesPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto card">
+          <>
+          {/* Mobile: reply cards */}
+          <ul className="space-y-2 sm:hidden">
+            {rows.map((r) => (
+              <li key={`m-${r.campaignId}-${r.contactId}-${r.repliedAt}`} className="card p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <Link href={`/leads/${r.contactId}`} className="min-w-0">
+                    <p className="truncate font-medium">{r.fullName || r.email}</p>
+                    {r.fullName && <p className="truncate text-xs text-slate-500">{r.email}</p>}
+                  </Link>
+                  <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                    Replied
+                  </span>
+                </div>
+                <p className="mt-1.5 truncate text-xs text-slate-500">{r.campaignName}</p>
+                <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                  <span><LocalTime value={r.repliedAt} /> · {formatDuration(r.timeToReplyMs)}</span>
+                  {r.gmailThreadId && (
+                    <a
+                      href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-primary"
+                    >
+                      Open in Gmail →
+                    </a>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: table */}
+          <div className="hidden overflow-x-auto card sm:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
                 <tr>
@@ -147,6 +180,7 @@ export default async function RepliesPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>

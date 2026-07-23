@@ -404,3 +404,10 @@ a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.1
 @media (prefers-reduced-motion: reduce) {
   .stagger > * { opacity: 1; animation: none; }
 }
+
+/* ── Mobile touch polish ─────────────────────────────────────────── */
+.overflow-x-auto, .overflow-y-auto { -webkit-overflow-scrolling: touch; }
+/* Comfortable tap targets on touch devices. */
+@media (max-width: 640px) {
+  .btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger { min-height: 40px; }
+}

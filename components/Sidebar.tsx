@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AccountMenu } from "@/components/AccountMenu";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
+import { MobileNav } from "@/components/MobileNav";
 
 export interface NavItem {
   href: string;
@@ -78,8 +79,6 @@ export function Sidebar({
   role: string;
   workspaceName?: string;
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   return (
     <>
       {/* Desktop sidebar */}
@@ -93,45 +92,17 @@ export function Sidebar({
         </div>
       </aside>
 
-      {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-white/90 px-4 py-3 backdrop-blur sm:hidden">
-        <button
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
-        >
-          <span aria-hidden className="text-lg">☰</span>
-        </button>
-        <Brand />
-        <NotificationBell />
+      {/* Mobile top bar: identity + theme + notifications */}
+      <header className="glass sticky top-0 z-20 flex items-center justify-between border-b border-border px-4 py-3 sm:hidden">
+        <Brand workspaceName={workspaceName} />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <NotificationBell />
+        </div>
       </header>
 
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-30 sm:hidden">
-          <div
-            className="absolute inset-0 bg-slate-900/40"
-            onClick={() => setMobileOpen(false)}
-            aria-hidden
-          />
-          <div className="absolute left-0 top-0 flex h-full w-72 flex-col bg-white p-4 shadow-xl">
-            <div className="mb-6 flex items-center justify-between">
-              <Brand />
-              <button
-                onClick={() => setMobileOpen(false)}
-                aria-label="Close menu"
-                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-              >
-                ✕
-              </button>
-            </div>
-            <NavLinks items={items} onNavigate={() => setMobileOpen(false)} />
-            <div className="mt-auto">
-              <AccountMenu displayName={displayName} email={email} role={role} />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile bottom tab bar + More sheet */}
+      <MobileNav items={items} displayName={displayName} email={email} role={role} />
     </>
   );
 }

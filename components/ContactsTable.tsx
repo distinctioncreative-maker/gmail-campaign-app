@@ -72,6 +72,15 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
   const statusRank = (c: ContactRow) =>
     c.suppressed || c.emailOptOut ? 3 : c.repliedAt ? 2 : c.campaignCount > 0 ? 1 : 0;
 
+  const statusBadge = (c: ContactRow): { label: string; className: string } =>
+    c.suppressed || c.emailOptOut
+      ? { label: "Excluded for safety", className: "bg-amber-100 text-amber-700" }
+      : c.repliedAt
+        ? { label: "Replied", className: "bg-blue-100 text-blue-700" }
+        : c.campaignCount > 0
+          ? { label: "Contacted before", className: "bg-blue-100 text-blue-700" }
+          : { label: "Ready", className: "bg-green-100 text-green-700" };
+
   const { sorted, sort, toggle } = useSort<
     ContactRow,
     "name" | "business" | "email" | "phone" | "engagement" | "status"
@@ -201,7 +210,44 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
             : "No contacts match this search."}
         </p>
       ) : (
-        <div className="mt-3 overflow-x-auto card">
+        <>
+        {/* Mobile: stacked cards */}
+        <ul className="mt-3 space-y-2 sm:hidden">
+          {sorted.map((c) => {
+            const b = statusBadge(c);
+            return (
+              <li
+                key={c.contactId}
+                className={`card flex items-start gap-3 p-3 ${selected.has(c.contactId) ? "ring-1 ring-primary/40" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(c.contactId)}
+                  onChange={() => toggleOne(c.contactId)}
+                  aria-label={`Select ${c.fullName || c.email}`}
+                  className="mt-1 h-5 w-5 shrink-0 accent-[var(--primary)]"
+                />
+                <Link href={`/leads/${c.contactId}`} className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{c.fullName || c.email}</p>
+                  <p className="truncate text-xs text-slate-500">{c.businessName || c.email}</p>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-xs ${b.className}`}>{b.label}</span>
+                    {(c.emailsSentCount > 0 || c.campaignCount > 0) && (
+                      <span className="text-xs tabular-nums text-slate-500">
+                        {c.emailsSentCount} sent
+                        {c.replyCount > 0 && <span className="font-medium text-green-600"> · {c.replyCount} replied</span>}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+                <span aria-hidden className="mt-1 text-slate-300">›</span>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Desktop: table */}
+        <div className="mt-3 hidden overflow-x-auto card sm:block">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
               <tr>
@@ -283,6 +329,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
