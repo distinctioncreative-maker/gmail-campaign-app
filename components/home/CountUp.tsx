@@ -19,17 +19,20 @@ export function CountUp({
 }) {
   const [n, setN] = useState(0);
   const raf = useRef<number | undefined>(undefined);
+  const from = useRef(0); // last settled value → smooth tick on live updates
 
   useEffect(() => {
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const origin = from.current;
     const start = performance.now();
     const tick = (t: number) => {
       const p = reduce ? 1 : Math.min(1, (t - start) / duration);
       const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
-      setN(value * eased);
+      setN(origin + (value - origin) * eased);
       if (p < 1) raf.current = requestAnimationFrame(tick);
+      else from.current = value;
     };
     raf.current = requestAnimationFrame(tick);
     return () => {

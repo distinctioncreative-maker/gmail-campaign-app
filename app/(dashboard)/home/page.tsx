@@ -16,6 +16,8 @@ import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PulseChart } from "@/components/home/PulseChart";
 import { CountUp } from "@/components/home/CountUp";
+import { RangeTabs, type HomeRange } from "@/components/home/RangeTabs";
+import { LiveRefresh } from "@/components/LiveRefresh";
 import { buildBriefing } from "@/lib/home/briefing";
 
 /** Time-of-day greeting in the user's timezone. */
@@ -37,10 +39,16 @@ const STATUS_PILL: Record<string, { label: string; className: string; dot: strin
   SETUP: { label: "Setup needed", className: "text-amber-600", dot: "bg-amber-500" },
 };
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
   const ctx = await requireUser();
   const owner = ownerFromCtx(ctx);
   const tz = ctx.user.timezone;
+  const { range: rawRange } = await searchParams;
+  const range: HomeRange = rawRange === "today" || rawRange === "7d" ? rawRange : "all";
 
   const [connection, campaigns, sentToday, profile, org, activity, totalLeads, notifications] =
     await Promise.all([
@@ -58,7 +66,8 @@ export default async function HomePage() {
   const active = campaigns.filter((c) => c.status === "ACTIVE");
   const totalReplies = campaigns.reduce((n, c) => n + c.replyCount, 0);
   const totalSentAll = campaigns.reduce((n, c) => n + c.sentCount + c.followupSentCount, 0);
-  const replyRate = totalSentAll > 0 ? (totalReplies / totalSentAll) * 100 : 0;
+  const totalBounces = campaigns.reduce((n, c) => n + c.bounceCount, 0);
+  const totalUnsub = campaigns.reduce((n, c) => n + c.unsubscribeCount, 0);
   const dailyLimit = profile.sendingDefaults.dailySendLimit;
   const dailyRemaining = Math.max(0, dailyLimit - sentToday);
   const dailyPct = dailyLimit > 0 ? Math.min(100, (sentToday / dailyLimit) * 100) : 0;
@@ -66,6 +75,24 @@ export default async function HomePage() {
   const sentThisWeek = activity.slice(-7).reduce((a, d) => a + d.sent, 0);
   const repliesThisWeek = activity.slice(-7).reduce((a, d) => a + d.replied, 0);
   const unreadReplies = notifications.filter((n) => n.type === "REPLY" && !n.read).length;
+
+  // Range-aware headline metrics (sent / replies / reply rate).
+  const todaySent = activity[activity.length - 1]?.sent ?? sentToday;
+  const todayReplies = activity[activity.length - 1]?.replied ?? 0;
+  const rangeStats =
+    range === "today"
+      ? { sent: todaySent, replies: todayReplies, label: "today" }
+      : range === "7d"
+        ? { sent: sentThisWeek, replies: repliesThisWeek, label: "last 7 days" }
+        : { sent: totalSentAll, replies: totalReplies, label: "all time" };
+  const rangeReplyRate = rangeStats.sent > 0 ? (rangeStats.replies / rangeStats.sent) * 100 : 0;
+  const bounceRate = totalSentAll > 0 ? (totalBounces / totalSentAll) * 100 : 0;
+
+  // Best campaign by reply rate (with a meaningful sample).
+  const best = [...campaigns]
+    .filter((c) => c.sentCount + c.followupSentCount >= 5)
+    .map((c) => ({ c, rate: (c.replyCount / (c.sentCount + c.followupSentCount)) * 100 }))
+    .sort((a, b) => b.rate - a.rate)[0];
 
   const briefing = buildBriefing({
     gmailConnected,
@@ -89,10 +116,13 @@ export default async function HomePage() {
     accent: string;
     href: string;
   }> = [
+    { label: `Emails sent · ${rangeStats.label}`, value: rangeStats.sent, icon: "mail", accent: "text-slate-900", href: "/reports" },
+    { label: `Replies · ${rangeStats.label}`, value: rangeStats.replies, icon: "reply", accent: "text-green-600", href: "/replies" },
+    { label: `Reply rate · ${rangeStats.label}`, value: rangeReplyRate, decimals: 1, suffix: "%", dash: rangeStats.sent === 0, icon: "chart", accent: "text-indigo-500", href: "/reports" },
     { label: "Sending now", value: active.length, icon: "rocket", accent: "text-primary", href: "/campaigns" },
-    { label: "Replies (all time)", value: totalReplies, icon: "reply", accent: "text-green-600", href: "/replies" },
-    { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "chart", accent: "text-indigo-500", href: "/reports" },
-    { label: "Leads", value: totalLeads, icon: "users", accent: "text-slate-900", href: "/leads" },
+    { label: "Total leads", value: totalLeads, icon: "users", accent: "text-slate-900", href: "/leads" },
+    { label: "Bounce rate", value: bounceRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "alert", accent: bounceRate > 3 ? "text-red-600" : "text-slate-900", href: "/deliverability" },
+    { label: "Unsubscribes", value: totalUnsub, icon: "ban", accent: "text-slate-900", href: "/suppressions" },
   ];
 
   return (
@@ -139,11 +169,17 @@ export default async function HomePage() {
             style={{ background: "color-mix(in srgb, var(--surface) 65%, transparent)" }}
           >
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Activity · 14 days</p>
-              <p className="text-xs tabular-nums text-slate-500">
-                <span className="font-semibold text-slate-900"><CountUp value={sentThisWeek} /></span> sent ·{" "}
-                <span className="font-semibold text-green-600"><CountUp value={repliesThisWeek} /></span> replies this week
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-400">
+                Activity · 14 days
               </p>
+              {active.length > 0 ? (
+                <LiveRefresh intervalMs={15000} />
+              ) : (
+                <p className="text-xs tabular-nums text-slate-500">
+                  <span className="font-semibold text-slate-900"><CountUp value={sentThisWeek} /></span> sent ·{" "}
+                  <span className="font-semibold text-green-600"><CountUp value={repliesThisWeek} /></span> replies this week
+                </p>
+              )}
             </div>
             <PulseChart data={activity} />
           </div>
@@ -166,8 +202,26 @@ export default async function HomePage() {
         </div>
       )}
 
+      {/* ── KPI header: range switch ──────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Your numbers</h2>
+        <RangeTabs active={range} />
+      </div>
+
+      {best && (
+        <Link
+          href={`/campaigns/${best.c.campaignId}`}
+          className="card card-hover flex items-center justify-between gap-3 bg-primary-soft/50 p-4"
+        >
+          <span className="text-sm text-primary">
+            🏆 Top campaign: <strong>{best.c.name}</strong> at {best.rate.toFixed(1)}% reply rate
+          </span>
+          <span aria-hidden className="text-primary">→</span>
+        </Link>
+      )}
+
       {/* ── Stat orbs + daily allowance ring ──────────────────── */}
-      <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {orbs.map((o) => (
           <Link key={o.label} href={o.href} className="card card-hover group p-5">
             <div className="flex items-center justify-between">

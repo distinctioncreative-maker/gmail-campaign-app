@@ -13,6 +13,7 @@ import { CampaignControls } from "@/components/campaign/CampaignControls";
 import { CampaignDiagnostics } from "@/components/campaign/CampaignDiagnostics";
 import { RecipientTable } from "@/components/campaign/RecipientTable";
 import { LocalTime } from "@/components/LocalTime";
+import { LiveRefresh } from "@/components/LiveRefresh";
 
 export default async function CampaignDetailPage({
   params,
@@ -71,7 +72,10 @@ export default async function CampaignDetailPage({
           <h1 className="text-2xl font-semibold tracking-tight">{campaign.name}</h1>
           {campaign.description && <p className="mt-0.5 text-sm text-slate-500">{campaign.description}</p>}
         </div>
-        <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>{badge.label}</span>
+        <div className="flex items-center gap-3">
+          {campaign.status === "ACTIVE" && <LiveRefresh intervalMs={12000} />}
+          <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>{badge.label}</span>
+        </div>
       </div>
 
       {/* Progress */}
