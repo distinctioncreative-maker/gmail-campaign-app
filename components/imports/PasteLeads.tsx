@@ -4,7 +4,7 @@ import { useState } from "react";
 import { LeadPreviewTable } from "./LeadPreviewTable";
 import type { ClassifiedLead } from "./leadBadges";
 
-export function PasteLeads() {
+export function PasteLeads({ listId }: { listId?: string }) {
   const [text, setText] = useState("");
   const [leads, setLeads] = useState<ClassifiedLead[] | null>(null);
   const [globalWarnings, setGlobalWarnings] = useState<string[]>([]);
@@ -82,6 +82,7 @@ export function PasteLeads() {
         <LeadPreviewTable
           leads={leads}
           globalWarnings={globalWarnings}
+          listId={listId}
           onDone={(summary) => {
             setImportSummary(summary);
             setLeads(null);

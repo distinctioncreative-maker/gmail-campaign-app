@@ -371,3 +371,44 @@ export async function countContacts(ctx: Scope): Promise<number> {
   const agg = await contactsRef(ctx).count().get();
   return agg.data().count;
 }
+
+/** Contacts belonging to a lead list. Uses the automatic array-contains
+ * index and sorts in memory (lists are bounded per user). */
+export async function listContactsInList(
+  ctx: Scope,
+  listId: string,
+  limit = 2000
+): Promise<Contact[]> {
+  const snap = await contactsRef(ctx).where("listIds", "array-contains", listId).limit(limit).get();
+  return snap.docs
+    .map((d) => ContactSchema.parse(d.data()))
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export async function countContactsInList(ctx: Scope, listId: string): Promise<number> {
+  const agg = await contactsRef(ctx).where("listIds", "array-contains", listId).count().get();
+  return agg.data().count;
+}
+
+/** Add a contact to a list unless it is already a member. Returns true only
+ * when it was genuinely new, so callers can count fresh additions. */
+export async function addContactToList(
+  ctx: Scope,
+  contactId: string,
+  listId: string,
+  alreadyMember: boolean
+): Promise<boolean> {
+  if (alreadyMember) return false;
+  await contactsRef(ctx)
+    .doc(contactId)
+    .update({ listIds: FieldValue.arrayUnion(listId), updatedAt: Date.now() })
+    .catch(() => {});
+  return true;
+}
+
+/** Remove a single contact from a list. */
+export async function removeContactFromList(ctx: Scope, contactId: string, listId: string): Promise<void> {
+  await contactsRef(ctx)
+    .doc(contactId)
+    .update({ listIds: FieldValue.arrayRemove(listId), updatedAt: Date.now() });
+}

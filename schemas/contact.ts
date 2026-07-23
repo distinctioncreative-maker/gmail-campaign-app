@@ -38,6 +38,8 @@ export const ContactSchema = z.object({
   lastRepliedAt: EpochMillis.nullable().default(null),
   /** Free-form rep notes, editable from the lead page. */
   notes: z.string().default(""),
+  /** Lead lists (named collections) this contact belongs to. */
+  listIds: z.array(z.string()).default([]),
   repliedAt: EpochMillis.nullable().default(null),
   bouncedAt: EpochMillis.nullable().default(null),
   unsubscribedAt: EpochMillis.nullable().default(null),

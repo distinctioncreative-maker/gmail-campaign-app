@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listContacts } from "@/lib/repositories/contacts";
+import { listLeadLists } from "@/lib/repositories/leadLists";
 import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
+import { LeadListsBar } from "@/components/leads/LeadListsBar";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 const PAGE_SIZE = 500;
@@ -20,7 +22,10 @@ export default async function LeadsPage({
     ? Math.min(MAX_LIMIT, Math.max(PAGE_SIZE, Math.floor(requested)))
     : PAGE_SIZE;
 
-  const contacts = await listContacts(ctx, { limit });
+  const [contacts, lists] = await Promise.all([
+    listContacts(ctx, { limit }),
+    listLeadLists(ctx),
+  ]);
   const maybeMore = contacts.length === limit && limit < MAX_LIMIT;
 
   const rows: ContactRow[] = contacts.map((c) => ({
@@ -41,6 +46,10 @@ export default async function LeadsPage({
   return (
     <div>
       <PageHeader title="Leads" description="Import leads, then review who is ready to contact." />
+
+      <div className="mb-8">
+        <LeadListsBar lists={lists.map((l) => ({ listId: l.listId, name: l.name, count: l.count }))} />
+      </div>
 
       <ImportChooser />
 

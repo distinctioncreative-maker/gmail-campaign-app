@@ -7,11 +7,13 @@ import { badgeFor, defaultSelection, type ClassifiedLead } from "./leadBadges";
 export function LeadPreviewTable({
   leads,
   globalWarnings,
+  listId,
   onDone,
   onStartOver,
 }: {
   leads: ClassifiedLead[];
   globalWarnings: string[];
+  listId?: string;
   onDone: (summary: string) => void;
   onStartOver: () => void;
 }) {
@@ -42,15 +44,20 @@ export function LeadPreviewTable({
           leads: chosen.map(
             ({ classification: _c, lastCampaignName: _n, lastCampaignAt: _a, ...lead }) => lead
           ),
+          ...(listId ? { listId } : {}),
         }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Import failed.");
       onDone(
-        `Imported ${body.imported} new contact${body.imported === 1 ? "" : "s"}` +
-          (body.updated ? `, updated ${body.updated} existing` : "") +
-          (body.skippedInvalid ? `, skipped ${body.skippedInvalid} without a valid email` : "") +
-          "."
+        listId
+          ? `Added ${body.addedToList} new lead${body.addedToList === 1 ? "" : "s"} to “${body.listName}”` +
+              (body.alreadyInList ? ` (${body.alreadyInList} already in the list)` : "") +
+              "."
+          : `Imported ${body.imported} new contact${body.imported === 1 ? "" : "s"}` +
+              (body.updated ? `, updated ${body.updated} existing` : "") +
+              (body.skippedInvalid ? `, skipped ${body.skippedInvalid} without a valid email` : "") +
+              "."
       );
       router.refresh();
     } catch (err) {

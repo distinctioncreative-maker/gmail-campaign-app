@@ -6,7 +6,7 @@ import { CsvUpload } from "./CsvUpload";
 
 type Mode = "paste" | "csv" | null;
 
-export function ImportChooser() {
+export function ImportChooser({ listId }: { listId?: string }) {
   const [mode, setMode] = useState<Mode>(null);
 
   if (mode === "paste" || mode === "csv") {
@@ -18,7 +18,7 @@ export function ImportChooser() {
         >
           ← Choose a different import method
         </button>
-        {mode === "paste" ? <PasteLeads /> : <CsvUpload />}
+        {mode === "paste" ? <PasteLeads listId={listId} /> : <CsvUpload listId={listId} />}
       </div>
     );
   }

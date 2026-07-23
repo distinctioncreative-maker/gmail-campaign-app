@@ -34,7 +34,6 @@ export function CollapsibleCard({
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(next);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReady(true);
   }, [storageKey, defaultOpen]);
 

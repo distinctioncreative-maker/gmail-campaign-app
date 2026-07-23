@@ -30,7 +30,7 @@ interface CsvState {
   globalWarnings: string[];
 }
 
-export function CsvUpload() {
+export function CsvUpload({ listId }: { listId?: string }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<CsvState | null>(null);
   const [showMapping, setShowMapping] = useState(false);
@@ -162,6 +162,7 @@ export function CsvUpload() {
           <LeadPreviewTable
             leads={state.leads}
             globalWarnings={state.globalWarnings}
+            listId={listId}
             onDone={(summary) => {
               setImportSummary(summary);
               setState(null);
