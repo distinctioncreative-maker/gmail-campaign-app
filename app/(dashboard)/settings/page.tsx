@@ -5,6 +5,7 @@ import { GmailConnectionCard } from "@/components/GmailConnectionCard";
 import { ProfileForm } from "@/components/ProfileForm";
 import { DisplayNameForm } from "@/components/DisplayNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 
 export default async function SettingsPage({
   searchParams,
@@ -52,15 +53,14 @@ export default async function SettingsPage({
           connectedEmail={connection?.status === "CONNECTED" ? connection.connectedEmail : null}
           lastRefreshAt={connection?.status === "CONNECTED" ? connection.lastRefreshAt : null}
         />
-        <div className="card p-6">
-          <h2 className="font-medium">Sender profile &amp; sending defaults</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Fills in your signature, footer, and default campaign pacing.
-          </p>
-          <div className="mt-4">
-            <ProfileForm initial={profile} />
-          </div>
-        </div>
+        <CollapsibleCard
+          title="Sender profile & sending defaults"
+          description="Optional — fills in your signature, footer, and default campaign pacing. Not using it? Collapse it and it stays out of your way."
+          storageKey="settings.senderProfile"
+          defaultOpen={false}
+        >
+          <ProfileForm initial={profile} />
+        </CollapsibleCard>
       </div>
     </div>
   );

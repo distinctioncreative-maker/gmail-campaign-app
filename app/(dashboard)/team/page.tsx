@@ -8,29 +8,56 @@ import { statsForReps, type RepStats } from "@/lib/teams/stats";
 import { ledTeamIds } from "@/lib/teams/access";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
+import { Icon, type IconName } from "@/components/ui/Icon";
+import { CountUp } from "@/components/home/CountUp";
 import { TeamManager, RosterActions, RemoveFromTeamButton } from "@/components/team/TeamManager";
 import type { Member, Team } from "@/schemas/user";
 import { formatPercent } from "@/lib/analytics/metrics";
 
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
+
+const RANK = ["🥇", "🥈", "🥉"];
 
 function KpiTiles({ stats }: { stats: RepStats[] }) {
   const sent = stats.reduce((a, s) => a + s.sent, 0);
   const replies = stats.reduce((a, s) => a + s.replies, 0);
   const bounces = stats.reduce((a, s) => a + s.bounces, 0);
   const active = stats.filter((s) => s.activeCampaigns > 0).length;
-  const tiles = [
-    ["Emails sent", String(sent)],
-    ["Replies", String(replies)],
-    ["Reply rate", sent > 0 ? formatPercent((replies / sent) * 100) : "—"],
-    ["Reps sending now", String(active)],
-    ["Bounces", String(bounces)],
+  const replyRate = sent > 0 ? (replies / sent) * 100 : 0;
+
+  const tiles: Array<{
+    label: string;
+    value: number;
+    decimals?: number;
+    suffix?: string;
+    icon: IconName;
+    ring: string;
+    accent: string;
+  }> = [
+    { label: "Emails sent", value: sent, icon: "mail", ring: "bg-primary-soft text-primary", accent: "text-slate-900" },
+    { label: "Replies", value: replies, icon: "reply", ring: "bg-green-100 text-green-600", accent: "text-green-600" },
+    { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", icon: "chart", ring: "bg-indigo-100 text-indigo-600", accent: "text-indigo-600" },
+    { label: "Reps sending now", value: active, icon: "rocket", ring: "bg-primary-soft text-primary", accent: "text-primary" },
+    { label: "Bounces", value: bounces, icon: "alert", ring: "bg-amber-100 text-amber-600", accent: bounces > 0 ? "text-amber-600" : "text-slate-900" },
   ];
+
   return (
-    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-      {tiles.map(([label, value]) => (
-        <div key={label} className="card p-4">
-          <p className="text-xs text-slate-500">{label}</p>
-          <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
+    <div className="stagger grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {tiles.map((t) => (
+        <div key={t.label} className="card p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-slate-500">{t.label}</p>
+            <span aria-hidden className={`flex h-7 w-7 items-center justify-center rounded-lg ${t.ring}`}>
+              <Icon name={t.icon} size={15} />
+            </span>
+          </div>
+          <p className={`mt-2 text-2xl font-semibold tabular-nums ${t.accent}`}>
+            <CountUp value={t.value} decimals={t.decimals} suffix={t.suffix} />
+          </p>
         </div>
       ))}
     </div>
@@ -47,77 +74,72 @@ function Leaderboard({
   canManage: boolean;
 }) {
   const sorted = [...rows].sort((a, b) => b.stats.replyRate - a.stats.replyRate || b.stats.sent - a.stats.sent);
+  const topRate = Math.max(1, ...sorted.map((r) => r.stats.replyRate));
+
+  if (sorted.length === 0) {
+    return <div className="card p-8 text-center text-sm text-slate-500">No reps on this team yet.</div>;
+  }
+
   return (
-    <div className="overflow-x-auto card">
-      <table className="w-full text-left text-sm">
-        <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
-          <tr>
-            <th className="px-4 py-3">Rep</th>
-            <th className="px-4 py-3">Campaigns</th>
-            <th className="px-4 py-3">Sent</th>
-            <th className="px-4 py-3">Replies</th>
-            <th className="px-4 py-3 min-w-36">Reply rate</th>
-            <th className="px-4 py-3">Last activity</th>
-            <th className="px-4 py-3" />
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.length === 0 ? (
-            <tr>
-              <td colSpan={7} className="px-4 py-4 text-sm text-slate-500">
-                No reps on this team yet.
-              </td>
-            </tr>
-          ) : (
-            sorted.map(({ member: m, stats: s, name }, i) => (
-              <tr key={m.userId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                <td className="px-4 py-3">
-                  <span className="font-medium">
-                    {i === 0 && s.sent > 0 && <span aria-hidden>🏆 </span>}
-                    {name || m.email}
+    <div className="card divide-y divide-border overflow-hidden">
+      {sorted.map(({ member: m, stats: s, name }, i) => {
+        const display = name || m.email;
+        const ranked = s.sent > 0 && i < 3;
+        return (
+          <div key={m.userId} className="flex items-center gap-3 p-4 transition hover:bg-slate-50">
+            {/* Rank / avatar */}
+            <div className="relative shrink-0">
+              <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm">
+                {initials(display)}
+              </div>
+              {ranked && (
+                <span aria-hidden className="absolute -right-1 -top-1 text-sm">{RANK[i]}</span>
+              )}
+            </div>
+
+            {/* Identity + engagement */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="truncate font-medium">{display}</p>
+                {!m.active && <span className="badge bg-slate-200 text-slate-600">disabled</span>}
+                {s.activeCampaigns > 0 && (
+                  <span className="live-dot inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> live
                   </span>
-                  {!m.active && <span className="ml-2 badge bg-slate-200 text-slate-600">disabled</span>}
-                  {name && <p className="text-xs text-slate-500">{m.email}</p>}
-                </td>
-                <td className="px-4 py-3 tabular-nums">
-                  {s.campaigns}
-                  {s.activeCampaigns > 0 && (
-                    <span className="ml-1 text-xs text-green-600">({s.activeCampaigns} live)</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 tabular-nums">{s.sent}</td>
-                <td className="px-4 py-3 tabular-nums">{s.replies}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full bg-green-500"
-                        style={{ width: `${Math.min(100, s.replyRate)}%` }}
-                      />
-                    </div>
-                    <span className="tabular-nums text-xs text-slate-500">
-                      {s.sent > 0 ? formatPercent(s.replyRate) : "—"}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-xs text-slate-500">
-                  {s.lastActivityAt ? <LocalTime value={s.lastActivityAt} /> : "—"}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex items-center justify-end gap-3">
-                    <Link href={`/team/${m.userId}`} className="text-xs font-medium text-primary hover:underline">
-                      View →
-                    </Link>
-                    {canManage && teamId && (
-                      <RemoveFromTeamButton teamId={teamId} userId={m.userId} email={m.email} />
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                )}
+              </div>
+              <p className="truncate text-xs text-slate-500">
+                {s.sent} sent · {s.replies} replies · {s.campaigns} campaign{s.campaigns === 1 ? "" : "s"}
+                {s.lastActivityAt && (
+                  <> · <LocalTime value={s.lastActivityAt} /></>
+                )}
+              </p>
+              {/* Reply-rate bar (scaled to the top performer) */}
+              <div className="mt-2 flex items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="brand-gradient h-full rounded-full"
+                    style={{ width: `${s.sent > 0 ? Math.max(4, (s.replyRate / topRate) * 100) : 0}%` }}
+                  />
+                </div>
+                <span className="w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-slate-600">
+                  {s.sent > 0 ? formatPercent(s.replyRate) : "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <Link href={`/team/${m.userId}`} className="text-xs font-medium text-primary hover:underline">
+                View →
+              </Link>
+              {canManage && teamId && (
+                <RemoveFromTeamButton teamId={teamId} userId={m.userId} email={m.email} />
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

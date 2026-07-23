@@ -306,23 +306,14 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {c.suppressed || c.emailOptOut ? (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
-                        Excluded for safety
-                      </span>
-                    ) : c.repliedAt ? (
-                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
-                        Replied
-                      </span>
-                    ) : c.campaignCount > 0 ? (
-                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
-                        Contacted before
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
-                        Ready
-                      </span>
-                    )}
+                    {(() => {
+                      const b = statusBadge(c);
+                      return (
+                        <span className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${b.className}`}>
+                          {b.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                 </tr>
               ))}
