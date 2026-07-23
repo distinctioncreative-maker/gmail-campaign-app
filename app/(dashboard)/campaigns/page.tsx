@@ -5,14 +5,23 @@ import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { CampaignsTable } from "@/components/campaign/CampaignsTable";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export default async function CampaignsPage() {
+export default async function CampaignsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ archived?: string }>;
+}) {
   const ctx = await requireUser();
-  const campaigns = await listCampaigns(ownerFromCtx(ctx));
+  const { archived: showArchivedParam } = await searchParams;
+  const showArchived = showArchivedParam === "1";
+
+  const all = await listCampaigns(ownerFromCtx(ctx));
+  const archivedCount = all.filter((c) => c.archived).length;
+  const campaigns = all.filter((c) => (showArchived ? c.archived : !c.archived));
 
   return (
     <div>
       <PageHeader
-        title="Campaigns"
+        title={showArchived ? "Archived campaigns" : "Campaigns"}
         description="Each campaign sends a personalized email to a list of your leads."
         actions={
           <Link href="/campaigns/new" className="btn-primary px-5 py-2.5 text-sm">
@@ -20,6 +29,20 @@ export default async function CampaignsPage() {
           </Link>
         }
       />
+
+      {(archivedCount > 0 || showArchived) && (
+        <div className="mb-4">
+          {showArchived ? (
+            <Link href="/campaigns" className="text-sm font-medium text-primary hover:underline">
+              ← Back to active campaigns
+            </Link>
+          ) : (
+            <Link href="/campaigns?archived=1" className="text-sm text-slate-500 hover:underline">
+              View archived ({archivedCount}) →
+            </Link>
+          )}
+        </div>
+      )}
 
       {campaigns.length === 0 ? (
         <div className="card p-10 text-center">
@@ -48,6 +71,7 @@ export default async function CampaignsPage() {
               sent: c.sentCount + c.followupSentCount,
               replies: c.replyCount,
               updatedAt: c.updatedAt,
+              archived: c.archived,
             };
           })}
         />

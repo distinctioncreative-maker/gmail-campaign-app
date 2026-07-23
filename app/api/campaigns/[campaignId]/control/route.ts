@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
-import { getCampaign, ownerFromCtx } from "@/lib/repositories/campaigns";
+import { getCampaign, ownerFromCtx, updateCampaign } from "@/lib/repositories/campaigns";
 import {
   cancelAndDeleteDrafts,
   cancelRemaining,
@@ -43,6 +43,8 @@ const BodySchema = z.object({
     "clone",
     "update_pace",
     "release_leads",
+    "archive",
+    "unarchive",
   ]),
   recipientId: z.string().optional(),
   pace: PaceSchema.optional(),
@@ -99,5 +101,15 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
     }
     case "release_leads":
       return NextResponse.json({ message: await releaseLeads(ctx, campaign) });
+    case "archive": {
+      if (["ACTIVE", "PAUSED"].includes(campaign.status))
+        return NextResponse.json({ error: "Stop the campaign before archiving it." }, { status: 400 });
+      await updateCampaign(ownerFromCtx(ctx), campaignId, { archived: true });
+      return NextResponse.json({ message: "Campaign archived." });
+    }
+    case "unarchive": {
+      await updateCampaign(ownerFromCtx(ctx), campaignId, { archived: false });
+      return NextResponse.json({ message: "Campaign restored." });
+    }
   }
 });

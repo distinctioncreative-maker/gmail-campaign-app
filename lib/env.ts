@@ -24,6 +24,10 @@ const EnvSchema = z.object({
   TEST_MODE: z.string().default(""),
   TEST_EMAIL_DESTINATION: z.string().default(""),
   NODE_ENV: z.string().default("development"),
+  // Optional AI email writer. Set GEMINI_API_KEY (a free Google AI Studio
+  // key) to enable "Write with AI" in the template editor.
+  GEMINI_API_KEY: z.string().default(""),
+  GEMINI_MODEL: z.string().default("gemini-2.0-flash"),
 });
 
 export const env = EnvSchema.parse(process.env);

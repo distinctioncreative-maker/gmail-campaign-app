@@ -20,7 +20,10 @@ export interface CampaignRow {
   sent: number;
   replies: number;
   updatedAt: number;
+  archived: boolean;
 }
+
+const TERMINAL = ["DRAFT", "STOPPED", "CANCELLED", "COMPLETED", "ERROR"];
 
 type SortKey = "name" | "status" | "recipients" | "sent" | "replies" | "updatedAt";
 
@@ -31,10 +34,10 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  async function deleteDraft(c: CampaignRow) {
+  async function removeCampaign(c: CampaignRow) {
     const ok = await confirm({
-      title: "Delete this draft?",
-      body: `“${c.name}” will be permanently removed. This can't be undone.`,
+      title: "Delete this campaign?",
+      body: `“${c.name}” and its records will be permanently removed. This can't be undone.`,
       danger: true,
       confirmLabel: "Delete",
     });
@@ -42,10 +45,27 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
     setBusyId(c.campaignId);
     try {
       await fetchJson(`/api/campaigns/${c.campaignId}`, { method: "DELETE" });
-      toast("Draft deleted.", "success");
+      toast("Campaign deleted.", "success");
       router.refresh();
     } catch (err) {
       toast(err instanceof Error ? err.message : "Could not delete that campaign.", "error");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function setArchived(c: CampaignRow, archived: boolean) {
+    setBusyId(c.campaignId);
+    try {
+      const res = await fetchJson<{ message?: string }>(`/api/campaigns/${c.campaignId}/control`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: archived ? "archive" : "unarchive" }),
+      });
+      toast(res.message ?? (archived ? "Archived." : "Restored."), "success");
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "That didn't work.", "error");
     } finally {
       setBusyId(null);
     }
@@ -111,17 +131,40 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                   <LocalTime value={c.updatedAt} options={{ dateStyle: "medium" }} />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {c.status === "DRAFT" && (
-                    <button
-                      onClick={() => void deleteDraft(c)}
-                      disabled={busyId === c.campaignId}
-                      aria-label={`Delete draft ${c.name}`}
-                      title="Delete draft"
-                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
-                    >
-                      <Icon name="trash" size={16} />
-                    </button>
-                  )}
+                  <div className="flex items-center justify-end gap-1">
+                    {c.archived ? (
+                      <button
+                        onClick={() => void setArchived(c, false)}
+                        disabled={busyId === c.campaignId}
+                        className="rounded-lg px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:opacity-40"
+                      >
+                        Restore
+                      </button>
+                    ) : (
+                      TERMINAL.includes(c.status) &&
+                      c.status !== "DRAFT" && (
+                        <button
+                          onClick={() => void setArchived(c, true)}
+                          disabled={busyId === c.campaignId}
+                          title="Archive (hide from this list)"
+                          className="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 disabled:opacity-40"
+                        >
+                          Archive
+                        </button>
+                      )
+                    )}
+                    {TERMINAL.includes(c.status) && (
+                      <button
+                        onClick={() => void removeCampaign(c)}
+                        disabled={busyId === c.campaignId}
+                        aria-label={`Delete ${c.name}`}
+                        title="Delete"
+                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                      >
+                        <Icon name="trash" size={16} />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

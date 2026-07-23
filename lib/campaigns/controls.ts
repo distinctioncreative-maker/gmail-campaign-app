@@ -419,6 +419,7 @@ export async function cloneCampaign(ctx: AuthContext, campaign: Campaign): Promi
     startedAt: null,
     pausedAt: null,
     deferredDayKey: null,
+    archived: false,
     resumedAt: null,
     stoppedAt: null,
     completedAt: null,

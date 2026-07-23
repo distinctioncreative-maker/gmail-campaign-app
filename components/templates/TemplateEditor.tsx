@@ -6,6 +6,7 @@ import { STARTER_LAYOUTS } from "./starterLayouts";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { SpamCheck } from "@/components/spam/SpamCheck";
+import { AiEmailWriter } from "./AiEmailWriter";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -228,6 +229,15 @@ export function TemplateEditor({
         {cssWarnings.map((w) => (
           <p key={w} className="mb-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-700">{w}</p>
         ))}
+
+        <AiEmailWriter
+          onResult={({ subject: s, html: h }) => {
+            setSubject(s);
+            setHtml(h);
+            setMode("visual");
+            if (!name) setName("AI draft");
+          }}
+        />
 
         <label className="block text-sm font-medium text-slate-700">
           Template name
@@ -476,13 +486,27 @@ export function TemplateEditor({
               <span className="text-slate-500">Subject:</span>{" "}
               <span className="font-medium">{preview.subject}</span>
             </p>
-            <div
-              className={`mt-3 overflow-auto rounded-xl border border-slate-200 bg-slate-50 p-4 ${
-                mobilePreview ? "mx-auto max-w-xs" : ""
-              }`}
-              // Server-sanitized HTML (sanitizeEmailHtml) — safe to render.
-              dangerouslySetInnerHTML={{ __html: preview.html }}
-            />
+            {/* Isolated in an iframe so the email's own CSS can never leak
+                into the app and clip the layout (the old "half display"
+                glitch). Auto-sizes to its content on load. */}
+            <div className={`mt-3 ${mobilePreview ? "mx-auto max-w-xs" : ""}`}>
+              <iframe
+                title="Email preview"
+                sandbox=""
+                onLoad={(e) => {
+                  const f = e.currentTarget;
+                  try {
+                    const h = f.contentWindow?.document.body?.scrollHeight;
+                    if (h) f.style.height = `${Math.min(h + 32, 1600)}px`;
+                  } catch {
+                    /* cross-origin guard — ignore */
+                  }
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-white"
+                style={{ height: "24rem" }}
+                srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
+              />
+            </div>
           </>
         ) : (
           <p className="mt-3 text-sm text-slate-500">

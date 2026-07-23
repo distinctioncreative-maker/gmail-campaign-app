@@ -68,11 +68,12 @@ export const DELETE = handleApiErrors(async (_req: NextRequest, { params }: Para
   const campaign = await getCampaign(owner, campaignId);
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
 
-  if (campaign.status !== "DRAFT") {
+  const deletable = ["DRAFT", "STOPPED", "CANCELLED", "COMPLETED", "ERROR"];
+  if (!deletable.includes(campaign.status)) {
     return NextResponse.json(
       {
         error:
-          "Only draft campaigns can be deleted. Stop or cancel a running campaign instead — finished campaigns stay as a record.",
+          "Stop or cancel this campaign before deleting it. Drafts and finished (stopped, cancelled, completed) campaigns can be deleted.",
       },
       { status: 400 }
     );

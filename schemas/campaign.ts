@@ -76,6 +76,8 @@ export const CampaignSchema = z.object({
   /** Day key (YYYY-MM-DD) the queue was last mass-deferred to after hitting
    * the daily limit — makes the re-spread run exactly once per day. */
   deferredDayKey: z.string().nullable().default(null),
+  /** Hidden from the main campaigns list for tidiness (data is kept). */
+  archived: z.boolean().default(false),
   resumedAt: EpochMillis.nullable().default(null),
   stoppedAt: EpochMillis.nullable().default(null),
   completedAt: EpochMillis.nullable().default(null),
