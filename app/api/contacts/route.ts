@@ -22,6 +22,7 @@ export const GET = handleApiErrors(async () => {
         businessName: c.businessName,
         email: c.email,
         classification,
+        listIds: c.listIds ?? [],
         lastCampaignName: c.lastCampaignName,
         lastCampaignAt: c.lastCampaignAt,
       };

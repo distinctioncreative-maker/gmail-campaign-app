@@ -313,7 +313,7 @@ export default async function HomePage({
             { href: "/campaigns/new", icon: "rocket", title: "Create a campaign", desc: "Pick leads, an email, and a schedule." },
             { href: "/replies", icon: "check", title: "See who replied", desc: "Every reply across your campaigns, in one inbox." },
             { href: "/leads", icon: "users", title: "Import leads", desc: "Paste from Salesforce or upload a CSV." },
-            { href: "/templates/new", icon: "mail", title: "Build a template", desc: "Design a reusable, personalized email." },
+            { href: "/templates/new", icon: "mail", title: "Build a template", desc: "Design one yourself or write it with AI." },
           ] as Array<{ href: string; icon: IconName; title: string; desc: string }>).map((a) => (
             <Link key={a.href} href={a.href} className="card card-hover group p-5">
               <span aria-hidden className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-md">

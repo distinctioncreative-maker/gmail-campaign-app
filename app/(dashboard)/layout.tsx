@@ -7,6 +7,7 @@ import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ProductTour } from "@/components/tour/ProductTour";
 import { UIProviders } from "@/components/ui/UIProviders";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Logo } from "@/components/ui/Logo";
 
 const BASE_NAV: NavItem[] = [
   { href: "/home", label: "Home", icon: "home" },
@@ -72,6 +73,23 @@ export default async function DashboardLayout({
         workspaceName={workspaceName}
       />
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* Mobile top bar: full-width identity + theme + notifications.
+            Lives inside the content column (not the flex row) so it never
+            steals horizontal space from the page. */}
+        <header className="glass sticky top-0 z-20 flex items-center justify-between border-b border-border px-4 py-3 sm:hidden">
+          <div className="flex items-center gap-2">
+            <Logo size={24} />
+            {workspaceName && (
+              <span className="max-w-[9rem] truncate text-[11px] font-medium uppercase tracking-widest text-slate-400">
+                {workspaceName}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <NotificationBell />
+          </div>
+        </header>
         {/* Always-visible sending-mode banner so no one is ever unsure. */}
         {sending.testMode ? (
           <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-50 to-amber-100/60 px-4 py-1.5 text-center text-xs font-medium text-amber-800">

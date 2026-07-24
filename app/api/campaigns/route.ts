@@ -30,6 +30,8 @@ const CreateSchema = z.object({
   priorContactPolicy: PriorContactPolicySchema.default("ONLY_NEW"),
   priorContactExcludeDays: z.number().int().min(1).max(365).default(30),
   draftStrategy: DraftStrategySchema.default("SEND"),
+  /** When the campaign was started from a saved lead list, its id. */
+  sourceListId: z.string().nullable().default(null),
 });
 
 /** Create a DRAFT campaign, defaulting schedule values from the user's
@@ -46,8 +48,8 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     initialTemplateId: input.initialTemplateId,
     templateRotation: input.templateRotation,
     sequenceId: input.sequenceId,
-    sourceType: "CONTACTS",
-    sourceReference: null,
+    sourceType: input.sourceListId ? "LEAD_LIST" : "CONTACTS",
+    sourceReference: input.sourceListId,
     schedule: CampaignScheduleSchema.parse({
       timezone: profile.timezone,
       allowedWeekdays: profile.sendingDefaults.allowedWeekdays,

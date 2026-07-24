@@ -39,6 +39,19 @@ const GUIDES: Guide[] = [
     cta: { href: "/leads", label: "Import leads" },
   },
   {
+    id: "lead-lists",
+    icon: "📇",
+    title: "Organize leads into lists",
+    summary: "Named, ever-growing groups you can reuse in campaigns.",
+    steps: [
+      "On Leads, use 'Lead lists' to create a list like “Alpine — restaurants” or “Everest past clients”.",
+      "Import or add leads straight into a list — duplicates are merged automatically, so a list only ever grows.",
+      "When you build a campaign, pick 'Start from a lead list' on the Leads step to load that whole group.",
+      "Lists are yours alone; deleting a list never deletes the leads in it.",
+    ],
+    cta: { href: "/leads", label: "Open Leads" },
+  },
+  {
     id: "template",
     icon: "✉️",
     title: "Write a template",
@@ -50,6 +63,19 @@ const GUIDES: Guide[] = [
       "Click 'Send me a test' to see exactly what recipients will get.",
     ],
     cta: { href: "/templates/new", label: "Create a template" },
+  },
+  {
+    id: "ai-writer",
+    icon: "✨",
+    title: "Write emails with AI",
+    summary: "Describe it in a sentence — get a ready-to-edit draft.",
+    steps: [
+      "In the template editor, click 'Write this email with AI'.",
+      "Describe the email, or tap an occasion like 'New Year, New You' or 'Mid-month check-in'.",
+      "Managers/admins can set 'Brand memory' once (your offer, benefits, tone) — the AI weaves it into every draft in a fresh way, so Alpine and Everest emails always stay on-brand.",
+      "Click 'Write it', then edit to taste and send yourself a test.",
+    ],
+    cta: { href: "/templates/new", label: "Try the AI writer" },
   },
   {
     id: "signature",
@@ -104,6 +130,32 @@ const GUIDES: Guide[] = [
     cta: { href: "/replies", label: "Open Replies" },
   },
   {
+    id: "reports",
+    icon: "📊",
+    title: "Read your reports",
+    summary: "Reply rates, sends, and your best campaigns.",
+    steps: [
+      "Open Reports for sends, reply rate, and a campaign leaderboard.",
+      "Switch the range — Today, 7 days, All time — to see trends.",
+      "Numbers look low? Click 'Scan for replies' to pull the latest before reading them.",
+      "Export a CSV any time to share or dig deeper in a spreadsheet.",
+    ],
+    cta: { href: "/reports", label: "Open Reports" },
+  },
+  {
+    id: "deliverability",
+    icon: "🛡️",
+    title: "Protect your deliverability",
+    summary: "Land in inboxes, not spam.",
+    steps: [
+      "Open Deliverability for a zero-setup check of your domain's SPF, DKIM, and DMARC.",
+      "Connect Google Postmaster Tools (optional) to see Gmail's own spam-rate and reputation data.",
+      "Warm up slowly — the Conservative pace is safest for a new sending address.",
+      "Fix any red items before running large campaigns.",
+    ],
+    cta: { href: "/deliverability", label: "Open Deliverability" },
+  },
+  {
     id: "edit-lead",
     icon: "✏️",
     title: "Edit a lead & keep notes",
@@ -128,6 +180,32 @@ const GUIDES: Guide[] = [
       "Reps always keep their own private workspace; nothing they own moves when teams change.",
     ],
     cta: { href: "/team", label: "Open Team" },
+  },
+  {
+    id: "do-not-email",
+    icon: "🚫",
+    title: "Keep a Do Not Email list",
+    summary: "Suppress anyone who should never be contacted.",
+    steps: [
+      "Open 'Do Not Email' to see everyone who's suppressed or unsubscribed.",
+      "Add emails or whole domains by hand, or paste a list.",
+      "Unsubscribes and hard bounces are added automatically — you never email them again.",
+      "Suppression always wins: a suppressed address is skipped even if it's selected in a campaign.",
+    ],
+    cta: { href: "/suppressions", label: "Open Do Not Email" },
+  },
+  {
+    id: "admin",
+    icon: "⚙️",
+    title: "Administration & health (admins)",
+    summary: "Sending mode, org settings, and live status checks.",
+    steps: [
+      "Administration is where an admin flips the org between Test and Live sending — the banner up top always shows which is active.",
+      "Set org-wide rules there: send-confirmation thresholds and team-collision policy.",
+      "System Health shows Gmail connection, queue, and integration status at a glance.",
+      "Only admins see these pages; everyone else stays focused on sending.",
+    ],
+    cta: { href: "/admin", label: "Open Administration" },
   },
 ];
 

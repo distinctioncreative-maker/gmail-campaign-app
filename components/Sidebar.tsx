@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NotificationBell } from "@/components/NotificationBell";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AccountMenu } from "@/components/AccountMenu";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
 import { MobileNav } from "@/components/MobileNav";
 
@@ -91,15 +89,6 @@ export function Sidebar({
           <AccountMenu displayName={displayName} email={email} role={role} />
         </div>
       </aside>
-
-      {/* Mobile top bar: identity + theme + notifications */}
-      <header className="glass sticky top-0 z-20 flex items-center justify-between border-b border-border px-4 py-3 sm:hidden">
-        <Brand workspaceName={workspaceName} />
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <NotificationBell />
-        </div>
-      </header>
 
       {/* Mobile bottom tab bar + More sheet */}
       <MobileNav items={items} displayName={displayName} email={email} role={role} />

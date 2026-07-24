@@ -19,8 +19,15 @@ interface WizardContact {
   businessName: string;
   email: string;
   classification: string;
+  listIds: string[];
   lastCampaignName: string | null;
   lastCampaignAt: number | null;
+}
+
+interface WizardLeadList {
+  listId: string;
+  name: string;
+  count: number;
 }
 
 interface WizardTemplate {
@@ -67,6 +74,9 @@ export function CampaignWizard() {
 
   const [contacts, setContacts] = useState<WizardContact[] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [leadLists, setLeadLists] = useState<WizardLeadList[]>([]);
+  // "" ⇒ all leads; otherwise a saved lead list is the source.
+  const [listFilter, setListFilter] = useState<string>("");
 
   const [templates, setTemplates] = useState<WizardTemplate[] | null>(null);
   // Ordered selection; first = primary. 2+ ⇒ A/B rotation.
@@ -150,6 +160,8 @@ export function CampaignWizard() {
       const sRes = await fetch("/api/sequences");
       const sBody = await sRes.json();
       setSequences(sBody.sequences ?? []);
+      const llRes = await fetch("/api/lead-lists");
+      if (llRes.ok) setLeadLists((await llRes.json()).lists ?? []);
       const mRes = await fetch("/api/sending-mode");
       if (mRes.ok) setTestMode((await mRes.json()).testMode);
     })();
@@ -201,6 +213,7 @@ export function CampaignWizard() {
             schedule: preset === "custom" ? customPace : PRESETS[preset].schedule,
             priorContactPolicy: priorPolicy,
             draftStrategy,
+            sourceListId: listFilter || null,
           }),
         }
       );
@@ -237,6 +250,17 @@ export function CampaignWizard() {
     });
   }
 
+  // Pick a saved lead list as the campaign source: narrows the picker to that
+  // list and auto-selects everyone in it who is safe to email.
+  function chooseList(listId: string) {
+    setListFilter(listId);
+    const list = contacts ?? [];
+    const inScope = listId ? list.filter((c) => c.listIds.includes(listId)) : list;
+    setSelected(
+      new Set(inScope.filter((c) => badgeFor(c.classification).selectable).map((c) => c.contactId))
+    );
+  }
+
   // Filtered + sorted view of the contacts in the lead picker.
   const visibleContacts = useMemo(() => {
     const list = contacts ?? [];
@@ -249,6 +273,7 @@ export function CampaignWizard() {
       ["CONTACTED_BEFORE", "REPLIED_BEFORE"].includes(c.classification);
 
     const filtered = list.filter((c) => {
+      if (listFilter && !c.listIds.includes(listFilter)) return false;
       if (q && !(`${c.fullName} ${c.businessName} ${c.email}`.toLowerCase().includes(q)))
         return false;
       if (leadFilter === "ready") return !isExcluded(c) && !isUsed(c);
@@ -262,7 +287,7 @@ export function CampaignWizard() {
       if (leadSort === "status") return a.classification.localeCompare(b.classification);
       return (a.fullName || a.email).localeCompare(b.fullName || b.email);
     });
-  }, [contacts, leadSearch, leadFilter, leadSort]);
+  }, [contacts, leadSearch, leadFilter, leadSort, listFilter]);
 
   function selectableIds(list: WizardContact[]): string[] {
     return list.filter((c) => badgeFor(c.classification).selectable).map((c) => c.contactId);
@@ -365,6 +390,26 @@ export function CampaignWizard() {
               </p>
             ) : (
               <>
+                {leadLists.length > 0 && (
+                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+                    <label className="block text-sm font-medium text-slate-700">
+                      Start from a lead list
+                      <HelpTip text="Pick one of your saved lists to use it as the source for this campaign. Everyone in the list who is safe to email gets selected automatically. Choose “All leads” to browse everything." />
+                      <select
+                        value={listFilter}
+                        onChange={(e) => chooseList(e.target.value)}
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none sm:max-w-md"
+                      >
+                        <option value="">All leads ({contacts.length})</option>
+                        {leadLists.map((l) => (
+                          <option key={l.listId} value={l.listId}>
+                            {l.name} ({l.count})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <input
                     type="search"

@@ -24,16 +24,25 @@ Rules:
 Return ONLY minified JSON: {"subject":"...","html":"..."} with no markdown fences.`;
 
 /** Generate a subject + HTML body with Gemini (Google AI Studio). Throws
- * AiNotConfiguredError when no key is set. */
-export async function generateEmail(prompt: string): Promise<GeneratedEmail> {
+ * AiNotConfiguredError when no key is set. `brandContext`, when present, is
+ * the org's saved brand memory (offer, benefits, tone) so every draft stays
+ * on-brand while staying fresh and non-repetitive. */
+export async function generateEmail(
+  prompt: string,
+  brandContext = ""
+): Promise<GeneratedEmail> {
   if (!env.GEMINI_API_KEY) throw new AiNotConfiguredError();
+
+  const system = brandContext.trim()
+    ? `${SYSTEM}\n\nBRAND MEMORY — weave these facts in naturally, in a FRESH way each time (never copy the wording verbatim, vary the angle and hook):\n${brandContext.trim()}`
+    : SYSTEM;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM }] },
+      systemInstruction: { parts: [{ text: system }] },
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.8, responseMimeType: "application/json" },
     }),

@@ -23,6 +23,10 @@ export interface OrgSettings {
   sendingMode: "TEST" | "LIVE";
   liveEnabledAt: number | null;
   liveEnabledBy: string | null;
+  /** Reusable brand context the AI writer weaves into every email it drafts
+   * (offer, benefits, tone, guardrails). Org-wide so the whole team's AI
+   * emails stay on-brand. */
+  aiBrandContext: string;
 }
 
 export async function getOrgSettings(organizationId: string): Promise<OrgSettings> {
@@ -36,12 +40,18 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
     sendingMode: data.sendingMode === "LIVE" ? "LIVE" : "TEST",
     liveEnabledAt: (data.liveEnabledAt as number) ?? null,
     liveEnabledBy: (data.liveEnabledBy as string) ?? null,
+    aiBrandContext: (data.aiBrandContext as string) ?? "",
   };
 }
 
 export async function updateOrgSettings(
   organizationId: string,
-  patch: Partial<Pick<OrgSettings, "collisionPolicy" | "collisionBlockDays" | "sendConfirmThreshold">>
+  patch: Partial<
+    Pick<
+      OrgSettings,
+      "collisionPolicy" | "collisionBlockDays" | "sendConfirmThreshold" | "aiBrandContext"
+    >
+  >
 ): Promise<void> {
   await orgRef(organizationId)
     .collection("organizationSettings")

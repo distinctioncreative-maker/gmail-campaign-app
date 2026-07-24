@@ -4,16 +4,51 @@ import { useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { useToast } from "@/components/ui/UIProviders";
 
-const IDEAS = [
-  "Friendly intro offering working capital to a restaurant owner",
-  "Follow-up nudge for a busy contractor who hasn't replied",
-  "Short note about fast funding for a trucking business",
+/** One-click starting points. Each fills the prompt box; the user can edit
+ * before generating. Occasion presets pair with brand memory to keep emails
+ * on-message but seasonally fresh. */
+const PRESETS: Array<{ label: string; prompt: string }> = [
+  {
+    label: "🎉 New Year, New You",
+    prompt:
+      "A warm “New Year, New You” seasonal email inviting the business owner to start the year strong with fresh working capital. Upbeat and encouraging.",
+  },
+  {
+    label: "📅 Mid-month check-in",
+    prompt:
+      "A short mid-month check-in to a business owner who hasn't replied yet. Friendly, no pressure, gently re-offer funding and ask if now's a better time.",
+  },
+  {
+    label: "🔁 Re-engage a past client",
+    prompt:
+      "A friendly note to a business we've funded before. Reference the past relationship warmly and offer funding again for their next move or busy season.",
+  },
+  {
+    label: "☀️ Seasonal offer",
+    prompt:
+      "A seasonal email tied to the current time of year, positioning fast funding as the way to seize a timely opportunity or prep for a busy stretch.",
+  },
+  {
+    label: "👋 Warm first touch",
+    prompt:
+      "A warm first-touch intro offering fast, flexible working capital to a busy small-business owner. Human and confident, one clear ask.",
+  },
+  {
+    label: "🚚 Nudge a busy owner",
+    prompt:
+      "A short follow-up nudge for a busy contractor or trucking owner who hasn't replied. Respect their time, restate the offer in one line.",
+  },
 ];
 
+interface AiStatus {
+  enabled: boolean;
+  hasBrandMemory: boolean;
+}
+
 /**
- * "Write with AI" panel for the template editor. Describes the email in plain
- * language; fills the subject + body. Hidden entirely when the AI writer
- * isn't configured on the server.
+ * "Write with AI" panel for the template editor. Describe the email in plain
+ * language; it fills the subject + body, weaving in the org's saved brand
+ * memory. Hidden entirely when the AI writer isn't configured on the server.
  */
 export function AiEmailWriter({
   onResult,
@@ -21,16 +56,59 @@ export function AiEmailWriter({
   onResult: (email: { subject: string; html: string }) => void;
 }) {
   const toast = useToast();
-  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [status, setStatus] = useState<AiStatus | null>(null);
   const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Brand memory editor (loaded lazily when the panel opens).
+  const [memoryOpen, setMemoryOpen] = useState(false);
+  const [brand, setBrand] = useState("");
+  const [brandLoaded, setBrandLoaded] = useState(false);
+  const [canEditBrand, setCanEditBrand] = useState(false);
+  const [savingBrand, setSavingBrand] = useState(false);
+
   useEffect(() => {
-    fetchJson<{ enabled: boolean }>("/api/templates/generate")
-      .then((r) => setEnabled(r.enabled))
-      .catch(() => setEnabled(false));
+    fetchJson<AiStatus>("/api/templates/generate")
+      .then(setStatus)
+      .catch(() => setStatus({ enabled: false, hasBrandMemory: false }));
   }, []);
+
+  async function loadBrand() {
+    if (brandLoaded) return;
+    try {
+      const r = await fetchJson<{ brandContext: string; canEdit: boolean }>("/api/ai/brand-memory");
+      setBrand(r.brandContext);
+      setCanEditBrand(r.canEdit);
+    } catch {
+      /* non-fatal */
+    } finally {
+      setBrandLoaded(true);
+    }
+  }
+
+  async function openMemory() {
+    await loadBrand();
+    setMemoryOpen((v) => !v);
+  }
+
+  async function saveBrand() {
+    setSavingBrand(true);
+    try {
+      const res = await fetchJson<{ message?: string }>("/api/ai/brand-memory", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brandContext: brand }),
+      });
+      setStatus((s) => (s ? { ...s, hasBrandMemory: brand.trim().length > 0 } : s));
+      toast(res.message ?? "Brand memory saved.", "success");
+      setMemoryOpen(false);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Couldn't save that.", "error");
+    } finally {
+      setSavingBrand(false);
+    }
+  }
 
   async function generate() {
     if (prompt.trim().length < 3) return;
@@ -50,14 +128,17 @@ export function AiEmailWriter({
     }
   }
 
-  if (enabled === false) return null; // AI not set up → no clutter
+  if (status?.enabled === false) return null; // AI not set up → no clutter
 
   return (
     <div className="mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-primary-soft/40">
       {!open ? (
         <button
-          onClick={() => setOpen(true)}
-          disabled={enabled === null}
+          onClick={() => {
+            setOpen(true);
+            void loadBrand();
+          }}
+          disabled={status === null}
           className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-primary transition hover:bg-primary-soft disabled:opacity-60"
         >
           <span aria-hidden className="text-base">✨</span>
@@ -65,9 +146,55 @@ export function AiEmailWriter({
         </button>
       ) : (
         <div className="p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-primary">
-            <span aria-hidden className="text-base">✨</span> Describe the email you want
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-primary">
+              <span aria-hidden className="text-base">✨</span> Describe the email you want
+            </div>
+            <button
+              onClick={() => void openMemory()}
+              className="rounded-full border border-primary/20 bg-white px-2.5 py-1 text-xs font-medium text-primary hover:border-primary"
+            >
+              {status?.hasBrandMemory ? "🧠 Brand memory: on" : "🧠 Add brand memory"}
+            </button>
           </div>
+
+          {memoryOpen && (
+            <div className="mt-2 rounded-xl border border-primary/20 bg-white p-3">
+              <p className="text-xs font-medium text-slate-700">
+                Brand memory — the AI weaves this into every email, freshly each time
+              </p>
+              <p className="mt-0.5 text-[11px] text-slate-500">
+                Put your offer, key benefits, and tone here. Example: “Alpine Funding — working
+                capital $10k–$500k, funded in 24–48h, no collateral. Confident and friendly, never
+                pushy.”
+              </p>
+              <textarea
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                disabled={!canEditBrand}
+                rows={4}
+                placeholder={
+                  canEditBrand
+                    ? "Your offer, benefits, tone, and anything the AI should always know…"
+                    : "Only a manager or admin can edit brand memory."
+                }
+                className="mt-2 w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary focus:outline-none disabled:bg-slate-50 disabled:text-slate-500"
+              />
+              {canEditBrand && (
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    onClick={() => void saveBrand()}
+                    disabled={savingBrand}
+                    className="btn-primary px-3 py-1.5 text-xs"
+                  >
+                    {savingBrand ? "Saving…" : "Save brand memory"}
+                  </button>
+                  <span className="text-[11px] text-slate-400">Applies to your whole team.</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -77,17 +204,17 @@ export function AiEmailWriter({
             className="mt-2 w-full rounded-xl border border-primary/20 bg-white p-2.5 text-sm focus:border-primary focus:outline-none"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {IDEAS.map((i) => (
+            {PRESETS.map((p) => (
               <button
-                key={i}
-                onClick={() => setPrompt(i)}
+                key={p.label}
+                onClick={() => setPrompt(p.prompt)}
                 className="rounded-full border border-primary/20 bg-white px-2.5 py-1 text-xs text-slate-600 hover:border-primary"
               >
-                {i}
+                {p.label}
               </button>
             ))}
           </div>
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
               onClick={() => void generate()}
               disabled={busy || prompt.trim().length < 3}
@@ -98,7 +225,9 @@ export function AiEmailWriter({
             <button onClick={() => setOpen(false)} className="btn-ghost px-3 py-2 text-sm">
               Close
             </button>
-            <span className="text-xs text-slate-400">Uses {"{{firstName}}"}, {"{{businessName}}"}, {"{{signature}}"}.</span>
+            <span className="text-xs text-slate-400">
+              Uses {"{{firstName}}"}, {"{{businessName}}"}, {"{{signature}}"}.
+            </span>
           </div>
         </div>
       )}
