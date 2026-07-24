@@ -20,7 +20,14 @@ import {
   listRecentInbound,
   getMessageAsInbound,
 } from "@/lib/gmail/threads";
-import { classifyInboundMessage, parseReturnDate, type InboundMessage, type ReplyClass } from "@/lib/gmail/classifyReply";
+import {
+  classifyInboundMessage,
+  detectPositiveIntent,
+  parseReturnDate,
+  stripQuotedText,
+  type InboundMessage,
+  type ReplyClass,
+} from "@/lib/gmail/classifyReply";
 import { classifyBounce, parseFailedRecipient } from "@/lib/gmail/classifyBounce";
 import { getSequence } from "@/lib/repositories/sequences";
 import { addBusinessDays, localDayKey } from "@/lib/scheduling/window";
@@ -125,9 +132,22 @@ async function actOnInbound(
   }
 
   if (classes.includes("HUMAN_REPLY") || classes.includes("NOT_INTERESTED")) {
+    // Pull the message that actually triggered this, for triage + reply drafts.
+    const idx = classes.findIndex((c) => c === "HUMAN_REPLY" || c === "NOT_INTERESTED");
+    const msg = idx >= 0 ? inbound[idx] : inbound[inbound.length - 1];
+    const fresh = stripQuotedText(msg?.bodyText || msg?.snippet || "");
+    const notInterested = classes.includes("NOT_INTERESTED");
+    const replyIntent = notInterested
+      ? "NOT_INTERESTED"
+      : detectPositiveIntent(fresh)
+        ? "INTERESTED"
+        : "REPLIED";
+
     await updateRecipient(owner, campaign.campaignId, r.recipientId, {
       status: "REPLIED",
       repliedAt: now,
+      replyIntent,
+      lastReplySnippet: fresh.slice(0, 280),
     });
     await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
     await incrementCampaignCounters(owner, campaign.campaignId, { replyCount: 1 });

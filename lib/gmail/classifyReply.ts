@@ -85,6 +85,29 @@ const OOO_SUBJECT_PATTERNS = [
   /\bOOO\b/,
 ];
 
+/** Positive buying signals — a reply that reads like real interest, so the
+ * inbox can float it to the top. Applied to the fresh (unquoted) text only. */
+const POSITIVE_PATTERNS = [
+  /\binterested\b/i,
+  /\b(?:sounds?|looks?) (?:good|great)\b/i,
+  /\btell me more\b/i,
+  /\bmore (?:info|information|details)\b/i,
+  /\bhow much\b/i,
+  /\bwhat (?:are|'?s) (?:the |your )?(?:rates?|terms?|cost|pricing|next steps?)\b/i,
+  /\blet'?s (?:talk|chat|connect|discuss)\b/i,
+  /\b(?:give me a |please )?call me\b/i,
+  /\b(?:can we|could we|let'?s) (?:schedule|set up|book|hop on)\b/i,
+  /\b(?:i'?d|i would) (?:like|love) to\b/i,
+  /\bplease send\b/i,
+  /\bwhen (?:can|are) you\b/i,
+  /\byes[,! ]/i,
+];
+
+/** True when the fresh reply text carries a positive/interested signal. */
+export function detectPositiveIntent(freshText: string): boolean {
+  return POSITIVE_PATTERNS.some((re) => re.test(freshText));
+}
+
 export function classifyInboundMessage(msg: InboundMessage): ReplyClass {
   // 1. Header-based automated-response detection (most reliable).
   const autoSubmitted = header(msg, "Auto-Submitted").toLowerCase();

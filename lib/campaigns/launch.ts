@@ -194,6 +194,8 @@ export async function launchCampaign(
       currentStep: 0,
       status: included ? "SCHEDULED" : "EXCLUDED",
       templateIdSnapshot: null,
+      replyIntent: null,
+      lastReplySnippet: "",
       initialDraftId: null,
       initialMessageId: null,
       gmailThreadId: null,

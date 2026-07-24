@@ -16,6 +16,8 @@ function countThisWeek(rows: Array<{ repliedAt: number }>): number {
   return rows.filter((r) => r.repliedAt > cutoff).length;
 }
 
+type ReplyIntent = "INTERESTED" | "REPLIED" | "NOT_INTERESTED";
+
 interface ReplyRow {
   contactId: string;
   fullName: string;
@@ -25,7 +27,16 @@ interface ReplyRow {
   repliedAt: number;
   timeToReplyMs: number | null;
   gmailThreadId: string | null;
+  intent: ReplyIntent;
+  snippet: string;
 }
+
+/** How the triage chip reads and ranks. Interested floats to the top. */
+const INTENT_META: Record<ReplyIntent, { label: string; className: string; rank: number }> = {
+  INTERESTED: { label: "🔥 Interested", className: "bg-emerald-100 text-emerald-700", rank: 0 },
+  REPLIED: { label: "Needs reply", className: "bg-blue-100 text-blue-700", rank: 1 },
+  NOT_INTERESTED: { label: "Not interested", className: "bg-slate-100 text-slate-500", rank: 2 },
+};
 
 /**
  * Every reply across all campaigns in one inbox — newest first, one click to
@@ -59,16 +70,23 @@ export default async function RepliesPage() {
         repliedAt: r.repliedAt,
         timeToReplyMs: r.initialSentAt !== null ? r.repliedAt - r.initialSentAt : null,
         gmailThreadId: r.gmailThreadId,
+        intent: (r.replyIntent as ReplyIntent | null) ?? "REPLIED",
+        snippet: r.lastReplySnippet,
       });
     }
   }
-  rows.sort((a, b) => b.repliedAt - a.repliedAt);
+  // Hot-first: Interested, then Needs-reply, then Not-interested; newest within each.
+  rows.sort(
+    (a, b) => INTENT_META[a.intent].rank - INTENT_META[b.intent].rank || b.repliedAt - a.repliedAt
+  );
 
   const thisWeek = countThisWeek(rows);
   const withTimes = rows.map((r) => r.timeToReplyMs).filter((v): v is number => v !== null).sort((a, b) => a - b);
   const median = withTimes.length > 0 ? withTimes[Math.floor(withTimes.length / 2)] : null;
 
+  const interested = rows.filter((r) => r.intent === "INTERESTED").length;
   const kpis = [
+    { label: "🔥 Interested", value: String(interested) },
     { label: "Total replies", value: String(rows.length) },
     { label: "This week", value: String(thisWeek) },
     { label: "Median time to reply", value: formatDuration(median) },
@@ -82,7 +100,7 @@ export default async function RepliesPage() {
         actions={<ScanRepliesButton />}
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((k) => (
           <div key={k.label} className="card p-5">
             <p className="text-sm text-slate-500">{k.label}</p>
@@ -112,10 +130,15 @@ export default async function RepliesPage() {
                     <p className="truncate font-medium">{r.fullName || r.email}</p>
                     {r.fullName && <p className="truncate text-xs text-slate-500">{r.email}</p>}
                   </Link>
-                  <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                    Replied
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${INTENT_META[r.intent].className}`}>
+                    {INTENT_META[r.intent].label}
                   </span>
                 </div>
+                {r.snippet && (
+                  <p className="mt-1.5 line-clamp-2 rounded-lg bg-slate-50 p-2 text-xs italic text-slate-600">
+                    “{r.snippet}”
+                  </p>
+                )}
                 <p className="mt-1.5 truncate text-xs text-slate-500">{r.campaignName}</p>
                 <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                   <span><LocalTime value={r.repliedAt} /> · {formatDuration(r.timeToReplyMs)}</span>
@@ -140,6 +163,7 @@ export default async function RepliesPage() {
               <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Lead</th>
+                  <th className="px-4 py-3">Intent</th>
                   <th className="px-4 py-3">Campaign</th>
                   <th className="px-4 py-3">Replied</th>
                   <th className="px-4 py-3">Took</th>
@@ -157,6 +181,14 @@ export default async function RepliesPage() {
                         {r.fullName || r.email}
                       </Link>
                       {r.fullName && <p className="text-xs text-slate-500">{r.email}</p>}
+                      {r.snippet && (
+                        <p className="mt-1 max-w-md truncate text-xs italic text-slate-500">“{r.snippet}”</p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${INTENT_META[r.intent].className}`}>
+                        {INTENT_META[r.intent].label}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{r.campaignName}</td>
                     <td className="px-4 py-3 text-xs text-slate-500">

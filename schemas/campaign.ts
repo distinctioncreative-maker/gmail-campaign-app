@@ -123,6 +123,13 @@ export const RecipientSchema = z.object({
   /** Which template this recipient was assigned (A/B rotation). Null ⇒ the
    * campaign's initialTemplateId. */
   templateIdSnapshot: z.string().nullable().default(null),
+  /** Coarse intent of the latest human reply, for triage in the inbox:
+   * INTERESTED (hot — positive signal), REPLIED (needs attention), or
+   * NOT_INTERESTED. Null until a human reply lands. */
+  replyIntent: z.enum(["INTERESTED", "REPLIED", "NOT_INTERESTED"]).nullable().default(null),
+  /** First chars of what the person actually typed (quoted history stripped)
+   * — shown in the inbox and used to seed AI reply drafts. */
+  lastReplySnippet: z.string().default(""),
   initialDraftId: z.string().nullable().default(null),
   initialMessageId: z.string().nullable().default(null),
   gmailThreadId: z.string().nullable().default(null),
