@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
+import { AiSequenceWriter, type GeneratedStep } from "@/components/sequences/AiSequenceWriter";
 
 interface Step {
   delayValue: number;
@@ -77,6 +78,24 @@ export function SequenceBuilder({
     setSteps((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
   }
 
+  // Replace the steps with an AI-drafted sequence (each becomes an editable
+  // custom step the user can still tweak).
+  function applyGenerated(gen: GeneratedStep[]) {
+    setSteps(
+      gen.slice(0, 10).map((g) => ({
+        delayValue: g.waitDays,
+        delayUnit: "BUSINESS_DAYS" as const,
+        bodyMode: "CUSTOM" as const,
+        templateId: null,
+        customHtml: g.html,
+        subjectMode: "CUSTOM" as const,
+        customSubject: g.subject,
+        sameThread: true,
+        enabled: true,
+      }))
+    );
+  }
+
   async function save() {
     setBusy(true);
     setError(null);
@@ -131,6 +150,10 @@ export function SequenceBuilder({
           Description (optional)
           <input value={description} onChange={(e) => setDescription(e.target.value)} className={`w-full ${input}`} />
         </label>
+      </div>
+
+      <div className="mt-4">
+        <AiSequenceWriter onResult={applyGenerated} />
       </div>
 
       <div className="mt-4 card p-6">
