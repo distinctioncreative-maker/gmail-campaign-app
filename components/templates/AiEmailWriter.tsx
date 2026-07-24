@@ -128,7 +128,7 @@ export function AiEmailWriter({
     }
   }
 
-  if (status?.enabled === false) return null; // AI not set up → no clutter
+  const notConfigured = status?.enabled === false;
 
   return (
     <div className="mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-primary-soft/40">
@@ -136,14 +136,54 @@ export function AiEmailWriter({
         <button
           onClick={() => {
             setOpen(true);
-            void loadBrand();
+            if (!notConfigured) void loadBrand();
           }}
           disabled={status === null}
           className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-primary transition hover:bg-primary-soft disabled:opacity-60"
         >
           <span aria-hidden className="text-base">✨</span>
           Write this email with AI
+          {notConfigured && (
+            <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500">
+              Setup needed
+            </span>
+          )}
         </button>
+      ) : notConfigured ? (
+        <div className="p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-primary">
+            <span aria-hidden className="text-base">✨</span> AI email writer
+          </div>
+          <p className="mt-2 text-sm text-slate-600">
+            The AI writer isn&apos;t switched on yet. It writes a full subject + body from one plain
+            sentence, and weaves in your saved brand memory so every email stays on-brand.
+          </p>
+          <div className="mt-3 rounded-xl border border-primary/20 bg-white p-3 text-sm text-slate-600">
+            <p className="font-medium text-slate-700">To turn it on (one-time, ~1 minute):</p>
+            <ol className="mt-1.5 list-decimal space-y-1 pl-5">
+              <li>
+                Grab a free key at{" "}
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Google AI Studio
+                </a>
+                .
+              </li>
+              <li>
+                Add it to the app as <code className="rounded bg-slate-100 px-1">GEMINI_API_KEY</code>{" "}
+                and redeploy.
+              </li>
+              <li>Refresh this page — the writer appears here automatically.</li>
+            </ol>
+          </div>
+          <button onClick={() => setOpen(false)} className="btn-ghost mt-3 px-3 py-2 text-sm">
+            Close
+          </button>
+        </div>
       ) : (
         <div className="p-3">
           <div className="flex items-center justify-between gap-2">
