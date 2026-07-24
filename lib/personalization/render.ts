@@ -21,6 +21,7 @@ export const PLACEHOLDERS = [
   "physical_address",
   "unsubscribe_text",
   "signature",
+  "ai_opener",
 ] as const;
 export type Placeholder = (typeof PLACEHOLDERS)[number];
 
@@ -32,7 +33,7 @@ export type PlaceholderValues = Partial<Record<Placeholder, string>>;
  * leaving it blank in Settings (or when a Gmail draft already includes your
  * own signature) simply removes {{signature}} rather than printing it.
  */
-export const OPTIONAL_PLACEHOLDERS: ReadonlySet<string> = new Set(["signature"]);
+export const OPTIONAL_PLACEHOLDERS: ReadonlySet<string> = new Set(["signature", "ai_opener"]);
 
 const PLACEHOLDER_RE = /\{\{\s*([a-z_]+)\s*\}\}/g;
 
@@ -90,6 +91,7 @@ export const FAKE_PREVIEW_VALUES: PlaceholderValues = {
   physical_address: "123 Main St, Suite 400, New York, NY 10001",
   unsubscribe_text: "If you'd prefer not to hear from me again, just reply and let me know.",
   signature: "Alex Salesperson · Funding Advisor · Your Company",
+  ai_opener: "Congrats on the recent expansion at Rivera Roofing — impressive momentum.",
 };
 
 export interface RenderResult {

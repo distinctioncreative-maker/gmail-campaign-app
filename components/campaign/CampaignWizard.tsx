@@ -102,6 +102,8 @@ export function CampaignWizard() {
     dailySendLimit: 100,
   });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
+  const [personalize, setPersonalize] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
   const [priorPolicy, setPriorPolicy] = useState("ONLY_NEW");
   const [confirmText, setConfirmText] = useState("");
   const [testMode, setTestMode] = useState<boolean | null>(null);
@@ -162,6 +164,8 @@ export function CampaignWizard() {
       setSequences(sBody.sequences ?? []);
       const llRes = await fetch("/api/lead-lists");
       if (llRes.ok) setLeadLists((await llRes.json()).lists ?? []);
+      const aiRes = await fetch("/api/templates/generate");
+      if (aiRes.ok) setAiEnabled(Boolean((await aiRes.json()).enabled));
       const mRes = await fetch("/api/sending-mode");
       if (mRes.ok) setTestMode((await mRes.json()).testMode);
     })();
@@ -229,6 +233,7 @@ export function CampaignWizard() {
             overrideReason: null,
           })),
           startNow,
+          personalize,
           confirmText: confirmText || undefined,
         }),
       });
@@ -707,6 +712,28 @@ export function CampaignWizard() {
                 <HelpTip text="Instead of sending automatically, the app prepares each email as a draft in your Gmail. You open and send them yourself. Good for extra control on important lists." />
               </label>
             </div>
+
+            {aiEnabled && (
+              <div className="mt-3 rounded-xl border border-primary/20 bg-primary-soft/40 p-3">
+                <label className="flex items-start gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={personalize}
+                    onChange={(e) => setPersonalize(e.target.checked)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    ✨ Add an AI-personalized opening line to each email
+                    <span className="mt-0.5 block text-xs text-slate-500">
+                      Writes one tailored sentence per lead based on their business, added to the top
+                      of the first email. Best for focused lists — capped at the first 150 recipients
+                      to keep it fast. Add <code className="rounded bg-white px-1">{"{{ai_opener}}"}</code>{" "}
+                      in your template to place it yourself; otherwise it goes up top.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            )}
           </>
         )}
 

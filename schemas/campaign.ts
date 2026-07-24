@@ -130,6 +130,9 @@ export const RecipientSchema = z.object({
   /** First chars of what the person actually typed (quoted history stripped)
    * — shown in the inbox and used to seed AI reply drafts. */
   lastReplySnippet: z.string().default(""),
+  /** Optional AI-personalized opening line for this recipient's initial email
+   * (empty unless the campaign opted into personalization). */
+  aiOpenerSnapshot: z.string().default(""),
   initialDraftId: z.string().nullable().default(null),
   initialMessageId: z.string().nullable().default(null),
   gmailThreadId: z.string().nullable().default(null),

@@ -252,6 +252,8 @@ export async function POST(req: NextRequest) {
         leadSource: "",
       }),
       ...valuesFromSenderProfile(profile),
+      // Per-lead AI opener applies to the initial email only, never follow-ups.
+      ai_opener: step ? "" : recipient.aiOpenerSnapshot ?? "",
     };
 
     // Subject: follow-up steps can keep the original, prefix "Re:", or use
@@ -269,7 +271,13 @@ export async function POST(req: NextRequest) {
       step?.subjectMode === "RE" && !/^re:/i.test(subjectRender.output)
         ? `Re: ${subjectRender.output}`
         : subjectRender.output;
-    const body = renderTemplate(bodyHtmlTemplate, values);
+    // If this lead has an AI opener but the template didn't place {{ai_opener}}
+    // anywhere, prepend it as the first line so personalization always shows.
+    let effectiveBody = bodyHtmlTemplate;
+    if (!step && recipient.aiOpenerSnapshot && !/\{\{\s*ai_opener\s*\}\}/.test(effectiveBody)) {
+      effectiveBody = `<p>{{ai_opener}}</p>\n${effectiveBody}`;
+    }
+    const body = renderTemplate(effectiveBody, values);
 
     // 5. Reserve the idempotency key BEFORE sending (transactional).
     const reserved = await reserveIdempotencyKey(owner, campaignId, item.idempotencyKey, {

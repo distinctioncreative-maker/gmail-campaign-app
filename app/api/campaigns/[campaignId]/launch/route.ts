@@ -21,6 +21,7 @@ const BodySchema = z.object({
   startNow: z.boolean().default(true),
   confirmText: z.string().optional(),
   validateOnly: z.boolean().default(false),
+  personalize: z.boolean().default(false),
 });
 
 /** Validate and launch a campaign with the selected recipients. */
@@ -71,7 +72,8 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
       warning: false,
       overrideReason: s.overrideReason,
     })),
-    body.startNow
+    body.startNow,
+    body.personalize
   );
 
   return NextResponse.json({ ok: true, ...result, warnings: validation.warnings });

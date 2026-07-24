@@ -19,6 +19,14 @@ import {
 } from "@/lib/repositories/campaigns";
 import { enqueueTask, tasksConfigured } from "@/lib/tasks/enqueue";
 import { checkCollision } from "@/lib/campaigns/collision";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { generateOpener } from "@/lib/ai/generateOpener";
+import { mapWithConcurrency } from "@/lib/util/pool";
+import { env } from "@/lib/env";
+
+/** Safety caps for per-lead AI personalization at launch. */
+const MAX_PERSONALIZED = 150;
+const PERSONALIZE_CONCURRENCY = 3;
 
 export function idempotencyKey(
   organizationId: string,
@@ -105,7 +113,8 @@ export async function launchCampaign(
   ctx: AuthContext,
   campaign: Campaign,
   selections: PreparedRecipient[],
-  startNow: boolean
+  startNow: boolean,
+  personalize = false
 ): Promise<{ eligible: number; excluded: number }> {
   const owner = ownerFromCtx(ctx);
   const now = Date.now();
@@ -196,6 +205,7 @@ export async function launchCampaign(
       templateIdSnapshot: null,
       replyIntent: null,
       lastReplySnippet: "",
+      aiOpenerSnapshot: "",
       initialDraftId: null,
       initialMessageId: null,
       gmailThreadId: null,
@@ -252,6 +262,21 @@ export async function launchCampaign(
       updatedAt: now,
     };
   });
+
+  // Optional per-lead AI opener. Opt-in, bounded, and best-effort: capped in
+  // volume, low concurrency (rate limits), and any failure just leaves an
+  // empty opener so the launch always completes.
+  if (personalize && env.GEMINI_API_KEY) {
+    const settings = await getOrgSettings(ctx.organizationId);
+    const targets = recipients.filter((r) => r.included).slice(0, MAX_PERSONALIZED);
+    await mapWithConcurrency(targets, PERSONALIZE_CONCURRENCY, async (r) => {
+      r.aiOpenerSnapshot = await generateOpener({
+        firstName: r.firstNameSnapshot,
+        businessName: r.businessNameSnapshot,
+        brandContext: settings.aiBrandContext,
+      });
+    });
+  }
 
   await batchCreateRecipients(owner, campaign.campaignId, recipients);
   await batchCreateQueueItems(owner, campaign.campaignId, queueItems);
