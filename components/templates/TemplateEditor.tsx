@@ -7,6 +7,7 @@ import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { SpamCheck } from "@/components/spam/SpamCheck";
 import { AiEmailWriter } from "./AiEmailWriter";
+import { AiEmailTools } from "./AiEmailTools";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -258,6 +259,8 @@ export function TemplateEditor({
             className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
         </label>
+
+        <AiEmailTools subject={subject} html={html} onSubject={setSubject} onHtml={setHtml} />
 
         <div className="mt-5 flex gap-1 border-b border-slate-200 text-sm">
           {(
