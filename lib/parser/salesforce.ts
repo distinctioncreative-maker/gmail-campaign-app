@@ -162,6 +162,172 @@ function parseRecord(rawRecord: string, index: number): ParsedLead {
   };
 }
 
+/* ------------------------------------------------------------------ *
+ * Email-anchored fallback
+ *
+ * Salesforce Lightning collapses empty cells when a list view is copied, so
+ * column positions drift row-to-row and strict grid parsing misaligns. This
+ * fallback ignores position entirely: it splits the paste into one block per
+ * email address, then classifies each line by TYPE (email, phone, amount,
+ * date, timezone, status) and drops values that repeat across most rows
+ * (owner, lead source, status — the shared column constants). What's left is
+ * the person's name and business. Records with no email are skipped, since
+ * they can't be emailed anyway.
+ * ------------------------------------------------------------------ */
+
+const FALLBACK_PHONE_RE = /^\+?1?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
+const FALLBACK_DATE_RE = /^\d{1,2}\/\d{1,2}\/\d{2,4}(,?\s+\d{1,2}:\d{2}.*)?$/;
+const FALLBACK_MONEY_RE = /^[$]?\s?\d{1,3}(?:,\d{3})+(?:\.\d{2})?$|^[$]\s?\d+(?:\.\d{2})?$|^\d+\.\d{2}$/;
+const FALLBACK_TZ_RE =
+  /^(?:\(gmt[^)]*\)\s*)?(pacific|eastern|central|mountain|alaska|hawaii|arizona|atlantic|unknown)(?:\s*(?:time|standard time|daylight time))?$/i;
+const FALLBACK_STATUS_RE = /^(active|inactive|open|closed|new|won|lost|prospecting)$/i;
+const FALLBACK_COMPANY_RE =
+  /\b(llc|l\.l\.c\.|inc|inc\.|incorporated|corp|corporation|co\.|company|services|service|group|enterprises?|industries|solutions|construction|trucking|transport(?:ation)?|holdings|partners|associates|consulting|studios?|salon|clinic|medical|dental|restaurant|cafe|catering|market|deli|foods?|design|builders?|contracting|roofing|painting|insurance|realty|properties|logistics|global|corp)\b|&|,\s*(?:inc|llc)/i;
+const FALLBACK_NOISE = new Set([
+  "-", "—", "--", "feature not included", "not included", "active", "0.00", "$0.00", "0",
+]);
+
+function isStructuralLine(l: string): boolean {
+  const low = l.toLowerCase();
+  return (
+    EMAIL_LINE_RE.test(l) ||
+    FALLBACK_PHONE_RE.test(l) ||
+    FALLBACK_DATE_RE.test(l) ||
+    FALLBACK_MONEY_RE.test(l) ||
+    FALLBACK_TZ_RE.test(l) ||
+    FALLBACK_STATUS_RE.test(l) ||
+    BARE_INT_RE.test(l) ||
+    FALLBACK_NOISE.has(low)
+  );
+}
+
+function looksLikePersonName(l: string): boolean {
+  if (FALLBACK_COMPANY_RE.test(l)) return false;
+  const words = l.split(/\s+/);
+  if (words.length < 1 || words.length > 4) return false;
+  return /^[A-Za-z][A-Za-z'.\- ]+$/.test(l);
+}
+
+export function parseSalesforceByEmail(normalized: string): ParseResult | null {
+  let lines = normalized
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  // Drop a leading header preamble: everything before the first row-number "1"
+  // (this also removes duplicated header blocks that Lightning sometimes copies).
+  const firstOne = lines.findIndex((l) => l === "1");
+  if (firstOne > 0) lines = lines.slice(firstOne);
+
+  if (!lines.some((l) => EMAIL_LINE_RE.test(l))) return null;
+
+  // Prefer explicit row-number markers (1, 2, 3, …) as record boundaries —
+  // they bound each record cleanly so trailing fields stay put. Fall back to
+  // one-block-per-email when a paste has no row numbers.
+  const rowMarkerIdxs: number[] = [];
+  let expected = 1;
+  lines.forEach((l, i) => {
+    if (l === String(expected)) {
+      rowMarkerIdxs.push(i);
+      expected += 1;
+    }
+  });
+
+  const blocks: string[][] = [];
+  if (rowMarkerIdxs.length >= 2) {
+    for (let k = 0; k < rowMarkerIdxs.length; k++) {
+      const s = rowMarkerIdxs[k] + 1;
+      const e = k + 1 < rowMarkerIdxs.length ? rowMarkerIdxs[k + 1] : lines.length;
+      blocks.push(lines.slice(s, e));
+    }
+  } else {
+    let start = 0;
+    lines.forEach((l, i) => {
+      if (EMAIL_LINE_RE.test(l)) {
+        blocks.push(lines.slice(start, i + 1));
+        start = i + 1;
+      }
+    });
+  }
+
+  // Frequency of non-structural values across blocks → shared column values
+  // (owner, lead source, timezone) that should not be read as a name/business.
+  const freq = new Map<string, number>();
+  for (const b of blocks) {
+    const seen = new Set<string>();
+    for (const l of b) {
+      if (isStructuralLine(l)) continue;
+      const key = l.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        freq.set(key, (freq.get(key) ?? 0) + 1);
+      }
+    }
+  }
+  const noiseThreshold = Math.max(2, Math.ceil(blocks.length * 0.2));
+  const isSharedValue = (l: string) => (freq.get(l.toLowerCase()) ?? 0) >= noiseThreshold;
+
+  const leads: ParsedLead[] = [];
+  blocks.forEach((b, index) => {
+    const email = b.find((l) => EMAIL_LINE_RE.test(l)) ?? null;
+    if (!email) return; // no email → can't be emailed → skip
+    const phone = b.find((l) => FALLBACK_PHONE_RE.test(l)) ?? null;
+    const amountLine = b.find((l) => FALLBACK_MONEY_RE.test(l) && !FALLBACK_NOISE.has(l.toLowerCase()));
+
+    const candidates = b.filter((l) => !isStructuralLine(l) && !isSharedValue(l));
+    const businessName = candidates.find((c) => FALLBACK_COMPANY_RE.test(c)) ?? "";
+    const persons = candidates.filter((c) => c !== businessName && looksLikePersonName(c));
+    // Join a First / Last split across two single-word lines; otherwise take
+    // the first person-like candidate (or any leftover text).
+    let nameCandidate: string;
+    if (persons.length >= 2 && !persons[0].includes(" ") && !persons[1].includes(" ")) {
+      nameCandidate = `${persons[0]} ${persons[1]}`;
+    } else {
+      nameCandidate = persons[0] ?? candidates.find((c) => c !== businessName) ?? "";
+    }
+
+    const { firstName, lastName } = splitFullName(nameCandidate);
+    const emailValid = isValidEmail(email);
+    const warnings: string[] = [];
+    if (!nameCandidate) warnings.push("No contact name detected — please add one");
+    if (!businessName) warnings.push("No business name detected");
+    if (!emailValid) warnings.push(`Email looks invalid: ${email}`);
+
+    leads.push({
+      index,
+      fullName: nameCandidate,
+      firstName,
+      lastName,
+      businessName,
+      phone,
+      region: null,
+      requestedAmount: amountLine ? parseAmount(amountLine) : null,
+      email,
+      emailValid,
+      emailOptOut: null,
+      neverSwitchedFromNew: null,
+      leadSource: null,
+      sourceCreatedAt: null,
+      sourceUpdatedAt: null,
+      sourceRecordId: null,
+      rawText: b.join(" | "),
+      warnings,
+      confidence: emailValid ? (nameCandidate ? 0.7 : 0.5) : 0.3,
+    });
+  });
+
+  if (leads.length === 0) return null;
+  return {
+    leads,
+    totalRecords: leads.length,
+    globalWarnings: [
+      `Matched ${leads.length} lead${leads.length === 1 ? "" : "s"} by email. ` +
+        "Names and businesses were detected automatically — please skim the preview and fix any that look off. " +
+        "For perfect columns, export from Salesforce as CSV and use “Upload CSV”.",
+    ],
+  };
+}
+
 export function parseSalesforceText(text: string): ParseResult {
   const globalWarnings: string[] = [];
   const normalized = normalizeRawText(text);
@@ -172,10 +338,19 @@ export function parseSalesforceText(text: string): ParseResult {
   const records = markerSplit.slice(1);
 
   if (records.length === 0) {
-    // No "Select Item N" markers. Try the column / grid list-view format,
-    // where a row of column-name headers is followed by numbered records.
+    // No "Select Item N" markers. Try the strict column/grid format, then the
+    // resilient email-anchored fallback — prefer whichever yields more leads
+    // with a valid email (the grid parser misaligns when cells collapse).
     const columnResult = parseSalesforceColumns(normalized);
+    const emailResult = parseSalesforceByEmail(normalized);
+    const colValid = columnResult?.leads.filter((l) => l.emailValid).length ?? 0;
+    const emailValid = emailResult?.leads.filter((l) => l.emailValid).length ?? 0;
+
+    // Keep the richer grid result on ties; only fall back to email-anchoring
+    // when it recovers strictly more valid-email leads (collapsed-cell case).
+    if (emailResult && emailValid > 0 && emailValid > colValid) return emailResult;
     if (columnResult) return columnResult;
+    if (emailResult) return emailResult;
 
     return {
       leads: [],
@@ -184,7 +359,7 @@ export function parseSalesforceText(text: string): ParseResult {
         "No leads found. Paste your Salesforce list two ways: either with each " +
           'record starting on a "Select Item N" line, or copied straight from the ' +
           "column list view (a header row like First Name, Last Name, Email… " +
-          "followed by numbered rows).",
+          "followed by numbered rows). Tip: exporting as CSV and using “Upload CSV” is the most reliable.",
       ],
     };
   }

@@ -2,6 +2,7 @@ import { TestCenter } from "@/components/TestCenter";
 import { ReplayTourButton } from "@/components/tour/ReplayTourButton";
 import { HelpGuides } from "@/components/help/HelpGuides";
 import { Faq } from "@/components/help/Faq";
+import { FeatureSuggestions } from "@/components/help/FeatureSuggestions";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function HelpPage() {
@@ -33,6 +34,15 @@ export default function HelpPage() {
       <div className="mt-10">
         <h2 className="mb-3 font-medium">Common questions &amp; troubleshooting</h2>
         <Faq />
+      </div>
+
+      {/* Feature suggestions */}
+      <div className="mt-10">
+        <h2 className="mb-1 font-medium">Suggest a feature</h2>
+        <p className="mb-3 text-sm text-slate-500">
+          Tell us what would make Cadence better — ideas are shared with your team.
+        </p>
+        <FeatureSuggestions />
       </div>
     </div>
   );
