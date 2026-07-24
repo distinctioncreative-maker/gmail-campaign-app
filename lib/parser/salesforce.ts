@@ -186,6 +186,8 @@ const FALLBACK_COMPANY_RE =
 const FALLBACK_NOISE = new Set([
   "-", "—", "--", "feature not included", "not included", "active", "0.00", "$0.00", "0",
 ]);
+// Buy/factor rates like "1.329" or "1.44" — numeric column noise, not a name.
+const FALLBACK_RATE_RE = /^\d+\.\d{1,4}$/;
 
 function isStructuralLine(l: string): boolean {
   const low = l.toLowerCase();
@@ -194,6 +196,7 @@ function isStructuralLine(l: string): boolean {
     FALLBACK_PHONE_RE.test(l) ||
     FALLBACK_DATE_RE.test(l) ||
     FALLBACK_MONEY_RE.test(l) ||
+    FALLBACK_RATE_RE.test(l) ||
     FALLBACK_TZ_RE.test(l) ||
     FALLBACK_STATUS_RE.test(l) ||
     BARE_INT_RE.test(l) ||
@@ -209,29 +212,28 @@ function looksLikePersonName(l: string): boolean {
 }
 
 export function parseSalesforceByEmail(normalized: string): ParseResult | null {
-  let lines = normalized
+  const lines = normalized
     .split("\n")
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
 
-  // Drop a leading header preamble: everything before the first row-number "1"
-  // (this also removes duplicated header blocks that Lightning sometimes copies).
-  const firstOne = lines.findIndex((l) => l === "1");
-  if (firstOne > 0) lines = lines.slice(firstOne);
-
   if (!lines.some((l) => EMAIL_LINE_RE.test(l))) return null;
 
-  // Prefer explicit row-number markers (1, 2, 3, …) as record boundaries —
-  // they bound each record cleanly so trailing fields stay put. Fall back to
-  // one-block-per-email when a paste has no row numbers.
+  // Detect record boundaries by ROW-NUMBER markers, order-independent (a
+  // Salesforce report can be many pages pasted out of order, starting at any
+  // number). A marker is a bare 1–7 digit line whose next line begins a record
+  // — a name/company (non-structural) or a leading timezone cell. Points-sold
+  // numbers ("5" followed by a date) and 10-digit phones never qualify. Any
+  // header block sits before the first marker and is skipped automatically.
   const rowMarkerIdxs: number[] = [];
-  let expected = 1;
-  lines.forEach((l, i) => {
-    if (l === String(expected)) {
+  for (let i = 0; i + 1 < lines.length; i++) {
+    if (
+      BARE_INT_RE.test(lines[i]) &&
+      (!isStructuralLine(lines[i + 1]) || FALLBACK_TZ_RE.test(lines[i + 1]))
+    ) {
       rowMarkerIdxs.push(i);
-      expected += 1;
     }
-  });
+  }
 
   const blocks: string[][] = [];
   if (rowMarkerIdxs.length >= 2) {
@@ -241,6 +243,7 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
       blocks.push(lines.slice(s, e));
     }
   } else {
+    // No row numbers — one block per email (trailing fields filtered below).
     let start = 0;
     lines.forEach((l, i) => {
       if (EMAIL_LINE_RE.test(l)) {
@@ -264,7 +267,10 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
       }
     }
   }
-  const noiseThreshold = Math.max(2, Math.ceil(blocks.length * 0.2));
+  // A value shared across many records is a column constant (owner, lead
+  // source, closer), not a name/business. 2% (min 2) catches them without
+  // eating genuinely repeated leads.
+  const noiseThreshold = Math.max(2, Math.ceil(blocks.length * 0.02));
   const isSharedValue = (l: string) => (freq.get(l.toLowerCase()) ?? 0) >= noiseThreshold;
 
   const leads: ParsedLead[] = [];
@@ -275,7 +281,7 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
     const amountLine = b.find((l) => FALLBACK_MONEY_RE.test(l) && !FALLBACK_NOISE.has(l.toLowerCase()));
 
     const candidates = b.filter((l) => !isStructuralLine(l) && !isSharedValue(l));
-    const businessName = candidates.find((c) => FALLBACK_COMPANY_RE.test(c)) ?? "";
+    let businessName = candidates.find((c) => FALLBACK_COMPANY_RE.test(c)) ?? "";
     const persons = candidates.filter((c) => c !== businessName && looksLikePersonName(c));
     // Join a First / Last split across two single-word lines; otherwise take
     // the first person-like candidate (or any leftover text).
@@ -283,8 +289,18 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
     if (persons.length >= 2 && !persons[0].includes(" ") && !persons[1].includes(" ")) {
       nameCandidate = `${persons[0]} ${persons[1]}`;
     } else {
-      nameCandidate = persons[0] ?? candidates.find((c) => c !== businessName) ?? "";
+      nameCandidate = persons[0] ?? "";
     }
+    // No company keyword matched — fall back to the leftover text (a business
+    // named without LLC/Inc etc., e.g. "OMNI METAL FINISHING").
+    if (!businessName) {
+      businessName =
+        candidates.find((c) => c !== nameCandidate && !persons.includes(c)) ??
+        candidates.find((c) => c !== nameCandidate) ??
+        "";
+    }
+    // Strip the trailing " - Funding N" opportunity suffix from business names.
+    businessName = businessName.replace(/\s*[-–]\s*Funding\s+\S+\s*$/i, "").trim();
 
     const { firstName, lastName } = splitFullName(nameCandidate);
     const emailValid = isValidEmail(email);

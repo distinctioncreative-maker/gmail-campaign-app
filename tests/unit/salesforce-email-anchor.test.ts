@@ -105,7 +105,90 @@ Sunrise
 Matthew Marcano
 feature not included`;
 
+// Real export: many pages concatenated OUT OF ORDER (starts at 968, jumps to
+// 900, then 5) with collapsed empty cells and repeated owner/source columns.
+const SCRAMBLED_MULTIPAGE = `968
+Victor Salazar
+OMNI METAL FINISHING - Funding 1
+7144124739
+Pacific
+-
+richieasal@yahoo.com
+Robert Williams
+Synergy
+Matthew Marcano
+-
+-
+-
+3/3/2026
+969
+Jesus Ramos
+Gbc Of Southwest Florida Llc - Funding 1
+2392654982
+Eastern
+-
+jesuspa84@hotmail.com
+Robert Williams
+Synergy
+Matthew Marcano
+-
+-
+-
+3/3/2026
+900
+Curlee Dorn
+360 Global Warehousing And Distribution Llc - Funding 1
+5622005646
+Pacific
+-
+curlee.dorn@360globaltransportation.com
+Robert Williams
+Sunrise
+Matthew Marcano
+-
+-
+-
+1/28/2026
+5
+Shawn Mems
+Integrity Support Services LLC - Funding 1
+3138155431
+Eastern
+$4,000.00
+shawn.mems@issllcna.com
+Robert Williams
+Alpine Emerald
+Matthew Marcano
+1.329
+1.379
+5
+8/13/2025`;
+
 describe("email-anchored Salesforce fallback", () => {
+  it("parses an out-of-order multi-page export (regression: only 99 picked up)", () => {
+    const res = parseSalesforceText(SCRAMBLED_MULTIPAGE);
+    const byEmail = Object.fromEntries(res.leads.map((l) => [l.email, l]));
+    // All four records found regardless of their scrambled row numbers.
+    expect(Object.keys(byEmail)).toEqual(
+      expect.arrayContaining([
+        "richieasal@yahoo.com",
+        "jesuspa84@hotmail.com",
+        "curlee.dorn@360globaltransportation.com",
+        "shawn.mems@issllcna.com",
+      ])
+    );
+    expect(byEmail["richieasal@yahoo.com"].fullName).toBe("Victor Salazar");
+    expect(byEmail["richieasal@yahoo.com"].businessName).toBe("OMNI METAL FINISHING");
+    expect(byEmail["shawn.mems@issllcna.com"].fullName).toBe("Shawn Mems");
+    // Owner / closer / lead source never leak into the name.
+    for (const l of res.leads) {
+      expect(l.fullName).not.toBe("Robert Williams");
+      expect(l.fullName).not.toBe("Matthew Marcano");
+      expect(l.fullName).not.toBe("Synergy");
+    }
+  });
+
+
   it("extracts leads from the opportunity list format (collapsed cells)", () => {
     const res = parseSalesforceText(OPPORTUNITY_FORMAT);
     const emails = res.leads.map((l) => l.email);
