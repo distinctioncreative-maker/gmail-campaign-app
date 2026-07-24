@@ -10,24 +10,24 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
 
 const BASE_NAV: NavItem[] = [
-  { href: "/home", label: "Home", icon: "home" },
-  { href: "/campaigns", label: "Campaigns", icon: "rocket" },
-  { href: "/replies", label: "Replies", icon: "check" },
-  { href: "/leads", label: "Leads", icon: "users" },
-  { href: "/templates", label: "Templates", icon: "mail" },
-  { href: "/sequences", label: "Follow-Ups", icon: "repeat" },
-  { href: "/suppressions", label: "Do Not Email", icon: "ban" },
-  { href: "/reports", label: "Reports", icon: "chart" },
-  { href: "/deliverability", label: "Deliverability", icon: "shield" },
-  { href: "/settings", label: "Settings", icon: "settings" },
-  { href: "/help", label: "Help", icon: "help" },
+  { href: "/home", label: "Home", icon: "home", section: "Overview" },
+  { href: "/campaigns", label: "Campaigns", icon: "rocket", section: "Outreach" },
+  { href: "/replies", label: "Replies", icon: "check", section: "Outreach" },
+  { href: "/leads", label: "Leads", icon: "users", section: "Audience & content" },
+  { href: "/templates", label: "Templates", icon: "mail", section: "Audience & content" },
+  { href: "/sequences", label: "Follow-Ups", icon: "repeat", section: "Audience & content" },
+  { href: "/suppressions", label: "Do Not Email", icon: "ban", section: "Audience & content" },
+  { href: "/reports", label: "Reports", icon: "chart", section: "Insights" },
+  { href: "/deliverability", label: "Deliverability", icon: "shield", section: "Insights" },
+  { href: "/settings", label: "Settings", icon: "settings", section: "Workspace" },
+  { href: "/help", label: "Help", icon: "help", section: "Workspace" },
 ];
 
-const MANAGER_NAV: NavItem[] = [{ href: "/team", label: "Team", icon: "team" }];
+const MANAGER_NAV: NavItem[] = [{ href: "/team", label: "Team", icon: "team", section: "Team" }];
 const ADMIN_NAV: NavItem[] = [
-  { href: "/team", label: "Team", icon: "team" },
-  { href: "/admin", label: "Administration", icon: "admin" },
-  { href: "/system-health", label: "System Health", icon: "health" },
+  { href: "/team", label: "Team", icon: "team", section: "Admin" },
+  { href: "/admin", label: "Administration", icon: "admin", section: "Admin" },
+  { href: "/system-health", label: "System Health", icon: "health", section: "Admin" },
 ];
 
 function navForRole(role: string): NavItem[] {

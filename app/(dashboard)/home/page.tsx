@@ -8,6 +8,7 @@ import {
   ownerFromCtx,
 } from "@/lib/repositories/campaigns";
 import { countContacts } from "@/lib/repositories/contacts";
+import { listTemplates } from "@/lib/repositories/templates";
 import { listNotifications } from "@/lib/repositories/notifications";
 import { currentDayKey } from "@/lib/scheduling/window";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
@@ -50,7 +51,7 @@ export default async function HomePage({
   const { range: rawRange } = await searchParams;
   const range: HomeRange = rawRange === "today" || rawRange === "7d" ? rawRange : "all";
 
-  const [connection, campaigns, sentToday, profile, org, activity, totalLeads, notifications] =
+  const [connection, campaigns, sentToday, profile, org, activity, totalLeads, notifications, templates] =
     await Promise.all([
       getConnectionPublic(ctx.userId),
       listCampaigns(owner, 100),
@@ -60,10 +61,25 @@ export default async function HomePage({
       getDailyActivity(owner, tz, 14),
       countContacts(ctx),
       listNotifications(ctx, 30),
+      listTemplates(ctx),
     ]);
 
   const gmailConnected = connection?.status === "CONNECTED";
   const active = campaigns.filter((c) => c.status === "ACTIVE");
+
+  // First-win checklist: the four steps that take a new rep from zero to a
+  // running (test) campaign. Each "done" flag comes from real data.
+  const hasLaunched = campaigns.some(
+    (c) => c.sentCount > 0 || ["ACTIVE", "PAUSED", "COMPLETED", "STOPPED"].includes(c.status)
+  );
+  const setupSteps = [
+    { done: gmailConnected, label: "Connect your Gmail", desc: "Send from your own inbox — takes a minute.", href: "/settings", cta: "Connect" },
+    { done: totalLeads > 0, label: "Import your leads", desc: "Paste from Salesforce or upload a CSV.", href: "/leads", cta: "Import" },
+    { done: templates.length > 0, label: "Create a template", desc: "Write one yourself or let AI draft it.", href: "/templates/new", cta: "Create" },
+    { done: hasLaunched, label: "Launch a test campaign", desc: "A few leads in test mode — safe practice.", href: "/campaigns/new", cta: "Launch" },
+  ];
+  const setupDone = setupSteps.filter((s) => s.done).length;
+  const nextStepIdx = setupSteps.findIndex((s) => !s.done);
   const totalReplies = campaigns.reduce((n, c) => n + c.replyCount, 0);
   const totalSentAll = campaigns.reduce((n, c) => n + c.sentCount + c.followupSentCount, 0);
   const totalBounces = campaigns.reduce((n, c) => n + c.bounceCount, 0);
@@ -266,15 +282,56 @@ export default async function HomePage({
       </div>
 
       {/* ── Onboarding vs live campaigns ──────────────────────── */}
-      {ctx.user.onboardingStatus !== "COMPLETE" ? (
+      {setupDone < setupSteps.length ? (
         <div className="card p-6">
-          <h2 className="font-medium">Finish setting up</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            A short guided setup connects your Gmail, adds your signature, and sends a test email.
-          </p>
-          <Link href="/onboarding" className="btn-primary mt-4 inline-block px-5 py-2.5 text-sm">
-            Continue setup →
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-medium">Get set up — {setupDone} of {setupSteps.length} done</h2>
+            <span className="text-xs font-medium text-slate-400">A few minutes to your first send</span>
+          </div>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full brand-gradient transition-all duration-500"
+              style={{ width: `${(setupDone / setupSteps.length) * 100}%` }}
+            />
+          </div>
+          <ol className="mt-4 flex flex-col gap-2">
+            {setupSteps.map((s, i) => {
+              const isNext = i === nextStepIdx;
+              return (
+                <li
+                  key={s.label}
+                  className={`flex items-center gap-3 rounded-xl border p-3 transition ${
+                    s.done
+                      ? "border-transparent bg-slate-50"
+                      : isNext
+                        ? "border-primary/30 bg-primary-soft/50"
+                        : "border-border"
+                  }`}
+                >
+                  <span
+                    aria-hidden
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                      s.done ? "bg-green-500 text-white" : "border border-slate-300 text-slate-400"
+                    }`}
+                  >
+                    {s.done ? "✓" : i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-medium ${s.done ? "text-slate-400 line-through" : ""}`}>{s.label}</p>
+                    {!s.done && <p className="text-xs text-slate-500">{s.desc}</p>}
+                  </div>
+                  {!s.done && (
+                    <Link
+                      href={s.href}
+                      className={isNext ? "btn-primary px-3.5 py-1.5 text-xs" : "text-xs font-medium text-primary hover:underline"}
+                    >
+                      {s.cta} →
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
         </div>
       ) : active.length > 0 ? (
         <div>

@@ -11,17 +11,26 @@ export interface NavItem {
   href: string;
   label: string;
   icon: IconName;
+  /** Optional grouping label; consecutive items sharing one render under a
+   * single small heading in the sidebar. */
+  section?: string;
 }
 
 function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-0.5" aria-label="Main">
-      {items.map((item) => {
+      {items.map((item, i) => {
         const active = pathname === item.href || pathname.startsWith(item.href + "/");
+        const showHeading = Boolean(item.section) && item.section !== items[i - 1]?.section;
         return (
+          <div key={`${item.href}-wrap`} className="contents">
+          {showHeading && (
+            <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400 first:pt-1">
+              {item.section}
+            </p>
+          )}
           <Link
-            key={item.href}
             href={item.href}
             onClick={onNavigate}
             data-tour={`nav-${item.href.replace("/", "")}`}
@@ -45,6 +54,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
             />
             {item.label}
           </Link>
+          </div>
         );
       })}
     </nav>
