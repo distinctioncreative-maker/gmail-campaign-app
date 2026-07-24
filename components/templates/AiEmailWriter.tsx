@@ -45,6 +45,12 @@ interface AiStatus {
   hasBrandMemory: boolean;
 }
 
+interface BrandProfile {
+  id: string;
+  name: string;
+  content: string;
+}
+
 /**
  * "Write with AI" panel for the template editor. Describe the email in plain
  * language; it fills the subject + body, weaving in the org's saved brand
@@ -61,12 +67,15 @@ export function AiEmailWriter({
   const [prompt, setPrompt] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Brand memory editor (loaded lazily when the panel opens).
+  // Brand memory profiles (loaded lazily when the panel opens).
   const [memoryOpen, setMemoryOpen] = useState(false);
-  const [brand, setBrand] = useState("");
+  const [profiles, setProfiles] = useState<BrandProfile[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [brandLoaded, setBrandLoaded] = useState(false);
   const [canEditBrand, setCanEditBrand] = useState(false);
   const [savingBrand, setSavingBrand] = useState(false);
+
+  const selected = profiles.find((p) => p.id === selectedId) ?? null;
 
   useEffect(() => {
     fetchJson<AiStatus>("/api/templates/generate")
@@ -77,8 +86,9 @@ export function AiEmailWriter({
   async function loadBrand() {
     if (brandLoaded) return;
     try {
-      const r = await fetchJson<{ brandContext: string; canEdit: boolean }>("/api/ai/brand-memory");
-      setBrand(r.brandContext);
+      const r = await fetchJson<{ profiles: BrandProfile[]; canEdit: boolean }>("/api/ai/brand-memory");
+      setProfiles(r.profiles);
+      setSelectedId(r.profiles[0]?.id ?? null);
       setCanEditBrand(r.canEdit);
     } catch {
       /* non-fatal */
@@ -92,17 +102,41 @@ export function AiEmailWriter({
     setMemoryOpen((v) => !v);
   }
 
+  function updateSelected(patch: Partial<BrandProfile>) {
+    setProfiles((prev) => prev.map((p) => (p.id === selectedId ? { ...p, ...patch } : p)));
+  }
+
+  function addProfile() {
+    const id = `new-${Date.now()}`;
+    setProfiles((prev) => [...prev, { id, name: "New brand", content: "" }]);
+    setSelectedId(id);
+  }
+
+  function deleteSelected() {
+    if (!selectedId) return;
+    const next = profiles.filter((p) => p.id !== selectedId);
+    setProfiles(next);
+    setSelectedId(next[0]?.id ?? null);
+  }
+
   async function saveBrand() {
     setSavingBrand(true);
     try {
-      const res = await fetchJson<{ message?: string }>("/api/ai/brand-memory", {
+      const res = await fetchJson<{ profiles: BrandProfile[]; message?: string }>("/api/ai/brand-memory", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brandContext: brand }),
+        body: JSON.stringify({
+          profiles: profiles.map((p) => ({
+            ...(p.id.startsWith("new-") ? {} : { id: p.id }),
+            name: p.name,
+            content: p.content,
+          })),
+        }),
       });
-      setStatus((s) => (s ? { ...s, hasBrandMemory: brand.trim().length > 0 } : s));
+      setProfiles(res.profiles);
+      setSelectedId((cur) => res.profiles.find((p) => p.id === cur)?.id ?? res.profiles[0]?.id ?? null);
+      setStatus((s) => (s ? { ...s, hasBrandMemory: res.profiles.length > 0 } : s));
       toast(res.message ?? "Brand memory saved.", "success");
-      setMemoryOpen(false);
     } catch (err) {
       toast(err instanceof Error ? err.message : "Couldn't save that.", "error");
     } finally {
@@ -117,7 +151,7 @@ export function AiEmailWriter({
       const email = await fetchJson<{ subject: string; html: string }>("/api/templates/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt.trim() }),
+        body: JSON.stringify({ prompt: prompt.trim(), profileId: selectedId }),
       });
       onResult(email);
       toast("Draft written — tweak it to taste.", "success");
@@ -186,51 +220,119 @@ export function AiEmailWriter({
         </div>
       ) : (
         <div className="p-3">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-sm font-medium text-primary">
               <span aria-hidden className="text-base">✨</span> Describe the email you want
             </div>
-            <button
-              onClick={() => void openMemory()}
-              className="rounded-full border border-primary/20 bg-white px-2.5 py-1 text-xs font-medium text-primary hover:border-primary"
-            >
-              {status?.hasBrandMemory ? "🧠 Brand memory: on" : "🧠 Add brand memory"}
-            </button>
+            <div className="flex items-center gap-1.5">
+              {profiles.length > 0 && (
+                <label className="flex items-center gap-1 text-xs text-slate-500">
+                  <span className="hidden sm:inline">Brand</span>
+                  <select
+                    value={selectedId ?? ""}
+                    onChange={(e) => setSelectedId(e.target.value)}
+                    className="rounded-full border border-primary/20 bg-white px-2 py-1 text-xs font-medium text-slate-700 focus:border-primary focus:outline-none"
+                  >
+                    {profiles.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        🧠 {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {(canEditBrand || profiles.length > 0) && (
+                <button
+                  onClick={() => void openMemory()}
+                  className="rounded-full border border-primary/20 bg-white px-2.5 py-1 text-xs font-medium text-primary hover:border-primary"
+                >
+                  {profiles.length === 0 ? "🧠 Add brand memory" : canEditBrand ? "Edit" : "View"}
+                </button>
+              )}
+            </div>
           </div>
 
           {memoryOpen && (
             <div className="mt-2 rounded-xl border border-primary/20 bg-white p-3">
               <p className="text-xs font-medium text-slate-700">
-                Brand memory — the AI weaves this into every email, freshly each time
+                Brand memory — the AI weaves the chosen brand into every email, freshly each time
               </p>
-              <p className="mt-0.5 text-[11px] text-slate-500">
-                Put your offer, key benefits, and tone here. Example: “Alpine Funding — working
-                capital $10k–$500k, funded in 24–48h, no collateral. Confident and friendly, never
-                pushy.”
-              </p>
-              <textarea
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                disabled={!canEditBrand}
-                rows={4}
-                placeholder={
-                  canEditBrand
-                    ? "Your offer, benefits, tone, and anything the AI should always know…"
-                    : "Only a manager or admin can edit brand memory."
-                }
-                className="mt-2 w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary focus:outline-none disabled:bg-slate-50 disabled:text-slate-500"
-              />
-              {canEditBrand && (
-                <div className="mt-2 flex items-center gap-2">
+              {/* Profile tabs */}
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {profiles.map((p) => (
                   <button
-                    onClick={() => void saveBrand()}
-                    disabled={savingBrand}
-                    className="btn-primary px-3 py-1.5 text-xs"
+                    key={p.id}
+                    onClick={() => setSelectedId(p.id)}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                      selectedId === p.id
+                        ? "bg-primary text-white"
+                        : "border border-slate-200 text-slate-600 hover:border-primary"
+                    }`}
                   >
-                    {savingBrand ? "Saving…" : "Save brand memory"}
+                    {p.name || "Untitled"}
                   </button>
-                  <span className="text-[11px] text-slate-400">Applies to your whole team.</span>
+                ))}
+                {canEditBrand && (
+                  <button
+                    onClick={addProfile}
+                    className="rounded-full border border-dashed border-primary/40 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary-soft"
+                  >
+                    + Add brand
+                  </button>
+                )}
+              </div>
+
+              {selected ? (
+                <div className="mt-3">
+                  {canEditBrand && (
+                    <input
+                      value={selected.name}
+                      onChange={(e) => updateSelected({ name: e.target.value })}
+                      placeholder="Brand name (e.g. Alpine, Everest)"
+                      className="mb-2 w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm font-medium focus:border-primary focus:outline-none"
+                    />
+                  )}
+                  <p className="mb-1 text-[11px] text-slate-500">
+                    Offer, key benefits, and tone. Example: “Alpine — working capital $10k–$500k,
+                    funded in 24–48h, no collateral. Confident and friendly, never pushy.”
+                  </p>
+                  <textarea
+                    value={selected.content}
+                    onChange={(e) => updateSelected({ content: e.target.value })}
+                    disabled={!canEditBrand}
+                    rows={4}
+                    placeholder={
+                      canEditBrand
+                        ? "What the AI should always know about this brand…"
+                        : "Only an admin can edit brand memory."
+                    }
+                    className="w-full rounded-lg border border-slate-200 p-2.5 text-sm focus:border-primary focus:outline-none disabled:bg-slate-50 disabled:text-slate-500"
+                  />
+                  {canEditBrand && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        onClick={() => void saveBrand()}
+                        disabled={savingBrand}
+                        className="btn-primary px-3 py-1.5 text-xs"
+                      >
+                        {savingBrand ? "Saving…" : "Save all brands"}
+                      </button>
+                      <button
+                        onClick={deleteSelected}
+                        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100"
+                      >
+                        Delete this brand
+                      </button>
+                      <span className="text-[11px] text-slate-400">Applies to your whole team.</span>
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <p className="mt-3 text-xs text-slate-500">
+                  {canEditBrand
+                    ? "No brands yet — click “+ Add brand” to create Alpine, Everest, etc."
+                    : "No brand memory yet. Ask an admin to add one."}
+                </p>
               )}
             </div>
           )}
