@@ -4,7 +4,9 @@ import { listCampaigns, listRecipients, ownerFromCtx } from "@/lib/repositories/
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
+import { DraftReplyButton } from "@/components/replies/DraftReplyButton";
 import { formatDuration } from "@/lib/analytics/metrics";
+import { env } from "@/lib/env";
 
 // Cap the recipient-level scan so the page stays fast even with many campaigns.
 const MAX_CAMPAIGNS_SCANNED = 60;
@@ -20,6 +22,7 @@ type ReplyIntent = "INTERESTED" | "REPLIED" | "NOT_INTERESTED";
 
 interface ReplyRow {
   contactId: string;
+  recipientId: string;
   fullName: string;
   email: string;
   campaignId: string;
@@ -63,6 +66,7 @@ export default async function RepliesPage() {
       if (r.repliedAt === null) continue;
       rows.push({
         contactId: r.contactId,
+        recipientId: r.recipientId,
         fullName: r.fullNameSnapshot,
         email: r.emailSnapshot,
         campaignId: campaign.campaignId,
@@ -84,6 +88,7 @@ export default async function RepliesPage() {
   const withTimes = rows.map((r) => r.timeToReplyMs).filter((v): v is number => v !== null).sort((a, b) => a - b);
   const median = withTimes.length > 0 ? withTimes[Math.floor(withTimes.length / 2)] : null;
 
+  const aiEnabled = Boolean(env.GEMINI_API_KEY);
   const interested = rows.filter((r) => r.intent === "INTERESTED").length;
   const kpis = [
     { label: "🔥 Interested", value: String(interested) },
@@ -140,18 +145,23 @@ export default async function RepliesPage() {
                   </p>
                 )}
                 <p className="mt-1.5 truncate text-xs text-slate-500">{r.campaignName}</p>
-                <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500">
                   <span><LocalTime value={r.repliedAt} /> · {formatDuration(r.timeToReplyMs)}</span>
-                  {r.gmailThreadId && (
-                    <a
-                      href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-primary"
-                    >
-                      Open in Gmail →
-                    </a>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {aiEnabled && r.intent !== "NOT_INTERESTED" && (
+                      <DraftReplyButton campaignId={r.campaignId} recipientId={r.recipientId} threadId={r.gmailThreadId} compact />
+                    )}
+                    {r.gmailThreadId && (
+                      <a
+                        href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary"
+                      >
+                        Open in Gmail →
+                      </a>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}
@@ -196,16 +206,21 @@ export default async function RepliesPage() {
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">{formatDuration(r.timeToReplyMs)}</td>
                     <td className="px-4 py-3 text-right">
-                      {r.gmailThreadId && (
-                        <a
-                          href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-medium text-primary hover:underline"
-                        >
-                          Open in Gmail →
-                        </a>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        {aiEnabled && r.intent !== "NOT_INTERESTED" && (
+                          <DraftReplyButton campaignId={r.campaignId} recipientId={r.recipientId} threadId={r.gmailThreadId} />
+                        )}
+                        {r.gmailThreadId && (
+                          <a
+                            href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="whitespace-nowrap text-xs font-medium text-primary hover:underline"
+                          >
+                            Open in Gmail →
+                          </a>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -38,6 +38,57 @@ function findPart(
   return undefined;
 }
 
+function encodeSubject(subject: string): string {
+  return `=?UTF-8?B?${Buffer.from(subject, "utf8").toString("base64")}?=`;
+}
+
+/** Build a minimal HTML MIME message for a threaded reply draft. */
+function buildReplyMime(input: { to: string; subject: string; htmlBody: string }): string {
+  const boundary = `b_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+  const text = input.htmlBody.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  return [
+    `To: ${input.to}`,
+    `Subject: ${encodeSubject(input.subject)}`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    Buffer.from(text, "utf8").toString("base64"),
+    `--${boundary}`,
+    "Content-Type: text/html; charset=UTF-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    Buffer.from(input.htmlBody, "utf8").toString("base64"),
+    `--${boundary}--`,
+    "",
+  ].join("\r\n");
+}
+
+/**
+ * Create a Gmail draft that lives inside an existing thread. Drafts never
+ * send on their own, so this is safe regardless of test/live mode — the rep
+ * opens it in Gmail, edits, and sends manually.
+ */
+export async function createReplyDraft(
+  userId: string,
+  input: { threadId: string; to: string; subject: string; htmlBody: string }
+): Promise<{ draftId: string }> {
+  const gmail = await gmailForUser(userId);
+  const res = await gmail.users.drafts.create({
+    userId: "me",
+    requestBody: {
+      message: {
+        threadId: input.threadId,
+        raw: Buffer.from(buildReplyMime(input)).toString("base64url"),
+      },
+    },
+  });
+  return { draftId: res.data.id ?? "" };
+}
+
 export async function listRecentDrafts(
   userId: string,
   query?: string

@@ -67,6 +67,24 @@ export async function getInboundAfter(
   return { inbound, latestInboundEpochMs: latest };
 }
 
+/** The subject of a thread (from its first message), for building a "Re:"
+ * reply draft. Returns "" if it can't be read. */
+export async function getThreadSubject(userId: string, threadId: string): Promise<string> {
+  try {
+    const gmail = await gmailForUser(userId);
+    const thread = await gmail.users.threads.get({
+      userId: "me",
+      id: threadId,
+      format: "metadata",
+      metadataHeaders: ["Subject"],
+    });
+    const first = thread.data.messages?.[0];
+    return headerMap(first?.payload?.headers)["Subject"] ?? "";
+  } catch {
+    return "";
+  }
+}
+
 /** Search the mailbox for recent delivery-failure messages. */
 export async function findRecentBounces(
   userId: string,
