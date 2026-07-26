@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { getOrgSettings, getOrganization, listMembers } from "@/lib/repositories/orgSettings";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { SendingModeCard } from "@/components/admin/SendingModeCard";
@@ -10,7 +11,7 @@ import Link from "next/link";
 
 export default async function AdminPage() {
   const ctx = await requireUser();
-  if (ctx.role !== "ADMIN") redirect("/home");
+  if (ctx.role !== "ADMIN" || !capabilitiesFor(ctx.tenantType).adminConsole) redirect("/home");
 
   const [members, settings, org] = await Promise.all([
     listMembers(ctx.organizationId),

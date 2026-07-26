@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
+import type { TenantType } from "@/schemas/user";
 import { getOrganization } from "@/lib/repositories/orgSettings";
 import { resolveSendingState } from "@/lib/sending/mode";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -30,9 +32,11 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/system-health", label: "System Health", icon: "health", section: "Admin" },
 ];
 
-function navForRole(role: string): NavItem[] {
-  if (role === "ADMIN") return [...BASE_NAV, ...ADMIN_NAV];
-  if (role === "MANAGER") return [...BASE_NAV, ...MANAGER_NAV];
+function navFor(role: string, caps: { teams: boolean; adminConsole: boolean }): NavItem[] {
+  // Solo (consumer) tenants have no team/admin surfaces even though they are
+  // the sole admin of their own private workspace.
+  if (role === "ADMIN" && caps.adminConsole) return [...BASE_NAV, ...ADMIN_NAV];
+  if (role === "MANAGER" && caps.teams) return [...BASE_NAV, ...MANAGER_NAV];
   return BASE_NAV;
 }
 
@@ -45,17 +49,19 @@ export default async function DashboardLayout({
   let email: string;
   let role: string;
   let organizationId: string;
+  let tenantType: TenantType;
   try {
     const ctx = await requireUser();
     displayName = ctx.user.displayName;
     email = ctx.email;
     role = ctx.role;
     organizationId = ctx.organizationId;
+    tenantType = ctx.tenantType;
   } catch {
     redirect("/sign-in");
   }
 
-  const nav = navForRole(role);
+  const nav = navFor(role, capabilitiesFor(tenantType));
   const [sending, org] = await Promise.all([
     resolveSendingState(organizationId),
     getOrganization(organizationId),

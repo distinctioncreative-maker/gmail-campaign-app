@@ -171,13 +171,10 @@ Congrats on the new location. Momentum like that runs on cash flow, and Alpine g
 
 Open to a quick 10-minute call Thursday?`;
 
-export function Landing() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
+/** Isolated so the ~30ms/char state updates re-render only this node, not the
+ * whole landing page (which caused scroll jank). */
+function TypedDraft() {
   const [typed, setTyped] = useState("");
-  const [stats, setStats] = useState({ sent: 128, rep: 34, rev: 8400 });
-
-  // AI-writer demo: type the draft out, hold, then loop.
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let timer: ReturnType<typeof setTimeout>;
@@ -202,33 +199,20 @@ export function Landing() {
     timer = setTimeout(step, 700);
     return () => clearTimeout(timer);
   }, []);
+  return (
+    <div className={styles.mailBody}>
+      {typed}
+      <span className={styles.caret} />
+    </div>
+  );
+}
 
-  // Scroll reveal
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const els = rootRef.current?.querySelectorAll(`.${styles.reveal}`);
-    if (!els) return;
-    if (reduce || !("IntersectionObserver" in window)) {
-      els.forEach((el) => el.classList.add(styles.in));
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) {
-            en.target.classList.add(styles.in);
-            io.unobserve(en.target);
-          }
-        });
-      },
-      { threshold: 0.12 }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
+/** Hero pipeline animation + live counters. Isolated (own state) and paused
+ * when scrolled off-screen, so it never taxes the rest of the page. */
+function HeroPipeline() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [stats, setStats] = useState({ sent: 128, rep: 34, rev: 8400 });
 
-  // Hero pipeline: emails fan out from your Gmail to prospects; a share reply
-  // (green) and fly into a pipeline-value meter (gold) that ticks up.
   useEffect(() => {
     const cv = canvasRef.current;
     if (!cv) return;
@@ -342,20 +326,82 @@ export function Landing() {
       return () => clearTimeout(t);
     }
 
-    let raf = 0, frame = 0;
+    let raf = 0, frame = 0, running = false;
     const loop = () => {
       frame += 1;
       if (frame % 9 === 0 && parts.length < 64) spawnEmail();
       draw();
       raf = requestAnimationFrame(loop);
     };
-    loop();
-    const id = setInterval(() => setStats({ sent, rep, rev }), 120);
+    const start = () => { if (!running) { running = true; loop(); } };
+    const stop = () => { running = false; cancelAnimationFrame(raf); };
+    // Only animate while the canvas is actually on screen.
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => (e.isIntersecting ? start() : stop())),
+      { threshold: 0.05 }
+    );
+    io.observe(cv);
+    const id = setInterval(() => setStats({ sent, rep, rev }), 150);
     return () => {
-      cancelAnimationFrame(raf);
+      io.disconnect();
+      stop();
       clearInterval(id);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className={`${styles.pipeStage} ${styles.reveal}`}>
+      <div className={styles.pipeGlass}>
+        <div className={styles.pipeTop}>
+          <span className={styles.pipeTag}>◉ Live outreach</span>
+          <span className={styles.pipeTagR}>Your Gmail → prospects → pipeline</span>
+        </div>
+        <canvas ref={canvasRef} width={1920} height={430} aria-hidden="true" />
+        <div className={styles.pipeStats}>
+          <div className={styles.pipeChip}>
+            <div className={styles.pipeVal}>{stats.sent.toLocaleString()}</div>
+            <div className={styles.pipeLab}>Emails sent</div>
+          </div>
+          <div className={styles.pipeChip}>
+            <div className={styles.pipeVal} style={{ color: "var(--good)" }}>{stats.rep.toLocaleString()}</div>
+            <div className={styles.pipeLab}>Replies</div>
+          </div>
+          <div className={styles.pipeChip}>
+            <div className={styles.pipeVal} style={{ color: "var(--gold)" }}>${stats.rev.toLocaleString()}</div>
+            <div className={styles.pipeLab}>Pipeline (simulated)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Landing() {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll reveal
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const els = rootRef.current?.querySelectorAll(`.${styles.reveal}`);
+    if (!els) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach((el) => el.classList.add(styles.in));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add(styles.in);
+            io.unobserve(en.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, []);
 
   return (
@@ -404,30 +450,8 @@ export function Landing() {
             <p className={styles.heroLogin}>Already have early access? <a href="/sign-in">Log in →</a></p>
           </div>
 
-          {/* Live pipeline animation */}
-          <div className={`${styles.pipeStage} ${styles.reveal}`}>
-            <div className={styles.pipeGlass}>
-              <div className={styles.pipeTop}>
-                <span className={styles.pipeTag}>◉ Live outreach</span>
-                <span className={styles.pipeTagR}>Your Gmail → prospects → pipeline</span>
-              </div>
-              <canvas ref={canvasRef} width={1920} height={430} aria-hidden="true" />
-              <div className={styles.pipeStats}>
-                <div className={styles.pipeChip}>
-                  <div className={styles.pipeVal}>{stats.sent.toLocaleString()}</div>
-                  <div className={styles.pipeLab}>Emails sent</div>
-                </div>
-                <div className={styles.pipeChip}>
-                  <div className={styles.pipeVal} style={{ color: "var(--good)" }}>{stats.rep.toLocaleString()}</div>
-                  <div className={styles.pipeLab}>Replies</div>
-                </div>
-                <div className={styles.pipeChip}>
-                  <div className={styles.pipeVal} style={{ color: "var(--gold)" }}>${stats.rev.toLocaleString()}</div>
-                  <div className={styles.pipeLab}>Pipeline (simulated)</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Live pipeline animation (isolated component, paused off-screen) */}
+          <HeroPipeline />
         </div>
       </header>
 
@@ -508,7 +532,7 @@ export function Landing() {
                 </div>
                 <div className={styles.aiwMail}>
                   <div className={styles.subj}>Subject · Working capital for your next move</div>
-                  <div className={styles.mailBody}>{typed}<span className={styles.caret} /></div>
+                  <TypedDraft />
                 </div>
                 <div className={styles.aiwTools}>
                   <span>Improve</span><span>Shorten</span><span>Subject lines</span><span>Regenerate</span>

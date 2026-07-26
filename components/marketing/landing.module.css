@@ -58,7 +58,7 @@
 .root :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
 /* Nav */
-.nav { position: sticky; top: 0; z-index: 50; background: rgba(7, 11, 20, 0.72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--lineDark); }
+.nav { position: sticky; top: 0; z-index: 50; background: rgba(5, 7, 14, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--lineDark); }
 .navIn { display: flex; align-items: center; justify-content: space-between; height: 66px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: -0.02em; }
 .navLinks { display: flex; align-items: center; gap: 30px; }
@@ -110,7 +110,8 @@
 .bandLight { background: var(--paper); color: var(--onLight); }
 .bandDark { background: var(--ink); color: var(--onDark); }
 .bandInk2 { background: linear-gradient(180deg, var(--ink), var(--ink2)); }
-.pad { padding: 96px 0; }
+/* Let off-screen sections skip layout/paint while scrolling. */
+.pad { padding: 96px 0; content-visibility: auto; contain-intrinsic-size: auto 720px; }
 .head { max-width: 640px; }
 .center { margin: 0 auto; text-align: center; }
 .head h2 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.06; margin-top: 14px; }
@@ -280,7 +281,6 @@
   border: 1px solid var(--lineDark); border-radius: 22px; overflow: hidden;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
   box-shadow: 0 50px 100px -50px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(6px);
 }
 .pipeTop {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import {
   createCampaign,
   listCampaigns,
@@ -41,6 +42,11 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   const input = CreateSchema.parse(await req.json());
   const profile = await getSenderProfile(ctx);
 
+  // Solo (consumer) tenants are capped to a deliverability-safe daily volume.
+  const cap = capabilitiesFor(ctx.tenantType).maxDailySends;
+  const requestedLimit = input.schedule?.dailySendLimit ?? profile.sendingDefaults.dailySendLimit;
+  const dailySendLimit = Math.min(requestedLimit, cap);
+
   const campaign = await createCampaign(ctx, {
     name: input.name,
     description: input.description,
@@ -55,12 +61,13 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       allowedWeekdays: profile.sendingDefaults.allowedWeekdays,
       sendWindowStart: profile.sendingDefaults.sendWindowStart,
       sendWindowEnd: profile.sendingDefaults.sendWindowEnd,
-      dailySendLimit: profile.sendingDefaults.dailySendLimit,
       emailsPerBatch: profile.sendingDefaults.emailsPerBatch,
       minDelaySeconds: profile.sendingDefaults.minDelaySeconds,
       maxDelaySeconds: profile.sendingDefaults.maxDelaySeconds,
       interBatchDelayMinutes: profile.sendingDefaults.interBatchDelayMinutes,
       ...input.schedule,
+      // Enforce the tenant's safe ceiling regardless of requested/default.
+      dailySendLimit,
     }),
     gmailQuotaReserve: 50,
     priorContactPolicy: input.priorContactPolicy,

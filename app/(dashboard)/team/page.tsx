@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { getUser } from "@/lib/repositories/users";
@@ -146,7 +147,7 @@ function Leaderboard({
 
 export default async function TeamPage() {
   const ctx = await requireUser();
-  if (ctx.role !== "MANAGER" && ctx.role !== "ADMIN") redirect("/home");
+  if ((ctx.role !== "MANAGER" && ctx.role !== "ADMIN") || !capabilitiesFor(ctx.tenantType).teams) redirect("/home");
 
   const [teams, members] = await Promise.all([
     listTeams(ctx.organizationId),

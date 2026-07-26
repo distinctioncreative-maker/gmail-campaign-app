@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { firestore } from "@/lib/firebase/admin";
 import { listMembers } from "@/lib/repositories/orgSettings";
 import { listCampaigns } from "@/lib/repositories/campaigns";
@@ -23,7 +24,7 @@ const CONNECTION_LABELS: Record<string, { label: string; ok: boolean }> = {
 
 export default async function SystemHealthPage() {
   const ctx = await requireUser();
-  if (ctx.role !== "ADMIN") redirect("/home");
+  if (ctx.role !== "ADMIN" || !capabilitiesFor(ctx.tenantType).adminConsole) redirect("/home");
   const organizationId = ctx.organizationId;
 
   const [sweepsSnap, members, sending] = await Promise.all([
