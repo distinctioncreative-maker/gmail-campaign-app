@@ -2,7 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase/admin";
 import { env } from "@/lib/env";
-import { isAllowedAccount, parseAllowedDomains } from "./domains";
+import { allowlistMisconfigured, isAllowedAccount, parseAllowedDomains } from "./domains";
 
 export const SESSION_COOKIE = "__session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 5; // 5 days
@@ -35,7 +35,7 @@ export async function createSessionCookie(idToken: string): Promise<{
   // acceptable in development. In production, refuse sign-in until an admin
   // configures ALLOWED_GOOGLE_WORKSPACE_DOMAIN so we never auto-provision
   // orgs/admins for arbitrary Google accounts.
-  if (allowedDomains.length === 0 && env.NODE_ENV === "production") {
+  if (allowlistMisconfigured(allowedDomains, env.NODE_ENV === "production")) {
     throw new AuthError(
       "Sign-in isn't configured yet. An administrator must set the allowed work-email domains before anyone can sign in."
     );

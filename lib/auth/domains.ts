@@ -12,6 +12,15 @@ export function parseAllowedDomains(raw: string): string[] {
 }
 
 /**
+ * An empty allowlist means "no restriction", which is only safe in
+ * development. In production it must be configured, or sign-in is refused
+ * (otherwise any Google account could auto-provision its own org + admin).
+ */
+export function allowlistMisconfigured(allowedDomains: string[], isProduction: boolean): boolean {
+  return allowedDomains.length === 0 && isProduction;
+}
+
+/**
  * An account is allowed when its email domain is on the list, and — when
  * Google supplied an hd claim — that claim is also on the list. The hd
  * claim alone is never sufficient; the email domain is always checked.

@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { isAllowedAccount, parseAllowedDomains } from "@/lib/auth/domains";
+import { allowlistMisconfigured, isAllowedAccount, parseAllowedDomains } from "@/lib/auth/domains";
+
+describe("allowlistMisconfigured (fail-closed sign-in)", () => {
+  it("blocks sign-in when the allowlist is empty in production", () => {
+    expect(allowlistMisconfigured([], true)).toBe(true);
+  });
+  it("permits an empty allowlist in development", () => {
+    expect(allowlistMisconfigured([], false)).toBe(false);
+  });
+  it("is fine when domains are configured, in any environment", () => {
+    expect(allowlistMisconfigured(["alpinefundings.com"], true)).toBe(false);
+    expect(allowlistMisconfigured(["alpinefundings.com"], false)).toBe(false);
+  });
+});
 
 describe("parseAllowedDomains", () => {
   it("parses a single domain", () => {
