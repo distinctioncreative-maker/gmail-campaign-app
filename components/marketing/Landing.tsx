@@ -32,6 +32,47 @@ function FeatureIcon({ name }: { name: string }) {
   );
 }
 
+/** Count-up number that animates when it scrolls into view. */
+function StatNum({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !("IntersectionObserver" in window)) {
+      const t = setTimeout(() => setN(value), 0);
+      return () => clearTimeout(t);
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          io.disconnect();
+          const start = performance.now();
+          const dur = 1400;
+          const tick = (t: number) => {
+            const p = Math.min(1, (t - start) / dur);
+            setN(Math.round(value * (1 - Math.pow(1 - p, 3))));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [value]);
+  return (
+    <span ref={ref}>
+      {prefix}
+      {n.toLocaleString()}
+      {suffix}
+    </span>
+  );
+}
+
 /** Reusable email-capture field that posts to the public /api/waitlist. */
 function WaitField({ source, cta, note }: { source: string; cta: string; note: React.ReactNode }) {
   const [email, setEmail] = useState("");
@@ -61,7 +102,7 @@ function WaitField({ source, cta, note }: { source: string; cta: string; note: R
       <div className={styles.waitlist}>
         <div className={styles.wlSuccess} role="status">
           <CheckIcon />
-          You&apos;re on the list — we&apos;ll email you when early access opens.
+          You&apos;re on the list. We&apos;ll email you when early access opens.
         </div>
       </div>
     );
@@ -93,12 +134,12 @@ function WaitField({ source, cta, note }: { source: string; cta: string; note: R
 }
 
 const FEATURES = [
-  { t: "AI email writer", d: "Describe the email in a sentence. Cadence writes a ready-to-send draft in your brand's voice — fresh every time, never a canned template.", tag: "Brand memory" },
+  { t: "AI email writer", d: "Describe the email in a sentence. Cadence writes a ready-to-send draft in your brand's voice, fresh every time, never a canned template.", tag: "Brand memory" },
   { t: "Smart campaigns", d: "Pick your leads, pick a pace, launch. Sends spread naturally across the day, so you stay under Gmail's limits and out of spam.", tag: "Human-paced sending" },
-  { t: "Reply intelligence", d: "Every reply is tagged Interested, Needs reply, or Not now — and one click drafts an on-brand response right in the thread.", tag: "Triage + AI drafts" },
-  { t: "Deliverability guard", d: "SPF, DKIM, DMARC, and Postmaster reputation — checked for you, so you know you'll land in the inbox before you hit send.", tag: "Domain health" },
-  { t: "Lead command center", d: "Paste from Salesforce or drop in a CSV. Cadence dedupes the mess and files everyone into clean, reusable lists.", tag: "Import · lists" },
-  { t: "Team & reporting", d: "Team-lead dashboards, per-rep leaderboards, and honest reports on sends, reply rates, and your best campaigns.", tag: "Roles · leaderboards" },
+  { t: "Reply intelligence", d: "Every reply is tagged Interested, Needs reply, or Not now, and one click drafts an on-brand response right in the thread.", tag: "Triage plus AI drafts" },
+  { t: "Deliverability guard", d: "SPF, DKIM, DMARC, and Postmaster reputation, checked for you, so you know you'll land in the inbox before you hit send.", tag: "Domain health" },
+  { t: "Lead command center", d: "Paste from Salesforce or drop in a CSV. Cadence dedupes the mess and files everyone into clean, reusable lists.", tag: "Import and lists" },
+  { t: "Team & reporting", d: "Team-lead dashboards, per-rep leaderboards, and honest reports on sends, reply rates, and your best campaigns.", tag: "Roles and leaderboards" },
 ];
 
 // The payoff, framed as a switch: same job, minus the friction.
@@ -106,27 +147,27 @@ const OLD_WAY = [
   "20 minutes writing every email from a blank page",
   "Hot replies buried in a noisy, crowded inbox",
   "Spam-folder roulette on every send",
-  "Another login — and a whole new sending service to learn",
+  "Another login, and a whole new sending service to learn",
 ];
 const NEW_WAY = [
   "On-brand drafts in seconds, personalized to each lead",
   "Every reply tagged, sorted, and drafted for you",
   "Auth checks and paced sending, so you land in the inbox",
-  "Connect your own Gmail and start — nothing new to learn",
+  "Connect your own Gmail and start, nothing new to learn",
 ];
 
 const SECURITY = [
   { t: "Per-user data isolation", d: "Every rep's leads, campaigns, and replies live in their own scoped space. No one crosses that line." },
-  { t: "Encrypted Gmail tokens", d: "We connect to Gmail with a narrow scope and store your token encrypted with a managed key — never in plain text." },
+  { t: "Encrypted Gmail tokens", d: "We connect to Gmail with a narrow scope and store your token encrypted with a managed key, never in plain text." },
   { t: "Test-mode safety gate", d: "Until you flip an org to live, every email is redirected to your own address. No send path skips the gate." },
   { t: "Deny-by-default database", d: "Direct data access is blocked at the database itself. The server is the only path in, and it checks every request." },
-  { t: "Verified background jobs", d: "Every automated send is cryptographically verified as coming from our own service — it can't be triggered by anyone else." },
+  { t: "Verified background jobs", d: "Every automated send is cryptographically verified as coming from our own service, so no one else can trigger it." },
   { t: "We never sell your data", d: "Your leads and email content are yours. We don't sell, share, or train third-party models on them. Full stop." },
 ];
 
 const DEMO_BODY = `Hi Jordan,
 
-Congrats on the new location — momentum like that runs on cash flow. Alpine gets working capital to businesses like yours in days, not weeks, with payback that flexes to your revenue.
+Congrats on the new location. Momentum like that runs on cash flow, and Alpine gets working capital to businesses like yours in days, not weeks, with payback that flexes to your revenue.
 
 Open to a quick 10-minute call Thursday?`;
 
@@ -134,6 +175,7 @@ export function Landing() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [typed, setTyped] = useState("");
+  const [stats, setStats] = useState({ sent: 128, rep: 34, rev: 8400 });
 
   // AI-writer demo: type the draft out, hold, then loop.
   useEffect(() => {
@@ -185,64 +227,135 @@ export function Landing() {
     return () => io.disconnect();
   }, []);
 
-  // Hero cadence pulse
+  // Hero pipeline: emails fan out from your Gmail to prospects; a share reply
+  // (green) and fly into a pipeline-value meter (gold) that ticks up.
   useEffect(() => {
     const cv = canvasRef.current;
     if (!cv) return;
     const ctx = cv.getContext("2d");
     if (!ctx) return;
-    const W = cv.width, H = cv.height, mid = H * 0.5;
+    const W = cv.width, H = cv.height;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const beat = (x: number): number => {
-      const p = x * 10;
-      if (p > 3.0 && p < 3.4) return -((p - 3.0) / 0.4) * 0.15;
-      if (p >= 3.4 && p < 3.7) return -0.15 + ((p - 3.4) / 0.3) * 0.15;
-      if (p >= 4.0 && p < 4.2) return ((p - 4.0) / 0.2) * 0.25;
-      if (p >= 4.2 && p < 4.45) return 0.25 - ((p - 4.2) / 0.25) * 1.15;
-      if (p >= 4.45 && p < 4.7) return -0.9 + ((p - 4.45) / 0.25) * 1.2;
-      if (p >= 4.7 && p < 4.9) return 0.3 - ((p - 4.7) / 0.2) * 0.3;
-      if (p > 5.4 && p < 6.0) return -Math.sin(((p - 5.4) / 0.6) * Math.PI) * 0.22;
-      return 0;
-    };
-    const beatW = W * 0.34;
+    const rng = (a: number, b: number) => a + Math.random() * (b - a);
+    const sender = { x: W * 0.08, y: H * 0.52 };
+    const money = { x: W * 0.93, y: H * 0.17 };
+    const recips = Array.from({ length: 22 }, () => ({
+      x: rng(W * 0.44, W * 0.86),
+      y: rng(H * 0.1, H * 0.92),
+      flash: 0,
+    }));
+    let moneyFlash = 0;
 
-    const trace = (offset: number) => {
-      ctx.clearRect(0, 0, W, H);
-      ctx.lineWidth = 3;
-      ctx.lineJoin = "round";
-      ctx.strokeStyle = "#2e8bff";
-      ctx.shadowColor = "#7fc4ff";
-      ctx.shadowBlur = 18;
+    type P = { kind: 0 | 1; sx: number; sy: number; ex: number; ey: number; cx: number; cy: number; t: number; sp: number; ri: number };
+    const parts: P[] = [];
+    let sent = stats.sent, rep = stats.rep, rev = stats.rev;
+
+    const bez = (a: number, c: number, b: number, t: number) => {
+      const u = 1 - t;
+      return u * u * a + 2 * u * t * c + t * t * b;
+    };
+    const node = (x: number, y: number, r: number, color: string) => {
       ctx.beginPath();
-      for (let px = 0; px <= W; px += 3) {
-        const t = ((px + offset) % beatW) / beatW;
-        const y = mid + beat(t) * (H * 0.42);
-        if (px === 0) ctx.moveTo(px, y);
-        else ctx.lineTo(px, y);
-      }
-      ctx.stroke();
-      const lead = mid + beat((offset % beatW) / beatW) * (H * 0.42);
-      ctx.shadowBlur = 26;
-      ctx.fillStyle = "#eaf1fc";
-      ctx.beginPath();
-      ctx.arc(6, lead, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 24;
+      ctx.arc(x, y, r, 0, 7);
       ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.arc(x, y, r * 0.38, 0, 7);
+      ctx.fill();
+    };
+    const spawnEmail = () => {
+      const ri = Math.floor(Math.random() * recips.length);
+      const r = recips[ri];
+      parts.push({
+        kind: 0, sx: sender.x, sy: sender.y, ex: r.x, ey: r.y,
+        cx: (sender.x + r.x) / 2 + rng(-40, 40), cy: (sender.y + r.y) / 2 - rng(30, 130),
+        t: 0, sp: rng(0.01, 0.018), ri,
+      });
+      sent += 1;
+    };
+    const spawnReply = (r: { x: number; y: number }) => {
+      parts.push({
+        kind: 1, sx: r.x, sy: r.y, ex: money.x, ey: money.y,
+        cx: (r.x + money.x) / 2 + rng(-30, 30), cy: (r.y + money.y) / 2 - rng(20, 90),
+        t: 0, sp: rng(0.012, 0.02), ri: -1,
+      });
+      rep += 1;
+    };
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      for (const r of recips) {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(150,168,196,${0.22 + r.flash * 0.7})`;
+        ctx.shadowColor = r.flash > 0.2 ? "#34d399" : "transparent";
+        ctx.shadowBlur = r.flash * 16;
+        ctx.arc(r.x, r.y, 3 + r.flash * 2.6, 0, 7);
+        ctx.fill();
+        r.flash *= 0.94;
+      }
+      ctx.shadowBlur = 0;
+      node(sender.x, sender.y, 9, "#2e8bff");
+      node(money.x, money.y, 8 + moneyFlash * 4, "#f2c368");
+      moneyFlash *= 0.9;
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i];
+        p.t += p.sp;
+        const x = bez(p.sx, p.cx, p.ex, p.t), y = bez(p.sy, p.cy, p.ey, p.t);
+        const tt = Math.max(0, p.t - 0.07);
+        const x2 = bez(p.sx, p.cx, p.ex, tt), y2 = bez(p.sy, p.cy, p.ey, tt);
+        const col = p.kind === 0 ? "#7fc4ff" : "#5ff0b0";
+        ctx.strokeStyle = p.kind === 0 ? "rgba(127,196,255,0.45)" : "rgba(95,240,176,0.5)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.fillStyle = col;
+        ctx.shadowColor = col;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(x, y, 2.6, 0, 7);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (p.t >= 1) {
+          if (p.kind === 0) {
+            const r = recips[p.ri];
+            r.flash = 1;
+            if (Math.random() < 0.4) spawnReply(r);
+          } else {
+            moneyFlash = 1;
+            rev += Math.round(rng(300, 1700));
+          }
+          parts.splice(i, 1);
+        }
+      }
     };
 
     if (reduce) {
-      trace(0);
-      return;
+      recips.forEach((r) => (r.flash = 0.4));
+      draw();
+      const t = setTimeout(() => setStats({ sent: 1280, rep: 326, rev: 52400 }), 0);
+      return () => clearTimeout(t);
     }
-    let raf = 0;
-    let offset = 0;
+
+    let raf = 0, frame = 0;
     const loop = () => {
-      trace(offset);
-      offset += 3.2;
+      frame += 1;
+      if (frame % 9 === 0 && parts.length < 64) spawnEmail();
+      draw();
       raf = requestAnimationFrame(loop);
     };
     loop();
-    return () => cancelAnimationFrame(raf);
+    const id = setInterval(() => setStats({ sent, rep, rev }), 120);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -272,49 +385,72 @@ export function Landing() {
 
       {/* Hero */}
       <header className={styles.hero}>
+        <div className={styles.heroGrid} aria-hidden="true" />
         <div className={styles.wrap}>
           <span className={styles.heroBadge}>Private early access · <b>Coming soon</b></span>
           <h1>
-            Sales outreach that keeps the <span className={styles.grad}>cadence</span>.
+            Turn your outbox into a <span className={styles.grad}>revenue engine</span>.
           </h1>
           <p className={styles.sub}>
-            Cadence writes on-brand emails with AI, sends them from your own Gmail at a human pace,
-            and turns every reply into your next move — so more emails land, and more leads reply.
+            Cadence sends personalized campaigns from your own Gmail, lands them in the inbox,
+            and turns every reply into pipeline. More sends, more replies, more revenue, on autopilot.
           </p>
           <div id="waitlist">
             <WaitField
               source="hero"
               cta="Get early access"
-              note={<>Send from <b>your own Gmail</b>. No credit card. We&apos;ll only email you about early access.</>}
+              note={<>Sends from <b>your own Gmail</b>. No credit card. We&apos;ll only email you about early access.</>}
             />
             <p className={styles.heroLogin}>Already have early access? <a href="/sign-in">Log in →</a></p>
           </div>
-          <div className={`${styles.pulseStage} ${styles.reveal}`}>
-            <canvas ref={canvasRef} width={1960} height={400} aria-hidden="true" />
-            <div className={styles.pulseCap}>
-              <span>Live sending · paced &amp; safe</span>
-              <span>Deliverability · nominal</span>
+
+          {/* Live pipeline animation */}
+          <div className={`${styles.pipeStage} ${styles.reveal}`}>
+            <div className={styles.pipeGlass}>
+              <div className={styles.pipeTop}>
+                <span className={styles.pipeTag}>◉ Live outreach</span>
+                <span className={styles.pipeTagR}>Your Gmail → prospects → pipeline</span>
+              </div>
+              <canvas ref={canvasRef} width={1920} height={430} aria-hidden="true" />
+              <div className={styles.pipeStats}>
+                <div className={styles.pipeChip}>
+                  <div className={styles.pipeVal}>{stats.sent.toLocaleString()}</div>
+                  <div className={styles.pipeLab}>Emails sent</div>
+                </div>
+                <div className={styles.pipeChip}>
+                  <div className={styles.pipeVal} style={{ color: "var(--good)" }}>{stats.rep.toLocaleString()}</div>
+                  <div className={styles.pipeLab}>Replies</div>
+                </div>
+                <div className={styles.pipeChip}>
+                  <div className={styles.pipeVal} style={{ color: "var(--gold)" }}>${stats.rev.toLocaleString()}</div>
+                  <div className={styles.pipeLab}>Pipeline (simulated)</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Trust ticks */}
-      <section className={styles.bandDark} style={{ padding: "8px 0 64px" }}>
+      {/* Stats band */}
+      <section className={styles.statsBand}>
         <div className={styles.wrap}>
-          <div className={`${styles.ticks} ${styles.reveal}`}>
-            {[
-              ["Inbox-first", "Deliverability built in", "SPF · DKIM · DMARC checks and human-paced sending."],
-              ["On-brand AI", "Writes like your best rep", "Brand memory keeps every email true to your offer."],
-              ["Gmail-native", "Your inbox, your identity", "Replies land in real Gmail threads. Nothing spoofed."],
-              ["Locked down", "Per-user data isolation", "Encrypted tokens, deny-by-default access. Never sold."],
-            ].map(([k, v, d]) => (
-              <div className={styles.tick} key={k}>
-                <div className={styles.k}>{k}</div>
-                <div className={styles.v}>{v}</div>
-                <div className={styles.d}>{d}</div>
-              </div>
-            ))}
+          <div className={`${styles.stats} ${styles.reveal}`}>
+            <div className={styles.stat}>
+              <div className={styles.statVal}><StatNum value={2000} /></div>
+              <div className={styles.statLab}>Emails a day, per connected inbox</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statVal}><StatNum value={100} suffix="%" /></div>
+              <div className={styles.statLab}>Sent from your own Gmail, nothing spoofed</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statVal}><StatNum value={3} /></div>
+              <div className={styles.statLab}>Deliverability checks before every send</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statVal}><StatNum value={60} prefix="<" suffix="s" /></div>
+              <div className={styles.statLab}>To an on-brand draft with AI</div>
+            </div>
           </div>
         </div>
       </section>
@@ -324,7 +460,7 @@ export function Landing() {
         <div className={styles.wrap}>
           <div className={`${styles.head} ${styles.reveal}`}>
             <span className={styles.eyebrow}>The platform</span>
-            <h2>Everything a modern outreach team needs — nothing it doesn&apos;t.</h2>
+            <h2>Everything a modern outreach team needs, nothing it doesn&apos;t.</h2>
             <p>From the first import to the booked call, Cadence handles the busywork so your reps can spend their time selling.</p>
           </div>
           <div className={styles.features}>
@@ -348,15 +484,15 @@ export function Landing() {
           <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
             <span className={styles.eyebrow} style={{ justifyContent: "center" }}>See it in motion</span>
             <h2>A closer look at Cadence.</h2>
-            <p>From a one-line prompt to a booked call — here&apos;s the everyday flow.</p>
+            <p>From a one-line prompt to a booked call. Here&apos;s the everyday flow.</p>
           </div>
 
-          {/* Demo 1 — AI writer */}
+          {/* Demo 1: AI writer */}
           <div className={`${styles.demo} ${styles.reveal}`}>
             <div className={styles.demoCopy}>
               <span className={styles.eyebrow}>AI email writer</span>
               <h3>Describe it once. Get an on-brand draft.</h3>
-              <p>Cadence remembers your offer and tone, then writes a fresh, personalized email every time — no templates to wrestle with.</p>
+              <p>Cadence remembers your offer and tone, then writes a fresh, personalized email every time. No templates to wrestle with.</p>
               <ul>
                 <li><CheckIcon size={17} />Brand memory keeps every message true to your pitch.</li>
                 <li><CheckIcon size={17} />Personalized per lead, never copy-paste.</li>
@@ -381,14 +517,14 @@ export function Landing() {
             </div>
           </div>
 
-          {/* Demo 2 — Reply inbox */}
+          {/* Demo 2: Reply inbox */}
           <div className={`${styles.demo} ${styles.demoRev} ${styles.demoGap} ${styles.reveal}`}>
             <div className={styles.frame}>
               <div className={styles.frameBar}><i /><i /><i /><span>replies · triaged</span></div>
               <div className={styles.frameBody}>
                 <div className={styles.inbox}>
                   {[
-                    { who: "Jordan Reyes", snip: "“This is timely — can you send details?”", chip: "Interested", cls: styles.hot, action: <span className={styles.draft}>AI draft ready →</span> },
+                    { who: "Jordan Reyes", snip: "“This is timely, can you send details?”", chip: "Interested", cls: styles.hot, action: <span className={styles.draft}>AI draft ready →</span> },
                     { who: "Priya Nair", snip: "“Who handles this on your side?”", chip: "Needs reply", cls: styles.warm, action: <span className={styles.draft}>AI draft ready →</span> },
                     { who: "Marcus Webb", snip: "“Not right now, maybe next quarter.”", chip: "Not now", cls: styles.cold, action: <span className={styles.openG}>Snoozed</span> },
                   ].map((r) => (
@@ -407,21 +543,21 @@ export function Landing() {
             <div className={styles.demoCopy}>
               <span className={styles.eyebrow}>Reply intelligence</span>
               <h3>Every reply, sorted and ready to answer.</h3>
-              <p>Cadence reads each response, tags the intent, and floats the hot ones first — then drafts an on-brand reply right in the Gmail thread.</p>
+              <p>Cadence reads each response, tags the intent, and floats the hot ones first, then drafts an on-brand reply right in the Gmail thread.</p>
               <ul>
-                <li><CheckIcon size={17} />Interested, Needs reply, Not now — tagged automatically.</li>
+                <li><CheckIcon size={17} />Interested, Needs reply, Not now, tagged automatically.</li>
                 <li><CheckIcon size={17} />One click drafts a reply in the real thread.</li>
                 <li><CheckIcon size={17} />Hot leads rise to the top so nothing slips.</li>
               </ul>
             </div>
           </div>
 
-          {/* Demo 3 — Deliverability */}
+          {/* Demo 3: Deliverability */}
           <div className={`${styles.demo} ${styles.demoGap} ${styles.reveal}`}>
             <div className={styles.demoCopy}>
               <span className={styles.eyebrow}>Deliverability guard</span>
               <h3>Know you&apos;ll land before you send.</h3>
-              <p>Zero-setup checks for SPF, DKIM, and DMARC plus Gmail Postmaster reputation — with human-paced sending that keeps you off spam filters.</p>
+              <p>Zero-setup checks for SPF, DKIM, and DMARC plus Gmail Postmaster reputation, with human-paced sending that keeps you off spam filters.</p>
               <ul>
                 <li><CheckIcon size={17} />Domain auth checked automatically.</li>
                 <li><CheckIcon size={17} />Sends spread across the day, never in bursts.</li>
@@ -460,7 +596,7 @@ export function Landing() {
           <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
             <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Why teams switch</span>
             <h2>Trade the busywork for booked calls.</h2>
-            <p>The same outreach your reps already do — minus the parts that drain the day.</p>
+            <p>The same outreach your reps already do, minus the parts that drain the day.</p>
           </div>
           <div className={`${styles.compare} ${styles.reveal}`}>
             <div className={`${styles.col} ${styles.colBad}`}>
@@ -488,7 +624,7 @@ export function Landing() {
         <div className={styles.wrap}>
           <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
             <span className={styles.eyebrow}>Data safety</span>
-            <h2>Your leads, your inbox, your data — locked down.</h2>
+            <h2>Your leads, your inbox, your data, locked down.</h2>
             <p>Cadence is built defense-in-depth. Your data is isolated, your credentials are encrypted, and nothing is ever sold or shared.</p>
           </div>
           <div className={styles.secGrid}>
@@ -526,12 +662,12 @@ export function Landing() {
               <ul>
                 <li><CheckIcon size={16} />AI email writer with brand memory</li>
                 <li><CheckIcon size={16} />Human-paced campaigns from your Gmail</li>
-                <li><CheckIcon size={16} />Reply triage &amp; AI drafts</li>
+                <li><CheckIcon size={16} />Reply triage and AI drafts</li>
                 <li><CheckIcon size={16} />Deliverability checks</li>
               </ul>
               <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Join the waitlist</a>
             </div>
-            {/* Team — featured */}
+            {/* Team: featured */}
             <div className={`${styles.price} ${styles.featPlan} ${styles.reveal}`}>
               <span className={styles.badgeTop}>Most popular</span>
               <div className={styles.plan}>Team</div>
@@ -540,8 +676,8 @@ export function Landing() {
               <p className={styles.who2}>For teams selling together, with full visibility.</p>
               <ul>
                 <li><CheckIcon size={16} />Everything in Starter</li>
-                <li><CheckIcon size={16} />Roles, assignment &amp; team dashboards</li>
-                <li><CheckIcon size={16} />Per-rep leaderboards &amp; reporting</li>
+                <li><CheckIcon size={16} />Roles, assignment, and team dashboards</li>
+                <li><CheckIcon size={16} />Per-rep leaderboards and reporting</li>
                 <li><CheckIcon size={16} />Shared brand memory profiles</li>
               </ul>
               <a href="#waitlist" className={`${styles.btn} ${styles.btnLight} ${styles.btnLightPri}`}>Join the waitlist</a>
@@ -551,12 +687,12 @@ export function Landing() {
               <div className={styles.plan}>Enterprise</div>
               <div className={styles.amt}>Custom</div>
               <span className={styles.soon}>Coming soon</span>
-              <p className={styles.who2}>For orgs with security, scale &amp; SSO needs.</p>
+              <p className={styles.who2}>For orgs with security, scale, and SSO needs.</p>
               <ul>
                 <li><CheckIcon size={16} />Everything in Team</li>
-                <li><CheckIcon size={16} />SSO &amp; advanced data controls</li>
-                <li><CheckIcon size={16} />Custom limits &amp; dedicated onboarding</li>
-                <li><CheckIcon size={16} />Priority support &amp; SLA</li>
+                <li><CheckIcon size={16} />SSO and advanced data controls</li>
+                <li><CheckIcon size={16} />Custom limits and dedicated onboarding</li>
+                <li><CheckIcon size={16} />Priority support and SLA</li>
               </ul>
               <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Contact us</a>
             </div>
@@ -574,10 +710,10 @@ export function Landing() {
           <div className={`${styles.faq} ${styles.reveal}`}>
             {[
               ["When does Cadence launch?", "We're rolling out private early access in waves. Join the waitlist and we'll email you the moment a seat opens for you."],
-              ["Do I need a new email service?", "No. Cadence sends from your own Gmail with a narrow, revocable permission — your identity, your inbox, real threads. Nothing is spoofed or relayed."],
+              ["Do I need a new email service?", "No. Cadence sends from your own Gmail with a narrow, revocable permission. Your identity, your inbox, real threads. Nothing is spoofed or relayed."],
               ["Is my data safe?", "Yes. Every rep's data is isolated, your Gmail token is encrypted with a managed key, database access is deny-by-default, and we never sell, share, or train third-party models on your data."],
               ["Will this hurt my deliverability?", "The opposite. Cadence spreads sends across the day to stay within Gmail's limits and checks SPF, DKIM, DMARC, and your Postmaster reputation so you land in the inbox."],
-              ["How much will it cost?", "Final pricing is set at launch. Waitlist members get founding-member rates — join now to lock in the best pricing."],
+              ["How much will it cost?", "Final pricing is set at launch. Waitlist members get founding-member rates, so join now to lock in the best pricing."],
               ["Can my whole team use it?", "Yes. Cadence has roles, lead assignment, per-rep leaderboards, and team-lead dashboards built in from day one."],
             ].map(([q, a]) => (
               <details key={q}>

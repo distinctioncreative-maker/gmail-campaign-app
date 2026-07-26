@@ -2,14 +2,15 @@
    this route via CSS Modules so nothing collides with the app's design system. */
 
 .root {
-  --ink: #070b14;
-  --ink2: #0c1322;
+  --ink: #05070e;
+  --ink2: #0a1020;
   --paper: #f6f8fc;
   --paper2: #ffffff;
   --accent: #2e8bff;
   --accentDeep: #1a6ee0;
   --glow: #7fc4ff;
   --good: #34d399;
+  --gold: #f2c368;
   --onDark: #eaf1fc;
   --onDarkMuted: #93a3be;
   --onDarkFaint: #5d6c86;
@@ -86,7 +87,7 @@
   background: rgba(255, 255, 255, 0.03); padding: 7px 14px; border-radius: 999px;
 }
 .heroBadge b { color: var(--accent); font-weight: 600; }
-.hero h1 { font-size: clamp(40px, 7vw, 76px); line-height: 1.02; margin: 26px auto 0; max-width: 15ch; }
+.hero h1 { font-size: clamp(44px, 7.6vw, 88px); line-height: 1.0; margin: 26px auto 0; max-width: 15ch; letter-spacing: -0.035em; }
 .grad { background: linear-gradient(120deg, var(--glow), var(--accent) 60%, var(--accentDeep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .sub { font-size: clamp(17px, 2.2vw, 20px); color: var(--onDarkMuted); max-width: 56ch; margin: 22px auto 0; }
 
@@ -261,6 +262,61 @@
 .faq summary::after { content: "+"; color: var(--accent); font-weight: 400; font-size: 24px; line-height: 1; }
 .faq details[open] summary::after { content: "\2013"; }
 .faq details p { margin: 0 4px 18px; color: var(--onDarkMuted); font-size: 15px; }
+
+/* Hero grid + luxury depth */
+.heroGrid {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(127, 196, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 196, 255, 0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 78%);
+}
+
+/* Hero pipeline stage */
+.pipeStage { position: relative; margin: 46px auto 0; max-width: 1000px; }
+.pipeGlass {
+  border: 1px solid var(--lineDark); border-radius: 22px; overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  box-shadow: 0 50px 100px -50px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+}
+.pipeTop {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 18px; border-bottom: 1px solid var(--lineDark);
+}
+.pipeTag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--good); }
+.pipeTagR { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--onDarkFaint); }
+@media (max-width: 560px) { .pipeTagR { display: none; } }
+.pipeGlass canvas { display: block; width: 100%; height: clamp(180px, 26vw, 240px); }
+.pipeStats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--lineDark); border-top: 1px solid var(--lineDark);
+}
+.pipeChip { background: var(--ink); padding: 14px 18px; text-align: left; }
+.pipeVal { font-size: clamp(20px, 3.4vw, 28px); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--onDark); }
+.pipeLab { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--onDarkMuted); margin-top: 3px; }
+
+/* Stats band */
+.statsBand { background: var(--ink); border-top: 1px solid var(--lineDark); border-bottom: 1px solid var(--lineDark); padding: 44px 0; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--lineDark); border: 1px solid var(--lineDark); border-radius: 16px; overflow: hidden; }
+@media (max-width: 760px) { .stats { grid-template-columns: 1fr 1fr; } }
+.stat { background: var(--ink); padding: 26px 24px; text-align: center; }
+.statVal {
+  font-size: clamp(34px, 5vw, 52px); font-weight: 700; letter-spacing: -0.03em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(120deg, var(--glow), var(--accent) 65%, var(--accentDeep));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.statLab { margin-top: 12px; font-size: 13.5px; color: var(--onDarkMuted); line-height: 1.4; }
+
+/* Glass highlight on device frames */
+.frame { position: relative; }
+.frame::after {
+  content: ""; position: absolute; inset: 0; border-radius: 18px; pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; }
