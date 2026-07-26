@@ -25,6 +25,12 @@ function encodeMessage(raw: string): string {
   return Buffer.from(raw).toString("base64url");
 }
 
+/** Strip CR/LF so a crafted address or subject can't inject extra MIME headers
+ * (e.g. a hidden Bcc). Defense-in-depth on top of email validation at import. */
+export function sanitizeHeaderValue(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
 function buildMime(input: {
   to: string;
   subject: string;
@@ -34,10 +40,11 @@ function buildMime(input: {
   references?: string;
 }): string {
   const boundary = `b_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
-  const encodedSubject = `=?UTF-8?B?${Buffer.from(input.subject, "utf8").toString("base64")}?=`;
+  const safeTo = sanitizeHeaderValue(input.to);
+  const encodedSubject = `=?UTF-8?B?${Buffer.from(sanitizeHeaderValue(input.subject), "utf8").toString("base64")}?=`;
   const text = input.textBody ?? input.htmlBody.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   const headers = [
-    `To: ${input.to}`,
+    `To: ${safeTo}`,
     `Subject: ${encodedSubject}`,
     "MIME-Version: 1.0",
   ];
