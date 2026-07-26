@@ -13,6 +13,9 @@ const EnvSchema = z.object({
   // with consumer accounts routed to private per-user workspaces. Flip to
   // "open" only once billing + Google OAuth verification are in place.
   SIGNUP_MODE: z.string().default("allowlist"),
+  // Optional alerting sink for unexpected server errors (Slack incoming
+  // webhook, Sentry ingest, etc.). Unset = structured console logs only.
+  ERROR_WEBHOOK_URL: z.string().default(""),
   SESSION_SECRET: z.string().default(""),
   TOKEN_KMS_KEY_RESOURCE: z.string().default(""),
   LOCAL_DEV_ENCRYPTION_KEY: z.string().default(""),

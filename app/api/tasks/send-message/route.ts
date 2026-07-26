@@ -36,6 +36,7 @@ import { enqueueTask } from "@/lib/tasks/enqueue";
 import { scheduleNextFollowup } from "@/lib/campaigns/followups";
 import { recordCollisionContact } from "@/lib/campaigns/collision";
 import { isTestModeForOrg } from "@/lib/sending/mode";
+import { reportError } from "@/lib/observability/report";
 
 const PayloadSchema = z.object({
   organizationId: z.string().min(1),
@@ -388,6 +389,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: message, willRetry: true }, { status: 500 });
     }
 
+    reportError(err, { scope: "send-worker" });
     await updateQueueItem(owner, campaignId, queueItemId, {
       status: "ERROR",
       lastError: message,

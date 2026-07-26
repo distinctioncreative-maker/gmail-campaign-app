@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { ForbiddenError, UnauthorizedError } from "@/lib/auth/requireUser";
 import { AuthError } from "@/lib/auth/session";
+import { reportError } from "@/lib/observability/report";
 
 /**
  * Wrap a route handler with uniform, user-friendly error responses.
@@ -27,10 +28,7 @@ export function handleApiErrors<Args extends unknown[]>(
           { status: 400 }
         );
       }
-      console.error("[api] unhandled error", {
-        name: err instanceof Error ? err.name : "unknown",
-        message: err instanceof Error ? err.message : String(err),
-      });
+      reportError(err, { scope: "api" });
       return NextResponse.json(
         { error: "Something went wrong on our side. Please try again." },
         { status: 500 }
