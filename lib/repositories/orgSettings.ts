@@ -4,6 +4,18 @@ import { firestore } from "@/lib/firebase/admin";
 import { encryptSecret, decryptSecret } from "@/lib/kms/crypto";
 import { MemberSchema, OrganizationSchema, type Member, type Organization } from "@/schemas/user";
 import type { Role } from "@/schemas/common";
+import { type PlanId, defaultPlanFor, isPlanId } from "@/lib/billing/plans";
+
+export type SubscriptionStatus = "none" | "trialing" | "active" | "past_due" | "canceled";
+
+export interface OrgBilling {
+  plan: PlanId;
+  status: SubscriptionStatus;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  seats: number;
+  currentPeriodEnd: number | null;
+}
 
 function orgRef(organizationId: string) {
   return firestore().collection("organizations").doc(organizationId);
@@ -33,6 +45,10 @@ export interface OrgSettings {
   /** Admin-controlled master switch for all AI writing features. Defaults
    * off — AI stays hidden from users until an admin turns it on. */
   aiEnabled: boolean;
+  /** Subscription / plan state. Defaults preserve current behavior: existing
+   * workspaces read as the TEAM plan, so nothing is gated until billing
+   * assigns a plan. */
+  billing: OrgBilling;
 }
 
 export interface AiBrandProfile {
@@ -72,8 +88,34 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
     liveEnabledAt: (data.liveEnabledAt as number) ?? null,
     liveEnabledBy: (data.liveEnabledBy as string) ?? null,
     aiEnabled: data.aiEnabled === true,
+    billing: resolveBilling(data.billing, org?.tenantType ?? "WORKSPACE"),
     ...resolveBrandFields(data),
   };
+}
+
+/** Read stored billing state, defaulting to the tenant's baseline plan so
+ * un-subscribed orgs keep full (grandfathered) behavior. */
+function resolveBilling(raw: unknown, tenantType: "WORKSPACE" | "CONSUMER"): OrgBilling {
+  const b = (raw ?? {}) as Record<string, unknown>;
+  return {
+    plan: isPlanId(b.plan) ? b.plan : defaultPlanFor(tenantType),
+    status: (["trialing", "active", "past_due", "canceled"].includes(b.status as string)
+      ? b.status
+      : "none") as SubscriptionStatus,
+    stripeCustomerId: typeof b.stripeCustomerId === "string" ? b.stripeCustomerId : null,
+    stripeSubscriptionId: typeof b.stripeSubscriptionId === "string" ? b.stripeSubscriptionId : null,
+    seats: typeof b.seats === "number" ? b.seats : 0,
+    currentPeriodEnd: typeof b.currentPeriodEnd === "number" ? b.currentPeriodEnd : null,
+  };
+}
+
+/** Persist billing state (server-only; callers are the Stripe layer). Firestore
+ * deep-merges the billing map, so a partial patch updates only those fields. */
+export async function saveBilling(organizationId: string, patch: Partial<OrgBilling>): Promise<void> {
+  await orgRef(organizationId)
+    .collection("organizationSettings")
+    .doc("main")
+    .set({ billing: patch, updatedAt: Date.now() }, { merge: true });
 }
 
 /** Turn all AI writing features on or off for the org (admin only — the
