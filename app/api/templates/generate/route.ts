@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { generateEmail, AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { getOrgSettings, resolveBrandContext } from "@/lib/repositories/orgSettings";
-import { env } from "@/lib/env";
+import { aiWritingEnabled, assertAiWritingEnabled } from "@/lib/ai/enabled";
 
 const BodySchema = z.object({
   prompt: z.string().trim().min(3).max(1000),
@@ -17,7 +17,7 @@ export const GET = handleApiErrors(async () => {
   const ctx = await requireUser();
   const settings = await getOrgSettings(ctx.organizationId);
   return NextResponse.json({
-    enabled: Boolean(env.GEMINI_API_KEY),
+    enabled: aiWritingEnabled(settings),
     hasBrandMemory: settings.aiBrandProfiles.length > 0,
   });
 });
@@ -29,6 +29,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   const { prompt, profileId } = BodySchema.parse(await req.json());
   const settings = await getOrgSettings(ctx.organizationId);
   try {
+    assertAiWritingEnabled(settings);
     const email = await generateEmail(prompt, resolveBrandContext(settings, profileId));
     return NextResponse.json(email);
   } catch (err) {

@@ -5,6 +5,7 @@ import { handleApiErrors } from "@/lib/api";
 import { generateSubjects } from "@/lib/ai/improveEmail";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { assertAiWritingEnabled } from "@/lib/ai/enabled";
 
 const BodySchema = z.object({
   subject: z.string().max(300).default(""),
@@ -17,6 +18,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   const input = BodySchema.parse(await req.json());
   const settings = await getOrgSettings(ctx.organizationId);
   try {
+    assertAiWritingEnabled(settings);
     const result = await generateSubjects({ ...input, brandContext: settings.aiBrandContext });
     return NextResponse.json(result);
   } catch (err) {

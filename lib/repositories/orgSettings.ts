@@ -30,6 +30,9 @@ export interface OrgSettings {
   /** Named brand-memory profiles (e.g. "Alpine", "Everest"). A writer picks
    * which one to use; only admins can edit them. */
   aiBrandProfiles: AiBrandProfile[];
+  /** Admin-controlled master switch for all AI writing features. Defaults
+   * off — AI stays hidden from users until an admin turns it on. */
+  aiEnabled: boolean;
 }
 
 export interface AiBrandProfile {
@@ -68,8 +71,18 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
     sendingMode: data.sendingMode === "LIVE" ? "LIVE" : "TEST",
     liveEnabledAt: (data.liveEnabledAt as number) ?? null,
     liveEnabledBy: (data.liveEnabledBy as string) ?? null,
+    aiEnabled: data.aiEnabled === true,
     ...resolveBrandFields(data),
   };
+}
+
+/** Turn all AI writing features on or off for the org (admin only — the
+ * caller enforces the role). */
+export async function setAiEnabled(organizationId: string, enabled: boolean): Promise<void> {
+  await orgRef(organizationId)
+    .collection("organizationSettings")
+    .doc("main")
+    .set({ aiEnabled: enabled, updatedAt: Date.now() }, { merge: true });
 }
 
 /** Read brand profiles, migrating the legacy single aiBrandContext into a

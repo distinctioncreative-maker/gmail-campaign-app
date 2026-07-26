@@ -8,8 +8,8 @@ export interface GeneratedEmail {
 }
 
 export class AiNotConfiguredError extends Error {
-  constructor() {
-    super("AI writing isn't set up yet. Add a GEMINI_API_KEY to enable it.");
+  constructor(message = "AI writing isn't set up yet. Add a GEMINI_API_KEY to enable it.") {
+    super(message);
   }
 }
 

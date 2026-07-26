@@ -7,6 +7,7 @@ import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { generateReply } from "@/lib/ai/generateReply";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
+import { assertAiWritingEnabled } from "@/lib/ai/enabled";
 import { createReplyDraft } from "@/lib/gmail/drafts";
 import { getThreadSubject } from "@/lib/gmail/threads";
 
@@ -51,6 +52,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
 
   let reply;
   try {
+    assertAiWritingEnabled(settings);
     reply = await generateReply({
       replyText: recipient.lastReplySnippet,
       firstName: recipient.firstNameSnapshot,

@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { getOrgSettings, getOrganization, listMembers } from "@/lib/repositories/orgSettings";
 import { AdminPanel } from "@/components/admin/AdminPanel";
 import { SendingModeCard } from "@/components/admin/SendingModeCard";
+import { AiWritingCard } from "@/components/admin/AiWritingCard";
 import { WorkspaceNameCard } from "@/components/admin/WorkspaceNameCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 
@@ -27,6 +28,9 @@ export default async function AdminPage() {
       </div>
       <div className="mt-6">
         <SendingModeCard />
+      </div>
+      <div className="mt-6">
+        <AiWritingCard />
       </div>
       <div className="mt-6">
         <AdminPanel

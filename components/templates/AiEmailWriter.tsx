@@ -164,6 +164,10 @@ export function AiEmailWriter({
 
   const notConfigured = status?.enabled === false;
 
+  // AI is an admin-gated feature: render nothing until we've confirmed it's on
+  // for this org, so the writer is simply absent when disabled.
+  if (status?.enabled !== true) return null;
+
   return (
     <div className="mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-primary-soft/40">
       {!open ? (

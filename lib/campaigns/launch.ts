@@ -21,8 +21,8 @@ import { enqueueTask, tasksConfigured } from "@/lib/tasks/enqueue";
 import { checkCollision } from "@/lib/campaigns/collision";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { generateOpener } from "@/lib/ai/generateOpener";
+import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { mapWithConcurrency } from "@/lib/util/pool";
-import { env } from "@/lib/env";
 
 /** Safety caps for per-lead AI personalization at launch. */
 const MAX_PERSONALIZED = 150;
@@ -266,8 +266,9 @@ export async function launchCampaign(
   // Optional per-lead AI opener. Opt-in, bounded, and best-effort: capped in
   // volume, low concurrency (rate limits), and any failure just leaves an
   // empty opener so the launch always completes.
-  if (personalize && env.GEMINI_API_KEY) {
-    const settings = await getOrgSettings(ctx.organizationId);
+  const personalizeSettings = personalize ? await getOrgSettings(ctx.organizationId) : null;
+  if (personalize && personalizeSettings && aiWritingEnabled(personalizeSettings)) {
+    const settings = personalizeSettings;
     const targets = recipients.filter((r) => r.included).slice(0, MAX_PERSONALIZED);
     await mapWithConcurrency(targets, PERSONALIZE_CONCURRENCY, async (r) => {
       r.aiOpenerSnapshot = await generateOpener({

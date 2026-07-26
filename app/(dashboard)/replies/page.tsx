@@ -6,7 +6,8 @@ import { LocalTime } from "@/components/LocalTime";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
 import { DraftReplyButton } from "@/components/replies/DraftReplyButton";
 import { formatDuration } from "@/lib/analytics/metrics";
-import { env } from "@/lib/env";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { aiWritingEnabled } from "@/lib/ai/enabled";
 
 // Cap the recipient-level scan so the page stays fast even with many campaigns.
 const MAX_CAMPAIGNS_SCANNED = 60;
@@ -88,7 +89,7 @@ export default async function RepliesPage() {
   const withTimes = rows.map((r) => r.timeToReplyMs).filter((v): v is number => v !== null).sort((a, b) => a - b);
   const median = withTimes.length > 0 ? withTimes[Math.floor(withTimes.length / 2)] : null;
 
-  const aiEnabled = Boolean(env.GEMINI_API_KEY);
+  const aiEnabled = aiWritingEnabled(await getOrgSettings(ctx.organizationId));
   const interested = rows.filter((r) => r.intent === "INTERESTED").length;
   const kpis = [
     { label: "🔥 Interested", value: String(interested) },
