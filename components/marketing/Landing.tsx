@@ -87,9 +87,42 @@ const SECURITY = [
   { t: "We never sell your data", d: "Your leads and email content are yours. We don't sell, share, or train third-party models on them. Full stop." },
 ];
 
+const DEMO_BODY = `Hi Jordan,
+
+Congrats on the new location — momentum like that runs on cash flow. Alpine gets working capital to businesses like yours in days, not weeks, with payback that flexes to your revenue.
+
+Open to a quick 10-minute call Thursday?`;
+
 export function Landing() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [typed, setTyped] = useState("");
+
+  // AI-writer demo: type the draft out, hold, then loop.
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let timer: ReturnType<typeof setTimeout>;
+    if (reduce) {
+      timer = setTimeout(() => setTyped(DEMO_BODY), 0);
+      return () => clearTimeout(timer);
+    }
+    let i = 0;
+    const step = () => {
+      i += 1;
+      setTyped(DEMO_BODY.slice(0, i));
+      if (i < DEMO_BODY.length) {
+        timer = setTimeout(step, 20 + Math.random() * 34);
+      } else {
+        timer = setTimeout(() => {
+          i = 0;
+          setTyped("");
+          timer = setTimeout(step, 500);
+        }, 4000);
+      }
+    };
+    timer = setTimeout(step, 700);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Scroll reveal
   useEffect(() => {
@@ -189,8 +222,9 @@ export function Landing() {
           </div>
           <div className={styles.navLinks}>
             <a href="#features">Features</a>
+            <a href="#demos">Demos</a>
+            <a href="#pricing">Pricing</a>
             <a href="#security">Security</a>
-            <a href="#waitlist">Early access</a>
           </div>
           <a href="#waitlist" className={`${styles.btn} ${styles.btnPrimary}`}>Join the waitlist</a>
         </div>
@@ -269,6 +303,118 @@ export function Landing() {
         </div>
       </section>
 
+      {/* Demos */}
+      <section className={`${styles.bandInk2} ${styles.pad}`} id="demos">
+        <div className={styles.wrap}>
+          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
+            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>See it in motion</span>
+            <h2>A closer look at Cadence.</h2>
+            <p>From a one-line prompt to a booked call — here&apos;s the everyday flow.</p>
+          </div>
+
+          {/* Demo 1 — AI writer */}
+          <div className={`${styles.demo} ${styles.reveal}`}>
+            <div className={styles.demoCopy}>
+              <span className={styles.eyebrow}>AI email writer</span>
+              <h3>Describe it once. Get an on-brand draft.</h3>
+              <p>Cadence remembers your offer and tone, then writes a fresh, personalized email every time — no templates to wrestle with.</p>
+              <ul>
+                <li><CheckIcon size={17} />Brand memory keeps every message true to your pitch.</li>
+                <li><CheckIcon size={17} />Personalized per lead, never copy-paste.</li>
+                <li><CheckIcon size={17} />Improve, shorten, or spin subject lines in a click.</li>
+              </ul>
+            </div>
+            <div className={styles.frame}>
+              <div className={styles.frameBar}><i /><i /><i /><span>compose · cadence</span></div>
+              <div className={styles.frameBody}>
+                <div className={styles.aiwTop}>
+                  <span className={styles.aiwChip}>✦ Writing with AI</span>
+                  <span className={styles.aiwBrand}>Brand: <b>Alpine</b></span>
+                </div>
+                <div className={styles.aiwMail}>
+                  <div className={styles.subj}>Subject · Working capital for your next move</div>
+                  <div className={styles.mailBody}>{typed}<span className={styles.caret} /></div>
+                </div>
+                <div className={styles.aiwTools}>
+                  <span>Improve</span><span>Shorten</span><span>Subject lines</span><span>Regenerate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Demo 2 — Reply inbox */}
+          <div className={`${styles.demo} ${styles.demoRev} ${styles.demoGap} ${styles.reveal}`}>
+            <div className={styles.frame}>
+              <div className={styles.frameBar}><i /><i /><i /><span>replies · triaged</span></div>
+              <div className={styles.frameBody}>
+                <div className={styles.inbox}>
+                  {[
+                    { who: "Jordan Reyes", snip: "“This is timely — can you send details?”", chip: "Interested", cls: styles.hot, action: <span className={styles.draft}>AI draft ready →</span> },
+                    { who: "Priya Nair", snip: "“Who handles this on your side?”", chip: "Needs reply", cls: styles.warm, action: <span className={styles.draft}>AI draft ready →</span> },
+                    { who: "Marcus Webb", snip: "“Not right now, maybe next quarter.”", chip: "Not now", cls: styles.cold, action: <span className={styles.openG}>Snoozed</span> },
+                  ].map((r) => (
+                    <div className={styles.reply} key={r.who}>
+                      <div>
+                        <div className={styles.who}>{r.who}</div>
+                        <div className={styles.snip}>{r.snip}</div>
+                      </div>
+                      <span className={`${styles.chip} ${r.cls}`}>{r.chip}</span>
+                      {r.action}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className={styles.demoCopy}>
+              <span className={styles.eyebrow}>Reply intelligence</span>
+              <h3>Every reply, sorted and ready to answer.</h3>
+              <p>Cadence reads each response, tags the intent, and floats the hot ones first — then drafts an on-brand reply right in the Gmail thread.</p>
+              <ul>
+                <li><CheckIcon size={17} />Interested, Needs reply, Not now — tagged automatically.</li>
+                <li><CheckIcon size={17} />One click drafts a reply in the real thread.</li>
+                <li><CheckIcon size={17} />Hot leads rise to the top so nothing slips.</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Demo 3 — Deliverability */}
+          <div className={`${styles.demo} ${styles.demoGap} ${styles.reveal}`}>
+            <div className={styles.demoCopy}>
+              <span className={styles.eyebrow}>Deliverability guard</span>
+              <h3>Know you&apos;ll land before you send.</h3>
+              <p>Zero-setup checks for SPF, DKIM, and DMARC plus Gmail Postmaster reputation — with human-paced sending that keeps you off spam filters.</p>
+              <ul>
+                <li><CheckIcon size={17} />Domain auth checked automatically.</li>
+                <li><CheckIcon size={17} />Sends spread across the day, never in bursts.</li>
+                <li><CheckIcon size={17} />Reputation monitored so issues surface early.</li>
+              </ul>
+            </div>
+            <div className={styles.frame}>
+              <div className={styles.frameBar}><i /><i /><i /><span>deliverability · health</span></div>
+              <div className={styles.frameBody}>
+                <div className={styles.deliv}>
+                  <div className={styles.gauge}>
+                    <div className={styles.gaugeInner}>
+                      <div>
+                        <div className={styles.score}>94</div>
+                        <div className={styles.gaugeLab}>Inbox score</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.checks}>
+                    {[["SPF", "Pass"], ["DKIM", "Pass"], ["DMARC", "Pass"], ["Postmaster", "Good"]].map(([k, v]) => (
+                      <div className={styles.checkrow} key={k}>
+                        <b>{k}</b><span className={styles.pass}>✓ {v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Security */}
       <section className={`${styles.bandInk2} ${styles.pad}`} id="security">
         <div className={styles.wrap}>
@@ -289,6 +435,87 @@ export function Landing() {
                 <h3>{s.t}</h3>
                 <p>{s.d}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className={`${styles.bandLight} ${styles.pad}`} id="pricing">
+        <div className={styles.wrap}>
+          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
+            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Pricing</span>
+            <h2>Simple plans, coming at launch.</h2>
+            <p>Final pricing lands when early access opens. Join the waitlist for founding-member rates.</p>
+          </div>
+          <div className={styles.prices}>
+            {/* Starter */}
+            <div className={`${styles.price} ${styles.reveal}`}>
+              <div className={styles.plan}>Starter</div>
+              <div className={styles.amt}>$29 <small>/ seat · mo</small></div>
+              <span className={styles.soon}>Coming soon</span>
+              <p className={styles.who2}>For a solo rep who wants to send smarter.</p>
+              <ul>
+                <li><CheckIcon size={16} />AI email writer with brand memory</li>
+                <li><CheckIcon size={16} />Human-paced campaigns from your Gmail</li>
+                <li><CheckIcon size={16} />Reply triage &amp; AI drafts</li>
+                <li><CheckIcon size={16} />Deliverability checks</li>
+              </ul>
+              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Join the waitlist</a>
+            </div>
+            {/* Team — featured */}
+            <div className={`${styles.price} ${styles.featPlan} ${styles.reveal}`}>
+              <span className={styles.badgeTop}>Most popular</span>
+              <div className={styles.plan}>Team</div>
+              <div className={styles.amt}>$24 <small>/ seat · mo</small></div>
+              <span className={styles.soon}>Coming soon</span>
+              <p className={styles.who2}>For teams selling together, with full visibility.</p>
+              <ul>
+                <li><CheckIcon size={16} />Everything in Starter</li>
+                <li><CheckIcon size={16} />Roles, assignment &amp; team dashboards</li>
+                <li><CheckIcon size={16} />Per-rep leaderboards &amp; reporting</li>
+                <li><CheckIcon size={16} />Shared brand memory profiles</li>
+              </ul>
+              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight} ${styles.btnLightPri}`}>Join the waitlist</a>
+            </div>
+            {/* Enterprise */}
+            <div className={`${styles.price} ${styles.reveal}`}>
+              <div className={styles.plan}>Enterprise</div>
+              <div className={styles.amt}>Custom</div>
+              <span className={styles.soon}>Coming soon</span>
+              <p className={styles.who2}>For orgs with security, scale &amp; SSO needs.</p>
+              <ul>
+                <li><CheckIcon size={16} />Everything in Team</li>
+                <li><CheckIcon size={16} />SSO &amp; advanced data controls</li>
+                <li><CheckIcon size={16} />Custom limits &amp; dedicated onboarding</li>
+                <li><CheckIcon size={16} />Priority support &amp; SLA</li>
+              </ul>
+              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Contact us</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className={`${styles.bandInk2} ${styles.pad}`} id="faq">
+        <div className={styles.wrap}>
+          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
+            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Questions</span>
+            <h2>Everything you might be wondering.</h2>
+          </div>
+          <div className={`${styles.faq} ${styles.reveal}`}>
+            {[
+              ["When does Cadence launch?", "We're rolling out private early access in waves. Join the waitlist and we'll email you the moment a seat opens for you."],
+              ["Do I need a new email service?", "No. Cadence sends from your own Gmail with a narrow, revocable permission — your identity, your inbox, real threads. Nothing is spoofed or relayed."],
+              ["Is my data safe?", "Yes. Every rep's data is isolated, your Gmail token is encrypted with a managed key, database access is deny-by-default, and we never sell, share, or train third-party models on your data."],
+              ["Will this hurt my deliverability?", "The opposite. Cadence spreads sends across the day to stay within Gmail's limits and checks SPF, DKIM, DMARC, and your Postmaster reputation so you land in the inbox."],
+              ["How much will it cost?", "Final pricing is set at launch. Waitlist members get founding-member rates — join now to lock in the best pricing."],
+              ["Can my whole team use it?", "Yes. Cadence has roles, lead assignment, per-rep leaderboards, and team-lead dashboards built in from day one."],
+            ].map(([q, a]) => (
+              <details key={q}>
+                <summary>{q}</summary>
+                <p>{a}</p>
+              </details>
             ))}
           </div>
         </div>
@@ -318,8 +545,10 @@ export function Landing() {
           </div>
           <div className={styles.cols}>
             <a href="#features">Features</a>
+            <a href="#demos">Demos</a>
+            <a href="#pricing">Pricing</a>
             <a href="#security">Security</a>
-            <a href="#waitlist">Early access</a>
+            <a href="#faq">FAQ</a>
           </div>
           <div className={styles.fine}>© 2026 Cadence · Private early access</div>
         </div>
