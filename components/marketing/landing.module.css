@@ -64,6 +64,12 @@
 .navLinks a { color: var(--onDarkMuted); text-decoration: none; font-size: 14.5px; font-weight: 500; transition: color 0.15s; }
 .navLinks a:hover { color: var(--onDark); }
 @media (max-width: 820px) { .navLinks { display: none; } }
+.navCta { display: flex; align-items: center; gap: 6px; }
+.login { color: var(--onDark); text-decoration: none; font-size: 14.5px; font-weight: 600; padding: 8px 12px; border-radius: 10px; transition: color 0.15s, background 0.15s; }
+.login:hover { color: var(--accent); background: rgba(255, 255, 255, 0.04); }
+.heroLogin { margin: 14px 0 0; font-size: 14px; color: var(--onDarkMuted); }
+.heroLogin a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.heroLogin a:hover { text-decoration: underline; }
 
 /* Hero */
 .hero { position: relative; padding: 84px 0 40px; text-align: center; background: linear-gradient(180deg, var(--ink), var(--ink2)); }

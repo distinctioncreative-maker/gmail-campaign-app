@@ -226,7 +226,10 @@ export function Landing() {
             <a href="#pricing">Pricing</a>
             <a href="#security">Security</a>
           </div>
-          <a href="#waitlist" className={`${styles.btn} ${styles.btnPrimary}`}>Join the waitlist</a>
+          <div className={styles.navCta}>
+            <a href="/sign-in" className={styles.login}>Log in</a>
+            <a href="#waitlist" className={`${styles.btn} ${styles.btnPrimary}`}>Join the waitlist</a>
+          </div>
         </div>
       </nav>
 
@@ -247,6 +250,7 @@ export function Landing() {
               cta="Get early access"
               note={<>Send from <b>your own Gmail</b>. No credit card. We&apos;ll only email you about early access.</>}
             />
+            <p className={styles.heroLogin}>Already have early access? <a href="/sign-in">Log in →</a></p>
           </div>
           <div className={`${styles.pulseStage} ${styles.reveal}`}>
             <canvas ref={canvasRef} width={1960} height={400} aria-hidden="true" />
