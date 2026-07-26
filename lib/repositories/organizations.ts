@@ -7,8 +7,10 @@ import {
   OrganizationSchema,
   type Member,
   type Organization,
+  type TenantType,
 } from "@/schemas/user";
 import type { Role } from "@/schemas/common";
+import { tenantTypeFor } from "@/lib/tenancy/accountType";
 
 const DEFAULT_ORG_ID = "default";
 
@@ -46,6 +48,7 @@ export async function getOrCreateOrganizationForDomain(domain: string): Promise<
   const org: Organization = {
     organizationId: orgId,
     name: orgNameForDomain(domain, orgId),
+    tenantType: "WORKSPACE",
     // New per-domain orgs allow just their own domain; the default org keeps
     // the full allowlist for backward compatibility.
     allowedDomain: orgId === DEFAULT_ORG_ID ? env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN : domain,
@@ -56,6 +59,52 @@ export async function getOrCreateOrganizationForDomain(domain: string): Promise<
   };
   await ref.create(org);
   return org;
+}
+
+/** Resolve (creating if needed) the private per-user workspace for a Solo
+ * (consumer Gmail) account. Keyed by uid so two consumers never collide. */
+export async function getOrCreateConsumerOrg(
+  userId: string,
+  displayName: string
+): Promise<Organization> {
+  const db = firestore();
+  const orgId = `user_${userId}`;
+  const ref = db.collection("organizations").doc(orgId);
+  const snap = await ref.get();
+  if (snap.exists) return OrganizationSchema.parse(snap.data());
+
+  const now = Date.now();
+  const label = displayName.trim().split(/\s+/)[0] || "My";
+  const org: Organization = {
+    organizationId: orgId,
+    name: `${label}'s workspace`,
+    tenantType: "CONSUMER",
+    allowedDomain: "personal",
+    collisionPolicy: "OFF",
+    collisionBlockDays: 30,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await ref.create(org);
+  return org;
+}
+
+/**
+ * The one place that decides which tenant an authenticated identity belongs
+ * to. Custom domains map to a shared Workspace org (Enterprise); public
+ * providers map to a private per-user workspace (Solo).
+ */
+export async function resolveTenant(identity: {
+  userId: string;
+  email: string;
+  displayName: string;
+}): Promise<{ org: Organization; tenantType: TenantType }> {
+  const domain = identity.email.split("@")[1]?.toLowerCase() ?? "";
+  const tenantType = tenantTypeFor(domain);
+  if (tenantType === "CONSUMER") {
+    return { org: await getOrCreateConsumerOrg(identity.userId, identity.displayName), tenantType };
+  }
+  return { org: await getOrCreateOrganizationForDomain(domain), tenantType };
 }
 
 export async function getMember(

@@ -1,6 +1,6 @@
 import "server-only";
 import { firestore } from "@/lib/firebase/admin";
-import { UserSchema, type User } from "@/schemas/user";
+import { UserSchema, type User, type TenantType } from "@/schemas/user";
 import type { Role } from "@/schemas/common";
 
 export async function getUser(userId: string): Promise<User | null> {
@@ -14,6 +14,7 @@ export async function createUser(input: {
   email: string;
   displayName: string;
   role: Role;
+  tenantType: TenantType;
 }): Promise<User> {
   const now = Date.now();
   const user: User = {

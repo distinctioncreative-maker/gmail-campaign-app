@@ -30,21 +30,26 @@ export async function createSessionCookie(idToken: string): Promise<{
     throw new AuthError("Your Google account email is not verified.");
   }
 
-  const allowedDomains = parseAllowedDomains(env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN);
-  // Fail closed: an empty allowlist means "no restriction", which is only
-  // acceptable in development. In production, refuse sign-in until an admin
-  // configures ALLOWED_GOOGLE_WORKSPACE_DOMAIN so we never auto-provision
-  // orgs/admins for arbitrary Google accounts.
-  if (allowlistMisconfigured(allowedDomains, env.NODE_ENV === "production")) {
-    throw new AuthError(
-      "Sign-in isn't configured yet. An administrator must set the allowed work-email domains before anyone can sign in."
-    );
-  }
-  const hd = typeof decoded.hd === "string" ? decoded.hd : null;
-  if (!isAllowedAccount(email, hd, allowedDomains)) {
-    throw new AuthError(
-      `This app is restricted to ${allowedDomains.join(", ")} accounts. Sign in with your work account.`
-    );
+  // "open" mode lets any verified Google account sign in (consumers get a
+  // private per-user workspace downstream). Default "allowlist" mode keeps
+  // sign-in restricted to the configured work domains.
+  if (env.SIGNUP_MODE.toLowerCase() !== "open") {
+    const allowedDomains = parseAllowedDomains(env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN);
+    // Fail closed: an empty allowlist means "no restriction", which is only
+    // acceptable in development. In production, refuse sign-in until an admin
+    // configures ALLOWED_GOOGLE_WORKSPACE_DOMAIN so we never auto-provision
+    // orgs/admins for arbitrary Google accounts.
+    if (allowlistMisconfigured(allowedDomains, env.NODE_ENV === "production")) {
+      throw new AuthError(
+        "Sign-in isn't configured yet. An administrator must set the allowed work-email domains before anyone can sign in."
+      );
+    }
+    const hd = typeof decoded.hd === "string" ? decoded.hd : null;
+    if (!isAllowedAccount(email, hd, allowedDomains)) {
+      throw new AuthError(
+        `This app is restricted to ${allowedDomains.join(", ")} accounts. Sign in with your work account.`
+      );
+    }
   }
 
   const cookieValue = await adminAuth().createSessionCookie(idToken, {

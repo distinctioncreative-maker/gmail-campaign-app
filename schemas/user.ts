@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { EpochMillis, RoleSchema } from "./common";
 
+/** WORKSPACE = a shared, team-based org keyed by a custom email domain
+ * (Enterprise mode). CONSUMER = a single-person private workspace for a
+ * generic provider account like gmail.com (Solo mode). Defaults to WORKSPACE
+ * so pre-existing docs stay valid. */
+export const TenantTypeSchema = z.enum(["WORKSPACE", "CONSUMER"]).default("WORKSPACE");
+export type TenantType = z.infer<typeof TenantTypeSchema>;
+
 export const OnboardingStatusSchema = z.enum([
   "NEW",
   "GMAIL_CONNECTED",
@@ -17,6 +24,7 @@ export const UserSchema = z.object({
   displayName: z.string(),
   role: RoleSchema,
   active: z.boolean(),
+  tenantType: TenantTypeSchema,
   onboardingStatus: OnboardingStatusSchema,
   timezone: z.string().default("America/New_York"),
   createdAt: EpochMillis,
@@ -53,6 +61,7 @@ export type Team = z.infer<typeof TeamSchema>;
 export const OrganizationSchema = z.object({
   organizationId: z.string().min(1),
   name: z.string().min(1),
+  tenantType: TenantTypeSchema,
   allowedDomain: z.string().min(1),
   collisionPolicy: z
     .enum(["OFF", "PRIVATE_WARNING", "MANAGER_VISIBLE", "BLOCK_RECENT_TEAM_CONTACT"])

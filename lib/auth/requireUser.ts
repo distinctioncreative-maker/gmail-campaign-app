@@ -4,17 +4,18 @@ import { getUser, createUser, touchLastLogin } from "@/lib/repositories/users";
 import {
   countMembers,
   getMember,
-  getOrCreateOrganizationForDomain,
+  resolveTenant,
   upsertMember,
 } from "@/lib/repositories/organizations";
 import type { Role } from "@/schemas/common";
-import type { User } from "@/schemas/user";
+import type { TenantType, User } from "@/schemas/user";
 
 export interface AuthContext {
   userId: string;
   organizationId: string;
   email: string;
   role: Role;
+  tenantType: TenantType;
   user: User;
 }
 
@@ -43,8 +44,11 @@ export async function requireUser(): Promise<AuthContext> {
   const identity = await verifySession();
   if (!identity) throw new UnauthorizedError();
 
-  const domain = identity.email.split("@")[1]?.toLowerCase() ?? "";
-  const org = await getOrCreateOrganizationForDomain(domain);
+  const { org, tenantType } = await resolveTenant({
+    userId: identity.userId,
+    email: identity.email,
+    displayName: identity.displayName,
+  });
 
   let user = await getUser(identity.userId);
   let member = await getMember(org.organizationId, identity.userId);
@@ -59,6 +63,7 @@ export async function requireUser(): Promise<AuthContext> {
       email: identity.email,
       displayName: identity.displayName,
       role: member.role,
+      tenantType,
     });
   } else {
     await touchLastLogin(user.userId);
@@ -73,6 +78,7 @@ export async function requireUser(): Promise<AuthContext> {
     organizationId: org.organizationId,
     email: user.email,
     role: member.role,
+    tenantType: org.tenantType,
     user,
   };
 }

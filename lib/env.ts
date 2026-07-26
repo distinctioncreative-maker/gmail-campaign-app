@@ -8,6 +8,11 @@ const EnvSchema = z.object({
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
   GOOGLE_OAUTH_REDIRECT_URI: z.string().default("http://localhost:3000/api/gmail/callback"),
   ALLOWED_GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
+  // Who may sign in. "allowlist" (default) restricts to the allowed domains
+  // above (locked to your own orgs). "open" lets any Google account sign in,
+  // with consumer accounts routed to private per-user workspaces. Flip to
+  // "open" only once billing + Google OAuth verification are in place.
+  SIGNUP_MODE: z.string().default("allowlist"),
   SESSION_SECRET: z.string().default(""),
   TOKEN_KMS_KEY_RESOURCE: z.string().default(""),
   LOCAL_DEV_ENCRYPTION_KEY: z.string().default(""),
