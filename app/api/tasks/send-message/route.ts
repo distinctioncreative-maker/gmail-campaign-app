@@ -45,6 +45,10 @@ const PayloadSchema = z.object({
 });
 
 const AUTO_PAUSE_ERROR_THRESHOLD = 5;
+// How many times a *pre-send* failure (DB blip, token refresh, rendering) may
+// be retried before we give up on the item. Failures at/after the Gmail send
+// are never auto-retried (the outcome is ambiguous — a retry could double-send).
+const MAX_PRESEND_ATTEMPTS = 4;
 
 /**
  * Cloud Tasks worker: send (or draft) one campaign message.
@@ -95,6 +99,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, reason }, { status: 200 });
   };
 
+  // True once we reach the Gmail send; gates whether a failure may auto-retry.
+  let reachedSend = false;
   try {
     // 2. Load state.
     const [campaign, recipient, connection] = await Promise.all([
@@ -290,6 +296,8 @@ export async function POST(req: NextRequest) {
     // Test vs real is the ORG's current sending mode, resolved fresh here.
     const testMode = await isTestModeForOrg(organizationId);
     const threaded = isFollowup && step?.sameThread && recipient.gmailThreadId;
+    // Past this point a failure's outcome is ambiguous — never auto-retry.
+    reachedSend = true;
     const result = await sendEmail({
       userId: ownerUserId,
       to: recipient.emailSnapshot,
@@ -366,6 +374,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, sent: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+
+    // Pre-send failures (Firestore blips, token refresh, rendering) never put
+    // an email on the wire, so re-claiming is safe — retry a bounded number of
+    // times instead of silently dropping the recipient. The item-scoped
+    // idempotency reservation guarantees the retry can't double-send.
+    if (!reachedSend && item.attemptCount < MAX_PRESEND_ATTEMPTS) {
+      await updateQueueItem(owner, campaignId, queueItemId, {
+        status: "RETRY_SCHEDULED",
+        lastError: message,
+      });
+      // 500 → Cloud Tasks retries with backoff; RETRY_SCHEDULED is claimable.
+      return NextResponse.json({ ok: false, error: message, willRetry: true }, { status: 500 });
+    }
+
     await updateQueueItem(owner, campaignId, queueItemId, {
       status: "ERROR",
       lastError: message,

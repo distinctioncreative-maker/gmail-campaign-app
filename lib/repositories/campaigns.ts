@@ -282,7 +282,16 @@ export async function reserveIdempotencyKey(
   const ref = messagesRef(owner, campaignId).doc(idempotencyKey.replaceAll("/", "_"));
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (snap.exists) return false;
+    if (snap.exists) {
+      const data = snap.data();
+      // Already finalized as SENT → never re-send.
+      if (data?.status === "SENT") return false;
+      // A reservation exists but was never finalized (a prior attempt crashed
+      // between reserving and finalizing). Only the SAME queue item may
+      // re-proceed — this makes a pre-send retry safe without ever letting a
+      // different item reuse the key.
+      return data?.queueItemId === record.queueItemId;
+    }
     tx.set(ref, {
       idempotencyKey,
       ...record,
