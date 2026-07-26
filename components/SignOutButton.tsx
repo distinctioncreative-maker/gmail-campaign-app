@@ -10,7 +10,8 @@ export function SignOutButton() {
         await fetch("/api/auth/session", { method: "DELETE" });
         const { signOutGoogle } = await import("@/lib/firebase/client");
         await signOutGoogle();
-        router.push("/sign-in");
+        router.push("/");
+        router.refresh();
       }}
       aria-label="Sign out"
       title="Sign out"
