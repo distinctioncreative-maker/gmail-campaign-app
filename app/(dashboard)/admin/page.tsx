@@ -6,6 +6,7 @@ import { AdminPanel } from "@/components/admin/AdminPanel";
 import { SendingModeCard } from "@/components/admin/SendingModeCard";
 import { AiWritingCard } from "@/components/admin/AiWritingCard";
 import { InviteTeamCard } from "@/components/admin/InviteTeamCard";
+import { BillingCard } from "@/components/admin/BillingCard";
 import { WorkspaceNameCard } from "@/components/admin/WorkspaceNameCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import Link from "next/link";
@@ -34,6 +35,9 @@ export default async function AdminPage() {
       </div>
       <div className="mt-6">
         <AiWritingCard />
+      </div>
+      <div className="mt-6">
+        <BillingCard />
       </div>
       <div className="mt-6">
         <InviteTeamCard />

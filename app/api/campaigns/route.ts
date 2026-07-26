@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
-import { capabilitiesFor } from "@/lib/tenancy/capabilities";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { PLANS } from "@/lib/billing/plans";
 import {
   createCampaign,
   listCampaigns,
@@ -40,10 +41,11 @@ const CreateSchema = z.object({
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
   const input = CreateSchema.parse(await req.json());
-  const profile = await getSenderProfile(ctx);
+  const [profile, settings] = await Promise.all([getSenderProfile(ctx), getOrgSettings(ctx.organizationId)]);
 
-  // Solo (consumer) tenants are capped to a deliverability-safe daily volume.
-  const cap = capabilitiesFor(ctx.tenantType).maxDailySends;
+  // Daily volume is capped by the org's plan (Solo/FREE lowest, higher tiers
+  // raise it) for deliverability safety.
+  const cap = PLANS[settings.billing.plan].maxDailySends;
   const requestedLimit = input.schedule?.dailySendLimit ?? profile.sendingDefaults.dailySendLimit;
   const dailySendLimit = Math.min(requestedLimit, cap);
 
