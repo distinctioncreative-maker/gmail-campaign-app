@@ -31,6 +31,15 @@ export async function createSessionCookie(idToken: string): Promise<{
   }
 
   const allowedDomains = parseAllowedDomains(env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN);
+  // Fail closed: an empty allowlist means "no restriction", which is only
+  // acceptable in development. In production, refuse sign-in until an admin
+  // configures ALLOWED_GOOGLE_WORKSPACE_DOMAIN so we never auto-provision
+  // orgs/admins for arbitrary Google accounts.
+  if (allowedDomains.length === 0 && env.NODE_ENV === "production") {
+    throw new AuthError(
+      "Sign-in isn't configured yet. An administrator must set the allowed work-email domains before anyone can sign in."
+    );
+  }
   const hd = typeof decoded.hd === "string" ? decoded.hd : null;
   if (!isAllowedAccount(email, hd, allowedDomains)) {
     throw new AuthError(
