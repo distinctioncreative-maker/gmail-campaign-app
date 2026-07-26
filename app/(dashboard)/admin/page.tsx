@@ -6,6 +6,7 @@ import { SendingModeCard } from "@/components/admin/SendingModeCard";
 import { AiWritingCard } from "@/components/admin/AiWritingCard";
 import { WorkspaceNameCard } from "@/components/admin/WorkspaceNameCard";
 import { PageHeader } from "@/components/ui/PageHeader";
+import Link from "next/link";
 
 export default async function AdminPage() {
   const ctx = await requireUser();
@@ -31,6 +32,20 @@ export default async function AdminPage() {
       </div>
       <div className="mt-6">
         <AiWritingCard />
+      </div>
+      <div className="mt-6">
+        <Link
+          href="/admin/waitlist"
+          className="card card-hover flex items-center justify-between p-6 no-underline"
+        >
+          <div>
+            <h2 className="font-medium">Early-access waitlist</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              View and export everyone who signed up from the public landing page.
+            </p>
+          </div>
+          <span aria-hidden className="text-slate-400">→</span>
+        </Link>
       </div>
       <div className="mt-6">
         <AdminPanel
