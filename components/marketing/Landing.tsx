@@ -9,6 +9,29 @@ const CheckIcon = ({ size = 18 }: { size?: number }) => (
   </svg>
 );
 
+const XIcon = ({ size = 17 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" />
+  </svg>
+);
+
+/** One distinct line-icon per feature, so the grid reads as crafted, not stamped. */
+function FeatureIcon({ name }: { name: string }) {
+  const map: Record<string, React.ReactNode> = {
+    "AI email writer": (<><path d="M4 20l.9-3.8L15.7 5.4a2 2 0 0 1 2.9 2.9L7.8 19.1 4 20Z" /><path d="M13.4 7.7l2.9 2.9" /></>),
+    "Smart campaigns": (<><path d="M22 2 2 9.5l7.2 2.8L12 19.5 22 2Z" /><path d="M22 2 9.2 12.3" /></>),
+    "Reply intelligence": (<><path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10Z" /><path d="M8 9h8M8 12.5h5" /></>),
+    "Deliverability guard": (<><path d="M12 21s7-3.5 7-9V6l-7-3-7 3v6c0 5.5 7 9 7 9Z" /><path d="M9 11.5l2 2 4-4" /></>),
+    "Lead command center": (<><path d="M12 3 3 7.5l9 4.5 9-4.5L12 3Z" /><path d="M3 12l9 4.5L21 12" /><path d="M3 16.5 12 21l9-4.5" /></>),
+    "Team & reporting": (<><path d="M4 4v16h16" /><path d="M8 16v-3M12 16V8M16 16v-6" /></>),
+  };
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {map[name]}
+    </svg>
+  );
+}
+
 /** Reusable email-capture field that posts to the public /api/waitlist. */
 function WaitField({ source, cta, note }: { source: string; cta: string; note: React.ReactNode }) {
   const [email, setEmail] = useState("");
@@ -70,12 +93,26 @@ function WaitField({ source, cta, note }: { source: string; cta: string; note: R
 }
 
 const FEATURES = [
-  { t: "AI email writer", d: "Describe the email in a sentence — get a ready-to-send draft that weaves in your brand's offer and tone, freshly every time.", tag: "Brand memory" },
-  { t: "Smart campaigns", d: "Pick leads, pick a pace, launch. Cadence spreads sends across the day so you never trip Gmail's limits or spam filters.", tag: "Human-paced sending" },
-  { t: "Reply intelligence", d: "Every reply is tagged — Interested, Needs reply, Not now — and one click drafts an on-brand response in the Gmail thread.", tag: "Triage + AI drafts" },
-  { t: "Deliverability guard", d: "Zero-setup checks for SPF, DKIM and DMARC, plus Gmail Postmaster reputation — so you know you'll land before you send.", tag: "Domain health" },
-  { t: "Lead command center", d: "Paste from Salesforce or upload a CSV, dedupe automatically, and organize everyone into reusable, ever-growing lists.", tag: "Import · lists" },
-  { t: "Team & reporting", d: "Team-lead dashboards, per-rep leaderboards, and clear reports on sends, reply rates, and your best campaigns.", tag: "Roles · leaderboards" },
+  { t: "AI email writer", d: "Describe the email in a sentence. Cadence writes a ready-to-send draft in your brand's voice — fresh every time, never a canned template.", tag: "Brand memory" },
+  { t: "Smart campaigns", d: "Pick your leads, pick a pace, launch. Sends spread naturally across the day, so you stay under Gmail's limits and out of spam.", tag: "Human-paced sending" },
+  { t: "Reply intelligence", d: "Every reply is tagged Interested, Needs reply, or Not now — and one click drafts an on-brand response right in the thread.", tag: "Triage + AI drafts" },
+  { t: "Deliverability guard", d: "SPF, DKIM, DMARC, and Postmaster reputation — checked for you, so you know you'll land in the inbox before you hit send.", tag: "Domain health" },
+  { t: "Lead command center", d: "Paste from Salesforce or drop in a CSV. Cadence dedupes the mess and files everyone into clean, reusable lists.", tag: "Import · lists" },
+  { t: "Team & reporting", d: "Team-lead dashboards, per-rep leaderboards, and honest reports on sends, reply rates, and your best campaigns.", tag: "Roles · leaderboards" },
+];
+
+// The payoff, framed as a switch: same job, minus the friction.
+const OLD_WAY = [
+  "20 minutes writing every email from a blank page",
+  "Hot replies buried in a noisy, crowded inbox",
+  "Spam-folder roulette on every send",
+  "Another login — and a whole new sending service to learn",
+];
+const NEW_WAY = [
+  "On-brand drafts in seconds, personalized to each lead",
+  "Every reply tagged, sorted, and drafted for you",
+  "Auth checks and paced sending, so you land in the inbox",
+  "Connect your own Gmail and start — nothing new to learn",
 ];
 
 const SECURITY = [
@@ -241,8 +278,8 @@ export function Landing() {
             Sales outreach that keeps the <span className={styles.grad}>cadence</span>.
           </h1>
           <p className={styles.sub}>
-            Cadence sends personalized campaigns from your own Gmail, writes on-brand emails with AI,
-            and protects your deliverability — so every message lands in rhythm, and in the inbox.
+            Cadence writes on-brand emails with AI, sends them from your own Gmail at a human pace,
+            and turns every reply into your next move — so more emails land, and more leads reply.
           </p>
           <div id="waitlist">
             <WaitField
@@ -288,15 +325,13 @@ export function Landing() {
           <div className={`${styles.head} ${styles.reveal}`}>
             <span className={styles.eyebrow}>The platform</span>
             <h2>Everything a modern outreach team needs — nothing it doesn&apos;t.</h2>
-            <p>From the first import to the booked call, Cadence handles the busywork so your reps can sell.</p>
+            <p>From the first import to the booked call, Cadence handles the busywork so your reps can spend their time selling.</p>
           </div>
           <div className={styles.features}>
             {FEATURES.map((f) => (
               <div className={`${styles.feat} ${styles.reveal}`} key={f.t}>
                 <div className={styles.ic}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M13 3l2.5 6.5L22 12l-6.5 2.5L13 21l-2.5-6.5L4 12l6.5-2.5L13 3Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-                  </svg>
+                  <FeatureIcon name={f.t} />
                 </div>
                 <h3>{f.t}</h3>
                 <p>{f.d}</p>
@@ -414,6 +449,35 @@ export function Landing() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Value / what you save */}
+      <section className={`${styles.bandLight} ${styles.pad}`} id="value">
+        <div className={styles.wrap}>
+          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
+            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Why teams switch</span>
+            <h2>Trade the busywork for booked calls.</h2>
+            <p>The same outreach your reps already do — minus the parts that drain the day.</p>
+          </div>
+          <div className={`${styles.compare} ${styles.reveal}`}>
+            <div className={`${styles.col} ${styles.colBad}`}>
+              <div className={styles.colHead}><XIcon size={15} /> The old way</div>
+              <ul className={styles.cmp}>
+                {OLD_WAY.map((x) => (
+                  <li key={x}><XIcon size={17} />{x}</li>
+                ))}
+              </ul>
+            </div>
+            <div className={`${styles.col} ${styles.colGood}`}>
+              <div className={styles.colHead}><CheckIcon size={15} /> With Cadence</div>
+              <ul className={styles.cmp}>
+                {NEW_WAY.map((x) => (
+                  <li key={x}><CheckIcon size={17} />{x}</li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
