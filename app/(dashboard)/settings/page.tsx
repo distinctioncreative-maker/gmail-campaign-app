@@ -1,4 +1,6 @@
 import { requireUser } from "@/lib/auth/requireUser";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
+import { InviteTeamCard } from "@/components/admin/InviteTeamCard";
 import { getConnectionPublic } from "@/lib/repositories/gmailConnections";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { GmailConnectionCard } from "@/components/GmailConnectionCard";
@@ -40,6 +42,9 @@ export default async function SettingsPage({
       )}
 
       <div className="mt-6 max-w-2xl space-y-6">
+        {ctx.tenantType === "CONSUMER" && ctx.role === "ADMIN" && capabilitiesFor(ctx.tenantType).invites && (
+          <InviteTeamCard solo />
+        )}
         <div className="card p-6">
           <h2 className="font-medium">Your name</h2>
           <p className="mt-1 text-sm text-slate-600">

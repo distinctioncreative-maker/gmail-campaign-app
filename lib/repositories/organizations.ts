@@ -107,6 +107,16 @@ export async function resolveTenant(identity: {
   return { org: await getOrCreateOrganizationForDomain(domain), tenantType };
 }
 
+/** Promote a Solo (consumer) workspace into a real team org so the owner can
+ * invite teammates. Same org id and data — just unlocks team capabilities.
+ * No-op for orgs that are already a WORKSPACE. */
+export async function promoteConsumerToWorkspace(organizationId: string): Promise<void> {
+  await firestore()
+    .collection("organizations")
+    .doc(organizationId)
+    .set({ tenantType: "WORKSPACE", updatedAt: Date.now() }, { merge: true });
+}
+
 export async function getMember(
   organizationId: string,
   userId: string

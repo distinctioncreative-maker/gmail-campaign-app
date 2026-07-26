@@ -34,4 +34,8 @@ describe("capabilitiesFor", () => {
     expect(c.requiresWarmup).toBe(true);
     expect(c.maxDailySends).toBeLessThan(capabilitiesFor("WORKSPACE").maxDailySends);
   });
+  it("lets both tenant types invite (Solo invite promotes to a team)", () => {
+    expect(capabilitiesFor("CONSUMER").invites).toBe(true);
+    expect(capabilitiesFor("WORKSPACE").invites).toBe(true);
+  });
 });

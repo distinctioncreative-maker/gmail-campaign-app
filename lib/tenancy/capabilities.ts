@@ -38,7 +38,8 @@ const WORKSPACE: Capabilities = {
 
 const CONSUMER: Capabilities = {
   teams: false,
-  invites: false,
+  // Solo can invite: the first invite promotes the workspace into a team.
+  invites: true,
   adminConsole: false,
   liveSending: true,
   requiresWarmup: true,
