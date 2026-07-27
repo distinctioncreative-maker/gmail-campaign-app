@@ -57,6 +57,20 @@ export default async function AdminPage() {
         </Link>
       </div>
       <div className="mt-6">
+        <Link
+          href="/admin/features"
+          className="card card-hover flex items-center justify-between p-6 no-underline"
+        >
+          <div>
+            <h2 className="font-medium">Feature checklist</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              What&apos;s shipped, in beta, or on the roadmap, kept accurate automatically.
+            </p>
+          </div>
+          <span aria-hidden className="text-slate-400">→</span>
+        </Link>
+      </div>
+      <div className="mt-6">
         <AdminPanel
           currentUserId={ctx.userId}
           members={members.map((m) => ({

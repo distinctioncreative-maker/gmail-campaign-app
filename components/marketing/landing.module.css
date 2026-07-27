@@ -11,6 +11,7 @@
   --glow: #7fc4ff;
   --good: #34d399;
   --gold: #f2c368;
+  --goldDeep: #c89a4a;
   --onDark: #eef3fb;
   --onDarkMuted: #9aa8c2;
   --onDarkFaint: #61708b;
@@ -20,6 +21,7 @@
   --cardHover: rgba(255, 255, 255, 0.06);
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+  --serif: var(--font-display, "Iowan Old Style", "Palatino Linotype", Georgia, serif);
   --maxw: 1120px;
 
   position: relative;
@@ -52,6 +54,7 @@
 @keyframes blip { 0%, 100% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
 
 .root h1, .root h2, .root h3 { text-wrap: balance; letter-spacing: -0.025em; font-weight: 700; margin: 0; color: var(--onDark); }
+.root h1, .root h2 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer;
@@ -96,8 +99,8 @@
   background: rgba(255, 255, 255, 0.03); padding: 7px 14px; border-radius: 999px;
 }
 .heroBadge b { color: var(--accent); font-weight: 600; }
-.hero h1 { font-size: clamp(44px, 7.6vw, 88px); line-height: 1.0; margin: 26px auto 0; max-width: 15ch; letter-spacing: -0.035em; }
-.grad { background: linear-gradient(120deg, var(--glow), var(--accent) 60%, var(--accentDeep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero h1 { font-size: clamp(44px, 7.6vw, 86px); line-height: 1.02; margin: 26px auto 0; max-width: 17ch; letter-spacing: -0.02em; }
+.grad { background: linear-gradient(120deg, var(--gold), var(--glow) 55%, var(--accentDeep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .sub { font-size: clamp(17px, 2.2vw, 20px); color: var(--onDarkMuted); max-width: 58ch; margin: 22px auto 0; }
 
 .waitlist { margin: 34px auto 0; max-width: 480px; }
@@ -127,10 +130,21 @@
 
 /* Unified glass card + hover, shared by features, security, pricing, demos */
 .feat, .sec, .price, .frame, .pipeGlass, .col {
+  position: relative;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 20px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+/* A hairline of warm light along the top edge — the one recurring "jewel"
+   signature tying every glass surface on the page together. */
+.feat::before, .sec::before, .price::before, .frame::before, .pipeGlass::before, .col::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 18px; right: 18px; height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 55%, transparent), transparent);
+  opacity: 0.55;
+  pointer-events: none;
 }
 .feat, .sec, .price {
   padding: 28px;
@@ -291,7 +305,7 @@
 .aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
 .aurora::before, .aurora::after { content: ""; position: absolute; width: 560px; height: 560px; border-radius: 50%; filter: blur(130px); opacity: 0.3; }
 .aurora::before { background: var(--accent); top: -200px; left: -80px; }
-.aurora::after { background: #6b3bff; bottom: -240px; right: -60px; opacity: 0.2; }
+.aurora::after { background: var(--gold); bottom: -240px; right: -60px; opacity: 0.16; }
 .finalInner { position: relative; z-index: 1; }
 
 /* Footer */

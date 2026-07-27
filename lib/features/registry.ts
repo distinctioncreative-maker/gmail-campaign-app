@@ -1,0 +1,513 @@
+/**
+ * Single source of truth for "what Cadence can do."
+ *
+ * This file is read by two consumers:
+ *  - `scripts/generate-features-doc.mts` → regenerates FEATURES.md (run via
+ *    `npm run docs:features`).
+ *  - `app/(dashboard)/admin/features/page.tsx` → renders the same list live
+ *    inside the app for admins.
+ *
+ * Convention (see AGENTS.md "Documentation upkeep"): when you ship, change,
+ * or remove a feature, update the relevant entry here first, then run
+ * `npm run docs:features`. Do not hand-edit FEATURES.md.
+ *
+ * Kept dependency-free (no "@/..." aliases) so it can be imported both by
+ * the Next.js app and by a plain Node script run outside the bundler.
+ */
+
+export type FeatureStatus = "shipped" | "beta" | "planned";
+
+export interface FeatureEntry {
+  /** Stable slug, kebab-case. Used as a React key; keep it once assigned. */
+  id: string;
+  name: string;
+  status: FeatureStatus;
+  /** One or two sentences: what it does and why it matters. */
+  description: string;
+  /** Key files/folders a developer would touch to change this feature. */
+  keyFiles?: string[];
+}
+
+export interface FeatureCategory {
+  id: string;
+  name: string;
+  features: FeatureEntry[];
+}
+
+export const FEATURE_CATEGORIES: FeatureCategory[] = [
+  {
+    id: "auth-tenancy",
+    name: "Auth & Tenancy",
+    features: [
+      {
+        id: "firebase-auth-session",
+        name: "Google sign-in + server session",
+        status: "shipped",
+        description:
+          "Firebase Auth (Google provider) on the client, exchanged for an HttpOnly session cookie signed with jose. Every request resolves a typed AuthContext server-side before touching data.",
+        keyFiles: ["lib/auth/session.ts", "lib/auth/requireUser.ts", "app/api/auth/session"],
+      },
+      {
+        id: "dual-mode-tenancy",
+        name: "Dual-mode tenancy (Solo vs Workspace)",
+        status: "shipped",
+        description:
+          "A custom email domain becomes a shared Workspace org (team, keyed by domain); a consumer provider (gmail.com, outlook.com, etc.) becomes a private Solo workspace keyed per user, so consumers never collide with each other or with a company's Workspace.",
+        keyFiles: ["lib/tenancy/accountType.ts", "lib/tenancy/capabilities.ts"],
+      },
+      {
+        id: "signup-modes",
+        name: "Allowlist / open signup modes",
+        status: "shipped",
+        description:
+          "SIGNUP_MODE=allowlist (default) restricts sign-in to configured work domains; SIGNUP_MODE=open lets any verified Google account in, routing consumers to isolated Solo workspaces. Open mode is gated behind completed Google OAuth verification.",
+        keyFiles: ["lib/env.ts", "lib/auth/domains.ts"],
+      },
+      {
+        id: "solo-to-team-promotion",
+        name: "Solo → Team promotion",
+        status: "shipped",
+        description:
+          "A Solo user who invites a teammate has their private workspace promoted into a full Workspace org in place, so growth from self-serve individuals into paying teams needs no migration step.",
+        keyFiles: ["lib/repositories/invites.ts"],
+      },
+      {
+        id: "roles",
+        name: "Roles (Sales Rep / Manager / Admin)",
+        status: "shipped",
+        description:
+          "Three roles gate what a member can see and do: reps manage their own data, managers see their team, admins control org policy and billing.",
+        keyFiles: ["schemas/common.ts", "lib/auth/requireUser.ts"],
+      },
+    ],
+  },
+  {
+    id: "leads",
+    name: "Leads & Import",
+    features: [
+      {
+        id: "salesforce-paste-import",
+        name: "Salesforce paste-format import",
+        status: "shipped",
+        description:
+          "Paste a Salesforce list view directly and Cadence parses names, companies, and emails out of the tab/column mess, flagging which rows are valid before import.",
+        keyFiles: ["lib/parser/salesforce.ts", "app/api/leads/parse-salesforce"],
+      },
+      {
+        id: "csv-import",
+        name: "CSV import with column mapping",
+        status: "shipped",
+        description: "Upload a CSV, map its columns to contact fields, and preview classification before committing the import.",
+        keyFiles: ["lib/leads/csv.ts", "app/api/leads/parse-csv"],
+      },
+      {
+        id: "lead-lists",
+        name: "Lead lists",
+        status: "shipped",
+        description: "Named, deduplicated collections of contacts a rep keeps topping up, separate from the master contacts table.",
+        keyFiles: ["schemas/leadList.ts", "lib/repositories/leadLists.ts"],
+      },
+      {
+        id: "lead-command-center",
+        name: "Lead command center",
+        status: "shipped",
+        description: "Editable per-lead detail pages with real engagement counters (emails sent, times replied), notes, Do-Not-Email, and delete.",
+        keyFiles: ["app/(dashboard)/leads", "lib/leads/engagement.ts"],
+      },
+      {
+        id: "suppressions",
+        name: "Suppressions (Do-Not-Email)",
+        status: "shipped",
+        description: "Personal and org-scoped suppression lists (opt-out, bounce, complaint, manual) checked before every send.",
+        keyFiles: ["schemas/suppression.ts", "components/SuppressionsManager.tsx"],
+      },
+      {
+        id: "sheets-import",
+        name: "Google Sheets import",
+        status: "planned",
+        description: "Deferred intentionally — CSV import covers the file-import case today; the import chooser already reserves the slot.",
+      },
+    ],
+  },
+  {
+    id: "templates-ai",
+    name: "Templates & AI Writing",
+    features: [
+      {
+        id: "templates",
+        name: "Reusable templates",
+        status: "shipped",
+        description: "Visual editor, starter templates, pasted HTML, or import straight from a Gmail draft, with placeholder personalization.",
+        keyFiles: ["schemas/template.ts", "lib/personalization/render.ts"],
+      },
+      {
+        id: "ai-writer",
+        name: "AI email writer",
+        status: "shipped",
+        description: "Describe an email in a sentence and get a ready-to-send, on-brand draft. Env-gated on GEMINI_API_KEY and an org-level admin switch; fully off by default.",
+        keyFiles: ["lib/ai/generateEmail.ts", "lib/ai/enabled.ts", "components/admin/AiWritingCard.tsx"],
+      },
+      {
+        id: "brand-memory",
+        name: "Brand memory",
+        status: "shipped",
+        description: "A saved org profile (offer, tone, pitch) that steers every AI-generated email so drafts stay consistent without re-explaining the business each time.",
+        keyFiles: ["app/api/ai/brand-memory"],
+      },
+      {
+        id: "ai-improve-subjects",
+        name: "AI improve / shorten / subject lines",
+        status: "shipped",
+        description: "One-click AI edits on an existing draft: tighten it, shorten it, or generate alternate subject lines.",
+        keyFiles: ["lib/ai/improveEmail.ts", "app/api/templates/improve", "app/api/templates/subjects"],
+      },
+      {
+        id: "ab-rotation",
+        name: "Template A/B rotation",
+        status: "shipped",
+        description: "Campaigns can rotate between templates and report which variant performs better.",
+      },
+    ],
+  },
+  {
+    id: "campaigns",
+    name: "Campaigns & Sequences",
+    features: [
+      {
+        id: "campaign-wizard",
+        name: "Campaign wizard",
+        status: "shipped",
+        description: "Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends.",
+        keyFiles: ["lib/campaigns/launch.ts", "app/(dashboard)/campaigns/new"],
+      },
+      {
+        id: "cloud-tasks-sending",
+        name: "Cloud Tasks sending engine",
+        status: "shipped",
+        description: "Every send is a queued, OIDC-verified Cloud Task, processed by an idempotent worker that retries pre-send failures and never double-sends.",
+        keyFiles: ["lib/tasks/enqueue.ts", "app/api/tasks/send-message", "lib/campaigns/idempotency.ts"],
+      },
+      {
+        id: "send-windows-caps",
+        name: "Send windows, pacing, and daily caps",
+        status: "shipped",
+        description: "Sends spread across allowed weekdays/hours at a human pace, capped per plan, to stay under Gmail's limits and out of spam folders.",
+        keyFiles: ["lib/scheduling/window.ts", "lib/billing/plans.ts"],
+      },
+      {
+        id: "campaign-controls",
+        name: "Pause / resume / cancel / retry / clone",
+        status: "shipped",
+        description: "Full lifecycle controls on a running campaign, plus a plain-language health diagnostic when something looks stuck.",
+        keyFiles: ["lib/campaigns/controls.ts", "lib/campaigns/diagnose.ts", "lib/campaigns/repair.ts"],
+      },
+      {
+        id: "collision-detection",
+        name: "Cross-rep contact collision policy",
+        status: "shipped",
+        description: "Prevents two reps in the same org from independently emailing the same prospect, with a privacy-preserving collision check.",
+        keyFiles: ["lib/campaigns/collision.ts"],
+      },
+      {
+        id: "sequences",
+        name: "Follow-up sequences",
+        status: "shipped",
+        description: "Automatic multi-step follow-ups on a delay, that stop the moment a lead replies.",
+        keyFiles: ["schemas/sequence.ts", "lib/campaigns/followups.ts"],
+      },
+      {
+        id: "ai-sequence-generation",
+        name: "AI-assisted sequence drafting",
+        status: "shipped",
+        description: "Generate a full follow-up sequence from a short prompt, pre-loaded with available templates.",
+        keyFiles: ["lib/ai/generateSequence.ts", "app/api/sequences/generate"],
+      },
+    ],
+  },
+  {
+    id: "replies",
+    name: "Replies & Inbox",
+    features: [
+      {
+        id: "reply-triage",
+        name: "Reply triage",
+        status: "shipped",
+        description: "Every reply is classified Interested / Needs reply / Not now automatically, so hot leads float to the top.",
+        keyFiles: ["lib/gmail/classifyReply.ts", "app/(dashboard)/replies"],
+      },
+      {
+        id: "ai-reply-drafts",
+        name: "AI reply drafts",
+        status: "shipped",
+        description: "One click drafts an on-brand reply as a real Gmail draft in the actual thread, nothing spoofed or relayed.",
+        keyFiles: ["lib/ai/generateReply.ts", "app/api/replies/draft"],
+      },
+      {
+        id: "bounce-handling",
+        name: "Bounce detection + unsubscribe handling",
+        status: "shipped",
+        description: "Automated mailbox scans classify bounces and unsubscribes, updating suppressions so the same mistake doesn't repeat, with an admin undo for accidental unsubscribes.",
+        keyFiles: ["lib/gmail/classifyBounce.ts", "lib/campaigns/monitoring.ts"],
+      },
+      {
+        id: "cron-sweeps",
+        name: "Scheduled reply/bounce sweeps",
+        status: "shipped",
+        description: "Cloud Scheduler triggers periodic, OIDC-verified sweeps so triage happens even when no one is looking, on top of the on-demand scan button.",
+        keyFiles: ["app/api/cron/sweep"],
+      },
+    ],
+  },
+  {
+    id: "deliverability",
+    name: "Deliverability",
+    features: [
+      {
+        id: "domain-auth-checks",
+        name: "SPF / DKIM / DMARC checks",
+        status: "shipped",
+        description: "Live DNS lookups confirm the sending domain is properly authenticated, surfaced as pass/fail before you rely on it.",
+        keyFiles: ["lib/deliverability/dnsLookup.ts", "app/(dashboard)/deliverability"],
+      },
+      {
+        id: "postmaster-integration",
+        name: "Gmail Postmaster Tools integration",
+        status: "shipped",
+        description: "Pulls domain reputation and spam-rate stats directly from Google, so declining sender reputation is visible before it costs you the inbox.",
+        keyFiles: ["lib/deliverability/postmaster.ts"],
+      },
+      {
+        id: "spam-checker",
+        name: "Built-in spam-risk checker",
+        status: "shipped",
+        description: "Scores template content for common spam triggers before it ever gets sent.",
+        keyFiles: ["lib/spam/score.ts"],
+      },
+    ],
+  },
+  {
+    id: "reporting-teams",
+    name: "Reporting & Teams",
+    features: [
+      {
+        id: "analytics-dashboard",
+        name: "Analytics dashboard",
+        status: "shipped",
+        description: "Totals, time-to-reply, a reply heatmap, best-send-times, and a daily trend chart, with CSV export.",
+        keyFiles: ["lib/analytics/metrics.ts", "app/(dashboard)/reports"],
+      },
+      {
+        id: "team-dashboards",
+        name: "Team Lead dashboards + leaderboards",
+        status: "shipped",
+        description: "Roster management and per-rep leaderboard KPIs (sent, replies, bounces, active campaigns) for managers and admins.",
+        keyFiles: ["lib/teams/stats.ts", "components/team"],
+      },
+      {
+        id: "read-only-drilldown",
+        name: "Read-only rep drill-down",
+        status: "shipped",
+        description: "A team lead can inspect one rep's campaigns for coaching without gaining edit access to them.",
+        keyFiles: ["lib/teams/access.ts"],
+      },
+      {
+        id: "home-briefing",
+        name: "Home page briefing",
+        status: "shipped",
+        description: "A personal daily briefing: greeting, activity pulse chart, campaign status, and quick counts.",
+        keyFiles: ["lib/home/briefing.ts"],
+      },
+    ],
+  },
+  {
+    id: "billing",
+    name: "Billing",
+    features: [
+      {
+        id: "stripe-plans",
+        name: "Plan catalog (Free / Starter / Team / Enterprise)",
+        status: "shipped",
+        description: "Free Solo tier as the self-serve funnel, Starter and Team as self-checkout plans, Enterprise as contact-us. Each plan carries its own daily send cap.",
+        keyFiles: ["lib/billing/plans.ts"],
+      },
+      {
+        id: "stripe-checkout",
+        name: "Stripe Checkout + billing portal",
+        status: "shipped",
+        description: "Env-gated Stripe integration (no STRIPE_SECRET_KEY = no-op, pricing shows \"coming soon\"). A dependency-free REST client handles checkout session creation, the billing portal, and webhook signature verification.",
+        keyFiles: ["lib/billing/stripe.ts", "app/api/billing"],
+      },
+      {
+        id: "plan-send-caps",
+        name: "Plan-based send caps in the UI",
+        status: "shipped",
+        description: "The sending-mode/go-live checklist and campaign wizard reflect the org's actual plan limit, not a hardcoded number.",
+      },
+      {
+        id: "stripe-live-wiring",
+        name: "Stripe test → live wiring end to end",
+        status: "beta",
+        description: "Test-mode keys are wired locally; validating Checkout → webhook → plan flip end to end, then moving to live keys, is in progress.",
+      },
+    ],
+  },
+  {
+    id: "admin-ops",
+    name: "Admin & Operations",
+    features: [
+      {
+        id: "admin-console",
+        name: "Admin console",
+        status: "shipped",
+        description: "Workspace rename, sending-mode toggle with a go-live checklist, AI master switch, billing, invites, and member role/active management, gated by tenancy capability.",
+        keyFiles: ["app/(dashboard)/admin/page.tsx", "lib/tenancy/capabilities.ts"],
+      },
+      {
+        id: "sending-safety-gate",
+        name: "Sending safety gate (TEST/LIVE)",
+        status: "shipped",
+        description: "Every outbound email passes through one choke point that redirects to a test address until an admin explicitly flips the org LIVE. No send path exists around it.",
+        keyFiles: ["lib/gmail/safety.ts"],
+      },
+      {
+        id: "system-health",
+        name: "System health page",
+        status: "shipped",
+        description: "Admin-only ops view: cron sweep freshness, member Gmail connection health, sending-mode state, and env config summary.",
+        keyFiles: ["app/(dashboard)/system-health"],
+      },
+      {
+        id: "help-test-center",
+        name: "Help & Test Center",
+        status: "shipped",
+        description: "How-to guides, FAQ, a safe self-test suite (send a test email, parse sample data, classify a sample reply/bounce), a feature-suggestion box, and a replayable product tour.",
+        keyFiles: ["components/TestCenter.tsx", "app/(dashboard)/help"],
+      },
+      {
+        id: "waitlist-admin",
+        name: "Waitlist admin view",
+        status: "shipped",
+        description: "Admin view of public landing-page early-access signups with CSV export.",
+        keyFiles: ["app/(dashboard)/admin/waitlist"],
+      },
+      {
+        id: "feature-checklist-tab",
+        name: "In-app feature checklist",
+        status: "shipped",
+        description: "This page. Renders lib/features/registry.ts live so admins always see an accurate, current feature map without leaving the app.",
+        keyFiles: ["app/(dashboard)/admin/features/page.tsx", "lib/features/registry.ts"],
+      },
+    ],
+  },
+  {
+    id: "observability-infra",
+    name: "Observability & Infra",
+    features: [
+      {
+        id: "error-reporting",
+        name: "Structured error reporting",
+        status: "shipped",
+        description: "Errors are logged in structured form and optionally forwarded to a webhook (Slack, Sentry ingest, etc.) via ERROR_WEBHOOK_URL.",
+        keyFiles: ["lib/observability/report.ts"],
+      },
+      {
+        id: "health-endpoint",
+        name: "/api/health readiness probe",
+        status: "shipped",
+        description: "Public, unauthenticated endpoint that checks Firestore connectivity, for uptime monitors and deploy verification.",
+        keyFiles: ["app/api/health"],
+      },
+      {
+        id: "kms-token-encryption",
+        name: "KMS-encrypted Gmail tokens",
+        status: "shipped",
+        description: "Every stored Gmail refresh token is encrypted with a managed Cloud KMS key, never stored in plain text.",
+        keyFiles: ["lib/kms/crypto.ts"],
+      },
+      {
+        id: "deny-by-default-firestore",
+        name: "Deny-by-default Firestore rules",
+        status: "shipped",
+        description: "Direct client access to Firestore is blocked at the database. The server, via the Admin SDK, is the only path in, and it checks every request.",
+        keyFiles: ["firestore.rules"],
+      },
+      {
+        id: "error-alerting-on",
+        name: "Error alerting turned on in production",
+        status: "planned",
+        description: "ERROR_WEBHOOK_URL and an uptime monitor against /api/health are configured, but not yet turned on for the production service.",
+      },
+    ],
+  },
+  {
+    id: "public-site",
+    name: "Public Site & Growth",
+    features: [
+      {
+        id: "landing-page",
+        name: "Public landing page",
+        status: "shipped",
+        description: "Dark-luxury marketing site: hero with a live animated deliverability/pipeline visualization, feature grid, product demos, before/after value comparison, security section, pricing, FAQ, and waitlist capture.",
+        keyFiles: ["components/marketing/Landing.tsx"],
+      },
+      {
+        id: "waitlist-capture",
+        name: "Waitlist capture",
+        status: "shipped",
+        description: "Public, unauthenticated, rate-limited endpoint that records early-access signups from the landing page.",
+        keyFiles: ["app/api/waitlist"],
+      },
+      {
+        id: "oauth-verification-casa",
+        name: "Google OAuth verification + CASA assessment",
+        status: "planned",
+        description: "Required security review before SIGNUP_MODE=open can go live for the general public, not just allowlisted domains.",
+      },
+      {
+        id: "legal-pages",
+        name: "ToS / Privacy / DPA pages",
+        status: "planned",
+        description: "Legal pages required for self-serve public launch.",
+      },
+      {
+        id: "generalized-onboarding",
+        name: "Generalize copy/onboarding beyond sales",
+        status: "planned",
+        description: "Broaden product messaging and first-run onboarding beyond the sales-outreach framing to serve founders, marketers, recruiters, agencies, fundraising, partnerships, and newsletters equally.",
+      },
+      {
+        id: "multi-inbox-warmup",
+        name: "Multi-inbox rotation + inbox warmup",
+        status: "planned",
+        description: "Scale sending volume safely across multiple connected inboxes with gradual warmup, a compete-tier feature for later.",
+      },
+      {
+        id: "contact-enrichment",
+        name: "Contact enrichment via API",
+        status: "planned",
+        description: "Enrich imported leads with third-party firmographic/contact data.",
+      },
+      {
+        id: "multichannel",
+        name: "LinkedIn / multichannel outreach",
+        status: "planned",
+        description: "Extend outreach beyond email into other channels.",
+      },
+      {
+        id: "soc2",
+        name: "SOC 2",
+        status: "planned",
+        description: "Formal compliance certification for enterprise buyers, later-stage.",
+      },
+    ],
+  },
+];
+
+/** Flat list, convenient for consumers that don't care about grouping. */
+export const FEATURES: FeatureEntry[] = FEATURE_CATEGORIES.flatMap((c) => c.features);
+
+export function countByStatus(): Record<FeatureStatus, number> {
+  const counts: Record<FeatureStatus, number> = { shipped: 0, beta: 0, planned: 0 };
+  for (const f of FEATURES) counts[f.status] += 1;
+  return counts;
+}

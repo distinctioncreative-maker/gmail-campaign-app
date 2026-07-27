@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Fraunces } from "next/font/google";
 import styles from "./landing.module.css";
+
+/** Premium editorial serif reserved for headlines only (h1/h2 in
+ * landing.module.css) — the one deliberate departure from the app's plain
+ * sans, so the marketing page reads as art-directed rather than templated. */
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+});
 
 const CheckIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -207,8 +218,15 @@ function TypedDraft() {
   );
 }
 
-/** Hero pipeline animation + live counters. Isolated (own state) and paused
- * when scrolled off-screen, so it never taxes the rest of the page. */
+/**
+ * Hero "deliverability gate" animation + live counters. The one distinctive
+ * visual for the whole page: it has to *show*, not just claim, the three
+ * things the product sells — reach (a field of inboxes), clearing spam
+ * filters (a lit gate every send visibly passes through, with an SPF/DKIM/
+ * DMARC label), and revenue (replies becoming a rising ledger). Isolated
+ * (own state) and paused when scrolled off-screen, so it never taxes the
+ * rest of the page.
+ */
 function HeroPipeline() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [stats, setStats] = useState({ sent: 128, rep: 34, rev: 8400 });
@@ -223,16 +241,28 @@ function HeroPipeline() {
 
     const rng = (a: number, b: number) => a + Math.random() * (b - a);
     const sender = { x: W * 0.08, y: H * 0.52 };
-    const money = { x: W * 0.93, y: H * 0.17 };
+    // The gate: a lit threshold every send visibly passes through before it
+    // reaches an inbox — the deliverability check, made visible.
+    const gateX = W * 0.5;
+    const gateTop = H * 0.1;
+    const gateBottom = H * 0.9;
+    const money = { x: W * 0.95, y: H * 0.16 };
     const recips = Array.from({ length: 22 }, () => ({
-      x: rng(W * 0.44, W * 0.86),
-      y: rng(H * 0.1, H * 0.92),
+      x: rng(W * 0.58, W * 0.86),
+      y: rng(H * 0.08, H * 0.94),
       flash: 0,
     }));
     let moneyFlash = 0;
+    let sweep = gateTop;
+    let sweepDir = 1;
 
-    type P = { kind: 0 | 1; sx: number; sy: number; ex: number; ey: number; cx: number; cy: number; t: number; sp: number; ri: number };
+    type P = {
+      kind: 0 | 1; sx: number; sy: number; ex: number; ey: number; cx: number; cy: number;
+      t: number; sp: number; ri: number; cleared: boolean;
+    };
+    type Pulse = { x: number; y: number; t: number };
     const parts: P[] = [];
+    const pulses: Pulse[] = [];
     let sent = stats.sent, rep = stats.rep, rev = stats.rev;
 
     const bez = (a: number, c: number, b: number, t: number) => {
@@ -252,13 +282,40 @@ function HeroPipeline() {
       ctx.arc(x, y, r * 0.38, 0, 7);
       ctx.fill();
     };
+    const drawGate = () => {
+      // Twin pillars marking the threshold.
+      ctx.save();
+      ctx.strokeStyle = "rgba(242,195,104,0.5)";
+      ctx.lineWidth = 2;
+      ctx.shadowColor = "rgba(242,195,104,0.55)";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(gateX - 11, gateTop);
+      ctx.lineTo(gateX - 11, gateBottom);
+      ctx.moveTo(gateX + 11, gateTop);
+      ctx.lineTo(gateX + 11, gateBottom);
+      ctx.stroke();
+      ctx.restore();
+
+      // A soft light sweeping the gate top-to-bottom — the check, running.
+      const g = ctx.createRadialGradient(gateX, sweep, 2, gateX, sweep, 46);
+      g.addColorStop(0, "rgba(242,195,104,0.32)");
+      g.addColorStop(1, "rgba(242,195,104,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(gateX - 46, sweep - 46, 92, 92);
+
+      ctx.font = "600 13px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.fillStyle = "rgba(238,243,251,0.5)";
+      ctx.textAlign = "center";
+      ctx.fillText("SPF · DKIM · DMARC", gateX, gateTop - 12);
+    };
     const spawnEmail = () => {
       const ri = Math.floor(Math.random() * recips.length);
       const r = recips[ri];
       parts.push({
         kind: 0, sx: sender.x, sy: sender.y, ex: r.x, ey: r.y,
         cx: (sender.x + r.x) / 2 + rng(-40, 40), cy: (sender.y + r.y) / 2 - rng(30, 130),
-        t: 0, sp: rng(0.01, 0.018), ri,
+        t: 0, sp: rng(0.01, 0.018), ri, cleared: false,
       });
       sent += 1;
     };
@@ -266,12 +323,15 @@ function HeroPipeline() {
       parts.push({
         kind: 1, sx: r.x, sy: r.y, ex: money.x, ey: money.y,
         cx: (r.x + money.x) / 2 + rng(-30, 30), cy: (r.y + money.y) / 2 - rng(20, 90),
-        t: 0, sp: rng(0.012, 0.02), ri: -1,
+        t: 0, sp: rng(0.012, 0.02), ri: -1, cleared: true,
       });
       rep += 1;
     };
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
+      sweep += sweepDir * 1.1;
+      if (sweep > gateBottom || sweep < gateTop) sweepDir *= -1;
+      drawGate();
       for (const r of recips) {
         ctx.beginPath();
         ctx.fillStyle = `rgba(150,168,196,${0.22 + r.flash * 0.7})`;
@@ -285,10 +345,24 @@ function HeroPipeline() {
       node(sender.x, sender.y, 9, "#2e8bff");
       node(money.x, money.y, 8 + moneyFlash * 4, "#f2c368");
       moneyFlash *= 0.9;
+      for (let i = pulses.length - 1; i >= 0; i--) {
+        const pu = pulses[i];
+        pu.t += 0.06;
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(52,211,153,${Math.max(0, 1 - pu.t)})`;
+        ctx.lineWidth = 2;
+        ctx.arc(pu.x, pu.y, 4 + pu.t * 24, 0, 7);
+        ctx.stroke();
+        if (pu.t >= 1) pulses.splice(i, 1);
+      }
       for (let i = parts.length - 1; i >= 0; i--) {
         const p = parts[i];
         p.t += p.sp;
         const x = bez(p.sx, p.cx, p.ex, p.t), y = bez(p.sy, p.cy, p.ey, p.t);
+        if (!p.cleared && p.kind === 0 && x >= gateX) {
+          p.cleared = true;
+          pulses.push({ x: gateX, y, t: 0 });
+        }
         const tt = Math.max(0, p.t - 0.07);
         const x2 = bez(p.sx, p.cx, p.ex, tt), y2 = bez(p.sy, p.cy, p.ey, tt);
         const col = p.kind === 0 ? "#7fc4ff" : "#5ff0b0";
@@ -355,7 +429,7 @@ function HeroPipeline() {
       <div className={styles.pipeGlass}>
         <div className={styles.pipeTop}>
           <span className={styles.pipeTag}>◉ Live outreach</span>
-          <span className={styles.pipeTagR}>Your Gmail → prospects → pipeline</span>
+          <span className={styles.pipeTagR}>Your Gmail → cleared for delivery → pipeline</span>
         </div>
         <canvas ref={canvasRef} width={1920} height={430} aria-hidden="true" />
         <div className={styles.pipeStats}>
@@ -405,7 +479,7 @@ export function Landing() {
   }, []);
 
   return (
-    <div className={styles.root} ref={rootRef}>
+    <div className={`${styles.root} ${fraunces.variable}`} ref={rootRef}>
       {/* Nav */}
       <nav className={styles.nav}>
         <div className={`${styles.wrap} ${styles.navIn}`}>
@@ -435,11 +509,12 @@ export function Landing() {
         <div className={styles.wrap}>
           <span className={styles.heroBadge}>Private early access · <b>Coming soon</b></span>
           <h1>
-            Turn your outbox into a <span className={styles.grad}>revenue engine</span>.
+            Reach more. <span className={styles.grad}>Land more.</span> Earn more.
           </h1>
           <p className={styles.sub}>
-            Cadence sends personalized campaigns from your own Gmail, lands them in the inbox,
-            and turns every reply into pipeline. More sends, more replies, more revenue, on autopilot.
+            Cadence sends personalized campaigns from your own Gmail, clears the deliverability
+            bar most tools miss, and turns every reply into pipeline, at a pace built to protect
+            the sender reputation you&apos;ve spent years earning.
           </p>
           <div id="waitlist">
             <WaitField

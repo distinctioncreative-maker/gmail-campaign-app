@@ -1,32 +1,95 @@
-# Cadence — Multi-User Gmail Campaign Platform
+# Cadence
 
-Internal web app that lets each salesperson connect their own Gmail, import
-leads (pasted Salesforce lists, Google Sheets, CSV), build personalized
-campaigns with follow-up sequences, and review all activity — with strict
-per-user data isolation and layered send-safety controls.
+Cadence is a multi-tenant SaaS platform for mass, personalized email outreach.
+Each user connects their own Gmail or Google Workspace account and runs
+campaigns at scale from their real inbox: import contacts, write emails
+(optionally AI-assisted), send at a human pace, triage replies and bounces,
+and report on results.
 
-**Stack**: Next.js 16 (App Router, TypeScript strict) · Tailwind CSS ·
-Cloud Run · Firebase Auth · Firestore · Cloud Tasks · Cloud Scheduler ·
-Secret Manager · Cloud KMS · Gmail API.
+**"Send real, personalized email from your own inbox, at scale, without
+wrecking your deliverability"** is the core promise. Sales outreach is the
+first use case, not the ceiling — the same product serves founders,
+marketers, recruiters, agencies, fundraising, partnerships, and newsletters.
 
-## Status
+For the full structural map of routes, modules, and components, see
+**[ARCHITECTURE.md](ARCHITECTURE.md)**. For a live-maintained list of what's
+built vs. planned, see **[FEATURES.md](FEATURES.md)** (also viewable in-app
+at `/admin/features`).
 
-| Phase | Scope | Status |
-|---|---|---|
-| 1 | Auth, org membership, per-user isolation, Gmail connect (KMS-encrypted tokens), dashboard shell | ✅ Built |
-| 2 | Salesforce paste parser + CSV import, contacts, prior-contact detection, suppressions | ✅ Built |
-| 3 | Templates (visual / starter / paste HTML / Gmail draft), personalization, onboarding, sender profile | ✅ Built |
-| 4 | Campaign wizard, Cloud Tasks sending engine, idempotency, windows/caps, pause/resume/cancel controls | ✅ Built |
-| 5 | Follow-up sequences, reply detection, unsubscribe + bounce handling, notifications | ✅ Built |
-| 6 | Reports, Test Center, roles/admin, privacy-preserving team collision, system health | ✅ Built |
-| 7 | Emulator isolation tests, deployment automation | ✅ Built |
-| 8 | Analytics dashboard, template A/B rotation, built-in spam checker, dark mode, Cadence design system | ✅ Built |
-| 9 | Lead command center: editable leads + notes, real engagement tracking (emails sent / times replied), Do-Not-Email, delete | ✅ Built |
-| 10 | Teams (Team Lead dashboards, roster management, read-only drill-down), Replies inbox, admin troubleshooting console, daily activity rollups | ✅ Built |
-| 11 | Deliverability page: live SPF/DKIM/DMARC checks + Google Postmaster Tools integration (domain reputation, spam rate) | ✅ Built |
+## Stack
 
-Google Sheet import + audit-mirror spreadsheet are intentionally deferred
-(CSV import covers file imports; the import chooser reserves the slot).
+Next.js 16 (App Router, TypeScript strict) · React 19 · Tailwind v4 ·
+Cloud Run (Dockerfile, standalone output, Turbopack) · Firebase Auth
+(Google sign-in) → server session cookie (jose) · Firestore (Admin SDK
+server-side; deny-by-default `firestore.rules`) · Cloud Tasks + Cloud
+Scheduler (OIDC-verified worker + cron sweeps) · Cloud KMS (token
+encryption) · Gmail API (`gmail.compose` + `gmail.readonly`) · Google
+Gemini (optional AI, env-gated) · Stripe (billing, env-gated) · Zod
+validation everywhere.
+
+## How it's structured, at a glance
+
+- **Tenancy is the backbone.** Every request resolves an `AuthContext`
+  (`lib/auth/requireUser.ts`) carrying `userId`, `organizationId`, `role`,
+  and `tenantType`. Data is scoped by owner: `users/{uid}/...` and
+  `organizations/{orgId}/...`.
+- **Dual-mode tenancy** (`lib/tenancy/`): a company email domain becomes a
+  shared **Workspace** org (a team); a consumer provider (gmail.com,
+  outlook.com, etc.) becomes a private, per-user **Solo** workspace, so
+  individual signups never collide with each other or with a company's
+  Workspace. A Solo user who invites a teammate gets promoted into a full
+  Workspace in place.
+- **`lib/tenancy/capabilities.ts`** is the single source of truth for what a
+  tenant can do (teams, invites, admin console, live sending, daily send
+  cap) — every UI gate and API guard reads from it, so a plan or tenant-type
+  change updates behavior everywhere at once.
+- **Sending safety**: `lib/gmail/safety.ts` is the one choke point every
+  outbound email passes through. It forces test-mode (mail redirected to a
+  test address) until an admin explicitly flips an org LIVE. The Cloud Tasks
+  send worker (`app/api/tasks/send-message`) is idempotent and never
+  double-sends.
+- **Billing** (`lib/billing/`) is env-gated: with no `STRIPE_SECRET_KEY` set,
+  billing is a no-op and pricing shows "coming soon." `plans.ts` is the plan
+  catalog; `stripe.ts` is a dependency-free REST client + webhook verifier.
+- **Documentation upkeep is enforced as a workflow, not a hope**: see
+  [AGENTS.md](AGENTS.md) → "Documentation upkeep." Every feature change
+  updates `lib/features/registry.ts`, which regenerates `FEATURES.md` and
+  is what the in-app `/admin/features` checklist renders — so the doc, the
+  generated file, and the live UI can't drift apart.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full route/module/component
+breakdown, and [DATA_MODEL.md](DATA_MODEL.md) for the Firestore schema.
+
+## What's built (summary — see FEATURES.md for the live list)
+
+| Area | Highlights |
+|---|---|
+| Auth & tenancy | Google sign-in, dual-mode Solo/Workspace tenancy, allowlist/open signup modes, Solo→Team promotion, roles |
+| Leads | Salesforce-paste + CSV import, lead lists, lead command center, suppressions |
+| Templates & AI | Visual/starter/paste/Gmail-draft templates, AI writer with brand memory, improve/shorten/subject-line AI, A/B rotation |
+| Campaigns & sequences | Campaign wizard, Cloud Tasks sending engine, idempotent worker, pacing/caps/windows, pause/resume/cancel/retry/clone, collision detection, follow-up sequences |
+| Replies | Reply triage (Interested/Needs reply/Not now), AI reply drafts, bounce + unsubscribe handling, scheduled sweeps |
+| Deliverability | SPF/DKIM/DMARC checks, Gmail Postmaster reputation, spam-risk checker |
+| Reporting & teams | Analytics dashboard, team-lead dashboards + leaderboards, read-only drill-down, home briefing |
+| Billing | Stripe Checkout + portal, plan catalog, plan-based send caps (test-mode keys wired; live wiring in progress) |
+| Admin & ops | Admin console, sending-mode go-live gate, system health page, Help/Test Center, waitlist admin, in-app feature checklist |
+| Observability | Structured error reporting + webhook alerts, `/api/health` |
+| Public site | Landing page with animated hero, demos, pricing, waitlist capture |
+
+## Roadmap to public launch
+
+1. Validate Stripe Checkout → webhook → plan flip end to end (test mode),
+   then move to live keys.
+2. Google OAuth verification + CASA security assessment (required before
+   `SIGNUP_MODE=open` for the general public).
+3. ToS / Privacy / DPA pages.
+4. Turn on error alerting (`ERROR_WEBHOOK_URL`) + an uptime monitor on
+   `/api/health`.
+5. Generalize copy/onboarding beyond sales for the broader outreach
+   audience (founders, marketers, recruiters, agencies, fundraising,
+   partnerships, newsletters).
+6. Later "compete" tier: multi-inbox rotation + inbox warmup, contact
+   enrichment, LinkedIn/multichannel, SOC 2.
 
 ## Quick start
 
@@ -34,11 +97,12 @@ Google Sheet import + audit-mirror spreadsheet are intentionally deferred
 npm install
 cp .env.example .env        # fill in values — see SETUP.md
 npm run dev                 # http://localhost:3000
-npm test                    # unit tests (109) — parser, scheduling, eligibility, safety…
+npm test                    # unit tests — parser, scheduling, eligibility, safety…
 npm run test:emulator       # Firestore rules isolation tests (needs Java)
 npm run typecheck
 npm run lint
 npm run build
+npm run docs:features       # regenerate FEATURES.md after editing the registry
 ```
 
 After the first Cloud Run deploy, run `bash scripts/setup-cloud.sh PROJECT_ID`
@@ -47,19 +111,26 @@ Cloud Scheduler sweeps (reply/bounce/repair).
 
 ## Email safety (read this first)
 
-`TEST_MODE` defaults to **on**. While on, every outbound email is redirected
-to `TEST_EMAIL_DESTINATION` and its subject is prefixed `[TEST]` inside
-`lib/gmail/safety.ts` — applied immediately before the Gmail API call, with
-no send path around it. Real sending requires an explicit `TEST_MODE=false`.
+Sending mode is controlled **in-app** by an admin (Administration → Sending
+mode), defaulting to **test**. While in test mode, every outbound email is
+redirected to `TEST_EMAIL_DESTINATION` with a `[TEST]` subject, applied
+inside `lib/gmail/safety.ts` immediately before the Gmail API call — there
+is no send path around this gate. An optional `FORCE_TEST_MODE=true` env
+var locks an environment into test mode and disables the in-app switch
+(use on staging).
 
 ## Documentation
 
+- [ARCHITECTURE.md](ARCHITECTURE.md) — structural map: routes, modules, components
+- [FEATURES.md](FEATURES.md) — generated, living feature checklist
 - [SETUP.md](SETUP.md) — local development and Google Cloud configuration
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Cloud Run deployment
 - [SECURITY.md](SECURITY.md) — controls and threat notes
 - [DATA_MODEL.md](DATA_MODEL.md) — Firestore collections and isolation
-- [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md) — scopes and consent configuration
+- [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md) — the two OAuth layers (app sign-in vs. Gmail send consent) and scopes
 - [SALESFORCE_PARSER.md](SALESFORCE_PARSER.md) — paste-format parsing rules
-- [CAMPAIGN_SAFETY.md](CAMPAIGN_SAFETY.md) — send-safety design
+- [CAMPAIGN_SAFETY.md](CAMPAIGN_SAFETY.md) — send-safety gate design
+- [ADD_A_COMPANY.md](ADD_A_COMPANY.md) — onboarding a new company/tenant
 - [OPERATIONS.md](OPERATIONS.md) · [TESTING.md](TESTING.md) ·
   [USER_GUIDE.md](USER_GUIDE.md) · [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md)
+- [TODO.md](TODO.md) — outstanding infra/ops follow-ups
