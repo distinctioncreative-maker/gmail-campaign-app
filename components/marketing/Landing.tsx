@@ -229,128 +229,170 @@ function HeroPipeline() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const rng = (a: number, b: number) => a + Math.random() * (b - a);
-    const midY = H * 0.5;
-    const leftX = W * 0.1, midX = W * 0.5, rightX = W * 0.9;
-    // A single gentle arc left → verified → right, the whole story in one
-    // quiet line rather than a busy field of moving parts.
-    const railY = (x: number) => midY - Math.sin(((x - leftX) / (rightX - leftX)) * Math.PI) * (H * 0.09);
-    const midYArc = railY(midX);
+    // A hockey-stick growth curve, not a level line — the shape itself has
+    // to read as "this takes off," even in a single still frame. Slow start,
+    // steep late acceleration, the tipping point every growth story has.
+    const startX = W * 0.05, endX = W * 0.95;
+    const startY = H * 0.84, endY = H * 0.12;
+    const curveX = (t: number) => startX + (endX - startX) * t;
+    const curveY = (t: number) => startY + (endY - startY) * Math.pow(t, 2.3);
 
-    type Pulse = { t: number; willReply: boolean };
-    const pulses: Pulse[] = [];
+    type Spark = { t: number; age: number; life: number; dx: number; dy: number };
+    type Burst = { age: number };
+    const sparks: Spark[] = [];
+    const bursts: Burst[] = [];
     let sent = stats.sent, rep = stats.rep, rev = stats.rev;
-    let ringAngle = 0;
+    let cometT = 0;
+    let lastTime = 0;
 
-    const drawRail = () => {
+    const drawTrack = () => {
       ctx.beginPath();
-      ctx.strokeStyle = "rgba(255,255,255,0.10)";
-      ctx.lineWidth = 1.5;
-      for (let x = leftX; x <= rightX; x += 8) {
-        const y = railY(x);
-        if (x === leftX) ctx.moveTo(x, y);
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i <= 100; i++) {
+        const t = i / 100;
+        const x = curveX(t), y = curveY(t);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Brightens toward the end — the curve itself sells the payoff.
+      const grad = ctx.createLinearGradient(startX, startY, endX, endY);
+      grad.addColorStop(0, "rgba(10,132,255,0.08)");
+      grad.addColorStop(0.65, "rgba(10,132,255,0.3)");
+      grad.addColorStop(1, "rgba(200,240,255,0.75)");
+      ctx.beginPath();
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 2.5;
+      for (let i = 0; i <= 100; i++) {
+        const t = i / 100;
+        const x = curveX(t), y = curveY(t);
+        if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
       ctx.stroke();
     };
 
-    const drawOrb = (time: number) => {
-      const breathe = 0.55 + 0.45 * Math.sin(time / 1700);
-      const g = ctx.createRadialGradient(midX, midYArc, 0, midX, midYArc, 170);
-      g.addColorStop(0, `rgba(100,181,255,${0.24 * breathe})`);
-      g.addColorStop(1, "rgba(100,181,255,0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(midX - 180, midYArc - 180, 360, 360);
-
-      ringAngle += 0.0045;
-      ctx.save();
-      ctx.translate(midX, midYArc);
-      ctx.rotate(ringAngle);
+    const drawComet = () => {
+      // Fading trail behind the comet head, along the curve.
+      for (let i = 0; i < 20; i++) {
+        const tt = Math.max(0, cometT - i * 0.007);
+        const x = curveX(tt), y = curveY(tt);
+        const a = (1 - i / 20) * 0.5;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(160,215,255,${a})`;
+        ctx.arc(x, y, 2.6 * (1 - i / 20) + 0.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const x = curveX(cometT), y = curveY(cometT);
       ctx.beginPath();
-      ctx.strokeStyle = "rgba(100,181,255,0.4)";
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([1.5, 9]);
-      ctx.arc(0, 0, 32, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "#8fd6ff";
+      ctx.shadowBlur = 28;
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      if (Math.random() < 0.75) {
+        sparks.push({ t: cometT, age: 0, life: rng(0.6, 1.3), dx: rng(-0.5, 0.5), dy: rng(-1.5, -0.5) });
+      }
+    };
 
+    const drawSparks = (dt: number) => {
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.age += dt;
+        if (s.age >= s.life) {
+          sparks.splice(i, 1);
+          continue;
+        }
+        const p = s.age / s.life;
+        const x = curveX(s.t) + s.dx * s.age * 46;
+        const y = curveY(s.t) + s.dy * s.age * 46;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(210,235,255,${(1 - p) * 0.85})`;
+        ctx.arc(x, y, 1.7 * (1 - p) + 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    const drawEndpoints = (time: number) => {
       ctx.beginPath();
-      ctx.fillStyle = "#eef6ff";
-      ctx.shadowColor = "#64b5ff";
-      ctx.shadowBlur = 20;
-      ctx.arc(midX, midYArc, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#0a84ff";
+      ctx.shadowColor = "#0a84ff";
+      ctx.shadowBlur = 12;
+      ctx.arc(startX, startY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      const pulse = 6 + Math.sin(time / 260) * 1.6;
+      ctx.beginPath();
+      ctx.fillStyle = "#eafff2";
+      ctx.shadowColor = "#30d158";
+      ctx.shadowBlur = 32;
+      ctx.arc(endX, endY, pulse, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
     };
 
-    const drawEndpoint = (x: number, color: string) => {
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 14;
-      ctx.arc(x, railY(x), 3.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+    const drawBursts = () => {
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        const b = bursts[i];
+        b.age += 1;
+        const p = b.age / 32;
+        if (p >= 1) {
+          bursts.splice(i, 1);
+          continue;
+        }
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(48,209,88,${(1 - p) * 0.55})`;
+        ctx.lineWidth = 2;
+        ctx.arc(endX, endY, 6 + p * 46, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     };
 
     const draw = (time: number) => {
+      const dt = lastTime ? Math.min(0.05, (time - lastTime) / 1000) : 0.016;
+      lastTime = time;
       ctx.clearRect(0, 0, W, H);
-      drawRail();
-      drawOrb(time);
-      drawEndpoint(leftX, "#0a84ff");
-      drawEndpoint(rightX, "#30d158");
+      drawTrack();
+      drawSparks(dt);
+      drawComet();
+      drawEndpoints(time);
+      drawBursts();
 
-      for (let i = pulses.length - 1; i >= 0; i--) {
-        const p = pulses[i];
-        p.t += 0.0034;
-        const x = leftX + (rightX - leftX) * p.t;
-        const y = railY(x);
-        const trailT = Math.max(0, p.t - 0.06);
-        const tx = leftX + (rightX - leftX) * trailT;
-        const ty = railY(tx);
-        const grad = ctx.createLinearGradient(tx, ty, x, y);
-        grad.addColorStop(0, "rgba(127,196,255,0)");
-        grad.addColorStop(1, "rgba(127,196,255,0.85)");
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2.2;
-        ctx.beginPath();
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.fillStyle = "#eef6ff";
-        ctx.shadowColor = "#7fc4ff";
-        ctx.shadowBlur = 12;
-        ctx.arc(x, y, 2.8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        if (p.t >= 1) {
-          sent += 1;
-          if (p.willReply) {
-            rep += 1;
-            rev += Math.round(rng(300, 1700));
-          }
-          pulses.splice(i, 1);
+      cometT += dt * 0.28;
+      if (cometT >= 1) {
+        cometT = 0;
+        sent += 1;
+        bursts.push({ age: 0 });
+        if (Math.random() < 0.4) {
+          rep += 1;
+          rev += Math.round(rng(400, 2200));
         }
       }
     };
 
     if (reduce) {
+      cometT = 0.82;
       draw(0);
       const t = setTimeout(() => setStats({ sent: 1280, rep: 326, rev: 52400 }), 0);
       return () => clearTimeout(t);
     }
 
-    let raf = 0, running = false, lastSpawn = 0;
+    let raf = 0, running = false;
     const loop = (time: number) => {
-      if (time - lastSpawn > 2600 && pulses.length < 2) {
-        pulses.push({ t: 0, willReply: Math.random() < 0.35 });
-        lastSpawn = time;
-      }
       draw(time);
       raf = requestAnimationFrame(loop);
     };
-    const start = () => { if (!running) { running = true; raf = requestAnimationFrame(loop); } };
+    const start = () => {
+      if (!running) {
+        running = true;
+        lastTime = 0;
+        raf = requestAnimationFrame(loop);
+      }
+    };
     const stop = () => { running = false; cancelAnimationFrame(raf); };
     // Only animate while the canvas is actually on screen.
     const io = new IntersectionObserver(
@@ -372,9 +414,9 @@ function HeroPipeline() {
       <div className={styles.pipeGlass}>
         <div className={styles.pipeTop}>
           <span className={styles.pipeTag}>Live outreach</span>
-          <span className={styles.pipeTagR}>Your Gmail → verified → pipeline</span>
+          <span className={styles.pipeTagR}>Every send climbs toward pipeline</span>
         </div>
-        <canvas ref={canvasRef} width={1920} height={420} aria-hidden="true" />
+        <canvas ref={canvasRef} width={1920} height={640} aria-hidden="true" />
         <div className={styles.pipeStats}>
           <div className={styles.pipeChip}>
             <div className={styles.pipeVal}>{stats.sent.toLocaleString()}</div>
