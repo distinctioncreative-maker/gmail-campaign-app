@@ -475,7 +475,7 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "landing-page",
         name: "Public landing page",
         status: "shipped",
-        description: "Dark-luxury marketing site: hero with a live animated deliverability/pipeline visualization, feature grid, product demos, before/after value comparison, security section, pricing, FAQ, and waitlist capture.",
+        description: "Dark-luxury marketing site: hero with a live animated deliverability/pipeline visualization (now explicitly labeled \"YOUR GMAIL\" / \"CLEARED\" / \"PIPELINE · $N\" so the story reads in a single glance, not just on repeat viewing), feature grid, product demos, before/after value comparison, security section, pricing, FAQ, and waitlist capture. The deliverability stat band and FAQ answer now cite tuned, data-backed pacing instead of a raw \"2,000/day\" ceiling that contradicted the in-app guidance, and tease the anonymized benchmarks feature.",
         keyFiles: ["components/marketing/Landing.tsx"],
       },
       {

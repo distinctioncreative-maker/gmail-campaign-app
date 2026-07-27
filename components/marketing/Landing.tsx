@@ -304,10 +304,10 @@ function HeroPipeline() {
       ctx.fillStyle = g;
       ctx.fillRect(gateX - 46, sweep - 46, 92, 92);
 
-      ctx.font = "600 13px ui-monospace, SFMono-Regular, Menlo, monospace";
-      ctx.fillStyle = "rgba(238,243,251,0.5)";
+      ctx.font = "700 13px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.fillStyle = "rgba(242,195,104,0.85)";
       ctx.textAlign = "center";
-      ctx.fillText("SPF · DKIM · DMARC", gateX, gateTop - 12);
+      ctx.fillText("SPF · DKIM · DMARC · CLEARED", gateX, gateTop - 12);
     };
     const spawnEmail = () => {
       const ri = Math.floor(Math.random() * recips.length);
@@ -345,6 +345,16 @@ function HeroPipeline() {
       node(sender.x, sender.y, 9, "#2e8bff");
       node(money.x, money.y, 8 + moneyFlash * 4, "#f2c368");
       moneyFlash *= 0.9;
+
+      // Make the "who → cleared → revenue" story legible even from a single
+      // still frame, not just to someone who watches it animate.
+      ctx.font = "700 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.textAlign = "left";
+      ctx.fillStyle = "rgba(127,196,255,0.85)";
+      ctx.fillText("YOUR GMAIL", sender.x - 9, sender.y + 24);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(242,195,104,0.95)";
+      ctx.fillText(`PIPELINE · $${Math.round(rev).toLocaleString()}`, money.x + 9, money.y - 16);
       for (let i = pulses.length - 1; i >= 0; i--) {
         const pu = pulses[i];
         pu.t += 0.06;
@@ -535,8 +545,8 @@ export function Landing() {
         <div className={styles.wrap}>
           <div className={`${styles.stats} ${styles.reveal}`}>
             <div className={styles.stat}>
-              <div className={styles.statVal}><StatNum value={2000} /></div>
-              <div className={styles.statLab}>Emails a day, per connected inbox</div>
+              <div className={styles.statVal}><StatNum value={100} suffix="/day" /></div>
+              <div className={styles.statLab}>Tuned pacing, not a race to Gmail&apos;s limit</div>
             </div>
             <div className={styles.stat}>
               <div className={styles.statVal}><StatNum value={100} suffix="%" /></div>
@@ -661,6 +671,7 @@ export function Landing() {
                 <li><CheckIcon size={17} />Domain auth checked automatically.</li>
                 <li><CheckIcon size={17} />Sends spread across the day, never in bursts.</li>
                 <li><CheckIcon size={17} />Reputation monitored so issues surface early.</li>
+                <li><CheckIcon size={17} />Pacing backed by real, anonymized data from every Cadence sender, not a guess.</li>
               </ul>
             </div>
             <div className={styles.frame}>
@@ -811,7 +822,7 @@ export function Landing() {
               ["When does Cadence launch?", "We're rolling out private early access in waves. Join the waitlist and we'll email you the moment a seat opens for you."],
               ["Do I need a new email service?", "No. Cadence sends from your own Gmail with a narrow, revocable permission. Your identity, your inbox, real threads. Nothing is spoofed or relayed."],
               ["Is my data safe?", "Yes. Every rep's data is isolated, your Gmail token is encrypted with a managed key, database access is deny-by-default, and we never sell, share, or train third-party models on your data."],
-              ["Will this hurt my deliverability?", "The opposite. Cadence spreads sends across the day to stay within Gmail's limits and checks SPF, DKIM, DMARC, and your Postmaster reputation so you land in the inbox."],
+              ["Will this hurt my deliverability?", "The opposite. Cadence spreads sends across the day, checks SPF, DKIM, DMARC, and your Postmaster reputation before every send, and tunes your pacing against real, anonymized data from every campaign on the platform, not a one-size-fits-all default."],
               ["How much will it cost?", "Final pricing is set at launch. Waitlist members get founding-member rates, so join now to lock in the best pricing."],
               ["Can my whole team use it?", "Yes. Cadence has roles, lead assignment, per-rep leaderboards, and team-lead dashboards built in from day one."],
             ].map(([q, a]) => (

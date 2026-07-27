@@ -139,7 +139,7 @@
 
 ## Public Site & Growth
 
-- [x] **Public landing page** (Shipped) — Dark-luxury marketing site: hero with a live animated deliverability/pipeline visualization, feature grid, product demos, before/after value comparison, security section, pricing, FAQ, and waitlist capture.
+- [x] **Public landing page** (Shipped) — Dark-luxury marketing site: hero with a live animated deliverability/pipeline visualization (now explicitly labeled "YOUR GMAIL" / "CLEARED" / "PIPELINE · $N" so the story reads in a single glance, not just on repeat viewing), feature grid, product demos, before/after value comparison, security section, pricing, FAQ, and waitlist capture. The deliverability stat band and FAQ answer now cite tuned, data-backed pacing instead of a raw "2,000/day" ceiling that contradicted the in-app guidance, and tease the anonymized benchmarks feature.
   - `components/marketing/Landing.tsx`
 - [x] **Waitlist capture** (Shipped) — Public, unauthenticated, rate-limited endpoint that records early-access signups from the landing page.
   - `app/api/waitlist`
