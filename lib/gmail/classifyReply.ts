@@ -61,6 +61,10 @@ const UNSUB_STRONG_PATTERNS = [
   /\bdo not (?:email|contact)\s+me\b/i,
   /\bopt me out\b/i,
   /\bi (?:want|would like|wish) to (?:unsubscribe|opt[ -]?out)\b/i,
+  // The universal SMS/email opt-out convention ("reply STOP to unsubscribe")
+  // — anchored to the WHOLE fresh reply so an unrelated sentence that merely
+  // contains "stop" (e.g. "can we stop by Tuesday?") is never matched.
+  /^\s*stop\s*[.!]*\s*$/i,
 ];
 
 /** Weaker mentions — only count when the whole fresh reply is a short

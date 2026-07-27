@@ -106,6 +106,18 @@ describe("unsubscribe false-positive protection", () => {
     expect(classifyInboundMessage(msg({ bodyText: "Stop emailing me please." }))).toBe("UNSUBSCRIBE");
   });
 
+  it("honors a bare 'STOP' reply — the universal SMS/email opt-out convention", () => {
+    expect(classifyInboundMessage(msg({ bodyText: "STOP" }))).toBe("UNSUBSCRIBE");
+    expect(classifyInboundMessage(msg({ bodyText: "stop." }))).toBe("UNSUBSCRIBE");
+    expect(classifyInboundMessage(msg({ bodyText: "  Stop  " }))).toBe("UNSUBSCRIBE");
+  });
+
+  it("does not treat 'stop' inside an unrelated sentence as an opt-out", () => {
+    expect(classifyInboundMessage(msg({ bodyText: "Can we stop by your office Tuesday?" }))).toBe(
+      "HUMAN_REPLY"
+    );
+  });
+
   it("ignores inline-quoted '>' lines when classifying", () => {
     const bodyText = [
       "Sounds good, let's talk Friday.",

@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
 import { DraftReplyButton } from "@/components/replies/DraftReplyButton";
+import { ReplyThreadViewer } from "@/components/replies/ReplyThreadViewer";
 import { formatDuration } from "@/lib/analytics/metrics";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
@@ -149,6 +150,16 @@ export default async function RepliesPage() {
                 <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500">
                   <span><LocalTime value={r.repliedAt} /> · {formatDuration(r.timeToReplyMs)}</span>
                   <div className="flex items-center gap-2">
+                    {r.gmailThreadId && (
+                      <ReplyThreadViewer
+                        campaignId={r.campaignId}
+                        recipientId={r.recipientId}
+                        fullName={r.fullName}
+                        email={r.email}
+                        fallbackSnippet={r.snippet}
+                        compact
+                      />
+                    )}
                     {aiEnabled && r.intent !== "NOT_INTERESTED" && (
                       <DraftReplyButton campaignId={r.campaignId} recipientId={r.recipientId} threadId={r.gmailThreadId} compact />
                     )}
@@ -159,7 +170,7 @@ export default async function RepliesPage() {
                         rel="noopener noreferrer"
                         className="font-medium text-primary"
                       >
-                        Open in Gmail →
+                        Gmail →
                       </a>
                     )}
                   </div>
@@ -207,7 +218,16 @@ export default async function RepliesPage() {
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">{formatDuration(r.timeToReplyMs)}</td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-3">
+                        {r.gmailThreadId && (
+                          <ReplyThreadViewer
+                            campaignId={r.campaignId}
+                            recipientId={r.recipientId}
+                            fullName={r.fullName}
+                            email={r.email}
+                            fallbackSnippet={r.snippet}
+                          />
+                        )}
                         {aiEnabled && r.intent !== "NOT_INTERESTED" && (
                           <DraftReplyButton campaignId={r.campaignId} recipientId={r.recipientId} threadId={r.gmailThreadId} />
                         )}

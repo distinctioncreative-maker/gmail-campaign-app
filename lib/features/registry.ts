@@ -246,8 +246,15 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "bounce-handling",
         name: "Bounce detection + unsubscribe handling",
         status: "shipped",
-        description: "Automated mailbox scans classify bounces and unsubscribes, updating suppressions so the same mistake doesn't repeat, with an admin undo for accidental unsubscribes.",
-        keyFiles: ["lib/gmail/classifyBounce.ts", "lib/campaigns/monitoring.ts"],
+        description: "Automated mailbox scans classify bounces and unsubscribes, updating suppressions so the same mistake doesn't repeat, with an admin undo for accidental unsubscribes. Also honors a bare \"STOP\" reply, the universal SMS/email opt-out convention, which previously fell through to a generic human reply.",
+        keyFiles: ["lib/gmail/classifyBounce.ts", "lib/campaigns/monitoring.ts", "lib/gmail/classifyReply.ts"],
+      },
+      {
+        id: "reply-reading-view",
+        name: "In-app reply reading view",
+        status: "shipped",
+        description: "Read a lead's full reply thread, live from Gmail, in a modal without leaving the app — not just the cached 280-character snippet, and it works for replies detected before this shipped too since it fetches on demand.",
+        keyFiles: ["components/replies/ReplyThreadViewer.tsx", "app/api/campaigns/[campaignId]/recipients/[recipientId]/thread"],
       },
       {
         id: "cron-sweeps",
