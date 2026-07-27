@@ -304,6 +304,13 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         description: "Scores template content for common spam triggers before it ever gets sent.",
         keyFiles: ["lib/spam/score.ts"],
       },
+      {
+        id: "deliverability-benchmarks",
+        name: "Anonymized deliverability benchmarks",
+        status: "beta",
+        description: "A scheduled sweep (job=benchmarks) buckets every user's qualifying campaigns (20+ sends) by pacing and content signals — batch size, daily limit, delay, images, links, spam score, length, subject length, personalization — and averages their outcomes. A bucket only ever surfaces once it has 20+ campaigns behind it (k-anonymity), so no published number can be traced to one user. Shown on the Deliverability page with a \"your default vs. the best bucket\" comparison, and folded into the campaign wizard's pace-risk warning as a data-backed line once available. Needs its own Cloud Scheduler job pointed at /api/cron/sweep?job=benchmarks (see the other outreach-* jobs) — code-complete but not yet scheduled to run.",
+        keyFiles: ["lib/benchmarks/buckets.ts", "lib/benchmarks/aggregate.ts", "lib/benchmarks/read.ts", "app/api/cron/sweep", "app/(dashboard)/deliverability"],
+      },
     ],
   },
   {

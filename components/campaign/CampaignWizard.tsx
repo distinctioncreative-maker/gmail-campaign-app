@@ -147,6 +147,9 @@ export function CampaignWizard() {
   });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
   const [trackingEnabled, setTrackingEnabled] = useState(false);
+  // Data-backed addition to the pace-risk warning below, once the
+  // anonymized cross-user benchmarks have a surfaced daily-limit bucket.
+  const [benchmarkTip, setBenchmarkTip] = useState<string | null>(null);
   const [personalize, setPersonalize] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
   const [priorPolicy, setPriorPolicy] = useState("ONLY_NEW");
@@ -215,6 +218,17 @@ export function CampaignWizard() {
       if (aiRes.ok) setAiEnabled(Boolean((await aiRes.json()).enabled));
       const mRes = await fetch("/api/sending-mode");
       if (mRes.ok) setTestMode((await mRes.json()).testMode);
+      const bRes = await fetch("/api/deliverability/benchmarks");
+      if (bRes.ok) {
+        const best = (await bRes.json()).snapshot?.dimensions?.find(
+          (d: { dimension: string }) => d.dimension === "dailySendLimit"
+        )?.buckets?.[0];
+        if (best) {
+          setBenchmarkTip(
+            `Data from ${best.campaigns} anonymized campaigns shows ${best.bucket}/day gets the best reply rate (${best.avgReplyRate.toFixed(1)}%).`
+          );
+        }
+      }
     })();
   }, []);
 
@@ -255,7 +269,7 @@ export function CampaignWizard() {
     if (paceRisk.risky) {
       const ok = await confirm({
         title: "This pace risks your deliverability",
-        body: `${paceRisk.reasons.join(" ")} Sending this fast can get flagged as spam and hurt the sender reputation you've built. Continue at this pace anyway?`,
+        body: `${paceRisk.reasons.join(" ")}${benchmarkTip ? ` ${benchmarkTip}` : ""} Sending this fast can get flagged as spam and hurt the sender reputation you've built. Continue at this pace anyway?`,
         danger: true,
         confirmLabel: "Yes, send at this pace",
       });
@@ -805,6 +819,7 @@ export function CampaignWizard() {
                   {paceRisk.reasons.map((r) => (
                     <li key={r}>{r}</li>
                   ))}
+                  {benchmarkTip && <li>{benchmarkTip}</li>}
                 </ul>
                 <p className="mt-1.5 text-xs text-amber-700">
                   You&apos;ll be asked to confirm this again before launch.

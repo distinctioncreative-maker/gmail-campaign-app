@@ -3,10 +3,11 @@ import { verifyTaskRequest, TaskAuthError } from "@/lib/tasks/verifyOidc";
 import { firestore } from "@/lib/firebase/admin";
 import { processBouncesForUser, processRepliesForUser } from "@/lib/campaigns/monitoring";
 import { listAllOwners, repairOwner } from "@/lib/campaigns/repair";
+import { recomputeBenchmarks } from "@/lib/benchmarks/aggregate";
 
 /**
  * Cloud Scheduler entry point for periodic system sweeps (spec §16/§17/§25).
- * OIDC-verified. ?job=reply|bounce|repair|metrics.
+ * OIDC-verified. ?job=reply|bounce|repair|metrics|benchmarks.
  *
  * Sweeps enumerate users with active campaigns and process them; the
  * per-user monitoring functions themselves skip users without work.
@@ -20,6 +21,22 @@ export async function POST(req: NextRequest) {
   }
 
   const job = req.nextUrl.searchParams.get("job") ?? "reply";
+
+  // Cross-tenant aggregate, not a per-owner sweep — recomputes its own
+  // owner list internally (see lib/benchmarks/aggregate.ts).
+  if (job === "benchmarks") {
+    const snapshot = await recomputeBenchmarks();
+    await firestore()
+      .collection("system")
+      .doc("sweeps")
+      .set({ benchmarksLastRun: Date.now() }, { merge: true });
+    return NextResponse.json({
+      ok: true,
+      job,
+      campaignsConsidered: snapshot.totalCampaignsConsidered,
+    });
+  }
+
   const owners = await listAllOwners();
   const summary: Record<string, number> = { owners: owners.length };
 

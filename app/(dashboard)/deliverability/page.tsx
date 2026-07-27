@@ -4,6 +4,17 @@ import { getPostmasterStats } from "@/lib/deliverability/postmaster";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Icon } from "@/components/ui/Icon";
 import { formatPercent } from "@/lib/analytics/metrics";
+import { getBenchmarksSnapshot } from "@/lib/benchmarks/read";
+import { bucketBatchSize, bucketDailyLimit, type DimensionAggregate } from "@/lib/benchmarks/buckets";
+import { getSenderProfile } from "@/lib/repositories/userSettings";
+
+/** Which bucket the signed-in user's OWN current default falls into, for
+ * dimensions we can compare against a live setting (pacing only — content
+ * dimensions like image/link count are per-template, not a standing default). */
+const OWN_SETTING_BUCKET: Partial<Record<string, (n: number) => string>> = {
+  emailsPerBatch: bucketBatchSize,
+  dailySendLimit: bucketDailyLimit,
+};
 
 export const dynamic = "force-dynamic";
 
@@ -29,10 +40,17 @@ export default async function DeliverabilityPage() {
   const ctx = await requireUser();
   const domain = ctx.email.split("@")[1] ?? "";
 
-  const [dnsChecks, postmaster] = await Promise.all([
+  const [dnsChecks, postmaster, benchmarks, profile] = await Promise.all([
     checkDomainAuth(domain),
     getPostmasterStats(ctx.userId, domain),
+    getBenchmarksSnapshot(),
+    getSenderProfile(ctx),
   ]);
+  const ownValueFor: Record<string, number> = {
+    emailsPerBatch: profile.sendingDefaults.emailsPerBatch,
+    dailySendLimit: profile.sendingDefaults.dailySendLimit,
+  };
+  const surfacedDimensions = (benchmarks?.dimensions ?? []).filter((d) => d.buckets.length > 0);
 
   return (
     <div>
@@ -185,16 +203,83 @@ export default async function DeliverabilityPage() {
         </div>
       )}
 
+      {/* Deliverability Insights — anonymized, cross-user benchmarks */}
+      <h2 className="mt-10 mb-3 font-medium">Deliverability insights</h2>
+      {surfacedDimensions.length === 0 ? (
+        <div className="card p-6 text-sm text-slate-600">
+          <p className="font-medium text-slate-700">Still gathering data</p>
+          <p className="mt-1">
+            This learns what actually drives deliverability, reply rate, and click rate, across every
+            Cadence campaign, fully anonymized — a setting only shows up here once enough campaigns
+            have used it that no single campaign could be identified. Check back soon.
+          </p>
+        </div>
+      ) : (
+        <>
+          <p className="mb-4 text-xs text-slate-400">
+            From {benchmarks?.totalCampaignsConsidered ?? 0} anonymized campaigns across every Cadence
+            user — nothing here is traceable to one account, and a setting only appears once enough
+            campaigns share it.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {surfacedDimensions.map((d) => (
+              <DimensionCard key={d.dimension} dimension={d} ownBucket={
+                OWN_SETTING_BUCKET[d.dimension] && ownValueFor[d.dimension] !== undefined
+                  ? OWN_SETTING_BUCKET[d.dimension]!(ownValueFor[d.dimension])
+                  : null
+              } />
+            ))}
+          </div>
+        </>
+      )}
+
       <div className="card mt-8 p-5">
         <h3 className="font-medium">If replies are low, work this list in order</h3>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-600">
           <li>Fix anything red or amber above — authentication is the foundation.</li>
-          <li>Keep volume boring: 50–100 emails per rep per day, spread out. Big one-day spikes look like spam.</li>
+          <li>{dailyLimitTip(surfacedDimensions)}</li>
           <li>Run the spam checker on your template (Templates → your template) and cut risky wording.</li>
           <li>Personalize the first line — identical bodies to hundreds of people is the pattern filters hunt for.</li>
           <li>Expect replies on days 2–5, not day 1. A 1–5% reply rate is normal for cold outreach.</li>
         </ol>
       </div>
+    </div>
+  );
+}
+
+/** Tip #2 cites the actual best-performing daily-limit bucket once real,
+ * anonymized data backs it — falls back to the general guidance until then. */
+function dailyLimitTip(dimensions: DimensionAggregate[]): string {
+  const dim = dimensions.find((d) => d.dimension === "dailySendLimit");
+  const best = dim?.buckets[0];
+  if (!best) {
+    return "Keep volume boring: 50–100 emails per rep per day, spread out. Big one-day spikes look like spam.";
+  }
+  return `Keep volume boring: across ${best.campaigns} anonymized campaigns, ${best.bucket}/day gets the best reply rate (${formatPercent(best.avgReplyRate)}). Big one-day spikes look like spam.`;
+}
+
+function DimensionCard({
+  dimension,
+  ownBucket,
+}: {
+  dimension: DimensionAggregate;
+  ownBucket: string | null;
+}) {
+  const best = dimension.buckets[0];
+  return (
+    <div className="card p-5">
+      <p className="text-sm text-slate-500">{dimension.label}</p>
+      <p className="mt-1 text-lg font-semibold">{best.bucket}</p>
+      <p className="mt-1 text-xs text-slate-500">
+        {formatPercent(best.avgReplyRate)} reply rate · {formatPercent(best.avgBounceRate)} bounce rate
+        {best.avgOpenRate !== null && ` · ${formatPercent(best.avgOpenRate)} open rate`}
+      </p>
+      <p className="mt-1 text-[11px] text-slate-400">Best of {dimension.buckets.length} groups · {best.campaigns} campaigns</p>
+      {ownBucket !== null && (
+        <p className={`mt-2 text-xs font-medium ${ownBucket === best.bucket ? "text-green-600" : "text-amber-600"}`}>
+          {ownBucket === best.bucket ? "✓ Your default matches this" : `Your default: ${ownBucket}`}
+        </p>
+      )}
     </div>
   );
 }
