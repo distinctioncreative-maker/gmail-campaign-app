@@ -59,7 +59,7 @@ export function TrendChart({ rows }: { rows: Array<{ day: string; sent: number; 
       {rows.map((r) => (
         <div
           key={r.day}
-          className="group relative flex flex-1 flex-col justify-end"
+          className="group relative flex h-full flex-1 flex-col justify-end"
           title={`${r.day}: ${r.sent} sent · ${r.replied} replies`}
         >
           <div className="relative w-full rounded-t bg-border" style={{ height: `${(r.sent / max) * 100}%` }}>
