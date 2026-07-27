@@ -62,7 +62,7 @@ export function TrendChart({ rows }: { rows: Array<{ day: string; sent: number; 
           className="group relative flex flex-1 flex-col justify-end"
           title={`${r.day}: ${r.sent} sent · ${r.replied} replies`}
         >
-          <div className="relative w-full rounded-t bg-slate-100" style={{ height: `${(r.sent / max) * 100}%` }}>
+          <div className="relative w-full rounded-t bg-border" style={{ height: `${(r.sent / max) * 100}%` }}>
             <div
               className="absolute bottom-0 w-full rounded-t bg-green-500"
               style={{ height: `${r.sent > 0 ? (r.replied / r.sent) * 100 : 0}%` }}
@@ -90,7 +90,7 @@ export function BestSendTimes({
       {rows.map((r) => (
         <div key={r.hour} className="flex items-center gap-2 text-xs">
           <span className="w-8 shrink-0 text-right text-slate-400">{fmtHour(r.hour)}</span>
-          <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-3 flex-1 overflow-hidden rounded-full bg-border">
             <div className="h-full rounded-full brand-gradient" style={{ width: `${(r.rate / maxRate) * 100}%` }} />
           </div>
           <span className="w-24 shrink-0 tabular-nums text-slate-500">

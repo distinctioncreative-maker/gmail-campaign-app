@@ -78,7 +78,7 @@ export function NotificationBell() {
               <p className="px-4 py-6 text-center text-sm text-slate-500">You&apos;re all caught up.</p>
             ) : (
               items.map((n) => (
-                <div key={n.notificationId} className="border-b border-slate-50 px-4 py-3 last:border-0">
+                <div key={n.notificationId} className="border-b border-border px-4 py-3 last:border-0">
                   <p className="text-sm font-medium">{n.title}</p>
                   <p className="text-sm text-slate-600">{n.body}</p>
                   <LocalTime value={n.createdAt} className="mt-1 block text-xs text-slate-400" />

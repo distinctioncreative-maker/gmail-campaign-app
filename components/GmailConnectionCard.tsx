@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LocalTime } from "@/components/LocalTime";
 
 export function GmailConnectionCard({
   connectedEmail,
@@ -38,7 +39,7 @@ export function GmailConnectionCard({
           </p>
           {lastRefreshAt && (
             <p className="mt-1 text-xs text-slate-500">
-              Last verified {new Date(lastRefreshAt).toLocaleString()}
+              Last verified <LocalTime value={lastRefreshAt} />
             </p>
           )}
           <button

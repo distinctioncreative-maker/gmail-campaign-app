@@ -540,6 +540,13 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         description: "Every existing .btn-primary/.btn-secondary/.btn-ghost/.btn-danger button app-wide gained a hover lift from a single app/globals.css change. A new shared components/ui/Button.tsx adds a real loading spinner and a success flash for async actions, replacing plain disabled-only feedback. Rolled out to campaign controls and the template editor first; the rest of the app's action buttons are next.",
         keyFiles: ["components/ui/Button.tsx", "app/globals.css", "components/campaign/CampaignControls.tsx", "components/templates/TemplateEditor.tsx"],
       },
+      {
+        id: "light-dark-theme",
+        name: "Light/dark theme",
+        status: "beta",
+        description: "Toggle in the top bar, persisted to localStorage with a no-flash inline script honoring OS preference on first visit. Fixed two real bugs beyond the known ~750-hardcoded-class debt: a hydration error from raw (server-timezone) date formatting in GmailConnectionCard/SuppressionsManager that silently reverted the whole app to light mode on affected page loads (now uses the existing LocalTime component), and invisible Reports charts where a bg-slate-100 bar rendered nearly the same color as its own dark card background (now bg-border). A handful of missed hover-state overrides (hover:text-slate-600/700/900, hover:bg-slate-300/white) also added. Full token migration off hardcoded slate/white classes is tracked separately.",
+        keyFiles: ["app/globals.css", "components/ui/ThemeToggle.tsx", "components/LocalTime.tsx", "components/analytics/Charts.tsx"],
+      },
     ],
   },
 ];

@@ -228,7 +228,7 @@ export function RecipientTable({
                   <table className="w-full text-left text-sm">
                     <tbody>
                       {group.map((r) => (
-                        <tr key={r.recipientId} className="border-t border-slate-50 hover:bg-slate-50/60">
+                        <tr key={r.recipientId} className="border-t border-border hover:bg-surface-2">
                           <td className="px-3 py-2 font-medium">{r.fullName || "—"}</td>
                           <td className="px-3 py-2 text-slate-600">{r.email}</td>
                           <td className="px-3 py-2 text-xs">{timeCell(r)}</td>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { LocalTime } from "@/components/LocalTime";
 
 export interface SuppressionRow {
   suppressionId: string;
@@ -208,7 +209,7 @@ export function SuppressionsManager({
                     {r.scope === "ORGANIZATION" ? "Whole team" : "Only you"}
                   </td>
                   <td className="px-3 py-2 text-slate-600">
-                    {new Date(r.createdAt).toLocaleDateString()}
+                    <LocalTime value={r.createdAt} options={{ dateStyle: "medium" }} />
                   </td>
                   <td className="px-3 py-2 text-right">
                     {(r.scope === "USER" || isAdmin) && (
