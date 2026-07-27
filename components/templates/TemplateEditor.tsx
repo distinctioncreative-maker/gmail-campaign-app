@@ -8,6 +8,7 @@ import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { SpamCheck } from "@/components/spam/SpamCheck";
 import { AiEmailWriter } from "./AiEmailWriter";
 import { AiEmailTools } from "./AiEmailTools";
+import { Button } from "@/components/ui/Button";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -60,6 +61,10 @@ export function TemplateEditor({
   const [drafts, setDrafts] = useState<DraftSummary[] | null>(null);
   const [draftSearch, setDraftSearch] = useState("");
   const [busy, setBusy] = useState(false);
+  // Tracks which of Save/Preview/Send-test is in flight, so only that one
+  // button shows a spinner instead of the whole toolbar going ambiguous.
+  const [pendingAction, setPendingAction] = useState<"save" | "preview" | "test" | null>(null);
+  const [justSucceeded, setJustSucceeded] = useState<"preview" | "test" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cssWarnings, setCssWarnings] = useState<string[]>([]);
@@ -139,6 +144,7 @@ export function TemplateEditor({
 
   async function refreshPreview() {
     setBusy(true);
+    setPendingAction("preview");
     setError(null);
     try {
       const res = await fetch("/api/templates/preview", {
@@ -149,15 +155,19 @@ export function TemplateEditor({
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Preview failed.");
       setPreview(body);
+      setJustSucceeded("preview");
+      setTimeout(() => setJustSucceeded((cur) => (cur === "preview" ? null : cur)), 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Preview failed.");
     } finally {
       setBusy(false);
+      setPendingAction(null);
     }
   }
 
   async function sendTest() {
     setBusy(true);
+    setPendingAction("test");
     setError(null);
     try {
       const res = await fetch("/api/templates/test-send", {
@@ -168,15 +178,19 @@ export function TemplateEditor({
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Test send failed.");
       setNotice(`Test email sent to ${body.sentTo}. Check your inbox.`);
+      setJustSucceeded("test");
+      setTimeout(() => setJustSucceeded((cur) => (cur === "test" ? null : cur)), 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Test send failed.");
     } finally {
       setBusy(false);
+      setPendingAction(null);
     }
   }
 
   async function save() {
     setBusy(true);
+    setPendingAction("save");
     setError(null);
     try {
       const input = {
@@ -201,6 +215,7 @@ export function TemplateEditor({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save the template.");
       setBusy(false);
+      setPendingAction(null);
     }
   }
 
@@ -424,27 +439,37 @@ export function TemplateEditor({
         )}
 
         <div className="mt-6 flex flex-wrap gap-2">
-          <button
+          <Button
             onClick={save}
             disabled={busy || !canSave}
-            className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+            loading={pendingAction === "save"}
+            loadingText="Saving…"
+            className="px-5 py-2.5"
           >
-            {busy ? "Working…" : templateId ? "Save changes" : "Save template"}
-          </button>
-          <button
+            {templateId ? "Save changes" : "Save template"}
+          </Button>
+          <Button
+            variant="ghost"
             onClick={refreshPreview}
             disabled={busy || !canSave}
-            className="rounded-xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            loading={pendingAction === "preview"}
+            loadingText="Rendering…"
+            success={justSucceeded === "preview"}
+            className="px-5 py-2.5"
           >
             Preview
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={sendTest}
             disabled={busy || !canSave}
-            className="rounded-xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            loading={pendingAction === "test"}
+            loadingText="Sending…"
+            success={justSucceeded === "test"}
+            className="px-5 py-2.5"
           >
             Send me a test
-          </button>
+          </Button>
         </div>
       </div>
 

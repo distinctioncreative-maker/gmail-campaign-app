@@ -501,6 +501,19 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
     ],
   },
+  {
+    id: "design-system",
+    name: "Design System & Motion",
+    features: [
+      {
+        id: "button-motion-system",
+        name: "Button hover/press/loading/success states",
+        status: "beta",
+        description: "Every existing .btn-primary/.btn-secondary/.btn-ghost/.btn-danger button app-wide gained a hover lift from a single app/globals.css change. A new shared components/ui/Button.tsx adds a real loading spinner and a success flash for async actions, replacing plain disabled-only feedback. Rolled out to campaign controls and the template editor first; the rest of the app's action buttons are next.",
+        keyFiles: ["components/ui/Button.tsx", "app/globals.css", "components/campaign/CampaignControls.tsx", "components/templates/TemplateEditor.tsx"],
+      },
+    ],
+  },
 ];
 
 /** Flat list, convenient for consumers that don't care about grouping. */

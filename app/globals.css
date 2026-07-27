@@ -213,26 +213,36 @@ a.card-hover:focus-visible {
   transform: translateY(0.5px);
 }
 
+/* Every button in the app already carries one of these classes, so a subtle
+   hover-lift here gives the whole product a more animated feel with no
+   per-component changes. */
+.btn-primary:hover, .btn-secondary:hover, .btn-ghost:hover, .btn-danger:hover {
+  transform: translateY(-1px);
+}
+.btn-primary:disabled:hover, .btn-secondary:disabled:hover, .btn-ghost:disabled:hover, .btn-danger:disabled:hover {
+  transform: none;
+}
+
 .btn-primary {
   background: var(--primary);
   color: #fff;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04), 0 6px 16px -10px color-mix(in srgb, var(--primary) 80%, transparent);
 }
-.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:hover { background: var(--primary-hover); box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06), 0 10px 22px -10px color-mix(in srgb, var(--primary) 85%, transparent); }
 .btn-primary:disabled { filter: grayscale(0.25) opacity(0.55); box-shadow: none; }
 
 .btn-secondary {
   background: var(--primary-soft);
   color: var(--primary);
 }
-.btn-secondary:hover { filter: brightness(0.98); }
+.btn-secondary:hover { filter: brightness(0.98); box-shadow: var(--shadow-sm); }
 
 .btn-ghost {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--foreground);
 }
-.btn-ghost:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--border) 55%, var(--foreground) 10%); }
+.btn-ghost:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--border) 55%, var(--foreground) 10%); box-shadow: var(--shadow-sm); }
 
 .btn-danger {
   border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
@@ -241,6 +251,27 @@ a.card-hover:focus-visible {
 }
 .btn-danger:hover { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); }
 .btn:disabled, .btn-primary:disabled, .btn-ghost:disabled, .btn-secondary:disabled, .btn-danger:disabled { opacity: 0.55; }
+
+/* ── Button loading spinner + success flash (components/ui/Button.tsx) ─── */
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+.btn-spinner {
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.85;
+  animation: btn-spin 0.6s linear infinite;
+}
+@keyframes btn-success-pop { 0% { transform: scale(0.94); } 45% { transform: scale(1.04); } 100% { transform: scale(1); } }
+.btn-success-flash { animation: btn-success-pop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.btn-primary.btn-success-flash { background: var(--success); }
+.btn-secondary.btn-success-flash { background: color-mix(in srgb, var(--success) 16%, var(--primary-soft)); color: var(--success); }
+.btn-ghost.btn-success-flash { border-color: color-mix(in srgb, var(--success) 45%, var(--border)); color: var(--success); }
+@media (prefers-reduced-motion: reduce) {
+  .btn-spinner { animation: none; border-top-color: currentColor; }
+  .btn-success-flash { animation: none; }
+}
 
 /* ── Segmented control (Apple-style tabs / filters) ──────── */
 .segmented {

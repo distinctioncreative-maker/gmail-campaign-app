@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { checkDomainAuth } from "@/lib/deliverability/dnsLookup";
 import { getPostmasterStats } from "@/lib/deliverability/postmaster";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Icon } from "@/components/ui/Icon";
 import { formatPercent } from "@/lib/analytics/metrics";
 
 export const dynamic = "force-dynamic";
@@ -64,23 +65,32 @@ export default async function DeliverabilityPage() {
       {postmaster.state === "OK" ? (
         <>
           <div className="mb-4 grid gap-4 sm:grid-cols-3">
-            <div className="card p-5">
-              <p className="text-sm text-slate-500">Domain reputation</p>
+            <div className="card card-hover p-5">
+              <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
+                <Icon name="shield" size={20} />
+              </span>
+              <p className="mt-3 text-sm text-slate-500">Domain reputation</p>
               <p className="mt-1">
                 <span className={`badge text-sm ${REPUTATION_PILL[postmaster.latestReputation ?? ""] ?? "bg-slate-100 text-slate-600"}`}>
                   {postmaster.latestReputation ?? "Unknown"}
                 </span>
               </p>
             </div>
-            <div className="card p-5">
-              <p className="text-sm text-slate-500">Latest spam rate</p>
+            <div className="card card-hover p-5">
+              <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
+                <Icon name="alert" size={20} />
+              </span>
+              <p className="mt-3 text-sm text-slate-500">Latest spam rate</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">
                 {spamPct(postmaster.days[0]?.spamRatio ?? null)}
               </p>
               <p className="mt-1 text-xs text-slate-400">Keep under 0.1%. 0.3%+ is the danger zone.</p>
             </div>
-            <div className="card p-5">
-              <p className="text-sm text-slate-500">Days with data (30d)</p>
+            <div className="card card-hover p-5">
+              <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
+                <Icon name="chart" size={20} />
+              </span>
+              <p className="mt-3 text-sm text-slate-500">Days with data (30d)</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">{postmaster.days.length}</p>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
+import { Button } from "@/components/ui/Button";
 
 interface Pace {
   dailySendLimit: number;
@@ -27,14 +28,22 @@ export function CampaignControls({
   const router = useRouter();
   const toast = useToast();
   const confirm = useConfirm();
-  const [busy, setBusy] = useState(false);
+  // Which action is in flight / just succeeded, so only the clicked button
+  // shows its own spinner or success flash — siblings just stay disabled.
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [successAction, setSuccessAction] = useState<string | null>(null);
   const [showPace, setShowPace] = useState(false);
   const [draft, setDraft] = useState<Pace>(pace);
 
-  async function post(body: Record<string, unknown>, confirmMessage?: string) {
+  function flashSuccess(actionKey: string) {
+    setSuccessAction(actionKey);
+    setTimeout(() => setSuccessAction((cur) => (cur === actionKey ? null : cur)), 1500);
+  }
+
+  async function post(actionKey: string, body: Record<string, unknown>, confirmMessage?: string) {
     if (confirmMessage && !(await confirm({ title: "Are you sure?", body: confirmMessage, danger: true, confirmLabel: "Yes, continue" })))
       return;
-    setBusy(true);
+    setBusyAction(actionKey);
     try {
       const res = await fetchJson<{ message?: string; campaignId?: string }>(
         `/api/campaigns/${campaignId}/control`,
@@ -49,15 +58,16 @@ export function CampaignControls({
         router.push(`/campaigns/${res.campaignId}`);
         return;
       }
+      flashSuccess(actionKey);
       router.refresh();
     } catch (err) {
       toast(err instanceof Error ? err.message : "That didn't work.", "error");
     } finally {
-      setBusy(false);
+      setBusyAction(null);
     }
   }
 
-  const act = (action: string, confirmMessage?: string) => post({ action }, confirmMessage);
+  const act = (action: string, confirmMessage?: string) => post(action, { action }, confirmMessage);
 
   async function deleteDraft() {
     const ok = await confirm({
@@ -67,35 +77,36 @@ export function CampaignControls({
       confirmLabel: "Delete",
     });
     if (!ok) return;
-    setBusy(true);
+    setBusyAction("delete_draft");
     try {
       await fetchJson(`/api/campaigns/${campaignId}`, { method: "DELETE" });
       toast("Draft deleted.", "success");
       router.push("/campaigns");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Could not delete that campaign.", "error");
-      setBusy(false);
+      setBusyAction(null);
     }
   }
 
   async function checkReplies() {
-    setBusy(true);
+    setBusyAction("check_replies");
     try {
       const res = await fetchJson<{ message?: string }>(`/api/campaigns/${campaignId}/check-replies`, {
         method: "POST",
       });
       toast(res.message ?? "Checked for replies.", "success");
+      flashSuccess("check_replies");
       router.refresh();
     } catch (err) {
       toast(err instanceof Error ? err.message : "Could not check for replies.", "error");
     } finally {
-      setBusy(false);
+      setBusyAction(null);
     }
   }
 
+  const busy = busyAction !== null;
   const btn =
     "rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50";
-  const primaryBtn = "btn-primary px-4 py-2 text-sm disabled:opacity-50";
   const dangerBtn =
     "rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50";
   const numInput =
@@ -118,24 +129,32 @@ export function CampaignControls({
       <div className="flex flex-wrap gap-2">
         {status === "ACTIVE" && (
           <>
-            <button
+            <Button
               onClick={() =>
                 act("pause", "Pause this campaign? An email already being sent this second may still go out; nothing else will.")
               }
               disabled={busy}
-              className={primaryBtn}
+              loading={busyAction === "pause"}
+              success={successAction === "pause"}
+              className="px-4 py-2 text-sm"
             >
               Pause
-            </button>
+            </Button>
             <button onClick={() => act("send_next_batch")} disabled={busy} className={btn}>
               Send next batch now
             </button>
           </>
         )}
         {status === "PAUSED" && (
-          <button onClick={() => act("resume")} disabled={busy} className={primaryBtn}>
+          <Button
+            onClick={() => act("resume")}
+            disabled={busy}
+            loading={busyAction === "resume"}
+            success={successAction === "resume"}
+            className="px-4 py-2 text-sm"
+          >
             Resume
-          </button>
+          </Button>
         )}
         {(status === "ACTIVE" || status === "PAUSED") && (
           <button onClick={() => setShowPace((s) => !s)} disabled={busy} className={btn}>
@@ -149,7 +168,7 @@ export function CampaignControls({
               disabled={busy}
               className={dangerBtn}
             >
-              Stop
+              {busyAction === "stop" ? "Stopping…" : "Stop"}
             </button>
             <button
               onClick={() =>
@@ -158,7 +177,7 @@ export function CampaignControls({
               disabled={busy}
               className={dangerBtn}
             >
-              Cancel &amp; delete drafts
+              {busyAction === "cancel_delete_drafts" ? "Cancelling…" : "Cancel & delete drafts"}
             </button>
             <button
               onClick={() => act(followupsPaused ? "resume_followups" : "pause_followups")}
@@ -171,18 +190,18 @@ export function CampaignControls({
         )}
         {(status === "ERROR" || status === "PAUSED" || status === "ACTIVE") && (
           <button onClick={() => act("retry_failed")} disabled={busy} className={btn}>
-            Retry failed
+            {busyAction === "retry_failed" ? "Retrying…" : "Retry failed"}
           </button>
         )}
         <button onClick={() => void checkReplies()} disabled={busy} className={btn}>
-          Check for replies now
+          {busyAction === "check_replies" ? "Checking…" : successAction === "check_replies" ? "✓ Checked" : "Check for replies now"}
         </button>
         <button onClick={() => act("clone")} disabled={busy} className={btn}>
-          Duplicate campaign
+          {busyAction === "clone" ? "Duplicating…" : "Duplicate campaign"}
         </button>
         {status === "DRAFT" && (
           <button onClick={() => void deleteDraft()} disabled={busy} className={dangerBtn}>
-            Delete draft
+            {busyAction === "delete_draft" ? "Deleting…" : "Delete draft"}
           </button>
         )}
         {["STOPPED", "CANCELLED", "COMPLETED", "ERROR"].includes(status) && (
@@ -196,7 +215,7 @@ export function CampaignControls({
             disabled={busy}
             className={btn}
           >
-            Free unused leads
+            {busyAction === "release_leads" ? "Releasing…" : "Free unused leads"}
           </button>
         )}
       </div>
@@ -207,7 +226,7 @@ export function CampaignControls({
             <p className="text-sm font-semibold text-slate-700">Sending pace for this campaign</p>
             <button
               onClick={() =>
-                post({
+                post("override_limit", {
                   action: "update_pace",
                   pace: { ...draft, dailySendLimit: Math.max(draft.dailySendLimit, 2000) },
                 })
@@ -235,13 +254,16 @@ export function CampaignControls({
             ))}
           </div>
           <div className="mt-3 flex items-center gap-2">
-            <button
-              onClick={() => post({ action: "update_pace", pace: draft })}
+            <Button
+              onClick={() => post("update_pace", { action: "update_pace", pace: draft })}
               disabled={busy}
-              className={primaryBtn}
+              loading={busyAction === "update_pace"}
+              loadingText="Saving…"
+              success={successAction === "update_pace"}
+              className="px-4 py-2 text-sm"
             >
-              {busy ? "Saving…" : "Save pace & reschedule"}
-            </button>
+              Save pace & reschedule
+            </Button>
             <button onClick={() => setDraft(pace)} disabled={busy} className={btn}>
               Reset
             </button>
