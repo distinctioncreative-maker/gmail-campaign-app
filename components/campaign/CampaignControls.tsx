@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
 import { Button } from "@/components/ui/Button";
+import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
 
 interface Pace {
   dailySendLimit: number;
@@ -226,10 +227,14 @@ export function CampaignControls({
             <p className="text-sm font-semibold text-slate-700">Sending pace for this campaign</p>
             <button
               onClick={() =>
-                post("override_limit", {
-                  action: "update_pace",
-                  pace: { ...draft, dailySendLimit: Math.max(draft.dailySendLimit, 2000) },
-                })
+                post(
+                  "override_limit",
+                  {
+                    action: "update_pace",
+                    pace: { ...draft, dailySendLimit: Math.max(draft.dailySendLimit, 2000) },
+                  },
+                  "Override today's limit and send the rest of this campaign right now? This can push you well past the ~50–100/day pace that keeps sending safe, which risks your sender reputation and inbox placement."
+                )
               }
               disabled={busy}
               className="text-xs font-medium text-primary hover:underline disabled:opacity-50"
@@ -253,9 +258,25 @@ export function CampaignControls({
               </label>
             ))}
           </div>
+          {assessPaceRisk(draft).risky && (
+            <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
+              <p className="text-xs font-semibold text-amber-800">⚠️ This pace risks your deliverability</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-amber-800">
+                {assessPaceRisk(draft).reasons.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="mt-3 flex items-center gap-2">
             <Button
-              onClick={() => post("update_pace", { action: "update_pace", pace: draft })}
+              onClick={() => {
+                const risk = assessPaceRisk(draft);
+                const confirmMessage = risk.risky
+                  ? `${risk.reasons.join(" ")} This can hurt your sender reputation and inbox placement. Save this pace anyway?`
+                  : undefined;
+                void post("update_pace", { action: "update_pace", pace: draft }, confirmMessage);
+              }}
               disabled={busy}
               loading={busyAction === "update_pace"}
               loadingText="Saving…"

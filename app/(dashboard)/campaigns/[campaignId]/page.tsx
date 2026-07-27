@@ -58,6 +58,12 @@ export default async function CampaignDetailPage({
     { label: "Sent", value: totalSent(campaign), tone: "text-green-600" },
     { label: "Follow-ups", value: campaign.followupSentCount, tone: "text-slate-900" },
     { label: "Replies", value: campaign.replyCount, tone: "text-indigo-600" },
+    ...(campaign.trackingEnabled
+      ? [
+          { label: "Opens", value: recipients.filter((r) => r.openedAt !== null).length, tone: "text-sky-600" },
+          { label: "Clicks", value: recipients.filter((r) => r.firstClickedAt !== null).length, tone: "text-sky-600" },
+        ]
+      : []),
     { label: "Excluded", value: campaign.excludedRecipients, tone: "text-amber-600" },
     { label: "Problems", value: campaign.errorCount, tone: campaign.errorCount > 0 ? "text-red-600" : "text-slate-400" },
   ];

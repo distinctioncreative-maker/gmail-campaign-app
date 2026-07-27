@@ -37,6 +37,8 @@ import { scheduleNextFollowup } from "@/lib/campaigns/followups";
 import { recordCollisionContact } from "@/lib/campaigns/collision";
 import { isTestModeForOrg } from "@/lib/sending/mode";
 import { reportError } from "@/lib/observability/report";
+import { injectTracking } from "@/lib/tracking/inject";
+import { env } from "@/lib/env";
 
 const PayloadSchema = z.object({
   organizationId: z.string().min(1),
@@ -297,13 +299,29 @@ export async function POST(req: NextRequest) {
     // Test vs real is the ORG's current sending mode, resolved fresh here.
     const testMode = await isTestModeForOrg(organizationId);
     const threaded = isFollowup && step?.sameThread && recipient.gmailThreadId;
+
+    // Optional open/click tracking — opt-in per campaign, off by default
+    // (see schemas/campaign.ts CampaignSchema.trackingEnabled), and skipped
+    // in test mode so test sends never write real tracking data.
+    let finalHtml = body.output;
+    let trackingLinkUrls: string[] | null = null;
+    if (campaign.trackingEnabled && !testMode) {
+      const injected = injectTracking(
+        body.output,
+        { ownerUserId, organizationId, campaignId, recipientId: item.recipientId, step: item.sequenceStep },
+        env.APP_BASE_URL
+      );
+      finalHtml = injected.html;
+      trackingLinkUrls = injected.linkUrls;
+    }
+
     // Past this point a failure's outcome is ambiguous — never auto-retry.
     reachedSend = true;
     const result = await sendEmail({
       userId: ownerUserId,
       to: recipient.emailSnapshot,
       subject: subjectOutput,
-      htmlBody: body.output,
+      htmlBody: finalHtml,
       textBody: plainText,
       testMode,
       threadId: threaded ? recipient.gmailThreadId ?? undefined : undefined,
@@ -331,6 +349,14 @@ export async function POST(req: NextRequest) {
         initialSentAt: item.sequenceStep === 0 ? now : recipient.initialSentAt,
         lastSentAt: now,
         currentStep: item.sequenceStep,
+        ...(trackingLinkUrls
+          ? {
+              trackedLinkUrls: {
+                ...recipient.trackedLinkUrls,
+                [String(item.sequenceStep)]: trackingLinkUrls,
+              },
+            }
+          : {}),
       }),
       updateQueueItem(owner, campaignId, queueItemId, {
         status: "COMPLETE",

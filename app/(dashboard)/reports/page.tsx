@@ -93,7 +93,7 @@ export default async function ReportsPage() {
     <div>
       <PageHeader
         title="Analytics"
-        description="Reply performance across your campaigns — reply rates, when people reply, and what's working. No open tracking (it's unreliable and hurts deliverability)."
+        description="Reply performance across your campaigns — reply rates, when people reply, and what's working. Open/click tracking is off by default (see each campaign's page) since it can hurt deliverability."
         actions={
           <div className="flex items-center gap-2">
             <ScanRepliesButton />

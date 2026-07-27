@@ -12,6 +12,8 @@ import { SkeletonList } from "@/components/ui/Skeleton";
 import { SpamCheck } from "@/components/spam/SpamCheck";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import { Icon } from "@/components/ui/Icon";
+import { useConfirm } from "@/components/ui/UIProviders";
+import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -67,6 +69,7 @@ type PresetKey = keyof typeof PRESETS | "custom";
 
 export function CampaignWizard() {
   const router = useRouter();
+  const confirm = useConfirm();
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,6 +146,7 @@ export function CampaignWizard() {
     dailySendLimit: 100,
   });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
+  const [trackingEnabled, setTrackingEnabled] = useState(false);
   const [personalize, setPersonalize] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
   const [priorPolicy, setPriorPolicy] = useState("ONLY_NEW");
@@ -166,6 +170,7 @@ export function CampaignWizard() {
       preset,
       customPace,
       draftStrategy,
+      trackingEnabled,
       priorPolicy,
     }
   );
@@ -181,6 +186,7 @@ export function CampaignWizard() {
     setPreset(restored.preset);
     if (restored.customPace) setCustomPace(restored.customPace);
     setDraftStrategy(restored.draftStrategy);
+    if (typeof restored.trackingEnabled === "boolean") setTrackingEnabled(restored.trackingEnabled);
     setPriorPolicy(restored.priorPolicy);
     dismissRestored();
   }
@@ -224,6 +230,9 @@ export function CampaignWizard() {
     };
   }, [contacts, selected]);
 
+  const effectivePace = preset === "custom" ? customPace : PRESETS[preset].schedule;
+  const paceRisk = useMemo(() => assessPaceRisk(effectivePace), [effectivePace]);
+
   async function loadPreview(tid: string) {
     const template = templates?.find((t) => t.templateId === tid);
     if (!template) return;
@@ -238,6 +247,21 @@ export function CampaignWizard() {
       }),
     });
     if (res.ok) setPreview(await res.json());
+  }
+
+  /** Gate an actually-risky pace behind an explicit, informative confirm —
+   * the whole point is that no one launches a spam-flagged pace by accident. */
+  async function confirmAndLaunch() {
+    if (paceRisk.risky) {
+      const ok = await confirm({
+        title: "This pace risks your deliverability",
+        body: `${paceRisk.reasons.join(" ")} Sending this fast can get flagged as spam and hurt the sender reputation you've built. Continue at this pace anyway?`,
+        danger: true,
+        confirmLabel: "Yes, send at this pace",
+      });
+      if (!ok) return;
+    }
+    await launch(true);
   }
 
   async function launch(startNow: boolean) {
@@ -258,6 +282,7 @@ export function CampaignWizard() {
             schedule: preset === "custom" ? customPace : PRESETS[preset].schedule,
             priorContactPolicy: priorPolicy,
             draftStrategy,
+            trackingEnabled,
             sourceListId: listFilter || null,
           }),
         }
@@ -773,6 +798,20 @@ export function CampaignWizard() {
               </div>
             )}
 
+            {paceRisk.risky && (
+              <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
+                <p className="text-sm font-semibold text-amber-800">⚠️ This pace risks your deliverability</p>
+                <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-amber-800">
+                  {paceRisk.reasons.map((r) => (
+                    <li key={r}>{r}</li>
+                  ))}
+                </ul>
+                <p className="mt-1.5 text-xs text-amber-700">
+                  You&apos;ll be asked to confirm this again before launch.
+                </p>
+              </div>
+            )}
+
             <p className="mt-3 text-xs text-slate-500">
               Sending happens 9:00 AM–8:00 PM on weekdays in your timezone (change defaults in
               Settings). Unsent emails automatically roll to the next allowed time.
@@ -813,6 +852,26 @@ export function CampaignWizard() {
               </label>
             </div>
 
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+              <label className="flex items-start gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={trackingEnabled}
+                  onChange={(e) => setTrackingEnabled(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  Track opens and clicks <span className="font-normal text-amber-700">(optional)</span>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    Adds an invisible open pixel and rewrites links to measure clicks. Off by default —
+                    <strong className="font-medium text-amber-700"> tracking pixels and rewritten links are a
+                    known deliverability risk</strong> and can lower inbox placement. Leave this off unless
+                    you specifically need open/click numbers for this campaign.
+                  </span>
+                </span>
+              </label>
+            </div>
+
             {aiEnabled && (
               <div className="mt-3 rounded-xl border border-primary/20 bg-primary-soft/40 p-3">
                 <label className="flex items-start gap-2 text-sm text-slate-700">
@@ -844,12 +903,17 @@ export function CampaignWizard() {
               <li>✅ {counts.selected} people will receive this email</li>
               <li>✅ {counts.excluded} excluded automatically for safety</li>
               <li>
-                ✅ Pace:{" "}
+                {paceRisk.risky ? "⚠️" : "✅"} Pace:{" "}
                 {preset === "custom"
                   ? `${customPace.emailsPerBatch} per batch · ${customPace.minDelaySeconds}–${customPace.maxDelaySeconds}s apart · ${customPace.interBatchDelayMinutes} min between batches · ${customPace.dailySendLimit}/day`
                   : PRESETS[preset].detail}
+                {paceRisk.risky && <span className="ml-1 font-medium text-amber-700">— risky, see above</span>}
               </li>
               <li>✅ Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</li>
+              <li>
+                {trackingEnabled ? "⚠️" : "✅"} Open/click tracking:{" "}
+                {trackingEnabled ? "On (adds some deliverability risk)" : "Off"}
+              </li>
             </ul>
 
             <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
@@ -903,7 +967,7 @@ export function CampaignWizard() {
             )}
             <div className="mt-5 flex flex-wrap gap-3">
               <button
-                onClick={() => void launch(true)}
+                onClick={() => void confirmAndLaunch()}
                 disabled={busy}
                 className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
               >

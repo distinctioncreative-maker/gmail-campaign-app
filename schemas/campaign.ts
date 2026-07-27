@@ -69,6 +69,10 @@ export const CampaignSchema = z.object({
   followupSentCount: z.number().int().nonnegative().default(0),
   errorCount: z.number().int().nonnegative().default(0),
   followupsPaused: z.boolean().default(false),
+  /** Optional per-campaign open/click tracking (a pixel + link rewriting).
+   * Off by default — tracking pixels/rewritten links are a known
+   * deliverability risk, so this is an explicit opt-in, never a default. */
+  trackingEnabled: z.boolean().default(false),
   createdAt: EpochMillis,
   updatedAt: EpochMillis,
   startedAt: EpochMillis.nullable().default(null),
@@ -144,6 +148,18 @@ export const RecipientSchema = z.object({
   bouncedAt: EpochMillis.nullable().default(null),
   unsubscribedAt: EpochMillis.nullable().default(null),
   nextFollowupAt: EpochMillis.nullable().default(null),
+  /** Set only when the campaign has trackingEnabled. openedAt/firstClickedAt
+   * are set once (first open/click); *Count keeps incrementing. The original
+   * destination URLs live here server-side so the click-redirect endpoint
+   * never trusts a client-supplied URL (avoids an open-redirect). */
+  openedAt: EpochMillis.nullable().default(null),
+  openCount: z.number().int().nonnegative().default(0),
+  firstClickedAt: EpochMillis.nullable().default(null),
+  clickCount: z.number().int().nonnegative().default(0),
+  /** Keyed by sequence step ("0" = initial, "1"+ = follow-ups) since each
+   * send has its own set of links — a flat array would get overwritten by
+   * the next send and break tracking for earlier messages. */
+  trackedLinkUrls: z.record(z.string(), z.array(z.string())).default({}),
   lastError: z.string().nullable().default(null),
   retryCount: z.number().int().nonnegative().default(0),
   createdAt: EpochMillis,

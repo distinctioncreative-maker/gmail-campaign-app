@@ -195,6 +195,20 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/scheduling/window.ts", "lib/billing/plans.ts"],
       },
       {
+        id: "pace-safety-confirmations",
+        name: "\"Are you sure?\" prompts for risky pacing",
+        status: "shipped",
+        description: "A shared risk check (daily volume, minimum delay, batch size against the app's own \"boring volume\" deliverability guidance) flags unsafe settings inline in the campaign wizard and CampaignControls' pace editor, and gates launch / saving a live campaign's pace / the one-click daily-limit override behind an explicit confirm dialog naming the specific risk.",
+        keyFiles: ["lib/campaigns/paceSafety.ts", "components/campaign/CampaignWizard.tsx", "components/campaign/CampaignControls.tsx"],
+      },
+      {
+        id: "open-click-tracking",
+        name: "Optional open/click tracking",
+        status: "shipped",
+        description: "Off by default, opt-in per campaign in the wizard, clearly labeled as a deliverability tradeoff. A signed, tamper-evident token (not a client-supplied URL) drives both the open pixel and the click-redirect endpoint, which only ever redirects to a destination looked up server-side from the recipient's own stored links — never an open redirect. The unsubscribe link is never rewritten.",
+        keyFiles: ["lib/tracking/inject.ts", "lib/tracking/token.ts", "app/api/t/o/[token]", "app/api/t/c/[token]/[index]"],
+      },
+      {
         id: "campaign-controls",
         name: "Pause / resume / cancel / retry / clone",
         status: "shipped",

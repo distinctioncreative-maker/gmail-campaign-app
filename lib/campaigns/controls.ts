@@ -416,6 +416,7 @@ export async function cloneCampaign(ctx: AuthContext, campaign: Campaign): Promi
     followupSentCount: 0,
     errorCount: 0,
     followupsPaused: false,
+    trackingEnabled: campaign.trackingEnabled,
     startedAt: null,
     pausedAt: null,
     deferredDayKey: null,

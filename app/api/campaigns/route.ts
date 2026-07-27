@@ -34,6 +34,8 @@ const CreateSchema = z.object({
   draftStrategy: DraftStrategySchema.default("SEND"),
   /** When the campaign was started from a saved lead list, its id. */
   sourceListId: z.string().nullable().default(null),
+  /** Optional open/click tracking — off by default, see CampaignSchema. */
+  trackingEnabled: z.boolean().default(false),
 });
 
 /** Create a DRAFT campaign, defaulting schedule values from the user's
@@ -86,6 +88,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     followupSentCount: 0,
     errorCount: 0,
     followupsPaused: false,
+    trackingEnabled: input.trackingEnabled,
     startedAt: null,
     pausedAt: null,
     deferredDayKey: null,
