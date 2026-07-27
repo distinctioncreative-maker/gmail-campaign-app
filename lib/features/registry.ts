@@ -137,8 +137,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "templates",
         name: "Reusable templates",
         status: "shipped",
-        description: "Visual editor, starter templates, pasted HTML, or import straight from a Gmail draft, with placeholder personalization.",
-        keyFiles: ["schemas/template.ts", "lib/personalization/render.ts"],
+        description: "Visual editor, starter templates, pasted HTML, or import straight from a Gmail draft, with placeholder personalization in both the body and the subject line (same \"Insert placeholder\" menu on each, same render + launch-validation path). The body editor is a spacious full-height composer, not a cramped box.",
+        keyFiles: ["schemas/template.ts", "lib/personalization/render.ts", "components/templates/TemplateEditor.tsx"],
       },
       {
         id: "ai-writer",
@@ -177,8 +177,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "campaign-wizard",
         name: "Campaign wizard",
         status: "shipped",
-        description: "Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends.",
-        keyFiles: ["lib/campaigns/launch.ts", "app/(dashboard)/campaigns/new"],
+        description: "Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline (the same TemplateEditor embedded in place) instead of leaving the wizard and coming back.",
+        keyFiles: ["lib/campaigns/launch.ts", "app/(dashboard)/campaigns/new", "components/campaign/CampaignWizard.tsx"],
       },
       {
         id: "cloud-tasks-sending",

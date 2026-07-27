@@ -35,8 +35,8 @@
 
 ## Templates & AI Writing
 
-- [x] **Reusable templates** (Shipped) — Visual editor, starter templates, pasted HTML, or import straight from a Gmail draft, with placeholder personalization.
-  - `schemas/template.ts`, `lib/personalization/render.ts`
+- [x] **Reusable templates** (Shipped) — Visual editor, starter templates, pasted HTML, or import straight from a Gmail draft, with placeholder personalization in both the body and the subject line (same "Insert placeholder" menu on each, same render + launch-validation path). The body editor is a spacious full-height composer, not a cramped box.
+  - `schemas/template.ts`, `lib/personalization/render.ts`, `components/templates/TemplateEditor.tsx`
 - [x] **AI email writer** (Shipped) — Describe an email in a sentence and get a ready-to-send, on-brand draft. Env-gated on GEMINI_API_KEY and an org-level admin switch; fully off by default.
   - `lib/ai/generateEmail.ts`, `lib/ai/enabled.ts`, `components/admin/AiWritingCard.tsx`
 - [x] **Brand memory** (Shipped) — A saved org profile (offer, tone, pitch) that steers every AI-generated email so drafts stay consistent without re-explaining the business each time.
@@ -47,8 +47,8 @@
 
 ## Campaigns & Sequences
 
-- [x] **Campaign wizard** (Shipped) — Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends.
-  - `lib/campaigns/launch.ts`, `app/(dashboard)/campaigns/new`
+- [x] **Campaign wizard** (Shipped) — Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline (the same TemplateEditor embedded in place) instead of leaving the wizard and coming back.
+  - `lib/campaigns/launch.ts`, `app/(dashboard)/campaigns/new`, `components/campaign/CampaignWizard.tsx`
 - [x] **Cloud Tasks sending engine** (Shipped) — Every send is a queued, OIDC-verified Cloud Task, processed by an idempotent worker that retries pre-send failures and never double-sends.
   - `lib/tasks/enqueue.ts`, `app/api/tasks/send-message`, `lib/campaigns/idempotency.ts`
 - [x] **Send windows, pacing, and daily caps** (Shipped) — Sends spread across allowed weekdays/hours at a human pace, capped per plan, to stay under Gmail's limits and out of spam folders.

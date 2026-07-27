@@ -40,15 +40,31 @@ interface DraftSummary {
   snippet: string;
 }
 
+export interface SavedTemplate {
+  templateId: string;
+  name: string;
+  subjectTemplate: string;
+  htmlTemplate: string;
+  type: string;
+}
+
 export function TemplateEditor({
   templateId,
   initial,
+  onSaved,
 }: {
   templateId: string | null;
   initial: { name: string; subjectTemplate: string; htmlTemplate: string; type: string } | null;
+  /**
+   * When provided, a successful save calls this instead of redirecting to
+   * /templates — lets a caller (e.g. the campaign wizard) embed the editor
+   * inline and stay put on save rather than navigating the user away.
+   */
+  onSaved?: (template: SavedTemplate) => void;
 }) {
   const router = useRouter();
   const editorRef = useRef<HTMLDivElement>(null);
+  const subjectInputRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>(
     initial?.type === "PASTED_HTML" ? "html" : "visual"
   );
@@ -100,6 +116,23 @@ export function TemplateEditor({
   function insertPlaceholder(token: string) {
     if (mode === "visual") insertHtmlAtCursor(token);
     else setHtml((h) => h + token);
+  }
+
+  /** Insert a {{placeholder}} into the subject line at the cursor, same as
+   *  the body editor's "Insert placeholder" menu — subjects support the
+   *  exact same tokens end to end (render + launch validation both cover
+   *  subjectTemplate), this was previously the only field without a menu. */
+  function insertSubjectPlaceholder(token: string) {
+    const el = subjectInputRef.current;
+    const start = el?.selectionStart ?? subject.length;
+    const end = el?.selectionEnd ?? subject.length;
+    const next = subject.slice(0, start) + token + subject.slice(end);
+    setSubject(next);
+    requestAnimationFrame(() => {
+      el?.focus();
+      const caret = start + token.length;
+      el?.setSelectionRange(caret, caret);
+    });
   }
 
   async function loadDrafts(q = "") {
@@ -210,8 +243,14 @@ export function TemplateEditor({
       if (!res.ok) throw new Error(body.error ?? "Could not save the template.");
       if (body.cssWarnings?.length) setCssWarnings(body.cssWarnings);
       clear();
-      router.push("/templates");
-      router.refresh();
+      if (onSaved) {
+        onSaved(body.template);
+        setBusy(false);
+        setPendingAction(null);
+      } else {
+        router.push("/templates");
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save the template.");
       setBusy(false);
@@ -266,15 +305,38 @@ export function TemplateEditor({
           />
         </label>
 
-        <label className="mt-4 block text-sm font-medium text-slate-700">
-          Subject line
+        <div className="mt-4">
+          <div className="flex items-center justify-between">
+            <label htmlFor="template-subject" className="block text-sm font-medium text-slate-700">
+              Subject line
+            </label>
+            <select
+              onChange={(e) => {
+                if (e.target.value) insertSubjectPlaceholder(e.target.value);
+                e.target.value = "";
+              }}
+              defaultValue=""
+              className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
+              aria-label="Insert placeholder into subject"
+            >
+              <option value="" disabled>Insert placeholder…</option>
+              {PLACEHOLDER_MENU.map((p) => (
+                <option key={p.token} value={p.token}>{p.label}</option>
+              ))}
+            </select>
+          </div>
           <input
+            id="template-subject"
+            ref={subjectInputRef}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Quick question for {{business_name}}"
             className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
-        </label>
+          <p className="mt-1 text-xs text-slate-400">
+            Placeholders work in the subject too — personalize it the same way as the body.
+          </p>
+        </div>
 
         <AiEmailTools subject={subject} html={html} onSubject={setSubject} onHtml={setHtml} />
 
@@ -304,7 +366,7 @@ export function TemplateEditor({
 
         {mode === "visual" && (
           <>
-            <div className="mt-3 flex flex-wrap items-center gap-1 rounded-lg bg-slate-50 p-1 text-sm">
+            <div className="mt-3 flex flex-wrap items-center gap-1 rounded-lg bg-slate-50 p-1.5 text-sm">
               <button onClick={() => exec("bold")} className="rounded px-2 py-1 font-bold hover:bg-slate-200" aria-label="Bold">B</button>
               <button onClick={() => exec("italic")} className="rounded px-2 py-1 italic hover:bg-slate-200" aria-label="Italic">I</button>
               <button onClick={() => exec("underline")} className="rounded px-2 py-1 underline hover:bg-slate-200" aria-label="Underline">U</button>
@@ -362,7 +424,7 @@ export function TemplateEditor({
               role="textbox"
               aria-multiline="true"
               aria-label="Email body"
-              className="prose-sm mt-2 min-h-64 w-full rounded-xl border border-slate-200 p-4 text-sm focus:border-primary focus:outline-none"
+              className="prose-sm mt-2 min-h-[28rem] w-full rounded-xl border border-slate-200 p-5 text-sm leading-relaxed focus:border-primary focus:outline-none"
             />
           </>
         )}

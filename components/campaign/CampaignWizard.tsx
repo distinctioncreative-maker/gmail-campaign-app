@@ -10,6 +10,8 @@ import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { fetchJson } from "@/lib/fetchJson";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { SpamCheck } from "@/components/spam/SpamCheck";
+import { TemplateEditor } from "@/components/templates/TemplateEditor";
+import { Icon } from "@/components/ui/Icon";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -88,6 +90,45 @@ export function CampaignWizard() {
     setTemplateIds((prev) =>
       prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
     );
+  }
+
+  // Inline template creation/editing right in the wizard, instead of sending
+  // the user to /templates and back. null = grid view; otherwise the full
+  // TemplateEditor renders in place (templateId null = brand new template).
+  const [editing, setEditing] = useState<{
+    templateId: string | null;
+    initial: { name: string; subjectTemplate: string; htmlTemplate: string; type: string } | null;
+  } | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+
+  async function refetchTemplates() {
+    const tBody = await fetch("/api/templates").then((r) => r.json());
+    setTemplates((tBody.templates ?? []).filter((t: WizardTemplate) => t.active));
+  }
+
+  async function openEditTemplate(tid: string) {
+    setEditLoading(true);
+    try {
+      const full = await fetch(`/api/templates/${tid}`).then((r) => r.json());
+      setEditing({
+        templateId: tid,
+        initial: {
+          name: full.template.name,
+          subjectTemplate: full.template.subjectTemplate,
+          htmlTemplate: full.template.htmlTemplate,
+          type: full.template.type,
+        },
+      });
+    } finally {
+      setEditLoading(false);
+    }
+  }
+
+  async function handleTemplateSaved(saved: { templateId: string; name: string; subjectTemplate: string; htmlTemplate: string; type: string }) {
+    await refetchTemplates();
+    setTemplateIds((prev) => (prev.includes(saved.templateId) ? prev : [...prev, saved.templateId]));
+    setEditing(null);
+    void loadPreview(saved.templateId);
   }
 
   const [sequences, setSequences] = useState<WizardSequence[]>([]);
@@ -541,24 +582,64 @@ export function CampaignWizard() {
           </>
         )}
 
-        {step === 3 && (
+        {step === 3 && editing && (
           <>
-            <h2 className="text-xl font-semibold">Choose the email</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                {editing.templateId ? "Edit template" : "New template"}
+              </h2>
+              <button
+                onClick={() => setEditing(null)}
+                className="text-sm font-medium text-slate-500 hover:text-slate-700"
+              >
+                ← Back to templates
+              </button>
+            </div>
             <p className="mt-1 text-sm text-slate-500">
-              Pick one template — or select two or more to <strong>A/B test</strong>. When you pick
-              several, the app rotates them across your recipients and shows which gets more replies.
+              Write it right here — saving drops you back into this campaign with the template
+              picked, no need to leave and come back.
             </p>
-            {templates === null ? (
+            <div className="mt-4">
+              <TemplateEditor
+                templateId={editing.templateId}
+                initial={editing.initial}
+                onSaved={handleTemplateSaved}
+              />
+            </div>
+          </>
+        )}
+
+        {step === 3 && !editing && (
+          <>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">Choose the email</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Pick one template — or select two or more to <strong>A/B test</strong>. When you pick
+                  several, the app rotates them across your recipients and shows which gets more replies.
+                </p>
+              </div>
+              <button
+                onClick={() => setEditing({ templateId: null, initial: null })}
+                className="btn-secondary shrink-0 px-3 py-2 text-sm"
+              >
+                + New template
+              </button>
+            </div>
+            {templates === null || editLoading ? (
               <div className="mt-4">
                 <SkeletonList rows={3} />
               </div>
             ) : templates.length === 0 ? (
               <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
                 No templates yet —{" "}
-                <Link href="/templates/new" className="text-primary hover:underline">
-                  create one
-                </Link>{" "}
-                and come back.
+                <button
+                  onClick={() => setEditing({ templateId: null, initial: null })}
+                  className="font-medium text-primary hover:underline"
+                >
+                  create one right here
+                </button>
+                .
               </p>
             ) : (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -581,8 +662,27 @@ export function CampaignWizard() {
                           {idx === 0 ? "A" : idx === 1 ? "B" : idx === 2 ? "C" : idx + 1}
                         </span>
                       )}
-                      <p className="font-medium">{t.name}</p>
-                      <p className="mt-1 line-clamp-1 text-sm text-slate-500">{t.subjectTemplate}</p>
+                      <p className="pr-14 font-medium">{t.name}</p>
+                      <p className="mt-1 line-clamp-1 pr-14 text-sm text-slate-500">{t.subjectTemplate}</p>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void openEditTemplate(t.templateId);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            void openEditTemplate(t.templateId);
+                          }
+                        }}
+                        aria-label={`Edit ${t.name}`}
+                        className="absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-primary"
+                      >
+                        <Icon name="edit" size={15} />
+                      </span>
                     </button>
                   );
                 })}
