@@ -7,17 +7,21 @@ import { ReplyHeatmap, TrendChart, BestSendTimes } from "@/components/analytics/
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
 import {
-  totals,
   timeToReply,
   replyHeatmap,
   bestSendTimes,
   dailyTrend,
   formatDuration,
   formatPercent as pct,
+  totalSent,
+  replyRateForCampaign,
   type RecipientPoint,
 } from "@/lib/analytics/metrics";
 
 // Cap how many campaigns we scan at recipient level so the page stays fast.
+// Only affects the timestamp-derived charts below (time to reply, heatmap,
+// best send times, trend) — the headline KPI tiles and leaderboard are
+// computed from every campaign's cached counters, uncapped.
 const MAX_CAMPAIGNS_SCANNED = 40;
 
 export default async function ReportsPage() {
@@ -40,35 +44,45 @@ export default async function ReportsPage() {
     unsubscribedAt: r.unsubscribedAt,
   }));
 
-  const t = totals(points);
+  // Time-series/heatmap charts need real per-recipient timestamps, so they
+  // stay derived from the (capped, for page speed) recipient-level scan.
   const ttr = timeToReply(points);
   const heat = replyHeatmap(points, tz);
   const best = bestSendTimes(points, tz).filter((r) => r.sent >= 2);
   const trend = dailyTrend(points, tz);
 
+  // Headline totals use the same source as Home and the leaderboard: cached
+  // per-campaign counters across ALL campaigns, not the capped recipient
+  // scan above — so these never silently drop data past MAX_CAMPAIGNS_SCANNED.
+  const totalSentAll = campaigns.reduce((n, c) => n + totalSent(c), 0);
+  const totalRepliesAll = campaigns.reduce((n, c) => n + c.replyCount, 0);
+  const totalBouncesAll = campaigns.reduce((n, c) => n + c.bounceCount, 0);
+  const overallReplyRate = totalSentAll > 0 ? (totalRepliesAll / totalSentAll) * 100 : 0;
+  const overallBounceRate = totalSentAll > 0 ? (totalBouncesAll / totalSentAll) * 100 : 0;
+
   const activeCount = campaigns.filter((c) => c.status === "ACTIVE").length;
   const leaderboard = [...campaigns]
-    .filter((c) => c.sentCount > 0)
+    .filter((c) => totalSent(c) > 0)
     .map((c) => ({
       campaign: c,
-      rate: c.sentCount > 0 ? (c.replyCount / c.sentCount) * 100 : 0,
+      rate: replyRateForCampaign(c),
     }))
     .sort((a, b) => b.rate - a.rate);
   const bestCampaign = leaderboard[0];
 
   const kpis = [
-    { label: "Emails sent", value: String(t.sent), tone: "text-slate-900" },
-    { label: "Reply rate", value: t.sent ? pct(t.replyRate) : "—", tone: "text-green-600" },
+    { label: "Emails sent", value: String(totalSentAll), tone: "text-slate-900" },
+    { label: "Reply rate", value: totalSentAll ? pct(overallReplyRate) : "—", tone: "text-green-600" },
     { label: "Median time to reply", value: formatDuration(ttr.medianMs), tone: "text-indigo-600" },
     { label: "Active campaigns", value: String(activeCount), tone: "text-slate-900" },
     { label: "Sent today", value: String(sentToday), tone: "text-slate-900" },
-    { label: "Bounce rate", value: t.sent ? pct(t.bounceRate) : "—", tone: t.bounceRate > 3 ? "text-red-600" : "text-slate-500" },
+    { label: "Bounce rate", value: totalSentAll ? pct(overallBounceRate) : "—", tone: overallBounceRate > 3 ? "text-red-600" : "text-slate-500" },
   ];
 
   const csvRows = leaderboard.map((l) => [
     l.campaign.name,
     CAMPAIGN_STATUS_LABELS[l.campaign.status]?.label ?? l.campaign.status,
-    l.campaign.sentCount + l.campaign.followupSentCount,
+    totalSent(l.campaign),
     l.campaign.replyCount,
     `${l.rate.toFixed(1)}%`,
     l.campaign.bounceCount,

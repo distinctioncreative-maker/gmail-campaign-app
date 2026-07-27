@@ -6,6 +6,8 @@ import {
   bestSendTimes,
   dailyTrend,
   formatDuration,
+  totalSent,
+  replyRateForCampaign,
   type RecipientPoint,
 } from "@/lib/analytics/metrics";
 
@@ -90,6 +92,29 @@ describe("dailyTrend", () => {
     expect(rows).toHaveLength(7);
     expect(rows[rows.length - 1].sent).toBe(1);
     expect(rows[rows.length - 1].replied).toBe(1);
+  });
+});
+
+describe("totalSent", () => {
+  it("is initial sends plus follow-ups — the one 'emails sent' definition for the whole app", () => {
+    expect(totalSent({ sentCount: 280, followupSentCount: 214 })).toBe(494);
+    expect(totalSent({ sentCount: 0, followupSentCount: 0 })).toBe(0);
+  });
+});
+
+describe("replyRateForCampaign", () => {
+  it("divides replies by the combined sent total, not initial sends alone", () => {
+    // Regression guard: a campaign with more follow-up sends than initial
+    // sends must not report a reply rate above 100% or diverge from the
+    // Home/Reports leaderboard definition of "sent".
+    expect(replyRateForCampaign({ sentCount: 280, followupSentCount: 214, replyCount: 4 })).toBeCloseTo(
+      (4 / 494) * 100,
+      5
+    );
+  });
+
+  it("returns 0 rather than dividing by zero when nothing has sent", () => {
+    expect(replyRateForCampaign({ sentCount: 0, followupSentCount: 0, replyCount: 0 })).toBe(0);
   });
 });
 

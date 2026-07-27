@@ -311,6 +311,11 @@ export async function POST(req: NextRequest) {
     });
 
     // 7–8. Record results.
+    // NOTE: these 6 writes are not transactional. If one throws after others
+    // resolve, campaign.sentCount/followupSentCount (the cached counters
+    // every "emails sent" surface reads) can drift from the recipient/queue
+    // state they're meant to mirror, with no automatic repair. Recipients
+    // remain the source of truth; treat the counters as a best-effort cache.
     const now = Date.now();
     await Promise.all([
       finalizeMessage(owner, campaignId, item.idempotencyKey, {

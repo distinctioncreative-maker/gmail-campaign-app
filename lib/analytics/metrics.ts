@@ -170,3 +170,23 @@ export function formatDuration(ms: number | null): string {
 export function formatPercent(n: number): string {
   return `${n.toFixed(1)}%`;
 }
+
+/**
+ * Campaign-level counter shape shared by every "total emails sent" surface
+ * (Home, Reports, campaign detail). The single definition of "sent" across
+ * the app: initial sends plus follow-ups, never one without the other.
+ */
+export interface CampaignCounters {
+  sentCount: number;
+  followupSentCount: number;
+  replyCount: number;
+}
+
+export function totalSent(campaign: Pick<CampaignCounters, "sentCount" | "followupSentCount">): number {
+  return campaign.sentCount + campaign.followupSentCount;
+}
+
+export function replyRateForCampaign(campaign: CampaignCounters): number {
+  const sent = totalSent(campaign);
+  return sent > 0 ? (campaign.replyCount / sent) * 100 : 0;
+}

@@ -84,8 +84,8 @@
 
 ## Reporting & Teams
 
-- [x] **Analytics dashboard** (Shipped) — Totals, time-to-reply, a reply heatmap, best-send-times, and a daily trend chart, with CSV export.
-  - `lib/analytics/metrics.ts`, `app/(dashboard)/reports`
+- [x] **Analytics dashboard** (Shipped) — Totals, time-to-reply, a reply heatmap, best-send-times, and a daily trend chart, with CSV export. "Emails sent" is standardized everywhere (Home, campaign detail, Reports) as initial + follow-up sends via lib/analytics/metrics.ts's totalSent()/replyRateForCampaign() helpers, so the same campaign never shows two different totals across pages.
+  - `lib/analytics/metrics.ts`, `app/(dashboard)/reports`, `app/(dashboard)/home`, `app/(dashboard)/campaigns/[campaignId]`
 - [x] **Team Lead dashboards + leaderboards** (Shipped) — Roster management and per-rep leaderboard KPIs (sent, replies, bounces, active campaigns) for managers and admins.
   - `lib/teams/stats.ts`, `components/team`
 - [x] **Read-only rep drill-down** (Shipped) — A team lead can inspect one rep's campaigns for coaching without gaining edit access to them.

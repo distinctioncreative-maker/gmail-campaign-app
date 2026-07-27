@@ -14,6 +14,7 @@ import { CampaignDiagnostics } from "@/components/campaign/CampaignDiagnostics";
 import { RecipientTable } from "@/components/campaign/RecipientTable";
 import { LocalTime } from "@/components/LocalTime";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { totalSent } from "@/lib/analytics/metrics";
 
 export default async function CampaignDetailPage({
   params,
@@ -54,7 +55,7 @@ export default async function CampaignDetailPage({
 
   const stats: Array<{ label: string; value: number; tone: string }> = [
     { label: "Recipients", value: campaign.eligibleRecipients, tone: "text-slate-900" },
-    { label: "Sent", value: campaign.sentCount, tone: "text-green-600" },
+    { label: "Sent", value: totalSent(campaign), tone: "text-green-600" },
     { label: "Follow-ups", value: campaign.followupSentCount, tone: "text-slate-900" },
     { label: "Replies", value: campaign.replyCount, tone: "text-indigo-600" },
     { label: "Excluded", value: campaign.excludedRecipients, tone: "text-amber-600" },

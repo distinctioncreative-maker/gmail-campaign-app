@@ -293,8 +293,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "analytics-dashboard",
         name: "Analytics dashboard",
         status: "shipped",
-        description: "Totals, time-to-reply, a reply heatmap, best-send-times, and a daily trend chart, with CSV export.",
-        keyFiles: ["lib/analytics/metrics.ts", "app/(dashboard)/reports"],
+        description: "Totals, time-to-reply, a reply heatmap, best-send-times, and a daily trend chart, with CSV export. \"Emails sent\" is standardized everywhere (Home, campaign detail, Reports) as initial + follow-up sends via lib/analytics/metrics.ts's totalSent()/replyRateForCampaign() helpers, so the same campaign never shows two different totals across pages.",
+        keyFiles: ["lib/analytics/metrics.ts", "app/(dashboard)/reports", "app/(dashboard)/home", "app/(dashboard)/campaigns/[campaignId]"],
       },
       {
         id: "team-dashboards",

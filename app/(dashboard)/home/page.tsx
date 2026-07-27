@@ -20,6 +20,7 @@ import { CountUp } from "@/components/home/CountUp";
 import { RangeTabs, type HomeRange } from "@/components/home/RangeTabs";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { buildBriefing } from "@/lib/home/briefing";
+import { totalSent, replyRateForCampaign } from "@/lib/analytics/metrics";
 
 /** Time-of-day greeting in the user's timezone. */
 function greetingFor(timezone: string): string {
@@ -81,7 +82,7 @@ export default async function HomePage({
   const setupDone = setupSteps.filter((s) => s.done).length;
   const nextStepIdx = setupSteps.findIndex((s) => !s.done);
   const totalReplies = campaigns.reduce((n, c) => n + c.replyCount, 0);
-  const totalSentAll = campaigns.reduce((n, c) => n + c.sentCount + c.followupSentCount, 0);
+  const totalSentAll = campaigns.reduce((n, c) => n + totalSent(c), 0);
   const totalBounces = campaigns.reduce((n, c) => n + c.bounceCount, 0);
   const totalUnsub = campaigns.reduce((n, c) => n + c.unsubscribeCount, 0);
   const dailyLimit = profile.sendingDefaults.dailySendLimit;
@@ -106,8 +107,8 @@ export default async function HomePage({
 
   // Best campaign by reply rate (with a meaningful sample).
   const best = [...campaigns]
-    .filter((c) => c.sentCount + c.followupSentCount >= 5)
-    .map((c) => ({ c, rate: (c.replyCount / (c.sentCount + c.followupSentCount)) * 100 }))
+    .filter((c) => totalSent(c) >= 5)
+    .map((c) => ({ c, rate: replyRateForCampaign(c) }))
     .sort((a, b) => b.rate - a.rate)[0];
 
   const briefing = buildBriefing({
@@ -341,7 +342,7 @@ export default async function HomePage({
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {active.slice(0, 4).map((c) => {
-              const sent = c.sentCount + c.followupSentCount;
+              const sent = totalSent(c);
               const total = Math.max(sent, c.totalRecipients || sent);
               const pct = total > 0 ? Math.min(100, (sent / total) * 100) : 0;
               return (
@@ -398,7 +399,7 @@ export default async function HomePage({
                   <div className="min-w-0">
                     <p className="truncate font-medium">{c.name}</p>
                     <p className="text-xs text-slate-500">
-                      {c.sentCount + c.followupSentCount} sent · {c.replyCount} replies
+                      {totalSent(c)} sent · {c.replyCount} replies
                     </p>
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>{badge.label}</span>
