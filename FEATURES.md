@@ -139,8 +139,8 @@
 
 ## Public Site & Growth
 
-- [x] **Public landing page** (Shipped) — Dark-luxury marketing site: hero with a live animated deliverability/pipeline visualization (now explicitly labeled "YOUR GMAIL" / "CLEARED" / "PIPELINE · $N" so the story reads in a single glance, not just on repeat viewing), feature grid, product demos, before/after value comparison, security section, pricing, FAQ, and waitlist capture. The deliverability stat band and FAQ answer now cite tuned, data-backed pacing instead of a raw "2,000/day" ceiling that contradicted the in-app guidance, and tease the anonymized benchmarks feature.
-  - `components/marketing/Landing.tsx`
+- [x] **Public landing page** (Shipped) — Apple-keynote register: true black, San Francisco system type at real scale (no serif, no gold), Apple's own HIG system colors (blue/green/purple) as the entire palette, and real glass (backdrop-blur, not just a tint) on every card. The hero animation is a single calm breathing orb with an occasional traveling pulse along one quiet arc, not a busy particle field, with all labeling in crisp HTML rather than canvas text. Deliverability stat band and FAQ cite tuned, data-backed pacing and tease the anonymized benchmarks feature.
+  - `components/marketing/Landing.tsx`, `components/marketing/landing.module.css`
 - [x] **Waitlist capture** (Shipped) — Public, unauthenticated, rate-limited endpoint that records early-access signups from the landing page.
   - `app/api/waitlist`
 - [ ] **Google OAuth verification + CASA assessment** (Planned) — Required security review before SIGNUP_MODE=open can go live for the general public, not just allowlisted domains.

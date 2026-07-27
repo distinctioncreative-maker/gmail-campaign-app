@@ -1,18 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Fraunces } from "next/font/google";
 import styles from "./landing.module.css";
-
-/** Premium editorial serif reserved for headlines only (h1/h2 in
- * landing.module.css) — the one deliberate departure from the app's plain
- * sans, so the marketing page reads as art-directed rather than templated. */
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-display",
-});
 
 const CheckIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -240,184 +229,128 @@ function HeroPipeline() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const rng = (a: number, b: number) => a + Math.random() * (b - a);
-    const sender = { x: W * 0.08, y: H * 0.52 };
-    // The gate: a lit threshold every send visibly passes through before it
-    // reaches an inbox — the deliverability check, made visible.
-    const gateX = W * 0.5;
-    const gateTop = H * 0.1;
-    const gateBottom = H * 0.9;
-    const money = { x: W * 0.95, y: H * 0.16 };
-    const recips = Array.from({ length: 22 }, () => ({
-      x: rng(W * 0.58, W * 0.86),
-      y: rng(H * 0.08, H * 0.94),
-      flash: 0,
-    }));
-    let moneyFlash = 0;
-    let sweep = gateTop;
-    let sweepDir = 1;
+    const midY = H * 0.5;
+    const leftX = W * 0.1, midX = W * 0.5, rightX = W * 0.9;
+    // A single gentle arc left → verified → right, the whole story in one
+    // quiet line rather than a busy field of moving parts.
+    const railY = (x: number) => midY - Math.sin(((x - leftX) / (rightX - leftX)) * Math.PI) * (H * 0.09);
+    const midYArc = railY(midX);
 
-    type P = {
-      kind: 0 | 1; sx: number; sy: number; ex: number; ey: number; cx: number; cy: number;
-      t: number; sp: number; ri: number; cleared: boolean;
-    };
-    type Pulse = { x: number; y: number; t: number };
-    const parts: P[] = [];
+    type Pulse = { t: number; willReply: boolean };
     const pulses: Pulse[] = [];
     let sent = stats.sent, rep = stats.rep, rev = stats.rev;
+    let ringAngle = 0;
 
-    const bez = (a: number, c: number, b: number, t: number) => {
-      const u = 1 - t;
-      return u * u * a + 2 * u * t * c + t * t * b;
-    };
-    const node = (x: number, y: number, r: number, color: string) => {
+    const drawRail = () => {
       ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 24;
-      ctx.arc(x, y, r, 0, 7);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.arc(x, y, r * 0.38, 0, 7);
-      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
+      ctx.lineWidth = 1.5;
+      for (let x = leftX; x <= rightX; x += 8) {
+        const y = railY(x);
+        if (x === leftX) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
     };
-    const drawGate = () => {
-      // Twin pillars marking the threshold.
+
+    const drawOrb = (time: number) => {
+      const breathe = 0.55 + 0.45 * Math.sin(time / 1700);
+      const g = ctx.createRadialGradient(midX, midYArc, 0, midX, midYArc, 170);
+      g.addColorStop(0, `rgba(100,181,255,${0.24 * breathe})`);
+      g.addColorStop(1, "rgba(100,181,255,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(midX - 180, midYArc - 180, 360, 360);
+
+      ringAngle += 0.0045;
       ctx.save();
-      ctx.strokeStyle = "rgba(242,195,104,0.5)";
-      ctx.lineWidth = 2;
-      ctx.shadowColor = "rgba(242,195,104,0.55)";
-      ctx.shadowBlur = 12;
+      ctx.translate(midX, midYArc);
+      ctx.rotate(ringAngle);
       ctx.beginPath();
-      ctx.moveTo(gateX - 11, gateTop);
-      ctx.lineTo(gateX - 11, gateBottom);
-      ctx.moveTo(gateX + 11, gateTop);
-      ctx.lineTo(gateX + 11, gateBottom);
+      ctx.strokeStyle = "rgba(100,181,255,0.4)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([1.5, 9]);
+      ctx.arc(0, 0, 32, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
 
-      // A soft light sweeping the gate top-to-bottom — the check, running.
-      const g = ctx.createRadialGradient(gateX, sweep, 2, gateX, sweep, 46);
-      g.addColorStop(0, "rgba(242,195,104,0.32)");
-      g.addColorStop(1, "rgba(242,195,104,0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(gateX - 46, sweep - 46, 92, 92);
-
-      ctx.font = "700 13px ui-monospace, SFMono-Regular, Menlo, monospace";
-      ctx.fillStyle = "rgba(242,195,104,0.85)";
-      ctx.textAlign = "center";
-      ctx.fillText("SPF · DKIM · DMARC · CLEARED", gateX, gateTop - 12);
-    };
-    const spawnEmail = () => {
-      const ri = Math.floor(Math.random() * recips.length);
-      const r = recips[ri];
-      parts.push({
-        kind: 0, sx: sender.x, sy: sender.y, ex: r.x, ey: r.y,
-        cx: (sender.x + r.x) / 2 + rng(-40, 40), cy: (sender.y + r.y) / 2 - rng(30, 130),
-        t: 0, sp: rng(0.01, 0.018), ri, cleared: false,
-      });
-      sent += 1;
-    };
-    const spawnReply = (r: { x: number; y: number }) => {
-      parts.push({
-        kind: 1, sx: r.x, sy: r.y, ex: money.x, ey: money.y,
-        cx: (r.x + money.x) / 2 + rng(-30, 30), cy: (r.y + money.y) / 2 - rng(20, 90),
-        t: 0, sp: rng(0.012, 0.02), ri: -1, cleared: true,
-      });
-      rep += 1;
-    };
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-      sweep += sweepDir * 1.1;
-      if (sweep > gateBottom || sweep < gateTop) sweepDir *= -1;
-      drawGate();
-      for (const r of recips) {
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(150,168,196,${0.22 + r.flash * 0.7})`;
-        ctx.shadowColor = r.flash > 0.2 ? "#34d399" : "transparent";
-        ctx.shadowBlur = r.flash * 16;
-        ctx.arc(r.x, r.y, 3 + r.flash * 2.6, 0, 7);
-        ctx.fill();
-        r.flash *= 0.94;
-      }
+      ctx.beginPath();
+      ctx.fillStyle = "#eef6ff";
+      ctx.shadowColor = "#64b5ff";
+      ctx.shadowBlur = 20;
+      ctx.arc(midX, midYArc, 4.5, 0, Math.PI * 2);
+      ctx.fill();
       ctx.shadowBlur = 0;
-      node(sender.x, sender.y, 9, "#2e8bff");
-      node(money.x, money.y, 8 + moneyFlash * 4, "#f2c368");
-      moneyFlash *= 0.9;
+    };
 
-      // Make the "who → cleared → revenue" story legible even from a single
-      // still frame, not just to someone who watches it animate.
-      ctx.font = "700 11px ui-monospace, SFMono-Regular, Menlo, monospace";
-      ctx.textAlign = "left";
-      ctx.fillStyle = "rgba(127,196,255,0.85)";
-      ctx.fillText("YOUR GMAIL", sender.x - 9, sender.y + 24);
-      ctx.textAlign = "right";
-      ctx.fillStyle = "rgba(242,195,104,0.95)";
-      ctx.fillText(`PIPELINE · $${Math.round(rev).toLocaleString()}`, money.x + 9, money.y - 16);
+    const drawEndpoint = (x: number, color: string) => {
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 14;
+      ctx.arc(x, railY(x), 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    };
+
+    const draw = (time: number) => {
+      ctx.clearRect(0, 0, W, H);
+      drawRail();
+      drawOrb(time);
+      drawEndpoint(leftX, "#0a84ff");
+      drawEndpoint(rightX, "#30d158");
+
       for (let i = pulses.length - 1; i >= 0; i--) {
-        const pu = pulses[i];
-        pu.t += 0.06;
+        const p = pulses[i];
+        p.t += 0.0034;
+        const x = leftX + (rightX - leftX) * p.t;
+        const y = railY(x);
+        const trailT = Math.max(0, p.t - 0.06);
+        const tx = leftX + (rightX - leftX) * trailT;
+        const ty = railY(tx);
+        const grad = ctx.createLinearGradient(tx, ty, x, y);
+        grad.addColorStop(0, "rgba(127,196,255,0)");
+        grad.addColorStop(1, "rgba(127,196,255,0.85)");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.2;
         ctx.beginPath();
-        ctx.strokeStyle = `rgba(52,211,153,${Math.max(0, 1 - pu.t)})`;
-        ctx.lineWidth = 2;
-        ctx.arc(pu.x, pu.y, 4 + pu.t * 24, 0, 7);
-        ctx.stroke();
-        if (pu.t >= 1) pulses.splice(i, 1);
-      }
-      for (let i = parts.length - 1; i >= 0; i--) {
-        const p = parts[i];
-        p.t += p.sp;
-        const x = bez(p.sx, p.cx, p.ex, p.t), y = bez(p.sy, p.cy, p.ey, p.t);
-        if (!p.cleared && p.kind === 0 && x >= gateX) {
-          p.cleared = true;
-          pulses.push({ x: gateX, y, t: 0 });
-        }
-        const tt = Math.max(0, p.t - 0.07);
-        const x2 = bez(p.sx, p.cx, p.ex, tt), y2 = bez(p.sy, p.cy, p.ey, tt);
-        const col = p.kind === 0 ? "#7fc4ff" : "#5ff0b0";
-        ctx.strokeStyle = p.kind === 0 ? "rgba(127,196,255,0.45)" : "rgba(95,240,176,0.5)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x2, y2);
+        ctx.moveTo(tx, ty);
         ctx.lineTo(x, y);
         ctx.stroke();
-        ctx.fillStyle = col;
-        ctx.shadowColor = col;
-        ctx.shadowBlur = 10;
         ctx.beginPath();
-        ctx.arc(x, y, 2.6, 0, 7);
+        ctx.fillStyle = "#eef6ff";
+        ctx.shadowColor = "#7fc4ff";
+        ctx.shadowBlur = 12;
+        ctx.arc(x, y, 2.8, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+
         if (p.t >= 1) {
-          if (p.kind === 0) {
-            const r = recips[p.ri];
-            r.flash = 1;
-            if (Math.random() < 0.4) spawnReply(r);
-          } else {
-            moneyFlash = 1;
+          sent += 1;
+          if (p.willReply) {
+            rep += 1;
             rev += Math.round(rng(300, 1700));
           }
-          parts.splice(i, 1);
+          pulses.splice(i, 1);
         }
       }
     };
 
     if (reduce) {
-      recips.forEach((r) => (r.flash = 0.4));
-      draw();
+      draw(0);
       const t = setTimeout(() => setStats({ sent: 1280, rep: 326, rev: 52400 }), 0);
       return () => clearTimeout(t);
     }
 
-    let raf = 0, frame = 0, running = false;
-    const loop = () => {
-      frame += 1;
-      if (frame % 9 === 0 && parts.length < 64) spawnEmail();
-      draw();
+    let raf = 0, running = false, lastSpawn = 0;
+    const loop = (time: number) => {
+      if (time - lastSpawn > 2600 && pulses.length < 2) {
+        pulses.push({ t: 0, willReply: Math.random() < 0.35 });
+        lastSpawn = time;
+      }
+      draw(time);
       raf = requestAnimationFrame(loop);
     };
-    const start = () => { if (!running) { running = true; loop(); } };
+    const start = () => { if (!running) { running = true; raf = requestAnimationFrame(loop); } };
     const stop = () => { running = false; cancelAnimationFrame(raf); };
     // Only animate while the canvas is actually on screen.
     const io = new IntersectionObserver(
@@ -425,7 +358,7 @@ function HeroPipeline() {
       { threshold: 0.05 }
     );
     io.observe(cv);
-    const id = setInterval(() => setStats({ sent, rep, rev }), 150);
+    const id = setInterval(() => setStats({ sent, rep, rev }), 200);
     return () => {
       io.disconnect();
       stop();
@@ -438,21 +371,21 @@ function HeroPipeline() {
     <div className={`${styles.pipeStage} ${styles.reveal}`}>
       <div className={styles.pipeGlass}>
         <div className={styles.pipeTop}>
-          <span className={styles.pipeTag}>◉ Live outreach</span>
-          <span className={styles.pipeTagR}>Your Gmail → cleared for delivery → pipeline</span>
+          <span className={styles.pipeTag}>Live outreach</span>
+          <span className={styles.pipeTagR}>Your Gmail → verified → pipeline</span>
         </div>
-        <canvas ref={canvasRef} width={1920} height={430} aria-hidden="true" />
+        <canvas ref={canvasRef} width={1920} height={420} aria-hidden="true" />
         <div className={styles.pipeStats}>
           <div className={styles.pipeChip}>
             <div className={styles.pipeVal}>{stats.sent.toLocaleString()}</div>
             <div className={styles.pipeLab}>Emails sent</div>
           </div>
           <div className={styles.pipeChip}>
-            <div className={styles.pipeVal} style={{ color: "var(--good)" }}>{stats.rep.toLocaleString()}</div>
+            <div className={styles.pipeVal} style={{ color: "var(--accent)" }}>{stats.rep.toLocaleString()}</div>
             <div className={styles.pipeLab}>Replies</div>
           </div>
           <div className={styles.pipeChip}>
-            <div className={styles.pipeVal} style={{ color: "var(--gold)" }}>${stats.rev.toLocaleString()}</div>
+            <div className={styles.pipeVal} style={{ color: "var(--good)" }}>${stats.rev.toLocaleString()}</div>
             <div className={styles.pipeLab}>Pipeline (simulated)</div>
           </div>
         </div>
@@ -489,7 +422,7 @@ export function Landing() {
   }, []);
 
   return (
-    <div className={`${styles.root} ${fraunces.variable}`} ref={rootRef}>
+    <div className={styles.root} ref={rootRef}>
       {/* Nav */}
       <nav className={styles.nav}>
         <div className={`${styles.wrap} ${styles.navIn}`}>
