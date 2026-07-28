@@ -59,11 +59,11 @@ const SECTIONS: Array<{ heading: string; items: QA[] }> = [
       },
       {
         q: "How do I keep good deliverability?",
-        a: "Send at a human pace (the pacing presets handle this), keep lists clean, and expect replies — not opens — to be your signal. Avoid huge blasts from a cold account; warm up gradually. We deliberately don't track opens because tracking pixels hurt deliverability and the numbers are unreliable.",
+        a: "Send at a human pace (the pacing presets handle this), keep lists clean, and treat replies as your main signal. Avoid huge blasts from a cold account; warm up gradually. Open/click tracking is available but off by default — turning it on adds a tracking pixel and rewrites links, which is a known deliverability tradeoff, so only enable it when you specifically need the numbers.",
       },
       {
         q: "Do you track open rates?",
-        a: "No. Open tracking needs a hidden tracking pixel, which flags emails as marketing and is wildly inaccurate now (Apple/Gmail pre-load images). We track replies and bounces instead, which actually mean something.",
+        a: "Only if you turn it on. It's opt-in per campaign (off by default) in the wizard's Schedule step, because a tracking pixel and rewritten links can lower inbox placement. When it's on, open and click rates show up on Reports and as raw counts on that campaign's page. Replies and bounces are tracked automatically either way and are the more reliable signal.",
       },
       {
         q: "Someone replied but my reply rate still shows 0%.",
@@ -77,15 +77,25 @@ const SECTIONS: Array<{ heading: string; items: QA[] }> = [
   },
 ];
 
-export function Faq() {
+export function Faq({ query = "" }: { query?: string }) {
+  const q = query.trim().toLowerCase();
+  const sections = SECTIONS.map((section) => ({
+    heading: section.heading,
+    items: section.items.filter((item) => !q || `${item.q} ${item.a}`.toLowerCase().includes(q)),
+  })).filter((section) => section.items.length > 0);
+
+  if (q && sections.length === 0) {
+    return <p className="text-sm text-muted">No answers match &ldquo;{query}&rdquo;.</p>;
+  }
+
   return (
     <div className="space-y-6">
-      {SECTIONS.map((section) => (
+      {sections.map((section) => (
         <div key={section.heading}>
           <h3 className="mb-2 text-sm font-semibold text-muted">{section.heading}</h3>
           <div className="card divide-y divide-border">
             {section.items.map((item) => (
-              <details key={item.q} className="group p-4">
+              <details key={item.q} className="group p-4" open={q ? true : undefined}>
                 <summary className="flex cursor-pointer list-none items-start gap-2 font-medium text-foreground marker:content-none">
                   <span className="mt-0.5 text-muted/70 transition group-open:rotate-45">＋</span>
                   <span>{item.q}</span>

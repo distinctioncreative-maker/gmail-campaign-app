@@ -118,8 +118,8 @@
   - `lib/gmail/safety.ts`
 - [x] **System health page** (Shipped) — Admin-only ops view: cron sweep freshness, member Gmail connection health, sending-mode state, and env config summary.
   - `app/(dashboard)/system-health`
-- [x] **Help & Test Center** (Shipped) — How-to guides, FAQ, a safe self-test suite (send a test email, parse sample data, classify a sample reply/bounce), a feature-suggestion box, and a replayable product tour.
-  - `components/TestCenter.tsx`, `app/(dashboard)/help`
+- [x] **Help & Test Center** (Shipped) — Guides and FAQ are grouped into task-first sections (Getting started, Sending & follow-ups, Replies & reporting, Leads & deliverability, Team & admin) with a single search box that filters both live. Each Test Center check states in one line what it verifies, what a pass means, and what to do on failure, before you even run it — a safe self-test suite (send a test email, parse sample data, classify a sample reply/bounce). Plus a feature-suggestion box and a replayable product tour.
+  - `components/TestCenter.tsx`, `components/help/HelpGuides.tsx`, `components/help/Faq.tsx`, `app/(dashboard)/help`
 - [x] **Waitlist admin view** (Shipped) — Admin view of public landing-page early-access signups with CSV export.
   - `app/(dashboard)/admin/waitlist`
 - [x] **In-app feature checklist** (Shipped) — This page. Renders lib/features/registry.ts live so admins always see an accurate, current feature map without leaving the app.

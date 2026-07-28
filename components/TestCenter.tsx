@@ -2,14 +2,67 @@
 
 import { useState } from "react";
 
-const CHECKS: Array<{ id: string; label: string; description: string }> = [
-  { id: "gmail-connection", label: "Gmail connection", description: "Confirms your Gmail is connected." },
-  { id: "profile-complete", label: "Sender profile", description: "Checks your required sending details." },
-  { id: "send-test-email", label: "Send a test email", description: "Sends one email to yourself." },
-  { id: "personalization", label: "Personalized email", description: "Fills placeholders with example data." },
-  { id: "parser", label: "Salesforce paste parser", description: "Parses a sample lead list." },
-  { id: "reply-detection", label: "Reply detection", description: "Spots replies and unsubscribes." },
-  { id: "bounce-detection", label: "Bounce detection", description: "Spots delivery failures." },
+interface Check {
+  id: string;
+  label: string;
+  /** What this check actually does. */
+  verifies: string;
+  /** What a pass tells you. */
+  passMeans: string;
+  /** What to do if it fails. */
+  onFailure: string;
+}
+
+const CHECKS: Check[] = [
+  {
+    id: "gmail-connection",
+    label: "Gmail connection",
+    verifies: "Confirms your Gmail account is connected and authorized.",
+    passMeans: "Sends can go out through your real Gmail account.",
+    onFailure: "Go to Settings and reconnect Gmail.",
+  },
+  {
+    id: "profile-complete",
+    label: "Sender profile",
+    verifies: "Checks your required sending details (name, address, opt-out line) are filled in.",
+    passMeans: "Every email you send will include what's legally required.",
+    onFailure: "Go to Settings and fill in whatever's listed as missing.",
+  },
+  {
+    id: "send-test-email",
+    label: "Send a test email",
+    verifies: "Sends one real email, only to your own address.",
+    passMeans: "Sending genuinely works end to end — check your inbox.",
+    onFailure: "If it doesn't arrive within a minute, check Settings for a Gmail connection problem.",
+  },
+  {
+    id: "personalization",
+    label: "Personalized email",
+    verifies: "Fills a sample template's placeholders with your real profile data.",
+    passMeans: "Placeholders like {{first_name}} will resolve correctly on real sends.",
+    onFailure: "Complete your sender profile in Settings — that's usually the unfilled placeholder.",
+  },
+  {
+    id: "parser",
+    label: "Salesforce paste parser",
+    verifies: "Parses a sample Salesforce lead list, including a record with a missing amount.",
+    passMeans: "Pasting your own Salesforce rows on the Leads page will parse correctly.",
+    onFailure: "This is an internal check, not something in your data — contact support if it fails.",
+  },
+  {
+    id: "reply-detection",
+    label: "Reply detection",
+    verifies: "Classifies a sample human reply and a sample unsubscribe request.",
+    passMeans: "Real replies and unsubscribe requests will be classified correctly.",
+    onFailure: "This is an internal check, not something in your data — contact support if it fails.",
+  },
+  {
+    id: "bounce-detection",
+    label: "Bounce detection",
+    verifies: "Classifies a sample hard-bounce delivery failure message.",
+    passMeans: "Real bounces will be detected and marked so you stop emailing that address.",
+    onFailure: "This is an internal check, not something in your data — contact support if it fails.",
+  },
 ];
 
 type Status = "idle" | "running" | "pass" | "fail";
@@ -50,15 +103,26 @@ export function TestCenter() {
           const st = status[c.id] ?? "idle";
           return (
             <div key={c.id} className="card p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium">{c.label}</p>
-                  <p className="mt-1 text-sm text-muted">{c.description}</p>
-                </div>
-                <span aria-hidden className="text-xl">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium">{c.label}</p>
+                <span aria-hidden className="shrink-0 text-xl">
                   {st === "pass" ? "✅" : st === "fail" ? "❌" : st === "running" ? "⏳" : "⚪"}
                 </span>
               </div>
+              <dl className="mt-2 space-y-1 text-xs text-muted">
+                <div>
+                  <dt className="inline font-medium text-foreground">Verifies: </dt>
+                  <dd className="inline">{c.verifies}</dd>
+                </div>
+                <div>
+                  <dt className="inline font-medium text-foreground">Pass means: </dt>
+                  <dd className="inline">{c.passMeans}</dd>
+                </div>
+                <div>
+                  <dt className="inline font-medium text-foreground">On failure: </dt>
+                  <dd className="inline">{c.onFailure}</dd>
+                </div>
+              </dl>
               {detail[c.id] && (
                 <p
                   className={`mt-2 rounded-lg p-2 text-xs ${

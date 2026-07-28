@@ -420,8 +420,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "help-test-center",
         name: "Help & Test Center",
         status: "shipped",
-        description: "How-to guides, FAQ, a safe self-test suite (send a test email, parse sample data, classify a sample reply/bounce), a feature-suggestion box, and a replayable product tour.",
-        keyFiles: ["components/TestCenter.tsx", "app/(dashboard)/help"],
+        description: "Guides and FAQ are grouped into task-first sections (Getting started, Sending & follow-ups, Replies & reporting, Leads & deliverability, Team & admin) with a single search box that filters both live. Each Test Center check states in one line what it verifies, what a pass means, and what to do on failure, before you even run it — a safe self-test suite (send a test email, parse sample data, classify a sample reply/bounce). Plus a feature-suggestion box and a replayable product tour.",
+        keyFiles: ["components/TestCenter.tsx", "components/help/HelpGuides.tsx", "components/help/Faq.tsx", "app/(dashboard)/help"],
       },
       {
         id: "waitlist-admin",
