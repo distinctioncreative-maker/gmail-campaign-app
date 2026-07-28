@@ -6,16 +6,65 @@ the active account and project before every infrastructure command.
 
 ## Build & deploy
 
-Manual:
+Deploy Firestore rules and indexes before the application whenever either
+file changed. This prevents a new revision from serving queries before its
+required indexes exist:
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml --substitutions _REGION=us-central1
+npx firebase deploy \
+  --project email-tool-502714 \
+  --only firestore:rules,firestore:indexes
+```
+
+Record the currently serving revision before deploying so rollback is one
+command:
+
+```bash
+CADENCE_ROLLBACK_REVISION="$(
+  gcloud run services describe outreach \
+    --project email-tool-502714 \
+    --region us-central1 \
+    --format='value(status.latestReadyRevisionName)'
+)"
+```
+
+Manual Cloud Build submission (manual builds do not populate
+`COMMIT_SHA`, so pass it explicitly):
+
+```bash
+CADENCE_COMMIT_SHA="$(git rev-parse HEAD)"
+gcloud builds submit \
+  --project email-tool-502714 \
+  --config cloudbuild.yaml \
+  --substitutions="COMMIT_SHA=${CADENCE_COMMIT_SHA},_REGION=us-central1"
 ```
 
 Or connect the repo to Cloud Build triggers for CI/CD (`cloudbuild.yaml`
 builds the Docker image, pushes to Artifact Registry, deploys to the
 `outreach` Cloud Run service). GitHub Actions is the quality gate; Cloud
 Build is the deploy path.
+
+Verify the new revision and Firestore dependency before changing any sending
+mode:
+
+```bash
+CADENCE_SERVICE_URL="$(
+  gcloud run services describe outreach \
+    --project email-tool-502714 \
+    --region us-central1 \
+    --format='value(status.url)'
+)"
+curl --fail --show-error "${CADENCE_SERVICE_URL}/api/health"
+```
+
+If the health check or smoke test fails, restore the recorded revision:
+
+```bash
+gcloud run services update-traffic outreach \
+  --project email-tool-502714 \
+  --region us-central1 \
+  --to-revisions="${CADENCE_ROLLBACK_REVISION}=100"
+```
 
 ## Cloud Run configuration
 
@@ -45,12 +94,6 @@ Build is the deploy path.
 Add `https://<your-domain>/api/gmail/callback` to the OAuth client's
 authorized redirect URIs, and set `GOOGLE_OAUTH_REDIRECT_URI` and
 `APP_BASE_URL` to match.
-
-## Firestore
-
-```bash
-firebase deploy --only firestore:rules,firestore:indexes
-```
 
 ## Production safety checklist
 

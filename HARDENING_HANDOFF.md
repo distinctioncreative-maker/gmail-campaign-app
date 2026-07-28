@@ -14,18 +14,18 @@ chat history.
 | Working branch | `codex/cadence-hardening` |
 | Production service | `outreach`, `us-central1`, project `email-tool-502714` |
 | Production owner | Alpine Google Workspace account |
-| Local commits | `f20ca01` implementation; `3981400` documentation |
-| Push/deploy status | Not pushed and not deployed |
+| Local commits | `f20ca01` implementation; `3981400` documentation; `c5c1c47` public-launch follow-up |
+| Push/deploy status | Published to `codex/cadence-hardening`; draft PR #1 is open with a green quality gate; not merged or deployed |
 | Baseline before changes | Typecheck, lint, 264 unit tests, and build passed |
 | Last completed gate | Clean install, typecheck, lint, 278 unit tests, production build, docs generation, diff check, shell syntax check, and production audit passed before the public-launch follow-up |
-| Current follow-up | Launch-compliance enforcement, truthful pilot positioning, current user guide, and `PUBLIC_LAUNCH_AUDIT.md`; typecheck, lint, 281 unit tests, production build, generated docs, shell syntax, diff check, and production audit pass |
+| Current follow-up | Production release scan: corrected manual Cloud Build commit tagging, preserved deployment test-mode locks in setup automation, added index-first deployment/health/rollback steps, and reran typecheck, lint, 281 unit tests, production build, runtime audit, generated docs, shell syntax, and diff checks |
 | Emulator status | Blocked locally: Java 17 installed; Firebase CLI 15 requires Java 21. GitHub CI installs Temurin 21 and runs it |
 | CLI status in this terminal | Workspace-local `gh` 2.96.0 is checksum-verified; direct `api.github.com` authentication is blocked by sandbox policy, so publishing uses the connected GitHub app. No global `gcloud`, `firebase`, or `stripe`; repo-local Firebase CLI is installed but not authenticated |
 
-The original hardening pass is preserved in two local commits. The
-public-launch follow-up remains uncommitted until its complete quality gate
-passes. Read `PUBLIC_LAUNCH_AUDIT.md` before changing positioning, public
-signup, billing, legal/compliance work, or mobile architecture.
+The hardening and public-launch work is preserved in three verified source
+commits and published for review in draft PR #1. Read
+`PUBLIC_LAUNCH_AUDIT.md` before changing positioning, public signup, billing,
+legal/compliance work, or mobile architecture.
 
 ## Why this pass exists
 
@@ -387,37 +387,41 @@ git diff --check                            # pass
 bash -n scripts/setup-cloud.sh              # pass
 ```
 
-`npm run test:emulator` was attempted and stopped before the suite because
-the container has OpenJDK 17.0.19 and Firebase Tools 15 refuses Java versions
-before 21. A second attempt with Firebase Tools 14 reached the emulator JAR
-download but the sandbox blocked that download. It also reported that
-Firebase is not authenticated in this terminal. Do not treat the emulator
-suite as passed locally. Require the Java-21 GitHub quality gate to pass
-before merge.
+`npm run test:emulator` was attempted locally and stopped before the suite
+because this container has OpenJDK 17.0.19 and Firebase Tools 15 requires
+Java 21. Draft PR #1's GitHub quality gate installed Temurin 21 and passed the
+Firestore emulator suite along with every other CI step.
 
-## Production actions not authorized or completed here
+## Production actions authorized but not yet completed
 
-This branch does not push, deploy, alter Firestore, change Cloud Run, create
-Scheduler jobs, or configure third-party accounts. A human with the Alpine
-account must separately:
+The user authorized the final scan, merge, and production deployment on
+2026-07-28. Publishing and CI are complete. The release still needs an
+authenticated Alpine Google Cloud/Firebase operator to apply the index and
+deploy the Cloud Run revision:
 
-1. Review and commit the branch in small logical commits.
-2. Push and obtain a green GitHub quality gate.
-3. Wire Stripe test keys and CLI forwarding; validate Checkout → webhook →
+1. Authenticate `gcloud` and Firebase, then confirm project
+   `email-tool-502714`, region `us-central1`, and service `outreach`.
+2. Deploy Firestore rules/indexes before the application, record the current
+   rollback revision, then run the exact Cloud Build command in
+   `DEPLOYMENT.md`.
+3. Apply `scripts/setup-cloud.sh email-tool-502714 us-central1 outreach`
+   without clearing any existing `TEST_MODE` / `FORCE_TEST_MODE` lock.
+4. Verify `/api/health`, signed-out landing/sign-in, authenticated app access,
+   and a test-mode email before changing any sending lock.
+5. Wire Stripe test keys and CLI forwarding; validate Checkout → webhook →
    plan/seat change → portal/cancel before live keys.
-4. Apply `scripts/setup-cloud.sh email-tool-502714 us-central1 outreach`.
-5. Configure `ERROR_WEBHOOK_URL` and an uptime check on `/api/health`.
-6. Complete Google OAuth verification and CASA before setting
+6. Configure `ERROR_WEBHOOK_URL` and an uptime check on `/api/health`.
+7. Complete Google OAuth verification and CASA before setting
    `SIGNUP_MODE=open`.
-7. Obtain approved legal entity details and counsel-reviewed Terms, Privacy,
+8. Obtain approved legal entity details and counsel-reviewed Terms, Privacy,
    and DPA pages.
-8. Confirm backup/export policy and recovery test.
+9. Confirm backup/export policy and recovery test.
 
 `SETUP.md` contains the exact one-at-a-time gcloud, Firebase, and Stripe
 authentication/verification sequence. Those credentials are machine-local;
 they cannot be made permanent through repository changes or safely stored in
-agent chat. This terminal currently has none of the three global CLIs and
-cannot complete browser authorization on the user's behalf.
+agent chat. This terminal has no `gcloud`, and the repo-local Firebase CLI is
+not authenticated.
 
 ## Known product work intentionally still open
 
@@ -440,7 +444,9 @@ cannot complete browser authorization on the user's behalf.
   `ARCHITECTURE.md` before editing.
 - Run `git status --short` first. All uncommitted changes on this branch are
   part of this hardening pass.
-- Do not deploy or push unless the user explicitly authorizes it.
+- Merge and production deployment are authorized for this release after the
+  final quality gate; do not broaden that authorization to public signup,
+  live Stripe, or real sending.
 - Do not turn on `SIGNUP_MODE=open`.
 - Do not remove the delivery reservation or automatically retry AMBIGUOUS
   work.
