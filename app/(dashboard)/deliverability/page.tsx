@@ -7,6 +7,7 @@ import { formatPercent } from "@/lib/analytics/metrics";
 import { getBenchmarksSnapshot } from "@/lib/benchmarks/read";
 import { bucketBatchSize, bucketDailyLimit, type DimensionAggregate } from "@/lib/benchmarks/buckets";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
+import { CountUp } from "@/components/ui/CountUp";
 
 /** Which bucket the signed-in user's OWN current default falls into, for
  * dimensions we can compare against a live setting (pacing only — content
@@ -83,7 +84,7 @@ export default async function DeliverabilityPage() {
       {postmaster.state === "OK" ? (
         <>
           <div className="mb-4 grid gap-4 sm:grid-cols-3">
-            <div className="card card-hover p-5">
+            <div className="card card-hover animate-rise p-5">
               <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
                 <Icon name="shield" size={20} />
               </span>
@@ -94,22 +95,28 @@ export default async function DeliverabilityPage() {
                 </span>
               </p>
             </div>
-            <div className="card card-hover p-5">
+            <div className="card card-hover animate-rise p-5" style={{ animationDelay: "35ms" }}>
               <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
                 <Icon name="alert" size={20} />
               </span>
               <p className="mt-3 text-sm text-muted">Latest spam rate</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">
-                {spamPct(postmaster.days[0]?.spamRatio ?? null)}
+                {postmaster.days[0]?.spamRatio != null ? (
+                  <CountUp value={postmaster.days[0].spamRatio * 100} decimals={1} suffix="%" />
+                ) : (
+                  "—"
+                )}
               </p>
               <p className="mt-1 text-xs text-muted/70">Keep under 0.1%. 0.3%+ is the danger zone.</p>
             </div>
-            <div className="card card-hover p-5">
+            <div className="card card-hover animate-rise p-5" style={{ animationDelay: "70ms" }}>
               <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
                 <Icon name="chart" size={20} />
               </span>
               <p className="mt-3 text-sm text-muted">Days with data (30d)</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">{postmaster.days.length}</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums">
+                <CountUp value={postmaster.days.length} />
+              </p>
             </div>
           </div>
           <div className="overflow-x-auto card">

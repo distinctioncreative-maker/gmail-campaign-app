@@ -83,8 +83,13 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
         )
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {lists.map((l) => (
-            <Link key={l.listId} href={`/leads/lists/${l.listId}`} className="card card-hover group flex items-center justify-between p-4">
+          {lists.map((l, i) => (
+            <Link
+              key={l.listId}
+              href={`/leads/lists/${l.listId}`}
+              className="card card-hover group animate-rise flex items-center justify-between p-4"
+              style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
+            >
               <div className="min-w-0">
                 <p className="truncate font-medium group-hover:text-primary">{l.name}</p>
                 <p className="text-xs text-muted">{l.count.toLocaleString()} lead{l.count === 1 ? "" : "s"}</p>

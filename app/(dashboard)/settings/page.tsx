@@ -43,9 +43,11 @@ export default async function SettingsPage({
 
       <div className="mt-6 max-w-2xl space-y-6">
         {ctx.tenantType === "CONSUMER" && ctx.role === "ADMIN" && capabilitiesFor(ctx.tenantType).invites && (
-          <InviteTeamCard solo />
+          <div className="animate-rise">
+            <InviteTeamCard solo />
+          </div>
         )}
-        <div className="card p-6">
+        <div className="card animate-rise p-6">
           <h2 className="font-medium">Your name</h2>
           <p className="mt-1 text-sm text-muted">
             Shown in the account menu and on Team pages instead of your email address.
@@ -54,18 +56,22 @@ export default async function SettingsPage({
             <DisplayNameForm initial={ctx.user.displayName} />
           </div>
         </div>
-        <GmailConnectionCard
-          connectedEmail={connection?.status === "CONNECTED" ? connection.connectedEmail : null}
-          lastRefreshAt={connection?.status === "CONNECTED" ? connection.lastRefreshAt : null}
-        />
-        <CollapsibleCard
-          title="Sender profile & sending defaults"
-          description="Optional — fills in your signature, footer, and default campaign pacing. Not using it? Collapse it and it stays out of your way."
-          storageKey="settings.senderProfile"
-          defaultOpen={false}
-        >
-          <ProfileForm initial={profile} />
-        </CollapsibleCard>
+        <div className="animate-rise" style={{ animationDelay: "35ms" }}>
+          <GmailConnectionCard
+            connectedEmail={connection?.status === "CONNECTED" ? connection.connectedEmail : null}
+            lastRefreshAt={connection?.status === "CONNECTED" ? connection.lastRefreshAt : null}
+          />
+        </div>
+        <div className="animate-rise" style={{ animationDelay: "70ms" }}>
+          <CollapsibleCard
+            title="Sender profile & sending defaults"
+            description="Optional — fills in your signature, footer, and default campaign pacing. Not using it? Collapse it and it stays out of your way."
+            storageKey="settings.senderProfile"
+            defaultOpen={false}
+          >
+            <ProfileForm initial={profile} />
+          </CollapsibleCard>
+        </div>
       </div>
     </div>
   );
