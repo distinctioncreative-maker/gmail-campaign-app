@@ -9,10 +9,11 @@ export interface GeneratedStep {
   html: string;
 }
 
-const SYSTEM = `You write a short cold-outreach FOLLOW-UP sequence for a business-funding company.
-Each step is a follow-up email sent only if the prospect hasn't replied yet.
+const SYSTEM = `You write a short outreach FOLLOW-UP sequence for the organization and audience described by the user and brand memory.
+Each step is sent only if the recipient has not replied.
 Rules:
-- Produce 2 or 3 steps that escalate gently — a light nudge, then a value-add, then a final "should I close your file?" style check-in. Never pushy or guilt-trippy.
+- Never assume an industry, product, or sales use case that was not supplied.
+- Produce 2 or 3 steps that escalate gently — a light nudge, then a useful value-add, then a respectful final check-in. Never pushy or guilt-trippy.
 - Each email under ~80 words. Warm, human, one clear ask.
 - Use placeholders where natural: {{first_name}}, {{business_name}}, {{signature}}. End each body with {{signature}} on its own line.
 - waitDays = business days to wait after the PREVIOUS email (first step ~3, later steps ~4-5).

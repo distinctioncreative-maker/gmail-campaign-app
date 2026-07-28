@@ -10,12 +10,33 @@ SERVICE="${3:-outreach}"
 
 gcloud config set project "$PROJECT_ID"
 
+echo "── Required APIs ──"
+gcloud services enable \
+  run.googleapis.com \
+  cloudtasks.googleapis.com \
+  cloudscheduler.googleapis.com \
+  iamcredentials.googleapis.com
+
+echo "── Firestore TTL ──"
+gcloud firestore fields ttls update expiresAt \
+  --collection-group=rateLimits \
+  --enable-ttl \
+  --async
+gcloud firestore fields ttls update expiresAt \
+  --collection-group=stripeEvents \
+  --enable-ttl \
+  --async
+
 echo "── Service URL ──"
 SERVICE_URL=$(gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)')
 echo "$SERVICE_URL"
 
 echo "── Cloud Tasks queue ──"
 gcloud tasks queues create campaign-sends --location="$REGION" 2>/dev/null || echo "queue exists"
+gcloud tasks queues update campaign-sends \
+  --location="$REGION" \
+  --max-dispatches-per-second=5 \
+  --max-concurrent-dispatches=20
 
 echo "── Tasks service account ──"
 TASKS_SA="outreach-tasks@${PROJECT_ID}.iam.gserviceaccount.com"
@@ -40,11 +61,10 @@ echo "── Update the Cloud Run service env ──"
 gcloud run services update "$SERVICE" --region "$REGION" \
   --update-env-vars "^##^CLOUD_TASKS_QUEUE=campaign-sends##CLOUD_TASKS_SERVICE_ACCOUNT=${TASKS_SA}##CLOUD_TASKS_WORKER_AUDIENCE=${SERVICE_URL}##APP_BASE_URL=${SERVICE_URL}"
 
-# Clear the legacy TEST_MODE env lock so the in-app admin switch governs
-# sending. The org still defaults to TEST until an admin flips it in-app,
-# so this does not send any real email on its own.
-gcloud run services update "$SERVICE" --region "$REGION" \
-  --remove-env-vars TEST_MODE 2>/dev/null || true
+# Preserve any deployment-level TEST_MODE / FORCE_TEST_MODE safety lock.
+# Clearing a lock changes real-send eligibility and must be a separate,
+# deliberate operator action after the deployed revision passes smoke tests.
+echo "Deployment test-mode locks are unchanged."
 
 echo "── Cloud Scheduler sweeps ──"
 # Periodic system sweeps hit the OIDC-protected /api/cron/sweep endpoint.
@@ -67,6 +87,7 @@ create_job outreach-reply-sweep  "*/10 * * * *" reply
 create_job outreach-bounce-sweep "*/30 * * * *" bounce
 create_job outreach-repair       "0 * * * *"    repair
 create_job outreach-metrics      "0 6 * * *"    metrics
+create_job outreach-benchmarks   "30 6 * * *"   benchmarks
 
 echo
-echo "Done. Background sending, reply/bounce sweeps, and repair are configured."
+echo "Done. Background sending, monitoring, repair, metrics, and benchmarks are configured."

@@ -20,11 +20,13 @@ export function CampaignControls({
   status,
   followupsPaused,
   pace,
+  maxDailySends,
 }: {
   campaignId: string;
   status: string;
   followupsPaused: boolean;
   pace: Pace;
+  maxDailySends: number;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -115,7 +117,13 @@ export function CampaignControls({
     setDraft((d) => ({ ...d, [k]: Math.max(0, Number(v) || 0) }));
 
   const paceFields: Array<{ k: keyof Pace; label: string; hint: string; min: number; max: number }> = [
-    { k: "dailySendLimit", label: "Emails per day", hint: "Max sent in one day", min: 1, max: 2000 },
+    {
+      k: "dailySendLimit",
+      label: "Emails per day",
+      hint: `Your plan allows up to ${maxDailySends.toLocaleString()}`,
+      min: 1,
+      max: maxDailySends,
+    },
     { k: "emailsPerBatch", label: "Per batch", hint: "Emails in each burst", min: 1, max: 50 },
     { k: "minDelaySeconds", label: "Min gap (sec)", hint: "Between emails", min: 1, max: 600 },
     { k: "maxDelaySeconds", label: "Max gap (sec)", hint: "Between emails", min: 1, max: 600 },
@@ -221,25 +229,7 @@ export function CampaignControls({
 
       {showPace && (status === "ACTIVE" || status === "PAUSED") && (
         <div className="mt-4 rounded-xl border border-border bg-surface-2/60 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">Sending pace for this campaign</p>
-            <button
-              onClick={() =>
-                post(
-                  "override_limit",
-                  {
-                    action: "update_pace",
-                    pace: { ...draft, dailySendLimit: Math.max(draft.dailySendLimit, 2000) },
-                  },
-                  "Override today's limit and send the rest of this campaign right now? This can push you well past the ~50–100/day pace that keeps sending safe, which risks your sender reputation and inbox placement."
-                )
-              }
-              disabled={busy}
-              className="text-xs font-medium text-primary hover:underline disabled:opacity-50"
-            >
-              Override today&apos;s limit — send the rest now
-            </button>
-          </div>
+          <p className="text-sm font-semibold text-foreground">Sending pace for this campaign</p>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {paceFields.map((f) => (
               <label key={f.k} className="block text-xs font-medium text-muted">
@@ -273,7 +263,11 @@ export function CampaignControls({
                 const confirmMessage = risk.risky
                   ? `${risk.reasons.join(" ")} This can hurt your sender reputation and inbox placement. Save this pace anyway?`
                   : undefined;
-                void post("update_pace", { action: "update_pace", pace: draft }, confirmMessage);
+                void post(
+                  "update_pace",
+                  { action: "update_pace", pace: draft, acceptPaceRisk: risk.risky },
+                  confirmMessage
+                );
               }}
               disabled={busy}
               loading={busyAction === "update_pace"}

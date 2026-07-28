@@ -2,9 +2,9 @@ import "server-only";
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
-const SYSTEM = `You write ONE short, natural opening line for a cold outreach email to a small-business owner.
+const SYSTEM = `You write ONE short, natural opening line for a personalized outreach email.
 Rules:
-- One sentence, under 22 words. Warm and specific to their business type/name — never generic flattery, never fake facts.
+- One sentence, under 22 words. Warm and specific to the available recipient or organization details — never generic flattery or invented facts.
 - No greeting ("Hi ..."), no sign-off, no placeholders. Just the line itself.
 - Plain text only. It will be inserted as the email's first line.
 Return ONLY minified JSON: {"line":"..."} with no markdown fences.`;
@@ -29,7 +29,7 @@ export async function generateOpener(input: {
     input.firstName ? `Owner first name: ${input.firstName}` : "",
   ]
     .filter(Boolean)
-    .join("\n") || "A small business (no details given — keep it universal and warm).";
+    .join("\n") || "A recipient with no additional details; keep it universal and warm.";
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;

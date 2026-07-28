@@ -2,28 +2,29 @@
 
 ## The one gate every email passes through
 
-`lib/gmail/safety.ts` → `applySendSafety(envelope)` is called inside
-`sendEmail` immediately before the Gmail API request. There is no other
-send path.
+`lib/gmail/safety.ts` → `applySendSafety(envelope)` is called inside both
+`sendEmail` and `createEmailDraft` immediately before the Gmail API
+request. There is no other delivery path.
 
-- `TEST_MODE` on (default): destination forced to
+- Org sending mode defaults to TEST: destination forced to
   `TEST_EMAIL_DESTINATION`, subject prefixed `[TEST]`. If no test
   destination is configured, sending **throws** rather than falling
   through.
-- Only the literal string `TEST_MODE=false` disables the override —
-  any other value (unset, "no", "0") keeps test mode on.
+- An explicit self-test may target only the email from the verified server
+  session; campaign test traffic always uses the deployment destination.
+- `FORCE_TEST_MODE=true` (and legacy `TEST_MODE=true`) locks the whole
+  deployment to TEST even if an org admin requests LIVE.
 
 Unit-tested in `tests/unit/send-safety.test.ts`.
 
-## Suppression layers (phase 2+)
+## Suppression layers
 
-Suppression is checked at import and will be re-checked at campaign
-review, launch, before draft creation, and immediately before every
-send/follow-up (phases 4–5). Sources: Salesforce Email Opt Out,
+Suppression is checked at import, campaign review, launch, draft creation,
+and immediately before every send/follow-up. Sources: Salesforce Email Opt Out,
 unsubscribe replies, hard bounces, manual entries, org-level entries,
 invalid emails. Suppressions are never removed automatically.
 
-## Idempotency (phase 4 design, locked in now)
+## Launch, quota, and delivery idempotency
 
 Deterministic key per intended message:
 
@@ -31,11 +32,14 @@ Deterministic key per intended message:
 organizationId:userId:campaignId:recipientId:sequenceStep
 ```
 
-Stored in a Firestore transaction **before** sending; a completed record
-for the key permanently blocks a second send, so duplicate Cloud Tasks
-delivery cannot duplicate an email.
+Campaign launch first transactionally moves DRAFT/READY to PREPARING and
+writes deterministic queue IDs. Immediately before a real Gmail send, the
+worker transactionally reserves both daily quota and the delivery key.
+Any existing delivery reservation permanently blocks another Gmail call.
+If the process fails after crossing the Gmail-call boundary, the item is
+`AMBIGUOUS` and requires human review instead of automatic retry.
 
-## Pre-send re-checks (phase 4 worker contract)
+## Pre-send re-checks
 
 Cloud Tasks cannot guarantee a task racing a cancellation won't fire, so
 the worker re-verifies at execution time: campaign active, Gmail
@@ -43,7 +47,23 @@ connected, recipient included/not suppressed/not replied/not
 bounced/not unsubscribed, queue item not complete, idempotency key
 unused, inside send window, daily cap and quota reserve respected.
 
-## Auto-pause triggers (phase 4–5)
+## Follow-ups and drafts
+
+Pausing, canceling, resuming, and out-of-office deferral update both queue
+documents and Cloud Tasks. A draft-only item uses Gmail Drafts, records
+`DRAFTED`, consumes no send quota, and creates no follow-up.
+
+The confirmed Gmail result and next follow-up queue record are committed in
+one Firestore transaction. Cloud Task publication is a retryable projection:
+if it fails, or if the intended time is beyond Cloud Tasks' 30-day maximum,
+the durable queue item keeps `cloudTaskName: null` and the hourly repair sweep
+publishes it once it is within Cadence's 29-day safety horizon.
+
+Reply, unsubscribe, and bounce outcomes use the same transactional principle.
+Only one concurrent mailbox scan may claim an outcome and increment its
+campaign and daily counters.
+
+## Auto-pause triggers
 
 Gmail revoked · repeated API failures · bounce-rate threshold ·
 unsubscribe-rate threshold · template unavailable · duplicate-send risk

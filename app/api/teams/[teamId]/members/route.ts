@@ -5,6 +5,8 @@ import { handleApiErrors } from "@/lib/api";
 import { getTeam, listTeams, setMemberTeam } from "@/lib/repositories/teams";
 import { getMember } from "@/lib/repositories/organizations";
 import { canManageTeamMembership } from "@/lib/teams/access";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -20,6 +22,10 @@ const BodySchema = z.object({
  */
 export const POST = handleApiErrors(async (req: NextRequest, { params }: Params) => {
   const ctx = await requireRole("MANAGER", "ADMIN");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).teams) {
+    return NextResponse.json({ error: "Team features require the Team plan." }, { status: 403 });
+  }
   const { teamId } = await params;
   const { userId, action } = BodySchema.parse(await req.json());
 
@@ -30,6 +36,12 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: Params)
   ]);
   if (!team) return NextResponse.json({ error: "Team not found." }, { status: 404 });
   if (!target) return NextResponse.json({ error: "That person is not in your organization." }, { status: 404 });
+  if (!target.active) {
+    return NextResponse.json(
+      { error: "Reactivate this member before assigning them to a team." },
+      { status: 409 }
+    );
+  }
 
   if (!canManageTeamMembership({ userId: ctx.userId, role: ctx.role }, teamId, teams)) {
     throw new ForbiddenError("Only this team's lead or an admin can change its members.");

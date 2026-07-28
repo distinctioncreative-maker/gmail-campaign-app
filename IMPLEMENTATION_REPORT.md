@@ -1,5 +1,9 @@
 # Implementation Report
 
+> Historical implementation snapshot. For the current production invariants,
+> hardening changes, validation status, and next-agent instructions, read
+> [HARDENING_HANDOFF.md](HARDENING_HANDOFF.md) first.
+
 Multi-user Gmail outreach platform for a non-technical sales team, built to
 the master specification. Live at
 `https://outreach-616949765761.us-central1.run.app` (project

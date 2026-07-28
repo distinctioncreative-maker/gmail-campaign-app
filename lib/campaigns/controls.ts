@@ -15,7 +15,11 @@ import {
   type OwnerRef,
 } from "@/lib/repositories/campaigns";
 import { computeSendTimestamps } from "@/lib/scheduling/window";
-import { deleteTask, enqueueTask } from "@/lib/tasks/enqueue";
+import {
+  CLOUD_TASK_SCHEDULE_HORIZON_MS,
+  deleteTask,
+  enqueueTask,
+} from "@/lib/tasks/enqueue";
 import { gmailForUser } from "@/lib/gmail/client";
 import { listRecipients } from "@/lib/repositories/campaigns";
 import { releaseContactsForCampaign } from "@/lib/repositories/contacts";
@@ -81,12 +85,20 @@ export async function resumeCampaign(ctx: AuthContext, campaign: Campaign): Prom
 
   const now = Date.now();
   const times = computeSendTimestamps(now + 30_000, open.length, campaign.schedule);
+  // Remove any old scheduled task, persist the full new schedule while the
+  // campaign gate is closed, then activate once before publishing new tasks.
   for (let i = 0; i < open.length; i++) {
     const item = open[i];
+    if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
     await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
       status: "SCHEDULED",
       scheduledAt: times[i],
+      cloudTaskName: null,
     });
+  }
+  await setCampaignStatus(owner, campaign.campaignId, "ACTIVE", { resumedAt: now });
+  for (let i = 0; i < open.length; i++) {
+    const item = open[i];
     const taskName = await enqueueTask(
       "send-message",
       {
@@ -104,7 +116,6 @@ export async function resumeCampaign(ctx: AuthContext, campaign: Campaign): Prom
     }
   }
 
-  await setCampaignStatus(owner, campaign.campaignId, "ACTIVE", { resumedAt: now });
   await recordEvent(owner, campaign.campaignId, {
     type: "RESUMED",
     message: `Campaign resumed — ${open.length} remaining emails rescheduled.`,
@@ -116,9 +127,12 @@ export async function resumeCampaign(ctx: AuthContext, campaign: Campaign): Prom
 
 export async function stopCampaign(ctx: AuthContext, campaign: Campaign): Promise<string> {
   const owner = ownerFromCtx(ctx);
+  // Close the worker-visible gate before task cleanup/releasing contacts.
+  await setCampaignStatus(owner, campaign.campaignId, "STOPPED", {
+    stoppedAt: Date.now(),
+  });
   const cancelled = await cancelOpenQueueItems(owner, campaign.campaignId);
   const freed = await releaseUnsentContacts(ctx, campaign);
-  await setCampaignStatus(owner, campaign.campaignId, "STOPPED", { stoppedAt: Date.now() });
   await recordEvent(owner, campaign.campaignId, {
     type: "STOPPED",
     message: `Campaign stopped permanently. ${cancelled} unsent emails were cancelled; sent emails and drafts are untouched.${freed > 0 ? ` ${freed} un-emailed leads freed for reuse.` : ""}`,
@@ -157,6 +171,7 @@ export async function updatePace(
     await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
       status: "SCHEDULED",
       scheduledAt: times[i],
+      cloudTaskName: null,
       lastError: null,
     });
     const taskName = await enqueueTask(
@@ -185,9 +200,11 @@ export async function updatePace(
 
 export async function cancelRemaining(ctx: AuthContext, campaign: Campaign): Promise<string> {
   const owner = ownerFromCtx(ctx);
+  await setCampaignStatus(owner, campaign.campaignId, "CANCELLED", {
+    stoppedAt: Date.now(),
+  });
   const cancelled = await cancelOpenQueueItems(owner, campaign.campaignId);
   const freed = await releaseUnsentContacts(ctx, campaign);
-  await setCampaignStatus(owner, campaign.campaignId, "CANCELLED", { stoppedAt: Date.now() });
   await recordEvent(owner, campaign.campaignId, {
     type: "CANCELLED",
     message: `${cancelled} remaining emails cancelled. Gmail drafts were kept.${freed > 0 ? ` ${freed} un-emailed leads freed for reuse.` : ""}`,
@@ -202,6 +219,9 @@ export async function cancelAndDeleteDrafts(
   campaign: Campaign
 ): Promise<string> {
   const owner = ownerFromCtx(ctx);
+  await setCampaignStatus(owner, campaign.campaignId, "CANCELLED", {
+    stoppedAt: Date.now(),
+  });
   const cancelled = await cancelOpenQueueItems(owner, campaign.campaignId);
 
   // Delete unsent Gmail drafts only (never sent messages).
@@ -227,7 +247,6 @@ export async function cancelAndDeleteDrafts(
   }
 
   const freed = await releaseUnsentContacts(ctx, campaign);
-  await setCampaignStatus(owner, campaign.campaignId, "CANCELLED", { stoppedAt: Date.now() });
   await recordEvent(owner, campaign.campaignId, {
     type: "CANCELLED_DRAFTS_DELETED",
     message: `${cancelled} remaining emails cancelled and ${deleted} unsent Gmail drafts deleted.${freed > 0 ? ` ${freed} un-emailed leads freed for reuse.` : ""}`,
@@ -257,6 +276,7 @@ export async function sendNextBatchNow(ctx: AuthContext, campaign: Campaign): Pr
     await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
       scheduledAt: at,
       status: "SCHEDULED",
+      cloudTaskName: null,
     });
     const taskName = await enqueueTask(
       "send-message",
@@ -308,18 +328,33 @@ export async function retryFailed(ctx: AuthContext, campaign: Campaign): Promise
     "SCHEDULED",
     "RETRY_SCHEDULED",
   ]);
-  const toRetry = candidates.filter((item) => item.status === "ERROR" || !item.cloudTaskName);
+  const now = Date.now();
+  const errors = candidates.filter((item) => item.status === "ERROR");
+  const unpublished = candidates.filter(
+    (item) =>
+      item.status !== "ERROR" &&
+      !item.cloudTaskName &&
+      item.scheduledAt <= now + CLOUD_TASK_SCHEDULE_HORIZON_MS
+  );
 
   // Re-space with the campaign's real pacing (batches, per-email delay,
-  // inter-batch gap, send window) — not a flat interval — so a retry throttles
-  // exactly like a fresh launch.
-  const times = computeSendTimestamps(Date.now() + 30_000, toRetry.length, campaign.schedule);
+  // inter-batch gap, send window) — not a flat interval — so failed sends
+  // throttle exactly like a fresh launch. Merely unpublished durable work
+  // keeps its original future schedule and is never pulled forward.
+  const times = computeSendTimestamps(now + 30_000, errors.length, campaign.schedule);
+  const toRetry = [
+    ...errors.map((item, index) => ({ item, at: times[index] })),
+    ...unpublished.map((item) => ({
+      item,
+      at: Math.max(item.scheduledAt, now + 30_000),
+    })),
+  ];
   let requeued = 0;
-  for (let i = 0; i < toRetry.length; i++) {
-    const at = times[i];
-    await updateQueueItem(owner, campaign.campaignId, toRetry[i].queueItemId, {
+  for (const { item, at } of toRetry) {
+    await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
       status: "RETRY_SCHEDULED",
       scheduledAt: at,
+      cloudTaskName: null,
       lastError: null,
     });
     const taskName = await enqueueTask(
@@ -328,12 +363,12 @@ export async function retryFailed(ctx: AuthContext, campaign: Campaign): Promise
         organizationId: owner.organizationId,
         ownerUserId: owner.userId,
         campaignId: campaign.campaignId,
-        queueItemId: toRetry[i].queueItemId,
+        queueItemId: item.queueItemId,
       },
       at
     );
     if (taskName) {
-      await updateQueueItem(owner, campaign.campaignId, toRetry[i].queueItemId, {
+      await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
         cloudTaskName: taskName,
       });
       requeued++;
@@ -380,14 +415,79 @@ export async function toggleFollowups(
   paused: boolean
 ): Promise<string> {
   const owner = ownerFromCtx(ctx);
-  await updateCampaign(owner, campaign.campaignId, { followupsPaused: paused });
+  const followups = (
+    await listQueueItems(owner, campaign.campaignId, [...OPEN_STATUSES])
+  ).filter(
+    (item) =>
+      item.type === "SEND_FOLLOWUP" || item.type === "CREATE_FOLLOWUP_DRAFT"
+  );
+
+  if (paused) {
+    // Flip the worker-visible gate first; task deletion is best-effort and a
+    // task already dispatching must observe the pause before it can deliver.
+    await updateCampaign(owner, campaign.campaignId, { followupsPaused: true });
+    for (const item of followups) {
+      if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
+      await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+        status: "SCHEDULED",
+        cloudTaskName: null,
+        lastError: "FOLLOWUPS_PAUSED",
+      });
+    }
+  } else {
+    const now = Date.now();
+    const overdue = followups.filter((item) => item.scheduledAt <= now);
+    const overdueTimes = computeSendTimestamps(
+      now + 30_000,
+      overdue.length,
+      campaign.schedule
+    );
+    const overdueTimeById = new Map(
+      overdue.map((item, i) => [item.queueItemId, overdueTimes[i]])
+    );
+    const rescheduled = followups.map((item) => ({
+      item,
+      scheduledAt:
+        overdueTimeById.get(item.queueItemId) ?? item.scheduledAt,
+    }));
+    // Persist every new time while the worker-visible pause is still active,
+    // then open the gate once, then publish tasks.
+    for (const { item, scheduledAt } of rescheduled) {
+      await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+        status: "SCHEDULED",
+        scheduledAt,
+        cloudTaskName: null,
+        lastError: null,
+      });
+    }
+    await updateCampaign(owner, campaign.campaignId, { followupsPaused: false });
+    for (const { item, scheduledAt } of rescheduled) {
+      const taskName = await enqueueTask(
+        "send-message",
+        {
+          organizationId: owner.organizationId,
+          ownerUserId: owner.userId,
+          campaignId: campaign.campaignId,
+          queueItemId: item.queueItemId,
+        },
+        scheduledAt
+      );
+      await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+        cloudTaskName: taskName,
+      });
+    }
+  }
   await recordEvent(owner, campaign.campaignId, {
     type: paused ? "FOLLOWUPS_PAUSED" : "FOLLOWUPS_RESUMED",
-    message: paused ? "Follow-ups paused." : "Follow-ups resumed.",
+    message: paused
+      ? `Follow-ups paused. ${followups.length} scheduled follow-up${followups.length === 1 ? "" : "s"} held.`
+      : `Follow-ups resumed. ${followups.length} follow-up${followups.length === 1 ? "" : "s"} scheduled.`,
     severity: "INFO",
     recipientEmail: null,
   });
-  return paused ? "Follow-ups paused." : "Follow-ups resumed.";
+  return paused
+    ? `Follow-ups paused; ${followups.length} scheduled item${followups.length === 1 ? "" : "s"} held.`
+    : `Follow-ups resumed; ${followups.length} item${followups.length === 1 ? "" : "s"} scheduled.`;
 }
 
 export async function cloneCampaign(ctx: AuthContext, campaign: Campaign): Promise<string> {

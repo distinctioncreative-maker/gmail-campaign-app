@@ -1,13 +1,14 @@
 import type { TenantType } from "@/schemas/user";
+import { PLANS, type PlanId } from "@/lib/billing/plans";
 
 /**
  * A single source of truth for what a tenant can do. Every gated feature reads
  * this instead of hard-coding a tenant/plan check, so the two "modes" of the
  * app (Enterprise vs Solo) live in one place.
  *
- * Plans layer on top later (billing); for now capabilities derive purely from
- * tenant type. Solo (CONSUMER) is a free, single-person, deliverability-safe
- * funnel; Workspace (Enterprise) is the full team product.
+ * Billing plan and tenant type are evaluated together. A custom email domain
+ * does not grant paid team features by itself; existing internal workspaces
+ * retain TEAM through their stored/grandfathered billing default.
  */
 export interface Capabilities {
   /** Team features: roles, assignment, team dashboards, leaderboards. */
@@ -26,28 +27,18 @@ export interface Capabilities {
   billing: boolean;
 }
 
-const WORKSPACE: Capabilities = {
-  teams: true,
-  invites: true,
-  adminConsole: true,
-  liveSending: true,
-  requiresWarmup: false,
-  maxDailySends: 400,
-  billing: true,
-};
-
-const CONSUMER: Capabilities = {
-  teams: false,
-  // Solo can invite: the first invite promotes the workspace into a team.
-  invites: true,
-  adminConsole: false,
-  liveSending: true,
-  requiresWarmup: true,
-  // Consumer Gmail is weak for cold outreach; keep the ceiling conservative.
-  maxDailySends: 40,
-  billing: true,
-};
-
-export function capabilitiesFor(tenantType: TenantType): Capabilities {
-  return tenantType === "CONSUMER" ? { ...CONSUMER } : { ...WORKSPACE };
+export function capabilitiesFor(
+  tenantType: TenantType,
+  plan: PlanId
+): Capabilities {
+  const paidTeams = PLANS[plan].teams;
+  return {
+    teams: paidTeams,
+    invites: paidTeams,
+    adminConsole: tenantType === "WORKSPACE" && paidTeams,
+    liveSending: true,
+    requiresWarmup: plan === "FREE",
+    maxDailySends: PLANS[plan].maxDailySends,
+    billing: true,
+  };
 }

@@ -19,7 +19,17 @@ export interface SendEmailInput {
   threadId?: string;
   inReplyToMessageId?: string;
   references?: string;
+  /** Server-verified destination for an explicit self-test action. Never pass
+   * client or campaign data here. */
+  verifiedTestDestination?: string;
 }
+
+export type GmailDeliveryResult = {
+  gmailMessageId: string;
+  gmailThreadId: string;
+  effectiveTo: string;
+  effectiveSubject: string;
+};
 
 function encodeMessage(raw: string): string {
   return Buffer.from(raw).toString("base64url");
@@ -49,8 +59,10 @@ function buildMime(input: {
     "MIME-Version: 1.0",
   ];
   if (input.inReplyToMessageId) {
-    headers.push(`In-Reply-To: ${input.inReplyToMessageId}`);
-    headers.push(`References: ${input.references ?? input.inReplyToMessageId}`);
+    headers.push(`In-Reply-To: ${sanitizeHeaderValue(input.inReplyToMessageId)}`);
+    headers.push(
+      `References: ${sanitizeHeaderValue(input.references ?? input.inReplyToMessageId)}`
+    );
   }
   headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
   return [
@@ -82,7 +94,11 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   effectiveTo: string;
   effectiveSubject: string;
 }> {
-  const safe = applySendSafety({ to: input.to, subject: input.subject }, input.testMode);
+  const safe = applySendSafety(
+    { to: input.to, subject: input.subject },
+    input.testMode,
+    input.verifiedTestDestination
+  );
   const gmail = await gmailForUser(input.userId);
 
   const res = await gmail.users.messages.send({
@@ -101,10 +117,59 @@ export async function sendEmail(input: SendEmailInput): Promise<{
       ),
     },
   });
+  if (!res.data.id || !res.data.threadId) {
+    throw new Error("Gmail accepted the request without a message/thread identifier");
+  }
 
   return {
-    gmailMessageId: res.data.id ?? "",
-    gmailThreadId: res.data.threadId ?? "",
+    gmailMessageId: res.data.id,
+    gmailThreadId: res.data.threadId,
+    effectiveTo: safe.to,
+    effectiveSubject: safe.subject,
+  };
+}
+
+/**
+ * Create one Gmail draft without sending it. Draft campaigns use the same
+ * destination safety gate as sends, so a TEST workspace never leaves a draft
+ * addressed to a real recipient that could be sent accidentally from Gmail.
+ */
+export async function createEmailDraft(input: SendEmailInput): Promise<GmailDeliveryResult & {
+  gmailDraftId: string;
+}> {
+  const safe = applySendSafety(
+    { to: input.to, subject: input.subject },
+    input.testMode,
+    input.verifiedTestDestination
+  );
+  const gmail = await gmailForUser(input.userId);
+
+  const res = await gmail.users.drafts.create({
+    userId: "me",
+    requestBody: {
+      message: {
+        threadId: input.threadId,
+        raw: encodeMessage(
+          buildMime({
+            to: safe.to,
+            subject: safe.subject,
+            htmlBody: input.htmlBody,
+            textBody: input.textBody,
+            inReplyToMessageId: input.inReplyToMessageId,
+            references: input.references,
+          })
+        ),
+      },
+    },
+  });
+  if (!res.data.id || !res.data.message?.id || !res.data.message.threadId) {
+    throw new Error("Gmail accepted the draft without complete identifiers");
+  }
+
+  return {
+    gmailDraftId: res.data.id,
+    gmailMessageId: res.data.message.id,
+    gmailThreadId: res.data.message.threadId,
     effectiveTo: safe.to,
     effectiveSubject: safe.subject,
   };

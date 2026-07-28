@@ -26,8 +26,13 @@ export async function createUser(input: {
     updatedAt: now,
     lastLoginAt: now,
   };
-  await firestore().collection("users").doc(user.userId).create(user);
-  return user;
+  const ref = firestore().collection("users").doc(user.userId);
+  return firestore().runTransaction(async (tx) => {
+    const existing = await tx.get(ref);
+    if (existing.exists) return UserSchema.parse(existing.data());
+    tx.create(ref, user);
+    return user;
+  });
 }
 
 export async function touchLastLogin(userId: string): Promise<void> {

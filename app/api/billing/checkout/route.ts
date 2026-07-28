@@ -27,11 +27,28 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     return NextResponse.json({ error: "That plan isn't configured for checkout." }, { status: 503 });
   }
 
-  // Per-seat for TEAM: default to the current member count; Starter is 1 seat.
-  const quantity =
-    plan === "TEAM" ? seats ?? Math.max(1, (await listMembers(ctx.organizationId)).length) : 1;
-
   const settings = await getOrgSettings(ctx.organizationId);
+  if (
+    settings.billing.stripeSubscriptionId &&
+    ["trialing", "active", "past_due"].includes(settings.billing.status)
+  ) {
+    return NextResponse.json(
+      { error: "Use Manage billing to change an existing subscription." },
+      { status: 409 }
+    );
+  }
+
+  // Charge for at least every active member. A client cannot submit a lower
+  // seat count than the roster it is purchasing team access for.
+  const activeMembers =
+    plan === "TEAM"
+      ? (await listMembers(ctx.organizationId)).filter((member) => member.active).length
+      : 1;
+  const quantity =
+    plan === "TEAM"
+      ? Math.max(2, activeMembers, seats ?? activeMembers)
+      : 1;
+
   const base = env.APP_BASE_URL.replace(/\/$/, "");
   const session = await createCheckoutSession({
     priceId,
@@ -39,7 +56,11 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     customerId: settings.billing.stripeCustomerId,
     customerEmail: ctx.email,
     clientReferenceId: ctx.organizationId,
-    metadata: { organizationId: ctx.organizationId, plan },
+    metadata: {
+      organizationId: ctx.organizationId,
+      plan,
+      seats: String(quantity),
+    },
     successUrl: `${base}/settings?billing=success`,
     cancelUrl: `${base}/settings?billing=cancelled`,
   });

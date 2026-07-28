@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   FAKE_PREVIEW_VALUES,
   listPlaceholders,
+  renderHtmlTemplate,
   renderTemplate,
 } from "@/lib/personalization/render";
 
@@ -50,6 +51,27 @@ describe("renderTemplate", () => {
   it("still fills the signature when a value is present", () => {
     const { output } = renderTemplate("{{signature}}", { signature: "Alex · Advisor" });
     expect(output).toBe("Alex · Advisor");
+  });
+
+  it("escapes contact values in HTML without flattening a sanitized signature", () => {
+    const { output } = renderHtmlTemplate(
+      "<p>Hi {{first_name}}</p>{{signature}}",
+      {
+        first_name: '<img src=x onerror="alert(1)">',
+        signature: "<p><strong>Alex</strong></p>",
+      }
+    );
+    expect(output).toContain("&lt;img");
+    expect(output).not.toContain("<img");
+    expect(output).toContain("<strong>Alex</strong>");
+  });
+
+  it("escapes quotes in values inserted into HTML attributes", () => {
+    const { output } = renderHtmlTemplate('<a title="{{business_name}}">Company</a>', {
+      business_name: '" onmouseover="alert(1)',
+    });
+    expect(output).toContain("&quot; onmouseover=&quot;");
+    expect(output).not.toContain('title="" onmouseover=');
   });
 
   it("fake preview data covers every spec placeholder", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyRateLimit } from "@/lib/util/rateLimit";
+import { applyRateLimit, requestRateLimitKey } from "@/lib/util/rateLimit";
 
 const WINDOW = 60_000;
 
@@ -32,5 +32,31 @@ describe("applyRateLimit", () => {
     const { allowed, next } = applyRateLimit(prev, 1000 + WINDOW, 3, WINDOW);
     expect(allowed).toBe(true);
     expect(next).toEqual({ count: 1, windowStart: 1000 + WINDOW });
+  });
+});
+
+describe("requestRateLimitKey", () => {
+  const request = (forwardedFor: string) => ({
+    headers: new Headers({
+      "x-forwarded-for": forwardedFor,
+      "user-agent": "test-agent",
+    }),
+  });
+
+  it("uses Google's appended client hop, not a spoofed prefix or shared load balancer", () => {
+    const clean = requestRateLimitKey(
+      request("203.0.113.8, 198.51.100.2"),
+      "waitlist"
+    );
+    const spoofedPrefix = requestRateLimitKey(
+      request("1.2.3.4, 203.0.113.8, 198.51.100.2"),
+      "waitlist"
+    );
+    const otherClient = requestRateLimitKey(
+      request("203.0.113.9, 198.51.100.2"),
+      "waitlist"
+    );
+    expect(spoofedPrefix).toBe(clean);
+    expect(otherClient).not.toBe(clean);
   });
 });

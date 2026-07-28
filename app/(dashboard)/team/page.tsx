@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
-import { listMembers } from "@/lib/repositories/orgSettings";
+import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { getUser } from "@/lib/repositories/users";
 import { statsForReps, type RepStats } from "@/lib/teams/stats";
@@ -147,7 +147,13 @@ function Leaderboard({
 
 export default async function TeamPage() {
   const ctx = await requireUser();
-  if ((ctx.role !== "MANAGER" && ctx.role !== "ADMIN") || !capabilitiesFor(ctx.tenantType).teams) redirect("/home");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (
+    (ctx.role !== "MANAGER" && ctx.role !== "ADMIN") ||
+    !capabilitiesFor(ctx.tenantType, settings.billing.plan).teams
+  ) {
+    redirect("/home");
+  }
 
   const [teams, members] = await Promise.all([
     listTeams(ctx.organizationId),

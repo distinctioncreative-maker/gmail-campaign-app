@@ -110,7 +110,7 @@ function WaitField({ source, cta, note }: { source: string; cta: string; note: R
       <div className={styles.waitlist}>
         <div className={styles.wlSuccess} role="status">
           <CheckIcon />
-          You&apos;re on the list. We&apos;ll email you when early access opens.
+          Your pilot request is in. We&apos;ll email you with next steps.
         </div>
       </div>
     );
@@ -143,34 +143,34 @@ function WaitField({ source, cta, note }: { source: string; cta: string; note: R
 
 const FEATURES = [
   { t: "AI email writer", d: "Describe the email in a sentence. Cadence writes a ready-to-send draft in your brand's voice, fresh every time, never a canned template.", tag: "Brand memory" },
-  { t: "Smart campaigns", d: "Pick your leads, pick a pace, launch. Sends spread naturally across the day, so you stay under Gmail's limits and out of spam.", tag: "Human-paced sending" },
+  { t: "Smart campaigns", d: "Pick your contacts, choose a pace, and launch. Sends spread naturally across the day to protect the inbox reputation you already built.", tag: "Human-paced sending" },
   { t: "Reply intelligence", d: "Every reply is tagged Interested, Needs reply, or Not now, and one click drafts an on-brand response right in the thread.", tag: "Triage plus AI drafts" },
-  { t: "Deliverability guard", d: "SPF, DKIM, DMARC, and Postmaster reputation, checked for you, so you know you'll land in the inbox before you hit send.", tag: "Domain health" },
-  { t: "Lead command center", d: "Paste from Salesforce or drop in a CSV. Cadence dedupes the mess and files everyone into clean, reusable lists.", tag: "Import and lists" },
-  { t: "Team & reporting", d: "Team-lead dashboards, per-rep leaderboards, and honest reports on sends, reply rates, and your best campaigns.", tag: "Roles and leaderboards" },
+  { t: "Deliverability guard", d: "Check SPF, DKIM, DMARC, and optional Google Postmaster reputation before scaling a campaign. No tool can guarantee inbox placement.", tag: "Domain health" },
+  { t: "Lead command center", d: "Paste from Salesforce or upload a CSV. Cadence deduplicates the mess and files every contact into clean, reusable lists.", tag: "Import and lists" },
+  { t: "Team & reporting", d: "Shared dashboards, member-level results, and honest reporting on sends, replies, bounces, opt-outs, opens, and clicks.", tag: "Roles and reporting" },
 ];
 
 // The payoff, framed as a switch: same job, minus the friction.
 const OLD_WAY = [
   "20 minutes writing every email from a blank page",
   "Hot replies buried in a noisy, crowded inbox",
-  "Spam-folder roulette on every send",
+  "No clear view of authentication or sender health",
   "Another login, and a whole new sending service to learn",
 ];
 const NEW_WAY = [
   "On-brand drafts in seconds, personalized to each lead",
   "Every reply tagged, sorted, and drafted for you",
-  "Auth checks and paced sending, so you land in the inbox",
+  "Authentication checks and paced sending that reduce avoidable risk",
   "Connect your own Gmail and start, nothing new to learn",
 ];
 
 const SECURITY = [
-  { t: "Per-user data isolation", d: "Every rep's leads, campaigns, and replies live in their own scoped space. No one crosses that line." },
+  { t: "Tenant-scoped data", d: "Solo accounts stay private, while company workspaces share only the team data their roles allow." },
   { t: "Encrypted Gmail tokens", d: "We connect to Gmail with a narrow scope and store your token encrypted with a managed key, never in plain text." },
   { t: "Test-mode safety gate", d: "Until you flip an org to live, every email is redirected to your own address. No send path skips the gate." },
   { t: "Deny-by-default database", d: "Direct data access is blocked at the database itself. The server is the only path in, and it checks every request." },
   { t: "Verified background jobs", d: "Every automated send is cryptographically verified as coming from our own service, so no one else can trigger it." },
-  { t: "We never sell your data", d: "Your leads and email content are yours. We don't sell, share, or train third-party models on them. Full stop." },
+  { t: "Optional AI", d: "AI writing stays off unless a workspace admin enables it. Your contact data and email content are never sold." },
 ];
 
 const DEMO_BODY = `Hi Jordan,
@@ -671,7 +671,7 @@ export function Landing() {
           </div>
           <div className={styles.navCta}>
             <a href="/sign-in" className={styles.login}>Log in</a>
-            <a href="#waitlist" className={`${styles.btn} ${styles.btnPrimary}`}>Join the waitlist</a>
+            <a href="#waitlist" className={`${styles.btn} ${styles.btnPrimary}`}>Request a pilot</a>
           </div>
         </div>
       </nav>
@@ -680,22 +680,22 @@ export function Landing() {
       <header className={styles.hero}>
         <div className={styles.heroGrid} aria-hidden="true" />
         <div className={styles.wrap}>
-          <span className={styles.heroBadge}>Private early access · <b>Coming soon</b></span>
+          <span className={styles.heroBadge}>Private pilot · <b>Now accepting teams</b></span>
           <h1>
-            Reach more. <span className={styles.grad}>Land more.</span> Earn more.
+            Personal outreach. <span className={styles.grad}>At scale.</span> From your inbox.
           </h1>
           <p className={styles.sub}>
-            Cadence sends personalized campaigns from your own Gmail, clears the deliverability
-            bar most tools miss, and turns every reply into revenue — at a pace built to protect
-            the sender reputation your pipeline depends on.
+            Import contacts, write personalized campaigns, send from your own Gmail, and handle
+            replies in real threads. Cadence keeps the pace deliberate and the safety controls
+            visible for founders, recruiters, agencies, fundraisers, partnerships, and sales teams.
           </p>
           <div id="waitlist">
             <WaitField
               source="hero"
-              cta="Get early access"
-              note={<>Sends from <b>your own Gmail</b>. No credit card. We&apos;ll only email you about early access.</>}
+              cta="Request a pilot"
+              note={<>Sends from <b>your own Gmail</b>. No credit card. We&apos;ll only contact you about a Cadence pilot.</>}
             />
-            <p className={styles.heroLogin}>Already have early access? <a href="/sign-in">Log in →</a></p>
+            <p className={styles.heroLogin}>Already have access? <a href="/sign-in">Log in →</a></p>
           </div>
 
           {/* Live pipeline animation (isolated component, paused off-screen) */}
@@ -717,7 +717,7 @@ export function Landing() {
             </div>
             <div className={styles.stat}>
               <div className={styles.statVal}><StatNum value={3} /></div>
-              <div className={styles.statLab}>Deliverability checks before every send</div>
+              <div className={styles.statLab}>Domain authentication checks in one view</div>
             </div>
             <div className={styles.stat}>
               <div className={styles.statVal}><StatNum value={60} prefix="<" suffix="s" /></div>
@@ -732,8 +732,8 @@ export function Landing() {
         <div className={styles.wrap}>
           <div className={`${styles.head} ${styles.reveal}`}>
             <span className={styles.eyebrow}>The platform</span>
-            <h2>Everything a modern outreach team needs, nothing it doesn&apos;t.</h2>
-            <p>From the first import to the booked call, Cadence handles the busywork so your reps can spend their time selling.</p>
+            <h2>The complete Gmail outreach workflow in one focused workspace.</h2>
+            <p>From the first import to the final reply, Cadence handles repetitive campaign work so your team can focus on real conversations.</p>
           </div>
           <div className={styles.features}>
             {FEATURES.map((f) => (
@@ -756,7 +756,7 @@ export function Landing() {
           <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
             <span className={styles.eyebrow} style={{ justifyContent: "center" }}>See it in motion</span>
             <h2>A closer look at Cadence.</h2>
-            <p>From a one-line prompt to a booked call. Here&apos;s the everyday flow.</p>
+            <p>From a one-line prompt to a real reply. Here&apos;s the everyday flow.</p>
           </div>
 
           {/* Demo 1: AI writer */}
@@ -828,8 +828,8 @@ export function Landing() {
           <div className={`${styles.demo} ${styles.demoGap} ${styles.reveal}`}>
             <div className={styles.demoCopy}>
               <span className={styles.eyebrow}>Deliverability guard</span>
-              <h3>Know you&apos;ll land before you send.</h3>
-              <p>Zero-setup checks for SPF, DKIM, and DMARC plus Gmail Postmaster reputation, with human-paced sending that keeps you off spam filters.</p>
+              <h3>See preventable risks before you scale.</h3>
+              <p>Check SPF, DKIM, and DMARC with no setup. Connect Google Postmaster Tools when available, then use deliberate pacing to protect your sender reputation.</p>
               <ul>
                 <li><CheckIcon size={17} />Domain auth checked automatically.</li>
                 <li><CheckIcon size={17} />Sends spread across the day, never in bursts.</li>
@@ -868,8 +868,8 @@ export function Landing() {
         <div className={styles.wrap}>
           <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
             <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Why teams switch</span>
-            <h2>Trade the busywork for booked calls.</h2>
-            <p>The same outreach your reps already do, minus the parts that drain the day.</p>
+            <h2>Trade repetitive campaign work for real conversations.</h2>
+            <p>The same personal outreach you already do, with the manual sorting, scheduling, and follow-up work handled.</p>
           </div>
           <div className={`${styles.compare} ${styles.reveal}`}>
             <div className={`${styles.col} ${styles.colBad}`}>
@@ -898,7 +898,7 @@ export function Landing() {
           <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
             <span className={styles.eyebrow}>Data safety</span>
             <h2>Your leads, your inbox, your data, locked down.</h2>
-            <p>Cadence is built defense-in-depth. Your data is isolated, your credentials are encrypted, and nothing is ever sold or shared.</p>
+            <p>Cadence uses layered controls: tenant-scoped access, encrypted Gmail tokens, verified workers, and a test-mode safety gate.</p>
           </div>
           <div className={styles.secGrid}>
             {SECURITY.map((s) => (
@@ -922,50 +922,50 @@ export function Landing() {
         <div className={styles.wrap}>
           <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
             <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Pricing</span>
-            <h2>Simple plans, coming at launch.</h2>
-            <p>Final pricing lands when early access opens. Join the waitlist for founding-member rates.</p>
+            <h2>Simple pilot pricing.</h2>
+            <p>Request access and we&apos;ll confirm fit, onboarding, and the exact plan before anything is charged.</p>
           </div>
           <div className={styles.prices}>
             {/* Starter */}
             <div className={`${styles.price} ${styles.reveal}`}>
               <div className={styles.plan}>Starter</div>
               <div className={styles.amt}>$29 <small>/ seat · mo</small></div>
-              <span className={styles.soon}>Coming soon</span>
-              <p className={styles.who2}>For a solo rep who wants to send smarter.</p>
+              <span className={styles.soon}>Private pilot</span>
+              <p className={styles.who2}>For one person running thoughtful outreach from Gmail.</p>
               <ul>
                 <li><CheckIcon size={16} />AI email writer with brand memory</li>
                 <li><CheckIcon size={16} />Human-paced campaigns from your Gmail</li>
                 <li><CheckIcon size={16} />Reply triage and AI drafts</li>
                 <li><CheckIcon size={16} />Deliverability checks</li>
               </ul>
-              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Join the waitlist</a>
+              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Request a pilot</a>
             </div>
             {/* Team: featured */}
             <div className={`${styles.price} ${styles.featPlan} ${styles.reveal}`}>
               <span className={styles.badgeTop}>Most popular</span>
               <div className={styles.plan}>Team</div>
               <div className={styles.amt}>$24 <small>/ seat · mo</small></div>
-              <span className={styles.soon}>Coming soon</span>
-              <p className={styles.who2}>For teams selling together, with full visibility.</p>
+              <span className={styles.soon}>Private pilot</span>
+              <p className={styles.who2}>For teams coordinating outreach with shared visibility. Two-seat minimum.</p>
               <ul>
                 <li><CheckIcon size={16} />Everything in Starter</li>
                 <li><CheckIcon size={16} />Roles, assignment, and team dashboards</li>
                 <li><CheckIcon size={16} />Per-rep leaderboards and reporting</li>
                 <li><CheckIcon size={16} />Shared brand memory profiles</li>
               </ul>
-              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight} ${styles.btnLightPri}`}>Join the waitlist</a>
+              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight} ${styles.btnLightPri}`}>Request a team pilot</a>
             </div>
             {/* Enterprise */}
             <div className={`${styles.price} ${styles.reveal}`}>
-              <div className={styles.plan}>Enterprise</div>
+              <div className={styles.plan}>Custom</div>
               <div className={styles.amt}>Custom</div>
-              <span className={styles.soon}>Coming soon</span>
-              <p className={styles.who2}>For orgs with security, scale, and SSO needs.</p>
+              <span className={styles.soon}>Talk to us</span>
+              <p className={styles.who2}>For organizations that need a reviewed rollout and tailored limits.</p>
               <ul>
                 <li><CheckIcon size={16} />Everything in Team</li>
-                <li><CheckIcon size={16} />SSO and advanced data controls</li>
-                <li><CheckIcon size={16} />Custom limits and dedicated onboarding</li>
-                <li><CheckIcon size={16} />Priority support and SLA</li>
+                <li><CheckIcon size={16} />Deployment and policy review</li>
+                <li><CheckIcon size={16} />Custom limits and guided onboarding</li>
+                <li><CheckIcon size={16} />Migration and launch support</li>
               </ul>
               <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Contact us</a>
             </div>
@@ -982,10 +982,10 @@ export function Landing() {
           </div>
           <div className={`${styles.faq} ${styles.reveal}`}>
             {[
-              ["When does Cadence launch?", "We're rolling out private early access in waves. Join the waitlist and we'll email you the moment a seat opens for you."],
+              ["Can I use Cadence now?", "We're accepting a small number of private pilots. Request access and we'll confirm whether your Gmail setup and outreach workflow are a fit."],
               ["Do I need a new email service?", "No. Cadence sends from your own Gmail with a narrow, revocable permission. Your identity, your inbox, real threads. Nothing is spoofed or relayed."],
-              ["Is my data safe?", "Yes. Every rep's data is isolated, your Gmail token is encrypted with a managed key, database access is deny-by-default, and we never sell, share, or train third-party models on your data."],
-              ["Will this hurt my deliverability?", "The opposite. Cadence spreads sends across the day, checks SPF, DKIM, DMARC, and your Postmaster reputation before every send, and tunes your pacing against real, anonymized data from every campaign on the platform, not a one-size-fits-all default."],
+              ["How is my data protected?", "Cadence scopes data by user and workspace, encrypts Gmail tokens with a managed key, blocks direct database access by default, and verifies background workers. AI writing is optional and controlled by a workspace admin."],
+              ["Does Cadence guarantee inbox placement?", "No platform can guarantee placement. Cadence helps reduce preventable risk with SPF, DKIM, and DMARC checks, optional Google Postmaster data, deliberate pacing, suppressions, and clear warnings before launch."],
               ["How much will it cost?", "Final pricing is set at launch. Waitlist members get founding-member rates, so join now to lock in the best pricing."],
               ["Can my whole team use it?", "Yes. Cadence has roles, lead assignment, per-rep leaderboards, and team-lead dashboards built in from day one."],
             ].map(([q, a]) => (
@@ -1002,12 +1002,12 @@ export function Landing() {
       <section className={`${styles.bandInk2} ${styles.pad} ${styles.final}`}>
         <div className={styles.aurora} aria-hidden="true" />
         <div className={`${styles.wrap} ${styles.finalInner}`}>
-          <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Be first in line</span>
-          <h2>Get early access to Cadence.</h2>
+          <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Private pilot</span>
+          <h2>See if Cadence fits your outreach workflow.</h2>
           <p className={styles.sub} style={{ margin: "16px auto 0" }}>
-            Join the waitlist and we&apos;ll invite you the moment your seat is ready.
+            Tell us where to reach you and we&apos;ll follow up about pilot availability.
           </p>
-          <WaitField source="footer-cta" cta="Join the waitlist" note={<>No spam, ever. One email when it&apos;s your turn.</>} />
+          <WaitField source="footer-cta" cta="Request a pilot" note={<>No mailing list. We&apos;ll only contact you about Cadence access.</>} />
         </div>
       </section>
 
@@ -1027,7 +1027,7 @@ export function Landing() {
             <a href="#security">Security</a>
             <a href="#faq">FAQ</a>
           </div>
-          <div className={styles.fine}>© 2026 Cadence · Private early access</div>
+          <div className={styles.fine}>© 2026 Cadence · Private pilot</div>
         </div>
       </footer>
     </div>

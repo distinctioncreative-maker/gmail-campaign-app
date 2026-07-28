@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyTrackingToken } from "@/lib/tracking/token";
-import { getRecipient, updateRecipient, type OwnerRef } from "@/lib/repositories/campaigns";
+import crypto from "node:crypto";
+import {
+  TRACKING_TOKEN_MAX_AGE_MS,
+  verifyTrackingToken,
+} from "@/lib/tracking/token";
+import {
+  getRecipient,
+  recordRecipientOpen,
+  type OwnerRef,
+} from "@/lib/repositories/campaigns";
 import { reportError } from "@/lib/observability/report";
+import { enforceRateLimit } from "@/lib/util/rateLimit";
 
 // The smallest valid transparent GIF — the standard open-tracking beacon.
 const PIXEL = Buffer.from("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", "base64");
@@ -29,16 +38,26 @@ type Params = { params: Promise<{ token: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { token } = await params;
+    const key = crypto.createHash("sha256").update(token).digest("hex").slice(0, 40);
+    const withinLimit = await enforceRateLimit(
+      "tracking-open",
+      key,
+      120,
+      60 * 60 * 1000,
+      { failClosed: true }
+    );
+    if (!withinLimit) return pixelResponse();
     const payload = verifyTrackingToken(token);
     if (payload) {
       const owner: OwnerRef = { userId: payload.ownerUserId, organizationId: payload.organizationId };
       const recipient = await getRecipient(owner, payload.campaignId, payload.recipientId);
-      if (recipient) {
+      if (
+        recipient &&
+        recipient.initialSentAt !== null &&
+        Date.now() - recipient.initialSentAt <= TRACKING_TOKEN_MAX_AGE_MS
+      ) {
         const now = Date.now();
-        await updateRecipient(owner, payload.campaignId, payload.recipientId, {
-          openedAt: recipient.openedAt ?? now,
-          openCount: recipient.openCount + 1,
-        });
+        await recordRecipientOpen(owner, payload.campaignId, payload.recipientId, now);
       }
     }
   } catch (err) {

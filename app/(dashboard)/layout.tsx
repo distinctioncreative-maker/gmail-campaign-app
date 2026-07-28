@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import type { TenantType } from "@/schemas/user";
-import { getOrganization } from "@/lib/repositories/orgSettings";
+import { getOrganization, getOrgSettings } from "@/lib/repositories/orgSettings";
 import { resolveSendingState } from "@/lib/sending/mode";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
@@ -65,11 +65,15 @@ export default async function DashboardLayout({
     redirect("/");
   }
 
-  const nav = navFor(role, capabilitiesFor(tenantType));
-  const [sending, org] = await Promise.all([
+  const [sending, org, settings] = await Promise.all([
     resolveSendingState(organizationId),
     getOrganization(organizationId),
+    getOrgSettings(organizationId),
   ]);
+  const nav = navFor(
+    role,
+    capabilitiesFor(tenantType, settings.billing.plan)
+  );
   const workspaceName = org?.name ?? "";
 
   return (

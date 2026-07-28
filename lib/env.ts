@@ -36,7 +36,9 @@ const EnvSchema = z.object({
   FORCE_TEST_MODE: z.string().default(""),
   // Legacy: still read as a lock for backward compatibility.
   TEST_MODE: z.string().default(""),
-  TEST_EMAIL_DESTINATION: z.string().default(""),
+  TEST_EMAIL_DESTINATION: z
+    .union([z.literal(""), z.string().trim().email()])
+    .default(""),
   NODE_ENV: z.string().default("development"),
   // Optional AI email writer. Set GEMINI_API_KEY (a free Google AI Studio
   // key) to enable "Write with AI" in the template editor.

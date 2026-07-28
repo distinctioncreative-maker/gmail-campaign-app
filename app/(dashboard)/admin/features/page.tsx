@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { FEATURE_CATEGORIES, countByStatus, type FeatureStatus } from "@/lib/features/registry";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
 const STATUS_BADGE: Record<FeatureStatus, { label: string; className: string }> = {
   shipped: { label: "Shipped", className: "bg-green-50 text-green-700" },
@@ -17,7 +18,13 @@ const STATUS_BADGE: Record<FeatureStatus, { label: string; className: string }> 
  * doc the way a hand-maintained checklist would. */
 export default async function FeaturesPage() {
   const ctx = await requireUser();
-  if (ctx.role !== "ADMIN" || !capabilitiesFor(ctx.tenantType).adminConsole) redirect("/home");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (
+    ctx.role !== "ADMIN" ||
+    !capabilitiesFor(ctx.tenantType, settings.billing.plan).adminConsole
+  ) {
+    redirect("/home");
+  }
 
   const counts = countByStatus();
 

@@ -15,7 +15,8 @@ in `lib/gmail/safety.ts`.
 ## `app/(dashboard)/*` — the app pages
 
 `app/(dashboard)/layout.tsx` is the shared shell: resolves `requireUser()`,
-builds role-aware nav from `capabilitiesFor(tenantType)`, and wraps children
+loads org billing state, builds role-aware nav from
+`capabilitiesFor(tenantType, plan)`, and wraps children
 in `Sidebar`, `UIProviders` (toast/confirm), `ProductTour`, `NotificationBell`,
 `ThemeToggle`.
 
@@ -47,7 +48,11 @@ endpoint. Guard clause on every admin surface:
 
 ```tsx
 const ctx = await requireUser();
-if (ctx.role !== "ADMIN" || !capabilitiesFor(ctx.tenantType).adminConsole) redirect("/home");
+const settings = await getOrgSettings(ctx.organizationId);
+if (
+  ctx.role !== "ADMIN" ||
+  !capabilitiesFor(ctx.tenantType, settings.billing.plan).adminConsole
+) redirect("/home");
 ```
 
 Current sections, top to bottom: `WorkspaceNameCard`, `SendingModeCard`,
@@ -67,7 +72,8 @@ Current sections, top to bottom: `WorkspaceNameCard`, `SendingModeCard`,
    enough to deserve its own page (like Waitlist or Features), add
    `app/(dashboard)/admin/<feature>/page.tsx` with the same guard clause and
    a link card instead.
-5. Gate visibility with `capabilitiesFor(ctx.tenantType)` if it should
+5. Gate visibility with `capabilitiesFor(ctx.tenantType,
+   settings.billing.plan)` if it should
    differ between Solo and Workspace tenants.
 
 ## `app/api/*` — REST routes
@@ -80,7 +86,7 @@ Zod schemas.
 |---|---|
 | `auth/session` | Firebase ID token → session cookie exchange, provisions membership. |
 | `gmail/*` | OAuth connect/callback/disconnect, connection status, list drafts. |
-| `billing/*` | Plan/subscription state, Checkout session, billing portal, webhook. |
+| `billing/*` | Plan/subscription state, seat-aware Checkout, billing portal, idempotent Stripe webhook. |
 | `admin/*` | Org policy CRUD: settings, AI toggle, workspace rename, sending mode, members. |
 | `ai/brand-memory` | Org brand profile used to steer AI generation. |
 | `campaigns/*` | CRUD, launch, controls (pause/resume/cancel/retry/clone), diagnose, reply scan, undo-unsubscribe. |
@@ -95,8 +101,8 @@ Zod schemas.
 | `feature-suggestions`, `waitlist` | Lightweight feedback board; public landing-page signup capture. |
 | `sending-mode` | Read-only current TEST/LIVE state for any signed-in user. |
 | `health` | Public readiness probe (Firestore connectivity) for uptime monitors. |
-| `tasks/send-message` | Cloud Tasks worker (OIDC-verified) — sends one queued email, idempotently. |
-| `cron/sweep` | Cloud Scheduler entry point (OIDC-verified) — reply/bounce sweeps + org repair, keyed by `?job=`. |
+| `tasks/send-message` | Cloud Tasks worker (OIDC-verified) — sends one queued email, atomically commits delivery plus the next durable follow-up, and never retries an ambiguous Gmail result. |
+| `cron/sweep` | Cloud Scheduler entry point (OIDC-verified) — reply/bounce sweeps, repair, metrics, and anonymized benchmarks, keyed by `?job=`. |
 | `test/[check]` | Backing endpoint for the Help page's Test Center. |
 
 ## `lib/*` — modules
@@ -105,8 +111,8 @@ Zod schemas.
 |---|---|
 | `auth/` | Session/auth-context resolution, sign-in domain policy (`requireUser.ts`, `session.ts`, `domains.ts`). |
 | `tenancy/` | Solo vs. Workspace classification and capability matrix (`accountType.ts`, `capabilities.ts`). |
-| `billing/` | Stripe integration + plan catalog (`stripe.ts`, `plans.ts`). |
-| `campaigns/` | Core campaign lifecycle — launch, controls, monitoring, repair, diagnose, eligibility, collision, followups, idempotency (largest module). |
+| `billing/` | Stripe integration + plan catalog (`stripe.ts`, `plans.ts`); webhook claims/customer pointers live in `repositories/billing.ts`. |
+| `campaigns/` | Core campaign lifecycle — launch, commercial-email placeholder enforcement, controls, monitoring, repair, diagnose, eligibility, collision, followups, idempotency (largest module). |
 | `gmail/` | Gmail API wrapper + the send-safety gate (`send.ts`, `safety.ts`, `drafts.ts`, `classifyBounce.ts`, `classifyReply.ts`). |
 | `google/` | Gmail-connect OAuth mechanics, separate from Firebase app sign-in (`oauth.ts`, `oauthState.ts`). |
 | `repositories/` | Firestore data access; every doc validated against a `schemas/*` type. |
@@ -118,6 +124,8 @@ Zod schemas.
 | `parser/` | Salesforce-paste parsing, email normalization. |
 | `personalization/` | Template placeholder rendering. |
 | `sanitize/` | HTML sanitization for user-authored email bodies. |
+| `tracking/` | Expiring signed tokens plus open/click HTML injection. |
+| `benchmarks/` | K-anonymous deliverability aggregation and reads. |
 | `scheduling/` | Send-window/day logic. |
 | `sending/` | Org-wide TEST/LIVE mode resolution. |
 | `spam/` | Spam-risk scoring for template content. |
@@ -147,9 +155,9 @@ Feature-folder based, not atomic-design based:
   `ContactsTable`, `SuppressionsManager`, `GmailConnectionCard`,
   `OnboardingWizard`, `TestCenter`, etc.
 
-There's no separate `Button`/`Modal`/`Card` export — styling primitives
-(`.card`, `.card-hover`, `.btn-primary`) are Tailwind utility classes defined
-in `app/globals.css` and reused directly as `className` strings.
+Shared `Button` and modal/confirm behavior live in `components/ui/`; common
+surface classes (`.card`, `.card-hover`, `.btn-primary`) remain Tailwind
+utility compositions in `app/globals.css`.
 
 ## `schemas/*` — domain types
 

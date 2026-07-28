@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
-import { listMembers } from "@/lib/repositories/orgSettings";
+import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { getCampaign, listRecipients } from "@/lib/repositories/campaigns";
 import { canViewRep } from "@/lib/teams/access";
 import { CAMPAIGN_STATUS_LABELS, recipientStatusBadge } from "@/lib/campaigns/statusLabels";
 import { LocalTime } from "@/components/LocalTime";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 
 /**
  * Read-only view of one rep's campaign for their Team Lead / an Admin.
@@ -20,6 +21,8 @@ export default async function RepCampaignPage({
 }) {
   const ctx = await requireUser();
   if (ctx.role !== "MANAGER" && ctx.role !== "ADMIN") redirect("/home");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).teams) redirect("/home");
   const { userId, campaignId } = await params;
 
   const [teams, members] = await Promise.all([

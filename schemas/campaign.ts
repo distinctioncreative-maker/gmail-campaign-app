@@ -76,6 +76,9 @@ export const CampaignSchema = z.object({
   createdAt: EpochMillis,
   updatedAt: EpochMillis,
   startedAt: EpochMillis.nullable().default(null),
+  /** Set by the transactional launch claim. PREPARING campaigns can be safely
+   * returned to READY when setup fails before activation. */
+  launchStartedAt: EpochMillis.nullable().default(null),
   pausedAt: EpochMillis.nullable().default(null),
   /** Day key (YYYY-MM-DD) the queue was last mass-deferred to after hitting
    * the daily limit — makes the re-spread run exactly once per day. */
@@ -186,6 +189,9 @@ export const QueueItemStatusSchema = z.enum([
   "SKIPPED",
   "CANCELLED",
   "ERROR",
+  /** Gmail may have accepted the request, but the worker did not receive or
+   * persist a definitive result. Never retry automatically or manually. */
+  "AMBIGUOUS",
   "RETRY_SCHEDULED",
 ]);
 export type QueueItemStatus = z.infer<typeof QueueItemStatusSchema>;

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { firestore } from "@/lib/firebase/admin";
-import { listMembers } from "@/lib/repositories/orgSettings";
+import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listCampaigns } from "@/lib/repositories/campaigns";
 import { getConnection } from "@/lib/repositories/gmailConnections";
 import { getUser } from "@/lib/repositories/users";
@@ -24,7 +24,13 @@ const CONNECTION_LABELS: Record<string, { label: string; ok: boolean }> = {
 
 export default async function SystemHealthPage() {
   const ctx = await requireUser();
-  if (ctx.role !== "ADMIN" || !capabilitiesFor(ctx.tenantType).adminConsole) redirect("/home");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (
+    ctx.role !== "ADMIN" ||
+    !capabilitiesFor(ctx.tenantType, settings.billing.plan).adminConsole
+  ) {
+    redirect("/home");
+  }
   const organizationId = ctx.organizationId;
 
   const [sweepsSnap, members, sending] = await Promise.all([

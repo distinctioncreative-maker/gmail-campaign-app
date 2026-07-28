@@ -41,9 +41,6 @@ export async function getOrCreateOrganizationForDomain(domain: string): Promise<
   const db = firestore();
   const orgId = orgIdForDomain(domain);
   const ref = db.collection("organizations").doc(orgId);
-  const snap = await ref.get();
-  if (snap.exists) return OrganizationSchema.parse(snap.data());
-
   const now = Date.now();
   const org: Organization = {
     organizationId: orgId,
@@ -57,8 +54,27 @@ export async function getOrCreateOrganizationForDomain(domain: string): Promise<
     createdAt: now,
     updatedAt: now,
   };
-  await ref.create(org);
-  return org;
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (snap.exists) return OrganizationSchema.parse(snap.data());
+    tx.create(ref, org);
+    // New public workspaces start on FREE. Existing internal workspaces
+    // without billing state keep their grandfathered TEAM default.
+    tx.create(ref.collection("organizationSettings").doc("main"), {
+      billing: {
+        plan: "FREE",
+        status: "none",
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        seats: 1,
+        currentPeriodEnd: null,
+        lastStripeEventCreated: 0,
+        lastStripeEventPriority: 0,
+      },
+      updatedAt: now,
+    });
+    return org;
+  });
 }
 
 /** Resolve (creating if needed) the private per-user workspace for a Solo
@@ -70,9 +86,6 @@ export async function getOrCreateConsumerOrg(
   const db = firestore();
   const orgId = `user_${userId}`;
   const ref = db.collection("organizations").doc(orgId);
-  const snap = await ref.get();
-  if (snap.exists) return OrganizationSchema.parse(snap.data());
-
   const now = Date.now();
   const label = displayName.trim().split(/\s+/)[0] || "My";
   const org: Organization = {
@@ -85,8 +98,25 @@ export async function getOrCreateConsumerOrg(
     createdAt: now,
     updatedAt: now,
   };
-  await ref.create(org);
-  return org;
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (snap.exists) return OrganizationSchema.parse(snap.data());
+    tx.create(ref, org);
+    tx.create(ref.collection("organizationSettings").doc("main"), {
+      billing: {
+        plan: "FREE",
+        status: "none",
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        seats: 1,
+        currentPeriodEnd: null,
+        lastStripeEventCreated: 0,
+        lastStripeEventPriority: 0,
+      },
+      updatedAt: now,
+    });
+    return org;
+  });
 }
 
 /**
@@ -160,6 +190,59 @@ export async function upsertMember(
   };
   await ref.create(member);
   return member;
+}
+
+/**
+ * Create a membership and claim the first-admin role through the organization
+ * document as a transaction mutex. This prevents two simultaneous first
+ * sign-ins from both becoming administrators.
+ */
+export async function provisionMember(
+  organizationId: string,
+  userId: string,
+  email: string,
+  invitedRole: Role | null = null
+): Promise<Member> {
+  const db = firestore();
+  const orgRef = db.collection("organizations").doc(organizationId);
+  const memberRef = orgRef.collection("members").doc(userId);
+  // Existing organizations predate the adminClaimed marker. Establish whether
+  // one already has members before entering the transaction.
+  const existingMember = await orgRef.collection("members").limit(1).get();
+
+  return db.runTransaction(async (tx) => {
+    const [orgSnap, memberSnap] = await Promise.all([
+      tx.get(orgRef),
+      tx.get(memberRef),
+    ]);
+    if (!orgSnap.exists) throw new Error("Organization not found");
+    if (memberSnap.exists) return MemberSchema.parse(memberSnap.data());
+
+    const alreadyClaimed =
+      orgSnap.data()?.adminClaimed === true || !existingMember.empty;
+    const role: Role =
+      invitedRole ?? (alreadyClaimed ? "SALES_REP" : "ADMIN");
+    const now = Date.now();
+    const member: Member = MemberSchema.parse({
+      userId,
+      organizationId,
+      email,
+      role,
+      active: true,
+      teamId: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+    tx.create(memberRef, member);
+    if (!alreadyClaimed || orgSnap.data()?.adminClaimed !== true) {
+      tx.update(orgRef, {
+        adminClaimed: true,
+        ...(role === "ADMIN" ? { firstAdminUserId: userId } : {}),
+        updatedAt: now,
+      });
+    }
+    return member;
+  });
 }
 
 export async function countMembers(organizationId: string): Promise<number> {

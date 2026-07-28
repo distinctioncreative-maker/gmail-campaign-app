@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 /** Plan + subscription management. Shows upgrade paths when Stripe is
- * configured; otherwise a "coming soon" note (matches the public pricing). */
+ * configured; otherwise explains that paid checkout is not active. */
 export function BillingCard() {
   const toast = useToast();
   const [state, setState] = useState<BillingState | null>(null);
@@ -82,9 +82,10 @@ export function BillingCard() {
 
       {!state.configured ? (
         <p className="mt-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
-          Paid plans open at launch. You&apos;re on <strong>{state.planName}</strong> for now with full access.
+          Paid plans open when billing is configured. You&apos;re currently on{" "}
+          <strong>{state.planName}</strong>.
         </p>
-      ) : (
+      ) : !state.hasSubscription ? (
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <PlanTile
             name="Starter"
@@ -96,12 +97,16 @@ export function BillingCard() {
           <PlanTile
             name="Team"
             price="$24 / seat · mo"
-            blurb="Shared team, roles, leaderboards, highest volume."
+            blurb="Shared team, roles, leaderboards, highest volume. Two-seat minimum."
             featured
             onPick={() => void checkout("TEAM")}
             busy={busy === "TEAM"}
           />
         </div>
+      ) : (
+        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
+          Use Manage billing to change your plan, seats, payment method, or cancellation.
+        </p>
       )}
     </div>
   );

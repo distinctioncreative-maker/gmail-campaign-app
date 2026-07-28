@@ -25,11 +25,16 @@ export class TestModeConfigError extends Error {
  */
 export function applySendSafety(
   envelope: OutboundEnvelope,
-  testMode: boolean
+  testMode: boolean,
+  verifiedTestDestination?: string
 ): OutboundEnvelope {
   if (!testMode) return envelope;
 
-  const destination = env.TEST_EMAIL_DESTINATION.trim();
+  // A server-derived signed-in user address may be supplied for explicit
+  // "send me a test" actions. Campaign test mode leaves this undefined and
+  // always uses the deployment-wide controlled destination.
+  const destination =
+    verifiedTestDestination?.trim() || env.TEST_EMAIL_DESTINATION.trim();
   if (!destination) throw new TestModeConfigError();
 
   return {

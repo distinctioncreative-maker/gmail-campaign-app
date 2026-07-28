@@ -3,14 +3,14 @@ import { z } from "zod";
 import { verifyTaskRequest, TaskAuthError } from "@/lib/tasks/verifyOidc";
 import {
   claimQueueItem,
-  finalizeMessage,
+  commitDeliveryResult,
   getCampaign,
   getDailyCount,
   getRecipient,
   incrementCampaignCounters,
-  incrementDailyCounter,
   isIdempotencyKeyUsed,
   recordEvent,
+  reserveDailySend,
   reserveIdempotencyKey,
   setCampaignStatus,
   updateQueueItem,
@@ -27,18 +27,25 @@ import { getSequence } from "@/lib/repositories/sequences";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import {
   renderTemplate,
+  renderHtmlTemplate,
   valuesFromContact,
   valuesFromSenderProfile,
 } from "@/lib/personalization/render";
-import { sendEmail } from "@/lib/gmail/send";
+import { createEmailDraft, sendEmail } from "@/lib/gmail/send";
 import { localDayKey, nextValidTime } from "@/lib/scheduling/window";
 import { enqueueTask } from "@/lib/tasks/enqueue";
-import { scheduleNextFollowup } from "@/lib/campaigns/followups";
+import {
+  buildNextFollowupQueueItem,
+  publishFollowupQueueItem,
+} from "@/lib/campaigns/followups";
 import { recordCollisionContact } from "@/lib/campaigns/collision";
 import { isTestModeForOrg } from "@/lib/sending/mode";
 import { reportError } from "@/lib/observability/report";
 import { injectTracking } from "@/lib/tracking/inject";
 import { env } from "@/lib/env";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { PLANS } from "@/lib/billing/plans";
+import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
 const PayloadSchema = z.object({
   organizationId: z.string().min(1),
@@ -56,7 +63,7 @@ const MAX_PRESEND_ATTEMPTS = 4;
 /**
  * Cloud Tasks worker: send (or draft) one campaign message.
  * Follows the spec §14 worker contract; every Gmail call goes through
- * sendEmail, which applies the TEST_MODE safety gate.
+ * the Gmail wrapper, which applies the organization TEST/LIVE safety gate.
  *
  * Returns 200 for permanent no-ops (so Cloud Tasks does not retry) and
  * 500 only for transient errors where a retry is safe.
@@ -92,7 +99,10 @@ export async function POST(req: NextRequest) {
     // Map the block reason to what should happen to the queue item:
     // paused/disconnected → stays SCHEDULED so Resume can re-enqueue it;
     // stopped/cancelled → CANCELLED; everything else → SKIPPED.
-    const resumable = reason === "CAMPAIGN_PAUSED" || reason === "GMAIL_NOT_CONNECTED";
+    const resumable =
+      reason === "CAMPAIGN_PAUSED" ||
+      reason === "GMAIL_NOT_CONNECTED" ||
+      reason === "FOLLOWUPS_PAUSED";
     const terminal =
       reason.startsWith("CAMPAIGN_") && !resumable ? "CANCELLED" : "SKIPPED";
     await updateQueueItem(owner, campaignId, queueItemId, {
@@ -103,15 +113,37 @@ export async function POST(req: NextRequest) {
   };
 
   // True once we reach the Gmail send; gates whether a failure may auto-retry.
-  let reachedSend = false;
+  let reachedDeliveryAttempt = false;
+  // Once the authoritative Firestore result commits, later projection errors
+  // must never rewrite the completed queue item as AMBIGUOUS.
+  let deliveryCommitted = false;
+  const enqueueCurrentItem = async (scheduledAt: number) => {
+    const taskName = await enqueueTask(
+      "send-message",
+      { organizationId, ownerUserId, campaignId, queueItemId },
+      scheduledAt
+    );
+    await updateQueueItem(owner, campaignId, queueItemId, {
+      cloudTaskName: taskName,
+    });
+  };
   try {
     // 2. Load state.
-    const [campaign, recipient, connection] = await Promise.all([
+    const [campaign, recipient, connection, settings] = await Promise.all([
       getCampaign(owner, campaignId),
       getRecipient(owner, campaignId, item.recipientId),
       getConnection(ownerUserId),
+      getOrgSettings(organizationId),
     ]);
     if (!campaign || !recipient) return fail("MISSING_RECORDS", false);
+    const effectiveDailyLimit = Math.min(
+      campaign.schedule.dailySendLimit,
+      PLANS[settings.billing.plan].maxDailySends
+    );
+    const effectiveCampaign = {
+      ...campaign,
+      schedule: { ...campaign.schedule, dailySendLimit: effectiveDailyLimit },
+    };
 
     const [suppression, keyUsed, sentToday] = await Promise.all([
       isSuppressed(owner, recipient.normalizedEmailSnapshot),
@@ -121,7 +153,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Full eligibility re-check immediately before sending.
     const eligibility = checkEligibility({
-      campaign,
+      campaign: effectiveCampaign,
       recipient,
       queueItem: { status: "PROCESSING", type: item.type },
       gmailConnected: connection?.status === "CONNECTED",
@@ -160,11 +192,7 @@ export async function POST(req: NextRequest) {
               scheduledAt: nextTime,
               lastError: eligibility.reason,
             });
-            await enqueueTask(
-              "send-message",
-              { organizationId, ownerUserId, campaignId, queueItemId },
-              nextTime
-            );
+            await enqueueCurrentItem(nextTime);
           }
           return NextResponse.json({ ok: true, reason: eligibility.reason });
         }
@@ -180,11 +208,7 @@ export async function POST(req: NextRequest) {
           scheduledAt: nextTime,
           lastError: eligibility.reason,
         });
-        await enqueueTask(
-          "send-message",
-          { organizationId, ownerUserId, campaignId, queueItemId },
-          nextTime
-        );
+        await enqueueCurrentItem(nextTime);
         return NextResponse.json({ ok: true, reason: eligibility.reason, rescheduled: nextTime });
       }
       if (eligibility.reason === "GMAIL_NOT_CONNECTED" && campaign.status === "ACTIVE") {
@@ -206,10 +230,18 @@ export async function POST(req: NextRequest) {
     // initial email, use their own saved template, or use a custom body
     // written inline in the sequence builder.
     const isFollowup = item.sequenceStep > 0;
+    const sequence = campaign.sequenceId
+      ? await getSequence(owner, campaign.sequenceId)
+      : null;
     let step = null;
-    if (isFollowup && campaign.sequenceId) {
-      const sequence = await getSequence(owner, campaign.sequenceId);
+    if (isFollowup) {
+      if (!sequence?.active) {
+        return fail("SEQUENCE_MISSING_OR_INACTIVE", false);
+      }
       step = sequence?.steps[item.sequenceStep - 1] ?? null;
+      if (!step?.enabled) {
+        return fail("SEQUENCE_STEP_MISSING_OR_DISABLED", false);
+      }
     }
 
     // A/B rotation: this recipient's assigned template (falls back to the
@@ -286,14 +318,135 @@ export async function POST(req: NextRequest) {
     if (!step && recipient.aiOpenerSnapshot && !/\{\{\s*ai_opener\s*\}\}/.test(effectiveBody)) {
       effectiveBody = `<p>{{ai_opener}}</p>\n${effectiveBody}`;
     }
-    const body = renderTemplate(effectiveBody, values);
+    const body = renderHtmlTemplate(effectiveBody, values);
+    const plainTextRender = plainText
+      ? renderTemplate(plainText, values)
+      : null;
+    const unresolved = [
+      ...subjectRender.unresolved,
+      ...body.unresolved,
+      ...(plainTextRender?.unresolved ?? []),
+    ].filter((name, index, all) => all.indexOf(name) === index);
+    if (unresolved.length > 0) {
+      const message = `Missing values for: ${unresolved.join(", ")}`;
+      await Promise.all([
+        updateRecipient(owner, campaignId, item.recipientId, {
+          status: "ERROR",
+          lastError: message,
+        }),
+        incrementCampaignCounters(owner, campaignId, { errorCount: 1 }),
+      ]);
+      return fail("UNRESOLVED_PLACEHOLDERS", false, message);
+    }
+    const renderedPlainText = plainTextRender?.output;
+
+    const isDraft =
+      item.type === "CREATE_INITIAL_DRAFT" || item.type === "CREATE_FOLLOWUP_DRAFT";
+
+    // Final cancellation/suppression/reply check after rendering and directly
+    // before quota/delivery reservation. Control actions close their campaign
+    // gate first, so this catches a pause/stop that raced the earlier load.
+    const [
+      freshCampaign,
+      freshRecipient,
+      freshSuppression,
+      deliveryUsed,
+      freshConnection,
+    ] =
+      await Promise.all([
+        getCampaign(owner, campaignId),
+        getRecipient(owner, campaignId, item.recipientId),
+        isSuppressed(owner, recipient.normalizedEmailSnapshot),
+        isIdempotencyKeyUsed(owner, campaignId, item.idempotencyKey),
+        getConnection(ownerUserId),
+      ]);
+    const finalBlock =
+      !freshCampaign
+        ? "CAMPAIGN_MISSING"
+        : freshCampaign.status === "PAUSED"
+          ? "CAMPAIGN_PAUSED"
+          : freshCampaign.status !== "ACTIVE"
+            ? `CAMPAIGN_${freshCampaign.status}`
+            : freshConnection?.status !== "CONNECTED"
+              ? "GMAIL_NOT_CONNECTED"
+            : !freshRecipient || !freshRecipient.included
+              ? "RECIPIENT_NOT_ELIGIBLE"
+              : freshRecipient.repliedAt !== null
+                ? "RECIPIENT_REPLIED"
+                : freshRecipient.bouncedAt !== null
+                  ? "RECIPIENT_BOUNCED"
+                  : freshRecipient.unsubscribedAt !== null
+                    ? "RECIPIENT_UNSUBSCRIBED"
+                    : isFollowup && freshCampaign.followupsPaused
+                      ? "FOLLOWUPS_PAUSED"
+                      : freshSuppression
+                        ? "SUPPRESSED"
+                        : deliveryUsed
+                          ? "DELIVERY_ALREADY_RESERVED"
+                          : null;
+    if (finalBlock) {
+      if (
+        finalBlock === "GMAIL_NOT_CONNECTED" &&
+        freshCampaign?.status === "ACTIVE"
+      ) {
+        await setCampaignStatus(owner, campaignId, "PAUSED", {
+          pausedAt: Date.now(),
+        });
+        await recordEvent(owner, campaignId, {
+          type: "AUTO_PAUSE",
+          message:
+            "Campaign paused: your Gmail connection needs to be reconnected.",
+          severity: "ERROR",
+          recipientEmail: null,
+        });
+      }
+      return fail(finalBlock, false);
+    }
+
+    // Atomically reserve today's allowance immediately before a real send.
+    // Draft creation never consumes send quota.
+    if (!isDraft) {
+      const dayKey = localDayKey(Date.now(), campaign.schedule.timezone);
+      const quota = await reserveDailySend(
+        owner,
+        dayKey,
+        effectiveDailyLimit,
+        item.idempotencyKey
+      );
+      if (!quota.reserved) {
+        await updateQueueItem(owner, campaignId, queueItemId, {
+          status: "SCHEDULED",
+          lastError: "DAILY_LIMIT_REACHED",
+        });
+        const result = await deferCampaignToNextDay(owner, effectiveCampaign);
+        if (result === null) {
+          // A concurrent worker may have completed the campaign-wide
+          // re-spread before this item released PROCESSING. Give this item a
+          // safe individual slot so it cannot be stranded without a task.
+          const base = item.scheduledAt > 0 ? item.scheduledAt : Date.now();
+          let candidate = base;
+          while (candidate <= Date.now()) candidate += 24 * 60 * 60 * 1000;
+          const nextTime = Math.max(
+            nextValidTime(candidate, effectiveCampaign.schedule),
+            Date.now() + 60_000
+          );
+          await updateQueueItem(owner, campaignId, queueItemId, {
+            status: "SCHEDULED",
+            scheduledAt: nextTime,
+            lastError: "DAILY_LIMIT_REACHED",
+          });
+          await enqueueCurrentItem(nextTime);
+        }
+        return NextResponse.json({ ok: true, reason: "DAILY_LIMIT_REACHED" });
+      }
+    }
 
     // 5. Reserve the idempotency key BEFORE sending (transactional).
     const reserved = await reserveIdempotencyKey(owner, campaignId, item.idempotencyKey, {
       queueItemId,
       recipientId: item.recipientId,
     });
-    if (!reserved) return fail("ALREADY_SENT", false);
+    if (!reserved) return fail("DELIVERY_ALREADY_RESERVED", false);
 
     // 6. Send through the user's Gmail (safety gate inside sendEmail).
     // Test vs real is the ORG's current sending mode, resolved fresh here.
@@ -303,11 +456,11 @@ export async function POST(req: NextRequest) {
     // Optional open/click tracking — opt-in per campaign, off by default
     // (see schemas/campaign.ts CampaignSchema.trackingEnabled), and skipped
     // in test mode so test sends never write real tracking data.
-    let finalHtml = body.output;
+    let finalHtml = sanitizeEmailHtml(body.output);
     let trackingLinkUrls: string[] | null = null;
     if (campaign.trackingEnabled && !testMode) {
       const injected = injectTracking(
-        body.output,
+        finalHtml,
         { ownerUserId, organizationId, campaignId, recipientId: item.recipientId, step: item.sequenceStep },
         env.APP_BASE_URL
       );
@@ -315,34 +468,86 @@ export async function POST(req: NextRequest) {
       trackingLinkUrls = injected.linkUrls;
     }
 
-    // Past this point a failure's outcome is ambiguous — never auto-retry.
-    reachedSend = true;
-    const result = await sendEmail({
+    // Past this point a failure's outcome is ambiguous — never retry.
+    reachedDeliveryAttempt = true;
+    const deliveryInput = {
       userId: ownerUserId,
       to: recipient.emailSnapshot,
       subject: subjectOutput,
       htmlBody: finalHtml,
-      textBody: plainText,
+      textBody: renderedPlainText,
       testMode,
       threadId: threaded ? recipient.gmailThreadId ?? undefined : undefined,
       inReplyToMessageId: threaded ? recipient.initialMessageId ?? undefined : undefined,
-    });
+    };
+    const result = isDraft
+      ? await createEmailDraft(deliveryInput)
+      : await sendEmail(deliveryInput);
 
-    // 7–8. Record results.
-    // NOTE: these 6 writes are not transactional. If one throws after others
-    // resolve, campaign.sentCount/followupSentCount (the cached counters
-    // every "emails sent" surface reads) can drift from the recipient/queue
-    // state they're meant to mirror, with no automatic repair. Recipients
-    // remain the source of truth; treat the counters as a best-effort cache.
+    // 7–8. Atomically record the message, recipient, queue, and campaign
+    // counter so a post-Gmail Firestore failure cannot leave partial state.
     const now = Date.now();
-    await Promise.all([
-      finalizeMessage(owner, campaignId, item.idempotencyKey, {
+    if (isDraft) {
+      const draftResult = result as typeof result & { gmailDraftId: string };
+      await commitDeliveryResult(owner, campaignId, {
+        idempotencyKey: item.idempotencyKey,
+        queueItemId,
+        recipientId: item.recipientId,
+        completedAt: now,
+        counter: "draftedCount",
+        result: {
+          gmailMessageId: draftResult.gmailMessageId,
+          gmailThreadId: draftResult.gmailThreadId,
+          gmailDraftId: draftResult.gmailDraftId,
+          sentTo: draftResult.effectiveTo,
+          subject: draftResult.effectiveSubject,
+          status: "DRAFTED",
+        },
+        recipientPatch: {
+          status: "DRAFTED",
+          initialDraftId:
+            item.sequenceStep === 0 ? draftResult.gmailDraftId : recipient.initialDraftId,
+          gmailThreadId: recipient.gmailThreadId ?? draftResult.gmailThreadId,
+          currentStep: item.sequenceStep,
+          lastError: null,
+        },
+      });
+      deliveryCommitted = true;
+      await recordEvent(owner, campaignId, {
+        type: "DRAFTED",
+        message: `Draft created for ${recipient.emailSnapshot}`,
+        severity: "INFO",
+        recipientEmail: recipient.emailSnapshot,
+      }).catch((err) => reportError(err, { scope: "draft-event" }));
+      await maybeMarkCompleted(owner, campaignId).catch((err) =>
+        reportError(err, { scope: "campaign-completion-check" })
+      );
+      return NextResponse.json({ ok: true, drafted: true });
+    }
+
+    const nextFollowup = buildNextFollowupQueueItem(
+      owner,
+      campaign,
+      sequence,
+      item.recipientId,
+      item.sequenceStep,
+      now
+    );
+    const deliveryCommit = await commitDeliveryResult(owner, campaignId, {
+      idempotencyKey: item.idempotencyKey,
+      queueItemId,
+      recipientId: item.recipientId,
+      completedAt: now,
+      counter: item.sequenceStep === 0 ? "sentCount" : "followupSentCount",
+      nextQueueItem: nextFollowup,
+      result: {
         gmailMessageId: result.gmailMessageId,
         gmailThreadId: result.gmailThreadId,
         sentTo: result.effectiveTo,
         subject: result.effectiveSubject,
-      }),
-      updateRecipient(owner, campaignId, item.recipientId, {
+        status: "SENT",
+      },
+      recipientPatch: {
         status: "SENT",
         initialMessageId: item.sequenceStep === 0 ? result.gmailMessageId : recipient.initialMessageId,
         gmailThreadId: recipient.gmailThreadId ?? result.gmailThreadId,
@@ -357,19 +562,9 @@ export async function POST(req: NextRequest) {
               },
             }
           : {}),
-      }),
-      updateQueueItem(owner, campaignId, queueItemId, {
-        status: "COMPLETE",
-        completedAt: now,
-        lastError: null,
-      }),
-      incrementDailyCounter(owner, localDayKey(now, campaign.schedule.timezone)),
-      incrementCampaignCounters(
-        owner,
-        campaignId,
-        item.sequenceStep === 0 ? { sentCount: 1 } : { followupSentCount: 1 }
-      ),
-    ]);
+      },
+    });
+    deliveryCommitted = true;
 
     // Mark the contact as genuinely contacted (initial send only) so
     // prior-contact detection reflects real sends, not launch-time intent.
@@ -385,10 +580,28 @@ export async function POST(req: NextRequest) {
     await recordEmailSent(owner, recipient.contactId, now);
 
     // Record org-scoped collision hash (no-op unless a team policy is on).
-    await recordCollisionContact(owner.organizationId, owner.userId, recipient.normalizedEmailSnapshot);
+    await recordCollisionContact(
+      owner.organizationId,
+      owner.userId,
+      recipient.normalizedEmailSnapshot
+    ).catch((err) => reportError(err, { scope: "collision-record" }));
 
-    // 9. Schedule the next follow-up step, if a sequence is attached.
-    await scheduleNextFollowup(owner, campaign, item.recipientId, item.sequenceStep);
+    // 9. Publish the already-durable next follow-up, if any. If this fails,
+    // repairOwner sees its null task name and safely publishes it later.
+    let followupScheduleFailed = false;
+    if (deliveryCommit.nextFollowupCommitted && nextFollowup) {
+      await publishFollowupQueueItem(owner, nextFollowup).catch(async (err) => {
+        followupScheduleFailed = true;
+        reportError(err, { scope: "followup-schedule" });
+        await recordEvent(owner, campaignId, {
+          type: "FOLLOWUP_SCHEDULE_ERROR",
+          message:
+            "The email was sent and its next follow-up is safely queued, but Cloud Task publication failed. The repair sweep will retry it.",
+          severity: "ERROR",
+          recipientEmail: recipient.emailSnapshot,
+        }).catch(() => undefined);
+      });
+    }
 
     // 10. Audit event.
     await recordEvent(owner, campaignId, {
@@ -399,19 +612,32 @@ export async function POST(req: NextRequest) {
           : `Follow-up ${item.sequenceStep} sent to ${recipient.emailSnapshot}`,
       severity: "INFO",
       recipientEmail: recipient.emailSnapshot,
-    });
+    }).catch((err) => reportError(err, { scope: "send-event" }));
 
-    await maybeMarkCompleted(owner, campaignId);
+    if (!followupScheduleFailed) {
+      await maybeMarkCompleted(owner, campaignId).catch((err) =>
+        reportError(err, { scope: "campaign-completion-check" })
+      );
+    }
 
     return NextResponse.json({ ok: true, sent: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
 
+    if (deliveryCommitted) {
+      reportError(err, { scope: "post-delivery-projection" });
+      return NextResponse.json({
+        ok: true,
+        delivered: true,
+        warning: "POST_DELIVERY_PROJECTION_FAILED",
+      });
+    }
+
     // Pre-send failures (Firestore blips, token refresh, rendering) never put
     // an email on the wire, so re-claiming is safe — retry a bounded number of
     // times instead of silently dropping the recipient. The item-scoped
     // idempotency reservation guarantees the retry can't double-send.
-    if (!reachedSend && item.attemptCount < MAX_PRESEND_ATTEMPTS) {
+    if (!reachedDeliveryAttempt && item.attemptCount < MAX_PRESEND_ATTEMPTS) {
       await updateQueueItem(owner, campaignId, queueItemId, {
         status: "RETRY_SCHEDULED",
         lastError: message,
@@ -422,7 +648,7 @@ export async function POST(req: NextRequest) {
 
     reportError(err, { scope: "send-worker" });
     await updateQueueItem(owner, campaignId, queueItemId, {
-      status: "ERROR",
+      status: reachedDeliveryAttempt ? "AMBIGUOUS" : "ERROR",
       lastError: message,
     });
     await incrementCampaignCounters(owner, campaignId, { errorCount: 1 });
@@ -438,9 +664,19 @@ export async function POST(req: NextRequest) {
         recipientEmail: null,
       });
     }
-    // 500 → Cloud Tasks retries with backoff; the claim/idempotency layers
-    // make retries safe.
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    if (reachedDeliveryAttempt) {
+      await recordEvent(owner, campaignId, {
+        type: "DELIVERY_AMBIGUOUS",
+        message:
+          "Gmail may have accepted one message, but Cadence could not confirm the result. It was not retried to prevent a duplicate.",
+        severity: "ERROR",
+        recipientEmail: null,
+      });
+    }
+    return NextResponse.json(
+      { ok: false, error: message, ambiguous: reachedDeliveryAttempt },
+      { status: reachedDeliveryAttempt ? 200 : 500 }
+    );
   }
 }
 

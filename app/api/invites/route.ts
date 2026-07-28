@@ -5,11 +5,14 @@ import { handleApiErrors } from "@/lib/api";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { promoteConsumerToWorkspace } from "@/lib/repositories/organizations";
 import { createInvite, listInvites, revokeInvite } from "@/lib/repositories/invites";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { purchasedSeatLimit } from "@/lib/billing/plans";
 
 /** List pending/accepted invites for the admin's org. */
 export const GET = handleApiErrors(async () => {
   const ctx = await requireRole("ADMIN");
-  if (!capabilitiesFor(ctx.tenantType).invites) {
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).invites) {
     return NextResponse.json({ error: "Invites aren't available on this plan." }, { status: 403 });
   }
   return NextResponse.json({ invites: await listInvites(ctx.organizationId) });
@@ -25,7 +28,8 @@ const PostSchema = z.object({
  * record the invite. The invited person joins on their next sign-in. */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireRole("ADMIN");
-  if (!capabilitiesFor(ctx.tenantType).invites) {
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).invites) {
     return NextResponse.json({ error: "Invites aren't available on this plan." }, { status: 403 });
   }
   const { email, role } = PostSchema.parse(await req.json());
@@ -39,7 +43,31 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     await promoteConsumerToWorkspace(ctx.organizationId);
   }
 
-  await createInvite({ organizationId: ctx.organizationId, email, role, invitedBy: ctx.userId });
+  const created = await createInvite({
+    organizationId: ctx.organizationId,
+    email,
+    role,
+    invitedBy: ctx.userId,
+    maxSeats: purchasedSeatLimit(settings.billing),
+  });
+  if (created === "EMAIL_IN_OTHER_WORKSPACE") {
+    return NextResponse.json(
+      { error: "That email already has a pending invitation to another workspace." },
+      { status: 409 }
+    );
+  }
+  if (created === "ALREADY_MEMBER") {
+    return NextResponse.json(
+      { error: "That email already belongs to this workspace." },
+      { status: 409 }
+    );
+  }
+  if (created === "SEAT_LIMIT") {
+    return NextResponse.json(
+      { error: "All purchased seats are assigned or reserved by pending invitations." },
+      { status: 409 }
+    );
+  }
   return NextResponse.json({ ok: true, message: `Invitation ready for ${email}.` });
 });
 

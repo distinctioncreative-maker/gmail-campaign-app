@@ -8,6 +8,8 @@ import { ProfileForm } from "@/components/ProfileForm";
 import { DisplayNameForm } from "@/components/DisplayNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
+import { BillingCard } from "@/components/admin/BillingCard";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
 export default async function SettingsPage({
   searchParams,
@@ -15,10 +17,12 @@ export default async function SettingsPage({
   searchParams: Promise<{ gmail?: string }>;
 }) {
   const ctx = await requireUser();
-  const [connection, profile] = await Promise.all([
+  const [connection, profile, settings] = await Promise.all([
     getConnectionPublic(ctx.userId),
     getSenderProfile(ctx),
+    getOrgSettings(ctx.organizationId),
   ]);
+  const capabilities = capabilitiesFor(ctx.tenantType, settings.billing.plan);
   const { gmail } = await searchParams;
 
   return (
@@ -40,11 +44,21 @@ export default async function SettingsPage({
           Something went wrong connecting Gmail. Please try again.
         </p>
       )}
+      {gmail === "account_mismatch" && (
+        <p className="alert-danger mt-4 rounded-lg border p-3 text-sm text-danger">
+          Connect the same Google account you use to sign in to Cadence. No mailbox was saved.
+        </p>
+      )}
 
       <div className="mt-6 max-w-2xl space-y-6">
-        {ctx.tenantType === "CONSUMER" && ctx.role === "ADMIN" && capabilitiesFor(ctx.tenantType).invites && (
+        {ctx.role === "ADMIN" && (
           <div className="animate-rise">
-            <InviteTeamCard solo />
+            <BillingCard />
+          </div>
+        )}
+        {ctx.role === "ADMIN" && capabilities.invites && (
+          <div className="animate-rise">
+            <InviteTeamCard solo={ctx.tenantType === "CONSUMER"} />
           </div>
         )}
         <div className="card animate-rise p-6">

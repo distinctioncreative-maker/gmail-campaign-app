@@ -25,6 +25,7 @@ describe("analyzeSpam", () => {
     expect(r.score).toBeGreaterThanOrEqual(80);
     expect(["A", "B"]).toContain(r.grade);
     expect(r.checks.find((c) => c.label === "Opt-out line")?.status).toBe("pass");
+    expect(r.verdict).not.toMatch(/should land/i);
   });
 
   it("scores a spammy email low and flags the right problems", () => {

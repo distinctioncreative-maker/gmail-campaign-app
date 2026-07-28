@@ -215,7 +215,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
   const grade = score >= 85 ? "A" : score >= 70 ? "B" : score >= 50 ? "C" : "D";
   const verdict =
     grade === "A"
-      ? "Looks great — this should land in the inbox."
+      ? "Looks clean. Content is only one part of inbox placement."
       : grade === "B"
         ? "Solid. A couple of small tweaks could help."
         : grade === "C"

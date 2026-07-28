@@ -16,6 +16,22 @@ export interface ErrorSummary {
   at: string;
 }
 
+export function redactErrorMessage(message: string): string {
+  return message
+    .replace(
+      /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
+      "[email]"
+    )
+    .replace(
+      /\b(?:sk_(?:live|test)_|rk_(?:live|test)_|whsec_|AIza)[A-Za-z0-9_-]+\b/g,
+      "[secret]"
+    )
+    .replace(
+      /\b(Bearer|refresh_token|access_token|id_token)\s*[:=]?\s*[A-Za-z0-9._~+/-]+/gi,
+      "$1 [secret]"
+    );
+}
+
 /**
  * Shape an error into a compact, log-safe summary. Pure and testable. The
  * message is truncated so a stray large payload can't flood logs; stack traces
@@ -25,7 +41,7 @@ export function errorSummary(err: unknown, ctx: ErrorContext = {}): ErrorSummary
   const isErr = err instanceof Error;
   return {
     name: isErr ? err.name || "Error" : "NonError",
-    message: (isErr ? err.message : String(err)).slice(0, 300),
+    message: redactErrorMessage(isErr ? err.message : String(err)).slice(0, 300),
     scope: ctx.scope ?? "app",
     kind: ctx.kind ?? (isErr ? err.name : "unknown"),
     at: new Date().toISOString(),

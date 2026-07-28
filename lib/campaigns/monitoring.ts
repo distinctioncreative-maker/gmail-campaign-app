@@ -1,8 +1,7 @@
 import "server-only";
 import type { OwnerRef } from "@/lib/repositories/campaigns";
 import {
-  incrementCampaignCounters,
-  incrementDailyActivity,
+  commitRecipientOutcome,
   listCampaigns,
   listQueueItems,
   listRecipients,
@@ -30,11 +29,14 @@ import {
 } from "@/lib/gmail/classifyReply";
 import { classifyBounce, parseFailedRecipient } from "@/lib/gmail/classifyBounce";
 import { getSequence } from "@/lib/repositories/sequences";
-import { addBusinessDays, localDayKey } from "@/lib/scheduling/window";
+import { addBusinessDays, localDayKey, nextValidTime } from "@/lib/scheduling/window";
 import { mapWithConcurrency } from "@/lib/util/pool";
 import type { Campaign, Recipient } from "@/schemas/campaign";
+import { deleteTask, enqueueTask } from "@/lib/tasks/enqueue";
 
-const MONITOR_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+// Sequences and real-world replies often outlive two weeks. Keep thread
+// monitoring active for 90 days; the Gmail inbox fallback remains bounded.
+const MONITOR_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 const OPEN = ["PENDING", "SCHEDULED", "RETRY_SCHEDULED"] as const;
 
 /** Cancel all pending/scheduled follow-up work for one recipient. */
@@ -42,6 +44,47 @@ async function cancelRecipientQueue(owner: OwnerRef, campaignId: string, recipie
   const open = await listQueueItems(owner, campaignId, [...OPEN]);
   for (const item of open.filter((i) => i.recipientId === recipientId)) {
     await updateQueueItem(owner, campaignId, item.queueItemId, { status: "CANCELLED" });
+    if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
+  }
+}
+
+async function postponeRecipientFollowups(
+  owner: OwnerRef,
+  campaign: Campaign,
+  recipientId: string,
+  notBefore: number
+): Promise<void> {
+  const open = await listQueueItems(owner, campaign.campaignId, [...OPEN]);
+  const followups = open.filter(
+    (item) =>
+      item.recipientId === recipientId &&
+      (item.type === "SEND_FOLLOWUP" || item.type === "CREATE_FOLLOWUP_DRAFT")
+  );
+  for (const item of followups) {
+    if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
+    const scheduledAt = nextValidTime(
+      Math.max(notBefore, item.scheduledAt),
+      campaign.schedule
+    );
+    await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+      status: "SCHEDULED",
+      scheduledAt,
+      cloudTaskName: null,
+      lastError: "OUT_OF_OFFICE_PAUSE",
+    });
+    const taskName = await enqueueTask(
+      "send-message",
+      {
+        organizationId: owner.organizationId,
+        ownerUserId: owner.userId,
+        campaignId: campaign.campaignId,
+        queueItemId: item.queueItemId,
+      },
+      scheduledAt
+    );
+    await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+      cloudTaskName: taskName,
+    });
   }
 }
 
@@ -78,10 +121,18 @@ async function actOnInbound(
   const now = Date.now();
 
   if (classes.includes("UNSUBSCRIBE")) {
-    await updateRecipient(owner, campaign.campaignId, r.recipientId, {
-      status: "UNSUBSCRIBED",
-      unsubscribedAt: now,
-    });
+    const applied = await commitRecipientOutcome(
+      owner,
+      campaign.campaignId,
+      r.recipientId,
+      "UNSUBSCRIBE",
+      {
+        status: "UNSUBSCRIBED",
+        unsubscribedAt: now,
+      },
+      localDayKey(now, campaign.schedule.timezone)
+    );
+    if (!applied) return false;
     await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
     await addSuppression(owner, {
       email: r.emailSnapshot,
@@ -92,8 +143,6 @@ async function actOnInbound(
       campaignId: campaign.campaignId,
       recipientId: r.recipientId,
     });
-    await incrementCampaignCounters(owner, campaign.campaignId, { unsubscribeCount: 1 });
-    await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "unsubscribes");
     await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "UNSUBSCRIBED", now);
     await recordEvent(owner, campaign.campaignId, {
       type: "UNSUBSCRIBE",
@@ -126,6 +175,12 @@ async function actOnInbound(
       await updateRecipient(owner, campaign.campaignId, r.recipientId, {
         nextFollowupAt: returnDate,
       });
+      await postponeRecipientFollowups(
+        owner,
+        campaign,
+        r.recipientId,
+        returnDate
+      );
     }
     // OOO is not a human reply — do not stop the sequence outright.
     return false;
@@ -143,15 +198,21 @@ async function actOnInbound(
         ? "INTERESTED"
         : "REPLIED";
 
-    await updateRecipient(owner, campaign.campaignId, r.recipientId, {
-      status: "REPLIED",
-      repliedAt: now,
-      replyIntent,
-      lastReplySnippet: fresh.slice(0, 280),
-    });
+    const applied = await commitRecipientOutcome(
+      owner,
+      campaign.campaignId,
+      r.recipientId,
+      "REPLY",
+      {
+        status: "REPLIED",
+        repliedAt: now,
+        replyIntent,
+        lastReplySnippet: fresh.slice(0, 280),
+      },
+      localDayKey(now, campaign.schedule.timezone)
+    );
+    if (!applied) return false;
     await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
-    await incrementCampaignCounters(owner, campaign.campaignId, { replyCount: 1 });
-    await incrementDailyActivity(owner, localDayKey(now, campaign.schedule.timezone), "replies");
     await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "REPLIED", now);
     await recordEvent(owner, campaign.campaignId, {
       type: "REPLY",
@@ -183,7 +244,9 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
   const connection = await getConnection(owner.userId);
   if (!connection || connection.status !== "CONNECTED") return { checked: 0, replied: 0 };
 
-  const campaigns = (await listCampaigns(owner)).filter((c) =>
+  const campaigns = (
+    await listCampaigns(owner, Number.POSITIVE_INFINITY)
+  ).filter((c) =>
     REPLY_MONITOR_STATUSES.includes(c.status)
   );
 
@@ -223,11 +286,11 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
   });
 
   // Pass 2: inbox sweep for replies sent as brand-new emails.
-  const pending = new Map(
-    targets
-      .filter(({ r }) => !resolved.has(r.recipientId))
-      .map((t) => [t.r.normalizedEmailSnapshot, t] as const)
-  );
+  const pending = new Map<string, Array<(typeof targets)[number]>>();
+  for (const target of targets.filter(({ r }) => !resolved.has(r.recipientId))) {
+    const key = target.r.normalizedEmailSnapshot;
+    pending.set(key, [...(pending.get(key) ?? []), target]);
+  }
   if (pending.size > 0) {
     let inboxRefs: Awaited<ReturnType<typeof listRecentInbound>> = [];
     try {
@@ -236,18 +299,35 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
       // Inbox listing failed — thread-pass results still stand.
     }
     const matches = inboxRefs.filter((m) => {
-      const t = pending.get(m.fromEmail);
-      return t !== undefined && m.internalDate > (t.r.lastSentAt ?? t.r.initialSentAt ?? 0);
+      const candidates = pending.get(m.fromEmail) ?? [];
+      return candidates.some(
+        (t) => m.internalDate > (t.r.lastSentAt ?? t.r.initialSentAt ?? 0)
+      );
     });
     for (const m of matches.slice(0, 30)) {
-      const t = pending.get(m.fromEmail);
+      // The same contact can exist in several campaigns. Attribute a new-thread
+      // reply to the most recent preceding send instead of whichever campaign
+      // happened to overwrite a Map entry.
+      const candidates = (pending.get(m.fromEmail) ?? [])
+        .filter((t) => m.internalDate > (t.r.lastSentAt ?? t.r.initialSentAt ?? 0))
+        .sort(
+          (a, b) =>
+            (b.r.lastSentAt ?? b.r.initialSentAt ?? 0) -
+            (a.r.lastSentAt ?? a.r.initialSentAt ?? 0)
+        );
+      const t = candidates[0];
       if (!t) continue;
       try {
         const inbound = await getMessageAsInbound(owner.userId, m.messageId);
         const classes = [classifyInboundMessage(inbound)];
         if (await actOnInbound(owner, t.campaign, t.r, classes, [inbound])) {
           replied++;
-          pending.delete(m.fromEmail);
+          pending.set(
+            m.fromEmail,
+            (pending.get(m.fromEmail) ?? []).filter(
+              (candidate) => candidate.r.recipientId !== t.r.recipientId
+            )
+          );
         }
       } catch {
         // Skip this message; the next sweep will retry.
@@ -274,12 +354,17 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
   }
   if (bounceMessages.length === 0) return { bounces: 0 };
 
-  const campaigns = (await listCampaigns(owner)).filter((c) =>
+  const campaigns = (
+    await listCampaigns(owner, Number.POSITIVE_INFINITY)
+  ).filter((c) =>
     REPLY_MONITOR_STATUSES.includes(c.status)
   );
 
   // Build an index of monitorable recipients by normalized email.
-  const byEmail = new Map<string, { campaignId: string; recipient: Recipient }>();
+  const byEmail = new Map<
+    string,
+    Array<{ campaignId: string; recipient: Recipient }>
+  >();
   const recipientLists = await Promise.all(
     campaigns.map(async (campaign) => ({
       campaignId: campaign.campaignId,
@@ -289,7 +374,11 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
   for (const { campaignId, recipients } of recipientLists) {
     for (const r of recipients) {
       if (r.bouncedAt === null && r.initialSentAt !== null) {
-        byEmail.set(r.normalizedEmailSnapshot, { campaignId, recipient: r });
+        const key = r.normalizedEmailSnapshot;
+        byEmail.set(key, [
+          ...(byEmail.get(key) ?? []),
+          { campaignId, recipient: r },
+        ]);
       }
     }
   }
@@ -298,21 +387,47 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
   for (const msg of bounceMessages) {
     const failed = parseFailedRecipient(msg.bodyText);
     if (!failed) continue;
-    const match = byEmail.get(failed.toLowerCase());
+    const match = (byEmail.get(failed.toLowerCase()) ?? [])
+      .filter(
+        (candidate) =>
+          (candidate.recipient.lastSentAt ??
+            candidate.recipient.initialSentAt ??
+            0) < msg.internalDate
+      )
+      .sort(
+        (a, b) =>
+          (b.recipient.lastSentAt ?? b.recipient.initialSentAt ?? 0) -
+          (a.recipient.lastSentAt ?? a.recipient.initialSentAt ?? 0)
+      )[0];
     if (!match) continue;
 
     const type = classifyBounce(msg);
     const now = Date.now();
-    await updateRecipient(owner, match.campaignId, match.recipient.recipientId, {
-      status: "BOUNCED",
-      bounceType: type,
-      bouncedAt: now,
-    });
+    const bouncedCampaign = campaigns.find(
+      (campaign) => campaign.campaignId === match.campaignId
+    );
+    const applied = await commitRecipientOutcome(
+      owner,
+      match.campaignId,
+      match.recipient.recipientId,
+      "BOUNCE",
+      {
+        status: "BOUNCED",
+        bounceType: type,
+        bouncedAt: now,
+      },
+      localDayKey(
+        now,
+        bouncedCampaign?.schedule.timezone ?? "America/New_York"
+      )
+    );
+    if (!applied) continue;
 
     if (type === "HARD") {
       const open = await listQueueItems(owner, match.campaignId, [...OPEN]);
       for (const item of open.filter((i) => i.recipientId === match.recipient.recipientId)) {
         await updateQueueItem(owner, match.campaignId, item.queueItemId, { status: "CANCELLED" });
+        if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
       }
       await addSuppression(owner, {
         email: match.recipient.emailSnapshot,
@@ -325,13 +440,6 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
       });
     }
 
-    await incrementCampaignCounters(owner, match.campaignId, { bounceCount: 1 });
-    const bouncedCampaign = campaigns.find((c) => c.campaignId === match.campaignId);
-    await incrementDailyActivity(
-      owner,
-      localDayKey(now, bouncedCampaign?.schedule.timezone ?? "America/New_York"),
-      "bounces"
-    );
     await recordEngagementByEmail(
       owner,
       match.recipient.normalizedEmailSnapshot,

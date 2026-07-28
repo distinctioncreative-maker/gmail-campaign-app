@@ -12,7 +12,7 @@ const payload = {
 describe("tracking token", () => {
   it("round-trips a signed payload", () => {
     const token = signTrackingToken(payload);
-    expect(verifyTrackingToken(token)).toEqual(payload);
+    expect(verifyTrackingToken(token)).toMatchObject(payload);
   });
 
   it("rejects a tampered payload segment", () => {
@@ -41,5 +41,14 @@ describe("tracking token", () => {
     const a = signTrackingToken(payload);
     const b = signTrackingToken({ ...payload, recipientId: "recip-2" });
     expect(a).not.toBe(b);
+  });
+
+  it("rejects an expired, correctly signed token", () => {
+    const token = signTrackingToken({
+      ...payload,
+      issuedAt: Date.now() - 10_000,
+      expiresAt: Date.now() - 1,
+    });
+    expect(verifyTrackingToken(token)).toBeNull();
   });
 });

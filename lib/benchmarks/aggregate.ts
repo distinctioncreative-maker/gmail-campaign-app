@@ -89,7 +89,10 @@ export async function recomputeBenchmarks(): Promise<BenchmarksSnapshot> {
   const signals: CampaignSignal[] = [];
 
   for (const owner of owners) {
-    const campaigns = await listCampaigns(owner).catch(() => []);
+    const campaigns = await listCampaigns(
+      owner,
+      Number.POSITIVE_INFINITY
+    ).catch(() => []);
     for (const campaign of campaigns) {
       const signal = await signalForCampaign(owner, campaign);
       if (signal) signals.push(signal);

@@ -1,4 +1,6 @@
 import "server-only";
+import crypto from "node:crypto";
+import { Timestamp } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
 
 export interface RateWindow {
@@ -35,7 +37,8 @@ export async function enforceRateLimit(
   bucket: string,
   key: string,
   limit: number,
-  windowMs: number
+  windowMs: number,
+  options: { failClosed?: boolean } = {}
 ): Promise<boolean> {
   const ref = firestore().collection("rateLimits").doc(`${bucket}__${key}`);
   try {
@@ -43,10 +46,43 @@ export async function enforceRateLimit(
       const snap = await tx.get(ref);
       const prev = snap.exists ? (snap.data() as RateWindow) : null;
       const { allowed, next } = applyRateLimit(prev, Date.now(), limit, windowMs);
-      if (allowed) tx.set(ref, next);
+      if (allowed) {
+        tx.set(ref, {
+          ...next,
+          // Firestore TTL removes one-off public tracking/auth fingerprints
+          // after they are no longer useful.
+          expiresAt: Timestamp.fromMillis(
+            Date.now() + Math.max(windowMs * 2, 24 * 60 * 60 * 1000)
+          ),
+        });
+      }
       return allowed;
     });
   } catch {
-    return true;
+    return options.failClosed !== true;
   }
+}
+
+/** Stable privacy-preserving request fingerprint. Google external load
+ * balancers append `<client-ip>,<forwarding-rule-ip>` after any untrusted
+ * caller-supplied values, making the second-to-last entry the verified client
+ * hop and the final entry the shared load-balancer address. */
+export function requestRateLimitKey(
+  req: Pick<Request, "headers">,
+  namespace: string
+): string {
+  const chain = (req.headers.get("x-forwarded-for") ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const ip =
+    chain.length >= 2
+      ? chain[chain.length - 2]
+      : chain[0] ?? "unknown";
+  const agent = req.headers.get("user-agent")?.slice(0, 120) ?? "";
+  return crypto
+    .createHash("sha256")
+    .update(`${namespace}\u001f${ip}\u001f${agent}`)
+    .digest("hex")
+    .slice(0, 40);
 }

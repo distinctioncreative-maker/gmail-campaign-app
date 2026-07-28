@@ -269,10 +269,10 @@ export function CampaignWizard() {
       });
       if (!ok) return;
     }
-    await launch(true);
+    await launch(true, paceRisk.risky);
   }
 
-  async function launch(startNow: boolean) {
+  async function launch(startNow: boolean, acceptedPaceRisk = false) {
     setBusy(true);
     setError(null);
     try {
@@ -292,6 +292,7 @@ export function CampaignWizard() {
             draftStrategy,
             trackingEnabled,
             sourceListId: listFilter || null,
+            acceptPaceRisk: acceptedPaceRisk,
           }),
         }
       );
@@ -305,6 +306,7 @@ export function CampaignWizard() {
           startNow,
           personalize,
           confirmText: confirmText || undefined,
+          acceptPaceRisk: acceptedPaceRisk,
         }),
       });
 
@@ -728,9 +730,11 @@ export function CampaignWizard() {
                   <span className="text-muted">Preview subject:</span>{" "}
                   <span className="font-medium">{preview.subject}</span>
                 </p>
-                <div
-                  className="mt-3 max-h-64 overflow-auto rounded-lg bg-surface-2 p-3 text-sm"
-                  dangerouslySetInnerHTML={{ __html: preview.html }}
+                <iframe
+                  title="Campaign email preview"
+                  sandbox=""
+                  className="mt-3 h-64 w-full rounded-lg border-0 bg-surface-2"
+                  srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:12px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
                 />
               </div>
             )}

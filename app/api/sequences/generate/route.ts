@@ -6,6 +6,7 @@ import { generateSequence } from "@/lib/ai/generateSequence";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled, assertAiWritingEnabled } from "@/lib/ai/enabled";
+import { aiRequestAllowed } from "@/lib/ai/rateLimit";
 
 const BodySchema = z.object({ prompt: z.string().trim().min(3).max(1000) });
 
@@ -19,6 +20,9 @@ export const GET = handleApiErrors(async () => {
 /** Draft a 2-3 step follow-up sequence from a plain-language prompt. */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
+  if (!(await aiRequestAllowed(ctx.organizationId, ctx.userId))) {
+    return NextResponse.json({ error: "AI writing limit reached. Please try again later." }, { status: 429 });
+  }
   const { prompt } = BodySchema.parse(await req.json());
   const settings = await getOrgSettings(ctx.organizationId);
   try {

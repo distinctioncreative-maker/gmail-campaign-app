@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyTrackingToken } from "@/lib/tracking/token";
-import { getRecipient, updateRecipient, type OwnerRef } from "@/lib/repositories/campaigns";
+import crypto from "node:crypto";
+import {
+  TRACKING_TOKEN_MAX_AGE_MS,
+  verifyTrackingToken,
+} from "@/lib/tracking/token";
+import {
+  getRecipient,
+  recordRecipientClick,
+  type OwnerRef,
+} from "@/lib/repositories/campaigns";
 import { env } from "@/lib/env";
 import { reportError } from "@/lib/observability/report";
+import { enforceRateLimit } from "@/lib/util/rateLimit";
 
 type Params = { params: Promise<{ token: string; index: string }> };
 
@@ -22,6 +31,15 @@ function safeFallback(): NextResponse {
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { token, index } = await params;
+    const key = crypto.createHash("sha256").update(token).digest("hex").slice(0, 40);
+    const withinLimit = await enforceRateLimit(
+      "tracking-click",
+      key,
+      120,
+      60 * 60 * 1000,
+      { failClosed: true }
+    );
+    if (!withinLimit) return safeFallback();
     const payload = verifyTrackingToken(token);
     if (!payload) return safeFallback();
     const idx = Number(index);
@@ -29,7 +47,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     const owner: OwnerRef = { userId: payload.ownerUserId, organizationId: payload.organizationId };
     const recipient = await getRecipient(owner, payload.campaignId, payload.recipientId);
-    if (!recipient) return safeFallback();
+    if (
+      !recipient ||
+      recipient.initialSentAt === null ||
+      Date.now() - recipient.initialSentAt > TRACKING_TOKEN_MAX_AGE_MS
+    ) {
+      return safeFallback();
+    }
 
     const destination = recipient.trackedLinkUrls[String(payload.step)]?.[idx];
     if (!destination) return safeFallback();
@@ -40,15 +64,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
     } catch {
       return safeFallback();
     }
+    if (target.protocol !== "https:" && target.protocol !== "http:") {
+      return safeFallback();
+    }
 
     const now = Date.now();
-    await updateRecipient(owner, payload.campaignId, payload.recipientId, {
-      firstClickedAt: recipient.firstClickedAt ?? now,
-      clickCount: recipient.clickCount + 1,
-      // A click implies an open even if the pixel itself was blocked.
-      openedAt: recipient.openedAt ?? now,
-      openCount: recipient.openedAt ? recipient.openCount : recipient.openCount + 1,
-    });
+    await recordRecipientClick(owner, payload.campaignId, payload.recipientId, now);
 
     return NextResponse.redirect(target, { status: 302 });
   } catch (err) {

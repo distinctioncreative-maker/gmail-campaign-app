@@ -20,9 +20,9 @@ at `/admin/features`).
 
 Next.js 16 (App Router, TypeScript strict) · React 19 · Tailwind v4 ·
 Cloud Run (Dockerfile, standalone output, Turbopack) · Firebase Auth
-(Google sign-in) → server session cookie (jose) · Firestore (Admin SDK
+(Google sign-in) → Firebase Admin session cookie · Firestore (Admin SDK
 server-side; deny-by-default `firestore.rules`) · Cloud Tasks + Cloud
-Scheduler (OIDC-verified worker + cron sweeps) · Cloud KMS (token
+Scheduler (OIDC-verified worker + cron sweeps) · jose-signed OAuth state · Cloud KMS (token
 encryption) · Gmail API (`gmail.compose` + `gmail.readonly`) · Google
 Gemini (optional AI, env-gated) · Stripe (billing, env-gated) · Zod
 validation everywhere.
@@ -41,13 +41,16 @@ validation everywhere.
   Workspace in place.
 - **`lib/tenancy/capabilities.ts`** is the single source of truth for what a
   tenant can do (teams, invites, admin console, live sending, daily send
-  cap) — every UI gate and API guard reads from it, so a plan or tenant-type
-  change updates behavior everywhere at once.
+  cap) — every UI gate and API guard reads `capabilitiesFor(tenantType,
+  plan)`, so a plan or tenant-type change updates behavior everywhere.
 - **Sending safety**: `lib/gmail/safety.ts` is the one choke point every
   outbound email passes through. It forces test-mode (mail redirected to a
   test address) until an admin explicitly flips an org LIVE. The Cloud Tasks
-  send worker (`app/api/tasks/send-message`) is idempotent and never
-  double-sends.
+  send worker (`app/api/tasks/send-message`) reserves quota and delivery
+  transactionally; an uncertain Gmail outcome is quarantined for review
+  instead of retried into a possible duplicate. Confirmed sends atomically
+  create their next durable follow-up queue record, and the repair sweep
+  handles Cloud Task publication failures and long-delay work.
 - **Billing** (`lib/billing/`) is env-gated: with no `STRIPE_SECRET_KEY` set,
   billing is a no-op and pricing shows "coming soon." `plans.ts` is the plan
   catalog; `stripe.ts` is a dependency-free REST client + webhook verifier.
@@ -56,6 +59,9 @@ validation everywhere.
   updates `lib/features/registry.ts`, which regenerates `FEATURES.md` and
   is what the in-app `/admin/features` checklist renders — so the doc, the
   generated file, and the live UI can't drift apart.
+- **GitHub is the quality gate**: pull requests and pushes to `main` run
+  typecheck, lint, unit tests, Firestore emulator isolation tests, a
+  production build, and a high-severity production-dependency audit.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the full route/module/component
 breakdown, and [DATA_MODEL.md](DATA_MODEL.md) for the Firestore schema.
@@ -107,7 +113,7 @@ npm run docs:features       # regenerate FEATURES.md after editing the registry
 
 After the first Cloud Run deploy, run `bash scripts/setup-cloud.sh PROJECT_ID`
 once to provision the Cloud Tasks queue, service accounts/IAM, and the
-Cloud Scheduler sweeps (reply/bounce/repair).
+Cloud Scheduler sweeps (reply/bounce/repair/metrics/benchmarks).
 
 ## Email safety (read this first)
 
@@ -122,6 +128,10 @@ var locks an environment into test mode and disables the in-app switch
 ## Documentation
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — structural map: routes, modules, components
+- [HARDENING_HANDOFF.md](HARDENING_HANDOFF.md) — current cross-agent hardening
+  invariants, changed flows, validation state, and deployment follow-ups
+- [PUBLIC_LAUNCH_AUDIT.md](PUBLIC_LAUNCH_AUDIT.md) — sell-today pilot scope,
+  public-launch gates, competitor position, and mobile-readiness plan
 - [FEATURES.md](FEATURES.md) — generated, living feature checklist
 - [SETUP.md](SETUP.md) — local development and Google Cloud configuration
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Cloud Run deployment

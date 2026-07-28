@@ -16,6 +16,8 @@ import { LocalTime } from "@/components/LocalTime";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { totalSent } from "@/lib/analytics/metrics";
 import { CountUp } from "@/components/ui/CountUp";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { PLANS } from "@/lib/billing/plans";
 
 export default async function CampaignDetailPage({
   params,
@@ -28,9 +30,10 @@ export default async function CampaignDetailPage({
   const campaign = await getCampaign(owner, campaignId);
   if (!campaign) notFound();
 
-  const [recipients, events] = await Promise.all([
+  const [recipients, events, settings] = await Promise.all([
     listRecipients(owner, campaignId),
     listEvents(owner, campaignId, 50),
+    getOrgSettings(ctx.organizationId),
   ]);
   const badge = CAMPAIGN_STATUS_LABELS[campaign.status];
 
@@ -126,6 +129,7 @@ export default async function CampaignDetailPage({
           campaignId={campaign.campaignId}
           status={campaign.status}
           followupsPaused={campaign.followupsPaused}
+          maxDailySends={PLANS[settings.billing.plan].maxDailySends}
           pace={{
             dailySendLimit: campaign.schedule.dailySendLimit,
             emailsPerBatch: campaign.schedule.emailsPerBatch,

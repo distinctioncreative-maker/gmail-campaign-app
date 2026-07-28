@@ -2,13 +2,15 @@ import "server-only";
 import { verifySession } from "./session";
 import { getUser, createUser, touchLastLogin } from "@/lib/repositories/users";
 import {
-  countMembers,
   getMember,
+  provisionMember,
   resolveTenant,
-  upsertMember,
 } from "@/lib/repositories/organizations";
 import { getOrganization } from "@/lib/repositories/orgSettings";
-import { getPendingInvite, consumeInvite } from "@/lib/repositories/invites";
+import {
+  acceptInviteAndProvision,
+  getPendingInvite,
+} from "@/lib/repositories/invites";
 import type { Role } from "@/schemas/common";
 import type { TenantType, User } from "@/schemas/user";
 
@@ -56,57 +58,89 @@ export async function requireUser(): Promise<AuthContext> {
       getMember(existing.organizationId, identity.userId),
       getOrganization(existing.organizationId),
     ]);
-    if (member && orgDoc) {
-      if (!member.active || !existing.active) {
-        throw new ForbiddenError("Your account has been disabled. Contact your administrator.");
-      }
-      await touchLastLogin(existing.userId);
-      return {
-        userId: existing.userId,
-        organizationId: existing.organizationId,
-        email: existing.email,
-        role: member.role,
-        tenantType: orgDoc.tenantType,
-        user: existing,
-      };
+    if (!orgDoc) {
+      throw new ForbiddenError(
+        "Your workspace is unavailable. Contact an administrator."
+      );
     }
-    // Fall through to (re)provision if the record is inconsistent.
+    const repairedMember =
+      member ??
+      (await provisionMember(
+        existing.organizationId,
+        identity.userId,
+        identity.email,
+        existing.role
+      ));
+    if (!repairedMember.active || !existing.active) {
+      throw new ForbiddenError("Your account has been disabled. Contact your administrator.");
+    }
+    // Last-login is activity metadata, not request telemetry. Throttle it to
+    // once per hour instead of adding a Firestore write to every API request.
+    if (
+      existing.lastLoginAt === null ||
+      Date.now() - existing.lastLoginAt > 60 * 60 * 1000
+    ) {
+      await touchLastLogin(existing.userId);
+    }
+    return {
+      userId: existing.userId,
+      organizationId: existing.organizationId,
+      email: existing.email,
+      role: repairedMember.role,
+      tenantType: orgDoc.tenantType,
+      user: existing,
+    };
   }
 
   // Brand-new user: honor a pending invite (join that org), else resolve their
   // own tenant by email domain.
-  const invite = existing ? null : await getPendingInvite(identity.email);
-  let org: { organizationId: string; tenantType: TenantType };
-  let invitedRole: Role | null = null;
+  const invite = await getPendingInvite(identity.email);
   if (invite) {
     const invitedOrg = await getOrganization(invite.organizationId);
     if (invitedOrg) {
-      org = { organizationId: invitedOrg.organizationId, tenantType: invitedOrg.tenantType };
-      invitedRole = invite.role;
-    } else {
-      org = (await resolveTenant(identity)).org;
+      const accepted = await acceptInviteAndProvision({
+        email: identity.email,
+        userId: identity.userId,
+        displayName: identity.displayName,
+        expectedOrganizationId: invitedOrg.organizationId,
+        tenantType: invitedOrg.tenantType,
+      });
+      if (accepted) {
+        if (!accepted.member.active || !accepted.user.active) {
+          throw new ForbiddenError(
+            "Your account has been disabled. Contact your administrator."
+          );
+        }
+        return {
+          userId: accepted.user.userId,
+          organizationId: invitedOrg.organizationId,
+          email: accepted.user.email,
+          role: accepted.member.role,
+          tenantType: invitedOrg.tenantType,
+          user: accepted.user,
+        };
+      }
     }
-  } else {
-    org = (await resolveTenant(identity)).org;
   }
 
-  let user = existing;
+  // No valid invite (or it was revoked while sign-in was in flight): resolve
+  // the identity's own isolated/shared tenant.
+  const org = (await resolveTenant(identity)).org;
   let member = await getMember(org.organizationId, identity.userId);
-  if (!user || !member) {
-    const role: Role =
-      invitedRole ?? ((await countMembers(org.organizationId)) === 0 ? "ADMIN" : "SALES_REP");
-    member ??= await upsertMember(org.organizationId, identity.userId, identity.email, role);
-    user ??= await createUser({
-      userId: identity.userId,
-      organizationId: org.organizationId,
-      email: identity.email,
-      displayName: identity.displayName,
-      role: member.role,
-      tenantType: org.tenantType,
-    });
-    if (invite) await consumeInvite(identity.email, identity.userId);
-  }
-
+  member ??= await provisionMember(
+    org.organizationId,
+    identity.userId,
+    identity.email,
+    null
+  );
+  const user = await createUser({
+    userId: identity.userId,
+    organizationId: org.organizationId,
+    email: identity.email,
+    displayName: identity.displayName,
+    role: member.role,
+    tenantType: org.tenantType,
+  });
   if (!member.active || !user.active) {
     throw new ForbiddenError("Your account has been disabled. Contact your administrator.");
   }

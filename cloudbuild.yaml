@@ -14,11 +14,13 @@ steps:
     args:
       - run
       - deploy
-      - gmail-campaign
+      - outreach
       - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/app/gmail-campaign:$COMMIT_SHA
       - --region=${_REGION}
       - --platform=managed
-      - --no-allow-unauthenticated
+      # The marketing site and auth entry point are public. Sensitive API,
+      # task, and cron routes enforce session or OIDC authentication in-app.
+      - --allow-unauthenticated
 substitutions:
   _REGION: us-central1
 options:
