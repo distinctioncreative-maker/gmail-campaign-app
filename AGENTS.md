@@ -32,3 +32,38 @@ made in this chat — do this before considering the task done:
 
 Skip this only for changes with no feature-visible effect (pure refactors,
 dependency bumps, formatting).
+
+# Theming: use tokens, not hardcoded Tailwind colors
+
+The app supports light/dark mode via a `data-theme` attribute on `<html>`
+(`app/globals.css`). Never use raw Tailwind color utilities for surfaces,
+text, or borders — `bg-white`, `bg-slate-50`/`100`/`200`, `text-slate-400`
+through `text-slate-900`, `border-slate-*`, `divide-slate-*`. These only
+have a light-mode value; used directly, they either stay light-only or
+depend on a manually maintained override list in `globals.css` that is easy
+to under-cover (exactly what caused the dark-mode readability bugs fixed in
+2026-07).
+
+Use the semantic tokens instead, all registered in `app/globals.css`'s
+`@theme inline` block and safe in both themes:
+
+| Instead of | Use |
+|---|---|
+| `bg-white` | `bg-surface` |
+| `bg-slate-50` / `bg-slate-100` | `bg-surface-2` |
+| `bg-slate-200` (and similar mid-tone fills, e.g. chart tracks) | `bg-border` |
+| `text-slate-700` / `800` / `900` | `text-foreground` |
+| `text-slate-500` / `600` | `text-muted` |
+| `text-slate-300` / `400` (faint hint text) | `text-muted/50` or `text-muted/70` |
+| `border-slate-*`, `divide-slate-*` | `border-border`, `divide-border` |
+
+Status tints (`bg-green-50`/`text-green-700`, `bg-red-100`, `bg-amber-50`,
+etc.) are a separate, already-covered system — leave those as-is. Deliberately
+theme-invariant elements (modal backdrops, always-dark tooltips) may keep
+`bg-slate-900` on purpose; that's not a bug.
+
+If you introduce a genuinely new hardcoded slate/white class, either replace
+it with an existing token above, or extend `@theme inline` with a new token
+first — do not add another line to the dark-mode override list in
+`globals.css`; that list is a last-resort safety net, not where new styling
+should be added.

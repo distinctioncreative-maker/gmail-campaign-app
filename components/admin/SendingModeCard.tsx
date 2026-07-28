@@ -58,7 +58,7 @@ export function SendingModeCard() {
     }
   }
 
-  if (!state) return <div className="card p-6 text-sm text-slate-500">Loading…</div>;
+  if (!state) return <div className="card p-6 text-sm text-muted">Loading…</div>;
 
   const live = state.mode === "LIVE";
   const allChecksPass = checklist.every((c) => c.ok);
@@ -68,7 +68,7 @@ export function SendingModeCard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-medium">Sending mode</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted">
             Controls whether the whole team sends real email or safe test email.
           </p>
         </div>
@@ -84,7 +84,7 @@ export function SendingModeCard() {
       {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       {state.lockedByEnv && (
-        <p className="mt-4 rounded-lg bg-slate-100 p-3 text-sm text-slate-600">
+        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
           🔒 Sending is locked to test mode by the server configuration. The switch is
           disabled until that lock is cleared on the deployment.
         </p>
@@ -92,10 +92,10 @@ export function SendingModeCard() {
 
       {!live ? (
         <div className="mt-5">
-          <p className="text-sm font-medium text-slate-700">Before going live:</p>
+          <p className="text-sm font-medium text-foreground">Before going live:</p>
           <ul className="mt-2 space-y-1.5 text-sm">
             {checklist.map((c) => (
-              <li key={c.label} className={c.ok ? "text-slate-700" : "text-amber-700"}>
+              <li key={c.label} className={c.ok ? "text-foreground" : "text-amber-700"}>
                 {c.ok ? "✅" : "⚠️"} {c.label}
               </li>
             ))}
@@ -138,7 +138,7 @@ export function SendingModeCard() {
                     setConfirmOpen(false);
                     setConfirmText("");
                   }}
-                  className="rounded-xl px-4 py-2 text-sm text-slate-600 hover:bg-white"
+                  className="rounded-xl px-4 py-2 text-sm text-muted hover:bg-surface"
                 >
                   Cancel
                 </button>
@@ -154,7 +154,7 @@ export function SendingModeCard() {
           <button
             onClick={() => flip("TEST")}
             disabled={busy}
-            className="mt-4 rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            className="mt-4 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
           >
             {busy ? "Switching…" : "Switch back to test mode"}
           </button>

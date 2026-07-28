@@ -86,7 +86,7 @@ export function AccountMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-3 rounded-2xl border border-border bg-white/80 p-3 text-left transition hover:bg-white"
+        className="flex w-full items-center gap-3 rounded-2xl border border-border bg-surface/80 p-3 text-left transition hover:bg-surface"
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -97,10 +97,10 @@ export function AccountMenu({
           {initial}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-slate-800">{displayName}</span>
-          <span className="block truncate text-xs capitalize text-slate-500">{roleLabel}</span>
+          <span className="block truncate text-sm font-medium text-foreground">{displayName}</span>
+          <span className="block truncate text-xs capitalize text-muted">{roleLabel}</span>
         </span>
-        <Icon name="chevronDown" size={16} className={`shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} />
+        <Icon name="chevronDown" size={16} className={`shrink-0 text-muted/70 transition ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
@@ -116,8 +116,8 @@ export function AccountMenu({
               {initial}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-800">{displayName}</p>
-              <p className="truncate text-xs text-slate-500">{email}</p>
+              <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
+              <p className="truncate text-xs text-muted">{email}</p>
             </div>
           </div>
           <div className="p-1.5">
@@ -125,9 +125,9 @@ export function AccountMenu({
               role="menuitem"
               onClick={() => void switchAccount()}
               disabled={busy}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition hover:bg-surface-2 disabled:opacity-50"
             >
-              <Icon name="users" size={18} className="text-slate-400" />
+              <Icon name="users" size={18} className="text-muted/70" />
               {busy ? "Opening Google…" : "Switch account"}
             </button>
             <button

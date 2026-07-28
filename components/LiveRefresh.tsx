@@ -32,7 +32,7 @@ export function LiveRefresh({ intervalMs = 15000, label = "Live" }: { intervalMs
   }, [router, intervalMs]);
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted/70">
       <span
         aria-hidden
         className={`h-1.5 w-1.5 rounded-full bg-green-500 ${pulse ? "" : "live-dot"}`}

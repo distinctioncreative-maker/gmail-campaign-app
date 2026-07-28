@@ -61,56 +61,56 @@ export function ProfileForm({
   }
 
   const input =
-    "mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
   return (
     <div>
       {notice && <p className="mb-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
       {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
-      <h3 className="mb-3 text-sm font-semibold text-slate-500">Your identity</h3>
+      <h3 className="mb-3 text-sm font-semibold text-muted">Your identity</h3>
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-foreground">
           Your name
           <input value={profile.senderName} onChange={(e) => set("senderName", e.target.value)} className={input} />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-foreground">
           Job title
           <input value={profile.senderTitle} onChange={(e) => set("senderTitle", e.target.value)} className={input} />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-foreground">
           Work phone
           <input value={profile.senderPhone} onChange={(e) => set("senderPhone", e.target.value)} className={input} />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-foreground">
           Work email
           <input value={profile.senderEmail} onChange={(e) => set("senderEmail", e.target.value)} className={input} />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-foreground">
           Company name
           <input value={profile.companyName} onChange={(e) => set("companyName", e.target.value)} className={input} />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-foreground">
           Company website
           <input value={profile.companyWebsite} onChange={(e) => set("companyWebsite", e.target.value)} className={input} />
         </label>
       </div>
 
-      <h3 className="mb-1 mt-6 border-t border-slate-100 pt-5 text-sm font-semibold text-slate-500">
+      <h3 className="mb-1 mt-6 border-t border-border pt-5 text-sm font-semibold text-muted">
         Legal footer &amp; signature
       </h3>
-      <label className="mt-2 block text-sm font-medium text-slate-700">
+      <label className="mt-2 block text-sm font-medium text-foreground">
         Company mailing address
         <HelpTip text="US anti-spam law (CAN-SPAM) requires a real physical mailing address in marketing emails. A PO box or suite is fine." />
-        <span className="block text-xs font-normal text-slate-500">
+        <span className="block text-xs font-normal text-muted">
           Shown in the footer of your emails — required for commercial email rules.
         </span>
         <input value={profile.physicalAddress} onChange={(e) => set("physicalAddress", e.target.value)} className={input} />
       </label>
 
-      <label className="mt-4 block text-sm font-medium text-slate-700">
+      <label className="mt-4 block text-sm font-medium text-foreground">
         Opt-out sentence
-        <span className="block text-xs font-normal text-slate-500">
+        <span className="block text-xs font-normal text-muted">
           Lets people decline future emails — required for commercial email rules.
         </span>
         <textarea
@@ -121,17 +121,17 @@ export function ProfileForm({
         />
       </label>
 
-      <label className="mt-4 block text-sm font-medium text-slate-700">
+      <label className="mt-4 block text-sm font-medium text-foreground">
         Your email signature
-        <span className="block text-xs font-normal text-slate-500">
+        <span className="block text-xs font-normal text-muted">
           Paste your own signature (plain text or HTML from Gmail). Drop{" "}
-          <code className="rounded bg-slate-100 px-1">{"{{signature}}"}</code> into any template
+          <code className="rounded bg-surface-2 px-1">{"{{signature}}"}</code> into any template
           where you want it to appear — then you don&apos;t need to fill in the name/title/phone
           fields above unless a template uses those placeholders directly.{" "}
           <strong>Leave this blank to turn the signature off</strong> — handy when your email
           already includes a signature (for example, a Gmail draft you imported). A blank
           signature just removes{" "}
-          <code className="rounded bg-slate-100 px-1">{"{{signature}}"}</code> instead of
+          <code className="rounded bg-surface-2 px-1">{"{{signature}}"}</code> instead of
           printing it.
         </span>
         <textarea
@@ -143,7 +143,7 @@ export function ProfileForm({
         />
       </label>
 
-      <label className="mt-4 block text-sm font-medium text-slate-700">
+      <label className="mt-4 block text-sm font-medium text-foreground">
         Timezone
         <select value={profile.timezone} onChange={(e) => set("timezone", e.target.value)} className={input}>
           {TIMEZONES.map((tz) => (
@@ -154,8 +154,8 @@ export function ProfileForm({
 
       {!compact && (
         <>
-          <h3 className="mt-6 border-t border-slate-100 pt-4 font-medium">Sending defaults</h3>
-          <p className="text-xs text-slate-500">
+          <h3 className="mt-6 border-t border-border pt-4 font-medium">Sending defaults</h3>
+          <p className="text-xs text-muted">
             Used as the starting point for new campaigns — you can adjust each campaign
             individually.
           </p>
@@ -175,7 +175,7 @@ export function ProfileForm({
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
                   profile.sendingDefaults.allowedWeekdays.includes(i)
                     ? "bg-primary text-white"
-                    : "bg-slate-100 text-slate-500"
+                    : "bg-surface-2 text-muted"
                 }`}
               >
                 {d}
@@ -184,15 +184,15 @@ export function ProfileForm({
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Send between
               <input type="time" value={profile.sendingDefaults.sendWindowStart} onChange={(e) => setDefault("sendWindowStart", e.target.value)} className={input} />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               and
               <input type="time" value={profile.sendingDefaults.sendWindowEnd} onChange={(e) => setDefault("sendWindowEnd", e.target.value)} className={input} />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Daily limit
               <HelpTip text="The most emails a campaign will send per day. Gmail limits how many you can send, and lower numbers look more personal. 50–150 is a safe range." />
               <input
@@ -202,7 +202,7 @@ export function ProfileForm({
                 className={input}
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Emails per batch
               <input
                 type="number" min={1} max={50}
@@ -211,7 +211,7 @@ export function ProfileForm({
                 className={input}
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Seconds between emails
               <div className="flex items-center gap-2">
                 <input
@@ -220,7 +220,7 @@ export function ProfileForm({
                   onChange={(e) => setDefault("minDelaySeconds", Number(e.target.value))}
                   className={input}
                 />
-                <span className="mt-1 text-slate-400">–</span>
+                <span className="mt-1 text-muted/70">–</span>
                 <input
                   type="number" min={1} max={600}
                   value={profile.sendingDefaults.maxDelaySeconds}
@@ -229,7 +229,7 @@ export function ProfileForm({
                 />
               </div>
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Minutes between batches
               <input
                 type="number" min={0} max={240}

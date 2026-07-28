@@ -52,14 +52,14 @@ export function CollapsibleCard({
       <button
         onClick={toggle}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 p-6 text-left transition hover:bg-slate-50"
+        className="flex w-full items-center justify-between gap-3 p-6 text-left transition hover:bg-surface-2"
       >
         <div className="min-w-0">
           <h2 className="font-medium">{title}</h2>
-          {description && <p className="mt-1 text-sm text-slate-600">{description}</p>}
+          {description && <p className="mt-1 text-sm text-muted">{description}</p>}
         </div>
         <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-transform duration-300 ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted/70 transition-transform duration-300 ${
             open ? "rotate-180" : ""
           }`}
           aria-hidden

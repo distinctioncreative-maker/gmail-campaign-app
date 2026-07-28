@@ -102,7 +102,7 @@ export function LeadEditor({
   }
 
   const field =
-    "w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
   if (!editing) {
     return (
@@ -129,23 +129,23 @@ export function LeadEditor({
       <h2 className="font-medium">Edit lead</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-500">Full name</span>
+          <span className="mb-1 block text-muted">Full name</span>
           <input className={field} value={draft.fullName} onChange={(e) => set("fullName", e.target.value)} />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-500">Business</span>
+          <span className="mb-1 block text-muted">Business</span>
           <input className={field} value={draft.businessName} onChange={(e) => set("businessName", e.target.value)} />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-500">Phone</span>
+          <span className="mb-1 block text-muted">Phone</span>
           <input className={field} value={draft.phone} onChange={(e) => set("phone", e.target.value)} />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-500">Region</span>
+          <span className="mb-1 block text-muted">Region</span>
           <input className={field} value={draft.region} onChange={(e) => set("region", e.target.value)} />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-500">Requested amount ($)</span>
+          <span className="mb-1 block text-muted">Requested amount ($)</span>
           <input
             className={field}
             type="number"
@@ -157,12 +157,12 @@ export function LeadEditor({
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-slate-500">Lead source</span>
+          <span className="mb-1 block text-muted">Lead source</span>
           <input className={field} value={draft.leadSource} onChange={(e) => set("leadSource", e.target.value)} />
         </label>
       </div>
       <label className="mt-4 block text-sm">
-        <span className="mb-1 block text-slate-500">Notes (only you see these)</span>
+        <span className="mb-1 block text-muted">Notes (only you see these)</span>
         <textarea
           className={`${field} min-h-24`}
           value={draft.notes}
@@ -170,7 +170,7 @@ export function LeadEditor({
           placeholder="Call notes, context, next steps…"
         />
       </label>
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-muted/70">
         The email address can&apos;t be changed — it identifies this lead across imports and campaigns.
       </p>
       <div className="mt-4 flex gap-2">

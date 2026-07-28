@@ -8,7 +8,7 @@ import { FEATURE_CATEGORIES, countByStatus, type FeatureStatus } from "@/lib/fea
 const STATUS_BADGE: Record<FeatureStatus, { label: string; className: string }> = {
   shipped: { label: "Shipped", className: "bg-green-50 text-green-700" },
   beta: { label: "Beta", className: "bg-amber-50 text-amber-700" },
-  planned: { label: "Planned", className: "bg-slate-100 text-slate-500" },
+  planned: { label: "Planned", className: "bg-surface-2 text-muted" },
 };
 
 /** Admin-only, live view of lib/features/registry.ts — the same source that
@@ -28,7 +28,7 @@ export default async function FeaturesPage() {
         description="What Cadence can do today, and what's still on the roadmap. Generated from the same registry as FEATURES.md in the repo."
       />
 
-      <p className="mt-4 text-sm text-slate-500">
+      <p className="mt-4 text-sm text-muted">
         <Link href="/admin" className="text-primary hover:underline">
           ← Back to Administration
         </Link>
@@ -36,37 +36,37 @@ export default async function FeaturesPage() {
 
       <div className="mt-4 grid grid-cols-3 gap-3">
         <div className="card p-4 text-center">
-          <p className="text-2xl font-semibold tabular-nums text-slate-900">{counts.shipped}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">Shipped</p>
+          <p className="text-2xl font-semibold tabular-nums text-foreground">{counts.shipped}</p>
+          <p className="mt-1 text-xs uppercase tracking-wide text-muted">Shipped</p>
         </div>
         <div className="card p-4 text-center">
-          <p className="text-2xl font-semibold tabular-nums text-slate-900">{counts.beta}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">Beta</p>
+          <p className="text-2xl font-semibold tabular-nums text-foreground">{counts.beta}</p>
+          <p className="mt-1 text-xs uppercase tracking-wide text-muted">Beta</p>
         </div>
         <div className="card p-4 text-center">
-          <p className="text-2xl font-semibold tabular-nums text-slate-900">{counts.planned}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">Planned</p>
+          <p className="text-2xl font-semibold tabular-nums text-foreground">{counts.planned}</p>
+          <p className="mt-1 text-xs uppercase tracking-wide text-muted">Planned</p>
         </div>
       </div>
 
       <div className="mt-6 flex flex-col gap-6">
         {FEATURE_CATEGORIES.map((category) => (
           <div key={category.id} className="card p-5">
-            <h2 className="font-medium text-slate-900">{category.name}</h2>
-            <ul className="mt-3 flex flex-col divide-y divide-slate-100">
+            <h2 className="font-medium text-foreground">{category.name}</h2>
+            <ul className="mt-3 flex flex-col divide-y divide-border">
               {category.features.map((f) => {
                 const badge = STATUS_BADGE[f.status];
                 return (
                   <li key={f.id} className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="font-medium text-slate-800">{f.name}</span>
+                      <span className="font-medium text-foreground">{f.name}</span>
                       <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
                         {badge.label}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600">{f.description}</p>
+                    <p className="text-sm text-muted">{f.description}</p>
                     {f.keyFiles?.length ? (
-                      <p className="font-mono text-xs text-slate-400">{f.keyFiles.join(" · ")}</p>
+                      <p className="font-mono text-xs text-muted/70">{f.keyFiles.join(" · ")}</p>
                     ) : null}
                   </li>
                 );

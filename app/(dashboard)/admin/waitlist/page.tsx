@@ -35,7 +35,7 @@ export default async function WaitlistPage() {
         }
       />
 
-      <p className="mt-4 text-sm text-slate-500">
+      <p className="mt-4 text-sm text-muted">
         <Link href="/admin" className="text-primary hover:underline">
           ← Back to Administration
         </Link>
@@ -43,19 +43,19 @@ export default async function WaitlistPage() {
 
       <div className="mt-4">
         <div className="card p-5">
-          <p className="text-sm text-slate-500">Total signups</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{entries.length}</p>
+          <p className="text-sm text-muted">Total signups</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{entries.length}</p>
         </div>
       </div>
 
       {entries.length === 0 ? (
-        <div className="mt-6 card p-8 text-center text-sm text-slate-500">
+        <div className="mt-6 card p-8 text-center text-sm text-muted">
           No signups yet. They&apos;ll appear here as people join from the landing page.
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto card">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-border text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Source</th>
@@ -64,10 +64,10 @@ export default async function WaitlistPage() {
             </thead>
             <tbody>
               {entries.map((e) => (
-                <tr key={e.email} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={e.email} className="border-b border-border last:border-0 hover:bg-surface-2">
                   <td className="px-4 py-3 font-medium">{e.email}</td>
-                  <td className="px-4 py-3 text-slate-500">{e.source || "—"}</td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-muted">{e.source || "—"}</td>
+                  <td className="px-4 py-3 text-muted">
                     {e.createdAt ? <LocalTime value={e.createdAt} /> : "—"}
                   </td>
                 </tr>

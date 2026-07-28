@@ -98,13 +98,13 @@ export function CsvUpload({ listId }: { listId?: string }) {
               if (file) void handleFile(file);
             }}
             className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition ${
-              dragOver ? "border-primary bg-blue-50" : "border-slate-300"
+              dragOver ? "border-primary bg-blue-50" : "border-border"
             }`}
           >
-            <p className="font-medium text-slate-700">
+            <p className="font-medium text-foreground">
               {busy ? "Reading file…" : "Drag a CSV file here, or click to choose"}
             </p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted">
               The first row should contain column names
             </p>
           </div>
@@ -123,8 +123,8 @@ export function CsvUpload({ listId }: { listId?: string }) {
         </>
       ) : (
         <>
-          <div className="mb-4 flex items-center justify-between rounded-lg bg-slate-50 p-3">
-            <p className="text-sm text-slate-600">
+          <div className="mb-4 flex items-center justify-between rounded-lg bg-surface-2 p-3">
+            <p className="text-sm text-muted">
               Columns matched automatically.{" "}
               <button
                 onClick={() => setShowMapping((s) => !s)}
@@ -136,15 +136,15 @@ export function CsvUpload({ listId }: { listId?: string }) {
           </div>
 
           {showMapping && (
-            <div className="mb-4 grid gap-2 rounded-lg border border-slate-200 p-4 sm:grid-cols-2">
+            <div className="mb-4 grid gap-2 rounded-lg border border-border p-4 sm:grid-cols-2">
               {state.headers.map((header) => (
                 <label key={header} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="truncate font-medium text-slate-700">{header}</span>
+                  <span className="truncate font-medium text-foreground">{header}</span>
                   <select
                     value={state.mapping[header] ?? "ignore"}
                     onChange={(e) => updateMapping(header, e.target.value)}
                     disabled={busy}
-                    className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
+                    className="rounded-lg border border-border px-2 py-1 text-sm"
                   >
                     {state.fields.map((f) => (
                       <option key={f} value={f}>

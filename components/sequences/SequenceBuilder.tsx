@@ -125,7 +125,7 @@ export function SequenceBuilder({
   }
 
   const input =
-    "mt-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "mt-1 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
   return (
     <div className="max-w-2xl">
@@ -142,11 +142,11 @@ export function SequenceBuilder({
       {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <div className="card p-6">
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-foreground">
           Sequence name
           <input value={name} onChange={(e) => setName(e.target.value)} className={`w-full ${input}`} placeholder="e.g. Two-touch follow-up" />
         </label>
-        <label className="mt-4 block text-sm font-medium text-slate-700">
+        <label className="mt-4 block text-sm font-medium text-foreground">
           Description (optional)
           <input value={description} onChange={(e) => setDescription(e.target.value)} className={`w-full ${input}`} />
         </label>
@@ -157,15 +157,15 @@ export function SequenceBuilder({
       </div>
 
       <div className="mt-4 card p-6">
-        <div className="mb-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+        <div className="mb-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
           📧 Initial email is sent first. Then:
         </div>
         {steps.map((step, i) => (
-          <div key={i} className="mb-4 rounded-xl border border-slate-200 p-4">
+          <div key={i} className="mb-4 rounded-xl border border-border p-4">
             <div className="flex items-center justify-between">
               <p className="font-medium">Follow-up {i + 1}</p>
               <div className="flex items-center gap-3">
-                <label className="flex items-center gap-1 text-xs text-slate-500">
+                <label className="flex items-center gap-1 text-xs text-muted">
                   <input
                     type="checkbox"
                     checked={step.enabled}
@@ -183,7 +183,7 @@ export function SequenceBuilder({
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-slate-500">Wait</span>
+              <span className="text-muted">Wait</span>
               <input
                 type="number"
                 min={0}
@@ -201,11 +201,11 @@ export function SequenceBuilder({
                 <option value="HOURS">hours</option>
                 <option value="MINUTES">minutes</option>
               </select>
-              <span className="text-slate-500">then send:</span>
+              <span className="text-muted">then send:</span>
             </div>
 
             <div className="mt-3">
-              <p className="text-sm font-medium text-slate-700">What to send</p>
+              <p className="text-sm font-medium text-foreground">What to send</p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {(
                   [
@@ -221,7 +221,7 @@ export function SequenceBuilder({
                     className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
                       step.bodyMode === mode
                         ? "bg-primary text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        : "bg-surface-2 text-muted hover:bg-border"
                     }`}
                   >
                     {label}
@@ -231,7 +231,7 @@ export function SequenceBuilder({
             </div>
 
             {step.bodyMode === "TEMPLATE" && (
-              <label className="mt-3 block text-sm font-medium text-slate-700">
+              <label className="mt-3 block text-sm font-medium text-foreground">
                 Template
                 <select
                   value={step.templateId ?? ""}
@@ -247,9 +247,9 @@ export function SequenceBuilder({
             )}
 
             {step.bodyMode === "CUSTOM" && (
-              <label className="mt-3 block text-sm font-medium text-slate-700">
+              <label className="mt-3 block text-sm font-medium text-foreground">
                 Follow-up message
-                <span className="block text-xs font-normal text-slate-500">
+                <span className="block text-xs font-normal text-muted">
                   Write it here. Use placeholders like {"{{first_name}}"} and {"{{signature}}"} —
                   basic HTML is allowed.
                 </span>
@@ -264,7 +264,7 @@ export function SequenceBuilder({
             )}
 
             <div className="mt-3">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 Subject line
                 <select
                   value={step.subjectMode}
@@ -286,7 +286,7 @@ export function SequenceBuilder({
               )}
             </div>
 
-            <label className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+            <label className="mt-3 flex items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={step.sameThread}
@@ -300,7 +300,7 @@ export function SequenceBuilder({
         {steps.length < 10 && (
           <button
             onClick={() => setSteps((prev) => [...prev, emptyStep()])}
-            className="rounded-xl border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-600 hover:border-primary"
+            className="rounded-xl border border-dashed border-border px-4 py-2 text-sm text-muted hover:border-primary"
           >
             + Add a follow-up
           </button>
@@ -309,11 +309,11 @@ export function SequenceBuilder({
 
       <div className="mt-4 card p-6">
         <h3 className="font-medium">Stop rules</h3>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-muted">
           Follow-ups always stop when someone replies, unsubscribes, or bounces. These can&apos;t
           be turned off — they keep you safe.
         </p>
-        <label className="mt-4 block text-sm font-medium text-slate-700">
+        <label className="mt-4 block text-sm font-medium text-foreground">
           If someone is out of office
           <select value={oooPolicy} onChange={(e) => setOooPolicy(e.target.value)} className={`w-full ${input}`}>
             <option value="PAUSE_DAYS">Pause follow-ups until they&apos;re back (recommended)</option>

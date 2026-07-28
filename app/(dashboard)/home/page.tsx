@@ -37,7 +37,7 @@ function greetingFor(timezone: string): string {
 const STATUS_PILL: Record<string, { label: string; className: string; dot: string }> = {
   SENDING: { label: "Sending live", className: "text-primary", dot: "bg-primary" },
   REPLIES: { label: "Replies waiting", className: "text-green-600", dot: "bg-green-500" },
-  READY: { label: "Systems ready", className: "text-slate-500", dot: "bg-slate-400" },
+  READY: { label: "Systems ready", className: "text-muted", dot: "bg-muted" },
   SETUP: { label: "Setup needed", className: "text-amber-600", dot: "bg-amber-500" },
 };
 
@@ -133,13 +133,13 @@ export default async function HomePage({
     accent: string;
     href: string;
   }> = [
-    { label: `Emails sent · ${rangeStats.label}`, value: rangeStats.sent, icon: "mail", accent: "text-slate-900", href: "/reports" },
+    { label: `Emails sent · ${rangeStats.label}`, value: rangeStats.sent, icon: "mail", accent: "text-foreground", href: "/reports" },
     { label: `Replies · ${rangeStats.label}`, value: rangeStats.replies, icon: "reply", accent: "text-green-600", href: "/replies" },
     { label: `Reply rate · ${rangeStats.label}`, value: rangeReplyRate, decimals: 1, suffix: "%", dash: rangeStats.sent === 0, icon: "chart", accent: "text-indigo-500", href: "/reports" },
     { label: "Sending now", value: active.length, icon: "rocket", accent: "text-primary", href: "/campaigns" },
-    { label: "Total leads", value: totalLeads, icon: "users", accent: "text-slate-900", href: "/leads" },
-    { label: "Bounce rate", value: bounceRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "alert", accent: bounceRate > 3 ? "text-red-600" : "text-slate-900", href: "/deliverability" },
-    { label: "Unsubscribes", value: totalUnsub, icon: "ban", accent: "text-slate-900", href: "/suppressions" },
+    { label: "Total leads", value: totalLeads, icon: "users", accent: "text-foreground", href: "/leads" },
+    { label: "Bounce rate", value: bounceRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "alert", accent: bounceRate > 3 ? "text-red-600" : "text-foreground", href: "/deliverability" },
+    { label: "Unsubscribes", value: totalUnsub, icon: "ban", accent: "text-foreground", href: "/suppressions" },
   ];
 
   return (
@@ -156,12 +156,12 @@ export default async function HomePage({
             <div className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-widest ${pill.className}`}>
               <span aria-hidden className={`live-dot h-1.5 w-1.5 rounded-full ${pill.dot}`} />
               {pill.label}
-              {org?.name && <span className="text-slate-400">· {org.name}</span>}
+              {org?.name && <span className="text-muted/70">· {org.name}</span>}
             </div>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
               {greetingFor(tz)}, {firstName}.
             </h1>
-            <p className="mt-2 max-w-xl text-base leading-relaxed text-slate-600">
+            <p className="mt-2 max-w-xl text-base leading-relaxed text-muted">
               {briefing.sentence}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
@@ -186,14 +186,14 @@ export default async function HomePage({
             style={{ background: "color-mix(in srgb, var(--surface) 65%, transparent)" }}
           >
             <div className="mb-2 flex items-center justify-between">
-              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-400">
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted/70">
                 Activity · 14 days
               </p>
               {active.length > 0 ? (
                 <LiveRefresh intervalMs={15000} />
               ) : (
-                <p className="text-xs tabular-nums text-slate-500">
-                  <span className="font-semibold text-slate-900"><CountUp value={sentThisWeek} /></span> sent ·{" "}
+                <p className="text-xs tabular-nums text-muted">
+                  <span className="font-semibold text-foreground"><CountUp value={sentThisWeek} /></span> sent ·{" "}
                   <span className="font-semibold text-green-600"><CountUp value={repliesThisWeek} /></span> replies this week
                 </p>
               )}
@@ -212,7 +212,7 @@ export default async function HomePage({
             </span>
             <div>
               <p className="text-sm font-medium">Gmail not connected</p>
-              <p className="text-xs text-slate-500">Connect it to start sending.</p>
+              <p className="text-xs text-muted">Connect it to start sending.</p>
             </div>
           </div>
           <Link href="/settings" className="btn-primary px-4 py-2 text-sm">Connect Gmail</Link>
@@ -221,7 +221,7 @@ export default async function HomePage({
 
       {/* ── KPI header: range switch ──────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Your numbers</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted/70">Your numbers</h2>
         <RangeTabs active={range} />
       </div>
 
@@ -242,7 +242,7 @@ export default async function HomePage({
         {orbs.map((o) => (
           <Link key={o.label} href={o.href} className="card card-hover group p-5">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-500">{o.label}</p>
+              <p className="text-sm font-medium text-muted">{o.label}</p>
               <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary-soft text-primary transition-transform duration-300 group-hover:scale-110">
                 <Icon name={o.icon} size={16} />
               </span>
@@ -250,7 +250,7 @@ export default async function HomePage({
             <p className={`mt-3 text-3xl font-semibold tracking-tight tabular-nums ${o.accent}`}>
               {o.dash ? "—" : <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />}
             </p>
-            <span className="mt-1 flex items-center gap-1 text-xs font-medium text-slate-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:text-primary">
+            <span className="mt-1 flex items-center gap-1 text-xs font-medium text-muted/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:text-primary">
               View <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
             </span>
           </Link>
@@ -258,7 +258,7 @@ export default async function HomePage({
 
         {/* Daily allowance ring */}
         <Link href="/settings" className="card card-hover group p-5">
-          <p className="text-sm font-medium text-slate-500">Today&apos;s sending</p>
+          <p className="text-sm font-medium text-muted">Today&apos;s sending</p>
           <div className="mt-2 flex items-center gap-3">
             <div
               className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
@@ -276,7 +276,7 @@ export default async function HomePage({
               <p className="font-semibold tabular-nums">
                 <CountUp value={sentToday} /> / {dailyLimit}
               </p>
-              <p className="text-xs text-slate-500">{dailyRemaining} left today</p>
+              <p className="text-xs text-muted">{dailyRemaining} left today</p>
             </div>
           </div>
         </Link>
@@ -287,9 +287,9 @@ export default async function HomePage({
         <div className="card p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-medium">Get set up — {setupDone} of {setupSteps.length} done</h2>
-            <span className="text-xs font-medium text-slate-400">A few minutes to your first send</span>
+            <span className="text-xs font-medium text-muted/70">A few minutes to your first send</span>
           </div>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
             <div
               className="h-full rounded-full brand-gradient transition-all duration-500"
               style={{ width: `${(setupDone / setupSteps.length) * 100}%` }}
@@ -303,7 +303,7 @@ export default async function HomePage({
                   key={s.label}
                   className={`flex items-center gap-3 rounded-xl border p-3 transition ${
                     s.done
-                      ? "border-transparent bg-slate-50"
+                      ? "border-transparent bg-surface-2"
                       : isNext
                         ? "border-primary/30 bg-primary-soft/50"
                         : "border-border"
@@ -312,14 +312,14 @@ export default async function HomePage({
                   <span
                     aria-hidden
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                      s.done ? "bg-green-500 text-white" : "border border-slate-300 text-slate-400"
+                      s.done ? "bg-green-500 text-white" : "border border-border text-muted/70"
                     }`}
                   >
                     {s.done ? "✓" : i + 1}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-medium ${s.done ? "text-slate-400 line-through" : ""}`}>{s.label}</p>
-                    {!s.done && <p className="text-xs text-slate-500">{s.desc}</p>}
+                    <p className={`text-sm font-medium ${s.done ? "text-muted/70 line-through" : ""}`}>{s.label}</p>
+                    {!s.done && <p className="text-xs text-muted">{s.desc}</p>}
                   </div>
                   {!s.done && (
                     <Link
@@ -353,10 +353,10 @@ export default async function HomePage({
                       <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> sending
                     </span>
                   </div>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2">
                     <div className="brand-gradient h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                  <div className="mt-2 flex items-center justify-between text-xs text-muted">
                     <span className="tabular-nums">{sent} of {total} sent</span>
                     <span className="tabular-nums text-green-600">{c.replyCount} replies</span>
                   </div>
@@ -378,7 +378,7 @@ export default async function HomePage({
                 <Icon name={a.icon} size={22} />
               </span>
               <p className="mt-3 font-semibold group-hover:text-primary">{a.title}</p>
-              <p className="mt-1 text-sm text-slate-500">{a.desc}</p>
+              <p className="mt-1 text-sm text-muted">{a.desc}</p>
             </Link>
           ))}
         </div>
@@ -395,10 +395,10 @@ export default async function HomePage({
             {campaigns.slice(0, 5).map((c) => {
               const badge = CAMPAIGN_STATUS_LABELS[c.status];
               return (
-                <Link key={c.campaignId} href={`/campaigns/${c.campaignId}`} className="flex items-center justify-between p-4 hover:bg-slate-50">
+                <Link key={c.campaignId} href={`/campaigns/${c.campaignId}`} className="flex items-center justify-between p-4 hover:bg-surface-2">
                   <div className="min-w-0">
                     <p className="truncate font-medium">{c.name}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                       {totalSent(c)} sent · {c.replyCount} replies
                     </p>
                   </div>

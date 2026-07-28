@@ -543,9 +543,9 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         id: "light-dark-theme",
         name: "Light/dark theme",
-        status: "beta",
-        description: "Toggle in the top bar, persisted to localStorage with a no-flash inline script honoring OS preference on first visit. Fixed two real bugs beyond the known ~750-hardcoded-class debt: a hydration error from raw (server-timezone) date formatting in GmailConnectionCard/SuppressionsManager that silently reverted the whole app to light mode on affected page loads (now uses the existing LocalTime component), and invisible Reports charts where a bg-slate-100 bar rendered nearly the same color as its own dark card background (now bg-border). A handful of missed hover-state overrides (hover:text-slate-600/700/900, hover:bg-slate-300/white) also added. Full token migration off hardcoded slate/white classes is tracked separately.",
-        keyFiles: ["app/globals.css", "components/ui/ThemeToggle.tsx", "components/LocalTime.tsx", "components/analytics/Charts.tsx"],
+        status: "shipped",
+        description: "Toggle in the top bar, persisted to localStorage with a no-flash inline script honoring OS preference on first visit. Fixed a hydration error from raw (server-timezone) date formatting that silently reverted the whole app to light mode on affected page loads (now uses the existing LocalTime component), and a pre-existing layout bug where Reports chart bars rendered at 0 height in both themes (percentage height inside a non-stretching flex item). Then migrated all ~750 hardcoded slate/white Tailwind classes across ~80 files to semantic tokens (bg-surface, bg-surface-2, text-foreground, text-muted, border-border) registered in @theme inline, replacing the old manually-maintained dark-mode override list, which was easy to under-cover. AGENTS.md documents the token table so new code doesn't reintroduce hardcoded colors.",
+        keyFiles: ["app/globals.css", "components/ui/ThemeToggle.tsx", "components/LocalTime.tsx", "components/analytics/Charts.tsx", "AGENTS.md"],
       },
     ],
   },

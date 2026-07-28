@@ -67,13 +67,13 @@ export default async function DeliverabilityPage() {
             <span className={`badge mt-0.5 ${STATUS_PILL[c.status]}`}>{STATUS_WORD[c.status]}</span>
             <div className="min-w-0 flex-1">
               <p className="font-medium">{c.label}</p>
-              <p className="mt-0.5 text-sm text-slate-600">{c.detail}</p>
-              {c.fix && <p className="mt-1.5 rounded-lg bg-slate-50 p-2 text-xs text-slate-500">How to fix: {c.fix}</p>}
+              <p className="mt-0.5 text-sm text-muted">{c.detail}</p>
+              {c.fix && <p className="mt-1.5 rounded-lg bg-surface-2 p-2 text-xs text-muted">How to fix: {c.fix}</p>}
             </div>
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-muted/70">
         These three records tell inbox providers your email is genuinely from {domain}. All-green
         here removes the most common structural cause of spam foldering.
       </p>
@@ -87,9 +87,9 @@ export default async function DeliverabilityPage() {
               <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
                 <Icon name="shield" size={20} />
               </span>
-              <p className="mt-3 text-sm text-slate-500">Domain reputation</p>
+              <p className="mt-3 text-sm text-muted">Domain reputation</p>
               <p className="mt-1">
-                <span className={`badge text-sm ${REPUTATION_PILL[postmaster.latestReputation ?? ""] ?? "bg-slate-100 text-slate-600"}`}>
+                <span className={`badge text-sm ${REPUTATION_PILL[postmaster.latestReputation ?? ""] ?? "bg-surface-2 text-muted"}`}>
                   {postmaster.latestReputation ?? "Unknown"}
                 </span>
               </p>
@@ -98,23 +98,23 @@ export default async function DeliverabilityPage() {
               <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
                 <Icon name="alert" size={20} />
               </span>
-              <p className="mt-3 text-sm text-slate-500">Latest spam rate</p>
+              <p className="mt-3 text-sm text-muted">Latest spam rate</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">
                 {spamPct(postmaster.days[0]?.spamRatio ?? null)}
               </p>
-              <p className="mt-1 text-xs text-slate-400">Keep under 0.1%. 0.3%+ is the danger zone.</p>
+              <p className="mt-1 text-xs text-muted/70">Keep under 0.1%. 0.3%+ is the danger zone.</p>
             </div>
             <div className="card card-hover p-5">
               <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
                 <Icon name="chart" size={20} />
               </span>
-              <p className="mt-3 text-sm text-slate-500">Days with data (30d)</p>
+              <p className="mt-3 text-sm text-muted">Days with data (30d)</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">{postmaster.days.length}</p>
             </div>
           </div>
           <div className="overflow-x-auto card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+              <thead className="border-b border-border text-xs uppercase text-muted">
                 <tr>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Spam rate</th>
@@ -126,12 +126,12 @@ export default async function DeliverabilityPage() {
               </thead>
               <tbody>
                 {postmaster.days.map((d) => (
-                  <tr key={d.date} className="border-b border-slate-100 last:border-0">
+                  <tr key={d.date} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 tabular-nums">{d.date}</td>
                     <td className="px-4 py-3 tabular-nums">{spamPct(d.spamRatio)}</td>
                     <td className="px-4 py-3">
                       {d.domainReputation ? (
-                        <span className={`badge ${REPUTATION_PILL[d.domainReputation] ?? "bg-slate-100 text-slate-600"}`}>
+                        <span className={`badge ${REPUTATION_PILL[d.domainReputation] ?? "bg-surface-2 text-muted"}`}>
                           {d.domainReputation}
                         </span>
                       ) : (
@@ -146,7 +146,7 @@ export default async function DeliverabilityPage() {
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-muted/70">
             Google only publishes daily stats when enough of your mail reached Gmail inboxes that
             day — gaps are normal for lower volumes.
           </p>
@@ -154,7 +154,7 @@ export default async function DeliverabilityPage() {
       ) : (
         <div className="card p-6">
           {postmaster.state === "NOT_CONNECTED" && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted">
               Connect Gmail in <span className="font-medium">Settings</span> first — Postmaster data
               is read with your Google sign-in.
             </p>
@@ -162,7 +162,7 @@ export default async function DeliverabilityPage() {
           {postmaster.state === "NEEDS_RECONNECT" && (
             <>
               <p className="font-medium">One-time step: reconnect Gmail</p>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-muted">
                 Your Gmail was connected before Postmaster access was added. Go to{" "}
                 <span className="font-medium">Settings → Reconnect Gmail</span> and approve the
                 Google screen once — then this page fills in automatically.
@@ -172,7 +172,7 @@ export default async function DeliverabilityPage() {
           {postmaster.state === "NOT_REGISTERED" && (
             <>
               <p className="font-medium">Register {domain} with Google Postmaster (free, one time)</p>
-              <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-600">
+              <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
                 <li>
                   A Google Workspace admin opens{" "}
                   <a
@@ -193,7 +193,7 @@ export default async function DeliverabilityPage() {
           {postmaster.state === "NO_DATA" && (
             <>
               <p className="font-medium">{domain} is registered — no published data yet</p>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-muted">
                 Google only publishes stats for days with meaningful Gmail volume. Keep sending at a
                 steady daily pace and data will appear here. Meanwhile the domain-authentication
                 checks above are the best signal.
@@ -206,8 +206,8 @@ export default async function DeliverabilityPage() {
       {/* Deliverability Insights — anonymized, cross-user benchmarks */}
       <h2 className="mt-10 mb-3 font-medium">Deliverability insights</h2>
       {surfacedDimensions.length === 0 ? (
-        <div className="card p-6 text-sm text-slate-600">
-          <p className="font-medium text-slate-700">Still gathering data</p>
+        <div className="card p-6 text-sm text-muted">
+          <p className="font-medium text-foreground">Still gathering data</p>
           <p className="mt-1">
             This learns what actually drives deliverability, reply rate, and click rate, across every
             Cadence campaign, fully anonymized — a setting only shows up here once enough campaigns
@@ -216,7 +216,7 @@ export default async function DeliverabilityPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4 text-xs text-slate-400">
+          <p className="mb-4 text-xs text-muted/70">
             From {benchmarks?.totalCampaignsConsidered ?? 0} anonymized campaigns across every Cadence
             user — nothing here is traceable to one account, and a setting only appears once enough
             campaigns share it.
@@ -235,7 +235,7 @@ export default async function DeliverabilityPage() {
 
       <div className="card mt-8 p-5">
         <h3 className="font-medium">If replies are low, work this list in order</h3>
-        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-600">
+        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
           <li>Fix anything red or amber above — authentication is the foundation.</li>
           <li>{dailyLimitTip(surfacedDimensions)}</li>
           <li>Run the spam checker on your template (Templates → your template) and cut risky wording.</li>
@@ -268,13 +268,13 @@ function DimensionCard({
   const best = dimension.buckets[0];
   return (
     <div className="card p-5">
-      <p className="text-sm text-slate-500">{dimension.label}</p>
+      <p className="text-sm text-muted">{dimension.label}</p>
       <p className="mt-1 text-lg font-semibold">{best.bucket}</p>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-muted">
         {formatPercent(best.avgReplyRate)} reply rate · {formatPercent(best.avgBounceRate)} bounce rate
         {best.avgOpenRate !== null && ` · ${formatPercent(best.avgOpenRate)} open rate`}
       </p>
-      <p className="mt-1 text-[11px] text-slate-400">Best of {dimension.buckets.length} groups · {best.campaigns} campaigns</p>
+      <p className="mt-1 text-[11px] text-muted/70">Best of {dimension.buckets.length} groups · {best.campaigns} campaigns</p>
       {ownBucket !== null && (
         <p className={`mt-2 text-xs font-medium ${ownBucket === best.bucket ? "text-green-600" : "text-amber-600"}`}>
           {ownBucket === best.bucket ? "✓ Your default matches this" : `Your default: ${ownBucket}`}

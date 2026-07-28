@@ -50,10 +50,10 @@ export function PasteLeads({ listId }: { listId?: string }) {
 
       {!leads ? (
         <>
-          <label htmlFor="paste-box" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="paste-box" className="block text-sm font-medium text-foreground">
             Paste your Salesforce lead list
           </label>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             Copy your leads straight out of Salesforce and paste them here — either
             format works: the list view with columns (First Name, Last Name, Email…)
             or the row-by-row layout that starts each lead with “Select Item”. We’ll
@@ -67,7 +67,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
             placeholder={
               "Paste from Salesforce here.\n\nWorks with the column list view:\nFirst Name  Last Name  Email  Phone …\n1  Jason  Main  jason@example.com …\n\nor the row layout:\nSelect Item 1\nJason Main\nMainmastics Llc\n…"
             }
-            className="mt-2 w-full rounded-xl border border-slate-200 p-3 font-mono text-sm focus:border-primary focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-border p-3 font-mono text-sm focus:border-primary focus:outline-none"
           />
           <button
             onClick={preview}

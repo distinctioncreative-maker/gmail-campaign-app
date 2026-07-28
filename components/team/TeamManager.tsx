@@ -13,7 +13,7 @@ export interface MemberOption {
 }
 
 const field =
-  "rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none";
+  "rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
 /** Admin panel: create teams, rename, pick leads, delete. */
 export function TeamManager({
@@ -83,16 +83,16 @@ export function TeamManager({
   return (
     <div className="card p-5">
       <h2 className="font-medium">Teams</h2>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-muted">
         Create teams and pick each Team Lead. Leads add or remove their own reps below.
       </p>
 
       {teams.length > 0 && (
         <div className="mt-4 space-y-2">
           {teams.map((t) => (
-            <div key={t.teamId} className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-2.5">
+            <div key={t.teamId} className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-2 p-2.5">
               <span className="flex-1 text-sm font-medium">{t.name}</span>
-              <label className="flex items-center gap-1.5 text-xs text-slate-500">
+              <label className="flex items-center gap-1.5 text-xs text-muted">
                 Lead
                 <select
                   value={t.leadUserId ?? ""}
@@ -139,7 +139,7 @@ export function TeamManager({
           Create team
         </button>
       </div>
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-muted/70">
         Team Leads need the Manager role — set roles in Administration.
       </p>
     </div>

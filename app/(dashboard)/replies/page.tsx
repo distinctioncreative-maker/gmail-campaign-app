@@ -40,7 +40,7 @@ interface ReplyRow {
 const INTENT_META: Record<ReplyIntent, { label: string; className: string; rank: number }> = {
   INTERESTED: { label: "🔥 Interested", className: "bg-emerald-100 text-emerald-700", rank: 0 },
   REPLIED: { label: "Needs reply", className: "bg-blue-100 text-blue-700", rank: 1 },
-  NOT_INTERESTED: { label: "Not interested", className: "bg-slate-100 text-slate-500", rank: 2 },
+  NOT_INTERESTED: { label: "Not interested", className: "bg-surface-2 text-muted", rank: 2 },
 };
 
 /**
@@ -110,7 +110,7 @@ export default async function RepliesPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((k) => (
           <div key={k.label} className="card p-5">
-            <p className="text-sm text-slate-500">{k.label}</p>
+            <p className="text-sm text-muted">{k.label}</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">{k.value}</p>
           </div>
         ))}
@@ -120,7 +120,7 @@ export default async function RepliesPage() {
         {rows.length === 0 ? (
           <div className="card p-10 text-center">
             <p className="text-sm font-medium">No replies yet</p>
-            <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
+            <p className="mx-auto mt-1 max-w-md text-sm text-muted">
               When someone replies to a campaign email it shows up here. If you&apos;re expecting
               one, hit “Scan for replies” above — replies are also picked up automatically in the
               background.
@@ -135,19 +135,19 @@ export default async function RepliesPage() {
                 <div className="flex items-start justify-between gap-2">
                   <Link href={`/leads/${r.contactId}`} className="min-w-0">
                     <p className="truncate font-medium">{r.fullName || r.email}</p>
-                    {r.fullName && <p className="truncate text-xs text-slate-500">{r.email}</p>}
+                    {r.fullName && <p className="truncate text-xs text-muted">{r.email}</p>}
                   </Link>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${INTENT_META[r.intent].className}`}>
                     {INTENT_META[r.intent].label}
                   </span>
                 </div>
                 {r.snippet && (
-                  <p className="mt-1.5 line-clamp-2 rounded-lg bg-slate-50 p-2 text-xs italic text-slate-600">
+                  <p className="mt-1.5 line-clamp-2 rounded-lg bg-surface-2 p-2 text-xs italic text-muted">
                     “{r.snippet}”
                   </p>
                 )}
-                <p className="mt-1.5 truncate text-xs text-slate-500">{r.campaignName}</p>
-                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500">
+                <p className="mt-1.5 truncate text-xs text-muted">{r.campaignName}</p>
+                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted">
                   <span><LocalTime value={r.repliedAt} /> · {formatDuration(r.timeToReplyMs)}</span>
                   <div className="flex items-center gap-2">
                     {r.gmailThreadId && (
@@ -182,7 +182,7 @@ export default async function RepliesPage() {
           {/* Desktop: table */}
           <div className="hidden overflow-x-auto card sm:block">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+              <thead className="border-b border-border text-xs uppercase text-muted">
                 <tr>
                   <th className="px-4 py-3">Lead</th>
                   <th className="px-4 py-3">Intent</th>
@@ -196,15 +196,15 @@ export default async function RepliesPage() {
                 {rows.map((r) => (
                   <tr
                     key={`${r.campaignId}-${r.contactId}-${r.repliedAt}`}
-                    className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
+                    className="border-b border-border last:border-0 hover:bg-surface-2"
                   >
                     <td className="px-4 py-3">
                       <Link href={`/leads/${r.contactId}`} className="font-medium hover:underline">
                         {r.fullName || r.email}
                       </Link>
-                      {r.fullName && <p className="text-xs text-slate-500">{r.email}</p>}
+                      {r.fullName && <p className="text-xs text-muted">{r.email}</p>}
                       {r.snippet && (
-                        <p className="mt-1 max-w-md truncate text-xs italic text-slate-500">“{r.snippet}”</p>
+                        <p className="mt-1 max-w-md truncate text-xs italic text-muted">“{r.snippet}”</p>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -212,11 +212,11 @@ export default async function RepliesPage() {
                         {INTENT_META[r.intent].label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{r.campaignName}</td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-4 py-3 text-muted">{r.campaignName}</td>
+                    <td className="px-4 py-3 text-xs text-muted">
                       <LocalTime value={r.repliedAt} />
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">{formatDuration(r.timeToReplyMs)}</td>
+                    <td className="px-4 py-3 text-xs text-muted">{formatDuration(r.timeToReplyMs)}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-3">
                         {r.gmailThreadId && (

@@ -39,11 +39,11 @@ function KpiTiles({ stats }: { stats: RepStats[] }) {
     ring: string;
     accent: string;
   }> = [
-    { label: "Emails sent", value: sent, icon: "mail", ring: "bg-primary-soft text-primary", accent: "text-slate-900" },
+    { label: "Emails sent", value: sent, icon: "mail", ring: "bg-primary-soft text-primary", accent: "text-foreground" },
     { label: "Replies", value: replies, icon: "reply", ring: "bg-green-100 text-green-600", accent: "text-green-600" },
     { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", icon: "chart", ring: "bg-indigo-100 text-indigo-600", accent: "text-indigo-600" },
     { label: "Reps sending now", value: active, icon: "rocket", ring: "bg-primary-soft text-primary", accent: "text-primary" },
-    { label: "Bounces", value: bounces, icon: "alert", ring: "bg-amber-100 text-amber-600", accent: bounces > 0 ? "text-amber-600" : "text-slate-900" },
+    { label: "Bounces", value: bounces, icon: "alert", ring: "bg-amber-100 text-amber-600", accent: bounces > 0 ? "text-amber-600" : "text-foreground" },
   ];
 
   return (
@@ -51,7 +51,7 @@ function KpiTiles({ stats }: { stats: RepStats[] }) {
       {tiles.map((t) => (
         <div key={t.label} className="card p-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-500">{t.label}</p>
+            <p className="text-xs font-medium text-muted">{t.label}</p>
             <span aria-hidden className={`flex h-7 w-7 items-center justify-center rounded-lg ${t.ring}`}>
               <Icon name={t.icon} size={15} />
             </span>
@@ -78,7 +78,7 @@ function Leaderboard({
   const topRate = Math.max(1, ...sorted.map((r) => r.stats.replyRate));
 
   if (sorted.length === 0) {
-    return <div className="card p-8 text-center text-sm text-slate-500">No reps on this team yet.</div>;
+    return <div className="card p-8 text-center text-sm text-muted">No reps on this team yet.</div>;
   }
 
   return (
@@ -87,7 +87,7 @@ function Leaderboard({
         const display = name || m.email;
         const ranked = s.sent > 0 && i < 3;
         return (
-          <div key={m.userId} className="flex items-center gap-3 p-4 transition hover:bg-slate-50">
+          <div key={m.userId} className="flex items-center gap-3 p-4 transition hover:bg-surface-2">
             {/* Rank / avatar */}
             <div className="relative shrink-0">
               <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm">
@@ -102,14 +102,14 @@ function Leaderboard({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="truncate font-medium">{display}</p>
-                {!m.active && <span className="badge bg-slate-200 text-slate-600">disabled</span>}
+                {!m.active && <span className="badge bg-border text-muted">disabled</span>}
                 {s.activeCampaigns > 0 && (
                   <span className="live-dot inline-flex items-center gap-1 text-xs font-medium text-green-600">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> live
                   </span>
                 )}
               </div>
-              <p className="truncate text-xs text-slate-500">
+              <p className="truncate text-xs text-muted">
                 {s.sent} sent · {s.replies} replies · {s.campaigns} campaign{s.campaigns === 1 ? "" : "s"}
                 {s.lastActivityAt && (
                   <> · <LocalTime value={s.lastActivityAt} /></>
@@ -117,13 +117,13 @@ function Leaderboard({
               </p>
               {/* Reply-rate bar (scaled to the top performer) */}
               <div className="mt-2 flex items-center gap-2">
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
                   <div
                     className="brand-gradient h-full rounded-full"
                     style={{ width: `${s.sent > 0 ? Math.max(4, (s.replyRate / topRate) * 100) : 0}%` }}
                   />
                 </div>
-                <span className="w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-slate-600">
+                <span className="w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-muted">
                   {s.sent > 0 ? formatPercent(s.replyRate) : "—"}
                 </span>
               </div>
@@ -201,7 +201,7 @@ export default async function TeamPage() {
       )}
 
       {visibleTeams.length === 0 ? (
-        <div className="card p-8 text-center text-sm text-slate-500">
+        <div className="card p-8 text-center text-sm text-muted">
           {isAdmin
             ? "No teams yet — create the first one above."
             : "You're not leading a team yet. Ask your administrator to make you the lead of a team."}
@@ -219,7 +219,7 @@ export default async function TeamPage() {
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold">{team.name}</h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                       Lead: {team.leadUserId ? (emailById.get(team.leadUserId) ?? "—") : "none yet"} ·{" "}
                       {roster.length} rep{roster.length === 1 ? "" : "s"}
                     </p>
@@ -237,7 +237,7 @@ export default async function TeamPage() {
           {isAdmin && unassigned.length > 0 && (
             <section>
               <h2 className="mb-1 text-lg font-semibold">Not on a team</h2>
-              <p className="mb-3 text-xs text-slate-500">
+              <p className="mb-3 text-xs text-muted">
                 Use “Add a rep…” on a team above to place them.
               </p>
               <Leaderboard rows={rowsFor(unassigned)} teamId={null} canManage={false} />

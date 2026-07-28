@@ -37,7 +37,7 @@ export function DisplayNameForm({ initial }: { initial: string }) {
         onChange={(e) => setName(e.target.value)}
         maxLength={80}
         placeholder="Your name"
-        className="w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+        className="w-64 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
       />
       <button
         onClick={() => void save()}

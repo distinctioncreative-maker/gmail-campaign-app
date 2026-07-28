@@ -25,7 +25,7 @@ export function GmailConnectionCard({
   return (
     <div className="card p-6">
       <h2 className="font-medium">Gmail connection</h2>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm text-muted">
         Campaigns send through your own Gmail account. The app can create and send
         email drafts for you and read replies to your campaign threads. It cannot
         delete your email or change your account settings.
@@ -38,7 +38,7 @@ export function GmailConnectionCard({
             <span className="font-medium">{connectedEmail}</span>
           </p>
           {lastRefreshAt && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted">
               Last verified <LocalTime value={lastRefreshAt} />
             </p>
           )}

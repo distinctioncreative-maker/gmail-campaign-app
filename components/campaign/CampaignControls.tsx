@@ -107,11 +107,11 @@ export function CampaignControls({
 
   const busy = busyAction !== null;
   const btn =
-    "rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50";
+    "rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50";
   const dangerBtn =
     "rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50";
   const numInput =
-    "w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none";
+    "w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none";
 
   const num = (k: keyof Pace, v: string) =>
     setDraft((d) => ({ ...d, [k]: Math.max(0, Number(v) || 0) }));
@@ -222,9 +222,9 @@ export function CampaignControls({
       </div>
 
       {showPace && (status === "ACTIVE" || status === "PAUSED") && (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+        <div className="mt-4 rounded-xl border border-border bg-surface-2/60 p-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-slate-700">Sending pace for this campaign</p>
+            <p className="text-sm font-semibold text-foreground">Sending pace for this campaign</p>
             <button
               onClick={() =>
                 post(
@@ -244,7 +244,7 @@ export function CampaignControls({
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {paceFields.map((f) => (
-              <label key={f.k} className="block text-xs font-medium text-slate-600">
+              <label key={f.k} className="block text-xs font-medium text-muted">
                 {f.label}
                 <input
                   type="number"
@@ -254,7 +254,7 @@ export function CampaignControls({
                   onChange={(e) => num(f.k, e.target.value)}
                   className={`mt-1 ${numInput}`}
                 />
-                <span className="mt-0.5 block font-normal text-[11px] text-slate-400">{f.hint}</span>
+                <span className="mt-0.5 block font-normal text-[11px] text-muted/70">{f.hint}</span>
               </label>
             ))}
           </div>
@@ -289,7 +289,7 @@ export function CampaignControls({
               Reset
             </button>
           </div>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-muted">
             Saving re-spaces every remaining email with these settings. Higher numbers send faster but
             can hurt deliverability — Gmail limits how much you can send per day.
           </p>

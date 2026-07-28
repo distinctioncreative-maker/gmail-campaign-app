@@ -35,7 +35,7 @@ export function TemplateListActions({
           <button onClick={() => act("duplicate")} disabled={busy} className="text-primary hover:underline disabled:opacity-50">
             Duplicate
           </button>
-          <button onClick={() => act("archive")} disabled={busy} className="text-slate-500 hover:underline disabled:opacity-50">
+          <button onClick={() => act("archive")} disabled={busy} className="text-muted hover:underline disabled:opacity-50">
             Archive
           </button>
         </>

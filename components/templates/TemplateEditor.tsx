@@ -295,19 +295,19 @@ export function TemplateEditor({
           }}
         />
 
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-foreground">
           Template name
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. First outreach — funding intro"
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
         </label>
 
         <div className="mt-4">
           <div className="flex items-center justify-between">
-            <label htmlFor="template-subject" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="template-subject" className="block text-sm font-medium text-foreground">
               Subject line
             </label>
             <select
@@ -316,7 +316,7 @@ export function TemplateEditor({
                 e.target.value = "";
               }}
               defaultValue=""
-              className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
+              className="rounded-lg border border-border px-2 py-1 text-xs"
               aria-label="Insert placeholder into subject"
             >
               <option value="" disabled>Insert placeholder…</option>
@@ -331,16 +331,16 @@ export function TemplateEditor({
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Quick question for {{business_name}}"
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-muted/70">
             Placeholders work in the subject too — personalize it the same way as the body.
           </p>
         </div>
 
         <AiEmailTools subject={subject} html={html} onSubject={setSubject} onHtml={setHtml} />
 
-        <div className="mt-5 flex gap-1 border-b border-slate-200 text-sm">
+        <div className="mt-5 flex gap-1 border-b border-border text-sm">
           {(
             [
               ["visual", "Write email"],
@@ -356,7 +356,7 @@ export function TemplateEditor({
                 if (m === "gmail" && drafts === null) void loadDrafts();
               }}
               className={`rounded-t-lg px-3 py-2 font-medium ${
-                mode === m ? "border border-b-0 border-slate-200 bg-white text-primary" : "text-slate-500 hover:text-slate-700"
+                mode === m ? "border border-b-0 border-border bg-surface text-primary" : "text-muted hover:text-foreground"
               }`}
             >
               {label}
@@ -366,18 +366,18 @@ export function TemplateEditor({
 
         {mode === "visual" && (
           <>
-            <div className="mt-3 flex flex-wrap items-center gap-1 rounded-lg bg-slate-50 p-1.5 text-sm">
-              <button onClick={() => exec("bold")} className="rounded px-2 py-1 font-bold hover:bg-slate-200" aria-label="Bold">B</button>
-              <button onClick={() => exec("italic")} className="rounded px-2 py-1 italic hover:bg-slate-200" aria-label="Italic">I</button>
-              <button onClick={() => exec("underline")} className="rounded px-2 py-1 underline hover:bg-slate-200" aria-label="Underline">U</button>
-              <button onClick={() => exec("formatBlock", "<h2>")} className="rounded px-2 py-1 hover:bg-slate-200">Heading</button>
-              <button onClick={() => exec("insertUnorderedList")} className="rounded px-2 py-1 hover:bg-slate-200">• List</button>
+            <div className="mt-3 flex flex-wrap items-center gap-1 rounded-lg bg-surface-2 p-1.5 text-sm">
+              <button onClick={() => exec("bold")} className="rounded px-2 py-1 font-bold hover:bg-border" aria-label="Bold">B</button>
+              <button onClick={() => exec("italic")} className="rounded px-2 py-1 italic hover:bg-border" aria-label="Italic">I</button>
+              <button onClick={() => exec("underline")} className="rounded px-2 py-1 underline hover:bg-border" aria-label="Underline">U</button>
+              <button onClick={() => exec("formatBlock", "<h2>")} className="rounded px-2 py-1 hover:bg-border">Heading</button>
+              <button onClick={() => exec("insertUnorderedList")} className="rounded px-2 py-1 hover:bg-border">• List</button>
               <button
                 onClick={() => {
                   const url = prompt("Link address (https://…):");
                   if (url) exec("createLink", url);
                 }}
-                className="rounded px-2 py-1 text-primary hover:bg-slate-200"
+                className="rounded px-2 py-1 text-primary hover:bg-border"
               >
                 Link
               </button>
@@ -387,17 +387,17 @@ export function TemplateEditor({
                     `<a href="https://example.com" style="display:inline-block;background:#1d4ed8;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600">Book a call</a>`
                   )
                 }
-                className="rounded px-2 py-1 hover:bg-slate-200"
+                className="rounded px-2 py-1 hover:bg-border"
               >
                 Button
               </button>
-              <button onClick={() => insertHtmlAtCursor("<hr>")} className="rounded px-2 py-1 hover:bg-slate-200">Divider</button>
+              <button onClick={() => insertHtmlAtCursor("<hr>")} className="rounded px-2 py-1 hover:bg-border">Divider</button>
               <button
                 onClick={() => {
                   const url = prompt("Image address (https://…):");
                   if (url) insertHtmlAtCursor(`<img src="${url}" alt="" style="max-width:100%">`);
                 }}
-                className="rounded px-2 py-1 hover:bg-slate-200"
+                className="rounded px-2 py-1 hover:bg-border"
               >
                 Image
               </button>
@@ -407,7 +407,7 @@ export function TemplateEditor({
                   e.target.value = "";
                 }}
                 defaultValue=""
-                className="ml-auto rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                className="ml-auto rounded-lg border border-border px-2 py-1 text-xs"
                 aria-label="Insert placeholder"
               >
                 <option value="" disabled>Insert placeholder…</option>
@@ -424,7 +424,7 @@ export function TemplateEditor({
               role="textbox"
               aria-multiline="true"
               aria-label="Email body"
-              className="prose-sm mt-2 min-h-[28rem] w-full rounded-xl border border-slate-200 p-5 text-sm leading-relaxed focus:border-primary focus:outline-none"
+              className="prose-sm mt-2 min-h-[28rem] w-full rounded-xl border border-border p-5 text-sm leading-relaxed focus:border-primary focus:outline-none"
             />
           </>
         )}
@@ -440,10 +440,10 @@ export function TemplateEditor({
                   if (!name) setName(layout.name);
                   setMode("visual");
                 }}
-                className="rounded-xl border border-slate-200 p-4 text-left hover:border-primary"
+                className="rounded-xl border border-border p-4 text-left hover:border-primary"
               >
                 <p className="font-medium">{layout.name}</p>
-                <p className="mt-1 text-sm text-slate-500">{layout.description}</p>
+                <p className="mt-1 text-sm text-muted">{layout.description}</p>
               </button>
             ))}
           </div>
@@ -456,7 +456,7 @@ export function TemplateEditor({
             rows={16}
             spellCheck={false}
             aria-label="Email HTML"
-            className="mt-3 w-full rounded-xl border border-slate-200 p-3 font-mono text-xs focus:border-primary focus:outline-none"
+            className="mt-3 w-full rounded-xl border border-border p-3 font-mono text-xs focus:border-primary focus:outline-none"
           />
         )}
 
@@ -468,31 +468,31 @@ export function TemplateEditor({
                 value={draftSearch}
                 onChange={(e) => setDraftSearch(e.target.value)}
                 placeholder="Search drafts by subject"
-                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="flex-1 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
               />
               <button
                 onClick={() => void loadDrafts(draftSearch)}
                 disabled={busy}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50 disabled:opacity-50"
+                className="rounded-xl border border-border px-4 py-2 text-sm hover:bg-surface-2 disabled:opacity-50"
               >
                 Search
               </button>
             </div>
-            <div className="mt-3 max-h-72 divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-200">
+            <div className="mt-3 max-h-72 divide-y divide-border overflow-y-auto rounded-xl border border-border">
               {drafts === null ? (
-                <p className="p-4 text-sm text-slate-500">Loading your Gmail drafts…</p>
+                <p className="p-4 text-sm text-muted">Loading your Gmail drafts…</p>
               ) : drafts.length === 0 ? (
-                <p className="p-4 text-sm text-slate-500">No drafts found.</p>
+                <p className="p-4 text-sm text-muted">No drafts found.</p>
               ) : (
                 drafts.map((d) => (
                   <button
                     key={d.draftId}
                     onClick={() => void importDraft(d.draftId)}
                     disabled={busy}
-                    className="block w-full p-3 text-left hover:bg-slate-50 disabled:opacity-50"
+                    className="block w-full p-3 text-left hover:bg-surface-2 disabled:opacity-50"
                   >
                     <p className="text-sm font-medium">{d.subject}</p>
-                    <p className="truncate text-xs text-slate-500">{d.snippet}</p>
+                    <p className="truncate text-xs text-muted">{d.snippet}</p>
                   </button>
                 ))
               )}
@@ -549,7 +549,7 @@ export function TemplateEditor({
             ))}
           </div>
           {rightTab === "preview" && (
-            <label className="flex items-center gap-2 text-xs text-slate-500">
+            <label className="flex items-center gap-2 text-xs text-muted">
               <input
                 type="checkbox"
                 checked={mobilePreview}
@@ -573,8 +573,8 @@ export function TemplateEditor({
                 profile in Settings, or they&apos;ll show as-is in sent emails.
               </p>
             )}
-            <p className="mt-3 border-b border-slate-100 pb-2 text-sm">
-              <span className="text-slate-500">Subject:</span>{" "}
+            <p className="mt-3 border-b border-border pb-2 text-sm">
+              <span className="text-muted">Subject:</span>{" "}
               <span className="font-medium">{preview.subject}</span>
             </p>
             {/* Isolated in an iframe so the email's own CSS can never leak
@@ -593,14 +593,14 @@ export function TemplateEditor({
                     /* cross-origin guard — ignore */
                   }
                 }}
-                className="w-full rounded-xl border border-slate-200 bg-white"
+                className="w-full rounded-xl border border-border bg-surface"
                 style={{ height: "24rem" }}
                 srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
               />
             </div>
           </>
         ) : (
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-muted">
             Click Preview to see this email with example lead data filled in.
           </p>
         )}

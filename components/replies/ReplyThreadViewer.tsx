@@ -67,16 +67,16 @@ export function ReplyThreadViewer({
           <div
             role="dialog"
             aria-modal="true"
-            className="relative flex max-h-[80vh] w-full max-w-2xl animate-rise flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="relative flex max-h-[80vh] w-full max-w-2xl animate-rise flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <div className="min-w-0">
-                <p className="truncate font-semibold text-slate-900">{fullName || email}</p>
-                {fullName && <p className="truncate text-xs text-slate-500">{email}</p>}
+                <p className="truncate font-semibold text-foreground">{fullName || email}</p>
+                {fullName && <p className="truncate text-xs text-muted">{email}</p>}
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="shrink-0 rounded-lg p-1.5 text-muted/70 hover:bg-surface-2 hover:text-muted"
                 aria-label="Close"
               >
                 <Icon name="x" size={18} />
@@ -84,12 +84,12 @@ export function ReplyThreadViewer({
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-4">
               {loading ? (
-                <p className="text-sm text-slate-500">Loading the thread…</p>
+                <p className="text-sm text-muted">Loading the thread…</p>
               ) : error ? (
                 <div>
                   <p className="text-sm text-red-600">{error}</p>
                   {fallbackSnippet && (
-                    <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm italic text-slate-600">
+                    <p className="mt-3 rounded-lg bg-surface-2 p-3 text-sm italic text-muted">
                       “{fallbackSnippet}”
                     </p>
                   )}
@@ -97,16 +97,16 @@ export function ReplyThreadViewer({
               ) : messages && messages.length > 0 ? (
                 <div className="space-y-4">
                   {messages.map((m, i) => (
-                    <div key={i} className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-medium text-slate-500">{m.from}</p>
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">
+                    <div key={i} className="rounded-xl border border-border bg-surface-2 p-4">
+                      <p className="text-xs font-medium text-muted">{m.from}</p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                         {m.bodyText || m.snippet}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">No message content found in this thread yet.</p>
+                <p className="text-sm text-muted">No message content found in this thread yet.</p>
               )}
             </div>
           </div>

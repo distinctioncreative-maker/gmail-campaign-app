@@ -51,7 +51,7 @@ export function AiWritingCard() {
     }
   }
 
-  if (!state) return <div className="card p-6 text-sm text-slate-500">Loading…</div>;
+  if (!state) return <div className="card p-6 text-sm text-muted">Loading…</div>;
 
   const on = state.enabled;
 
@@ -60,14 +60,14 @@ export function AiWritingCard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-medium">AI email writing</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted">
             The AI writer, improve tools, subject ideas, reply drafts, and sequence drafting.
             When off, none of these appear for anyone on the team.
           </p>
         </div>
         <span
           className={`rounded-full px-3 py-1 text-sm font-semibold ${
-            on ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+            on ? "bg-green-100 text-green-700" : "bg-surface-2 text-muted"
           }`}
         >
           {on ? "● On" : "○ Off"}
@@ -79,7 +79,7 @@ export function AiWritingCard() {
       {!state.keyConfigured && (
         <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
           ⚠️ No AI key is configured on the server yet, so turning this on won&apos;t enable AI
-          until a <code className="rounded bg-white px-1">GEMINI_API_KEY</code> is set on the
+          until a <code className="rounded bg-surface px-1">GEMINI_API_KEY</code> is set on the
           deployment.
         </p>
       )}
@@ -89,7 +89,7 @@ export function AiWritingCard() {
           <button
             onClick={() => toggle(false)}
             disabled={busy}
-            className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
           >
             {busy ? "Saving…" : "Turn AI writing off"}
           </button>

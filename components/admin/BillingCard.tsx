@@ -59,17 +59,17 @@ export function BillingCard() {
     }
   }
 
-  if (!state) return <div className="card p-6 text-sm text-slate-500">Loading…</div>;
+  if (!state) return <div className="card p-6 text-sm text-muted">Loading…</div>;
 
   return (
     <div className="card p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-medium">Plan &amp; billing</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted">
             Current plan: <strong>{state.planName}</strong>
             {state.status !== "none" && (
-              <span className="text-slate-500"> · {STATUS_LABEL[state.status] ?? state.status}</span>
+              <span className="text-muted"> · {STATUS_LABEL[state.status] ?? state.status}</span>
             )}
           </p>
         </div>
@@ -81,7 +81,7 @@ export function BillingCard() {
       </div>
 
       {!state.configured ? (
-        <p className="mt-4 rounded-lg bg-slate-100 p-3 text-sm text-slate-600">
+        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
           Paid plans open at launch. You&apos;re on <strong>{state.planName}</strong> for now with full access.
         </p>
       ) : (
@@ -116,9 +116,9 @@ function PlanTile({
     <div className={`rounded-xl border p-4 ${featured ? "border-primary bg-primary-soft/40" : "border-border"}`}>
       <div className="flex items-baseline justify-between">
         <span className="font-medium">{name}</span>
-        <span className="text-sm text-slate-500">{price}</span>
+        <span className="text-sm text-muted">{price}</span>
       </div>
-      <p className="mt-1 text-xs text-slate-500">{blurb}</p>
+      <p className="mt-1 text-xs text-muted">{blurb}</p>
       <button onClick={onPick} disabled={busy} className="btn-primary mt-3 w-full px-4 py-2 text-sm disabled:opacity-50">
         {busy ? "Starting…" : `Choose ${name}`}
       </button>

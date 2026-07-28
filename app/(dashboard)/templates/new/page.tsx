@@ -4,7 +4,7 @@ import { TemplateEditor } from "@/components/templates/TemplateEditor";
 export default function NewTemplatePage() {
   return (
     <div>
-      <Link href="/templates" className="text-sm text-slate-500 hover:underline">
+      <Link href="/templates" className="text-sm text-muted hover:underline">
         ← All templates
       </Link>
       <h1 className="mt-2 text-2xl font-semibold">New template</h1>

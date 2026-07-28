@@ -16,7 +16,7 @@ export default async function EditTemplatePage({
 
   return (
     <div>
-      <Link href="/templates" className="text-sm text-slate-500 hover:underline">
+      <Link href="/templates" className="text-sm text-muted hover:underline">
         ← All templates
       </Link>
       <h1 className="mt-2 text-2xl font-semibold">Edit template</h1>

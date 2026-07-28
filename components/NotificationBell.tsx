@@ -60,7 +60,7 @@ export function NotificationBell() {
       <button
         onClick={toggle}
         aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
-        className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+        className="relative rounded-lg p-2 text-muted hover:bg-surface-2"
       >
         <Icon name="bell" size={20} />
         {unread > 0 && (
@@ -71,17 +71,17 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-10 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg">
-          <div className="border-b border-slate-100 px-4 py-2 text-sm font-medium">Notifications</div>
+        <div className="absolute right-0 z-10 mt-2 w-80 rounded-xl border border-border bg-surface shadow-lg">
+          <div className="border-b border-border px-4 py-2 text-sm font-medium">Notifications</div>
           <div className="max-h-96 overflow-y-auto">
             {items.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-slate-500">You&apos;re all caught up.</p>
+              <p className="px-4 py-6 text-center text-sm text-muted">You&apos;re all caught up.</p>
             ) : (
               items.map((n) => (
                 <div key={n.notificationId} className="border-b border-border px-4 py-3 last:border-0">
                   <p className="text-sm font-medium">{n.title}</p>
-                  <p className="text-sm text-slate-600">{n.body}</p>
-                  <LocalTime value={n.createdAt} className="mt-1 block text-xs text-slate-400" />
+                  <p className="text-sm text-muted">{n.body}</p>
+                  <LocalTime value={n.createdAt} className="mt-1 block text-xs text-muted/70" />
                 </div>
               ))
             )}

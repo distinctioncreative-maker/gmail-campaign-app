@@ -71,12 +71,12 @@ export default async function ReportsPage() {
   const bestCampaign = leaderboard[0];
 
   const kpis = [
-    { label: "Emails sent", value: String(totalSentAll), tone: "text-slate-900" },
+    { label: "Emails sent", value: String(totalSentAll), tone: "text-foreground" },
     { label: "Reply rate", value: totalSentAll ? pct(overallReplyRate) : "—", tone: "text-green-600" },
     { label: "Median time to reply", value: formatDuration(ttr.medianMs), tone: "text-indigo-600" },
-    { label: "Active campaigns", value: String(activeCount), tone: "text-slate-900" },
-    { label: "Sent today", value: String(sentToday), tone: "text-slate-900" },
-    { label: "Bounce rate", value: totalSentAll ? pct(overallBounceRate) : "—", tone: overallBounceRate > 3 ? "text-red-600" : "text-slate-500" },
+    { label: "Active campaigns", value: String(activeCount), tone: "text-foreground" },
+    { label: "Sent today", value: String(sentToday), tone: "text-foreground" },
+    { label: "Bounce rate", value: totalSentAll ? pct(overallBounceRate) : "—", tone: overallBounceRate > 3 ? "text-red-600" : "text-muted" },
   ];
 
   const csvRows = leaderboard.map((l) => [
@@ -112,7 +112,7 @@ export default async function ReportsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {kpis.map((k) => (
           <div key={k.label} className="card card-hover p-5">
-            <p className="text-sm text-slate-500">{k.label}</p>
+            <p className="text-sm text-muted">{k.label}</p>
             <p className={`mt-1 text-2xl font-semibold tabular-nums ${k.tone}`}>{k.value}</p>
           </div>
         ))}
@@ -128,12 +128,12 @@ export default async function ReportsPage() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="card p-5">
           <h2 className="font-medium">Sent vs replies (30 days)</h2>
-          <p className="mb-3 text-xs text-slate-500">Green = share that replied.</p>
+          <p className="mb-3 text-xs text-muted">Green = share that replied.</p>
           <TrendChart rows={trend} />
         </div>
         <div className="card p-5">
           <h2 className="font-medium">When people reply</h2>
-          <p className="mb-3 text-xs text-slate-500">Darker = more replies at that day &amp; hour ({tz}).</p>
+          <p className="mb-3 text-xs text-muted">Darker = more replies at that day &amp; hour ({tz}).</p>
           <ReplyHeatmap grid={heat} />
         </div>
       </div>
@@ -141,12 +141,12 @@ export default async function ReportsPage() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="card p-5">
           <h2 className="font-medium">Best send times</h2>
-          <p className="mb-3 text-xs text-slate-500">Reply rate by the hour an email went out.</p>
+          <p className="mb-3 text-xs text-muted">Reply rate by the hour an email went out.</p>
           <BestSendTimes rows={best} />
         </div>
         <div className="card p-5">
           <h2 className="font-medium">Time to reply</h2>
-          <p className="mb-3 text-xs text-slate-500">
+          <p className="mb-3 text-xs text-muted">
             {ttr.count > 0 ? `Based on ${ttr.count} repl${ttr.count === 1 ? "y" : "ies"}.` : "No replies yet."}
           </p>
           {ttr.count > 0 && (
@@ -158,17 +158,17 @@ export default async function ReportsPage() {
                 ["Later", ttr.buckets.later],
               ].map(([label, n]) => (
                 <div key={label as string} className="flex items-center gap-2 text-sm">
-                  <span className="w-28 shrink-0 text-slate-500">{label}</span>
-                  <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
+                  <span className="w-28 shrink-0 text-muted">{label}</span>
+                  <div className="h-3 flex-1 overflow-hidden rounded-full bg-surface-2">
                     <div
                       className="h-full rounded-full bg-indigo-500"
                       style={{ width: `${(Number(n) / ttr.count) * 100}%` }}
                     />
                   </div>
-                  <span className="w-8 shrink-0 tabular-nums text-slate-500">{n}</span>
+                  <span className="w-8 shrink-0 tabular-nums text-muted">{n}</span>
                 </div>
               ))}
-              <p className="pt-1 text-xs text-slate-400">Average: {formatDuration(ttr.averageMs)}.</p>
+              <p className="pt-1 text-xs text-muted/70">Average: {formatDuration(ttr.averageMs)}.</p>
             </div>
           )}
         </div>
@@ -177,11 +177,11 @@ export default async function ReportsPage() {
       {/* Leaderboard */}
       <h2 className="mt-10 mb-3 font-medium">Campaign leaderboard</h2>
       {leaderboard.length === 0 ? (
-        <div className="card p-8 text-center text-sm text-slate-500">No sends yet.</div>
+        <div className="card p-8 text-center text-sm text-muted">No sends yet.</div>
       ) : (
         <div className="overflow-x-auto card">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-border text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-3">Campaign</th>
                 <th className="px-4 py-3">Status</th>
@@ -195,7 +195,7 @@ export default async function ReportsPage() {
               {leaderboard.map(({ campaign: c, rate }) => {
                 const badge = CAMPAIGN_STATUS_LABELS[c.status];
                 return (
-                  <tr key={c.campaignId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <tr key={c.campaignId} className="border-b border-border last:border-0 hover:bg-surface-2">
                     <td className="px-4 py-3 font-medium">{c.name}</td>
                     <td className="px-4 py-3">
                       <span className={`badge ${badge.className}`}>{badge.label}</span>
@@ -204,10 +204,10 @@ export default async function ReportsPage() {
                     <td className="px-4 py-3 tabular-nums">{c.replyCount}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
                           <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.min(100, rate)}%` }} />
                         </div>
-                        <span className="tabular-nums text-xs text-slate-500">{pct(rate)}</span>
+                        <span className="tabular-nums text-xs text-muted">{pct(rate)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 tabular-nums">{c.bounceCount}</td>

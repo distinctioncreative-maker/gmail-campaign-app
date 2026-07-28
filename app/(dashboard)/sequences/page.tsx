@@ -28,8 +28,8 @@ export default async function SequencesPage() {
 
       {sequences.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-slate-600">No sequences yet.</p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-muted">No sequences yet.</p>
+          <p className="mt-1 text-sm text-muted">
             Build a timeline of follow-ups once, then reuse it in any campaign.
           </p>
           <Link
@@ -48,10 +48,10 @@ export default async function SequencesPage() {
               className="card p-5 hover:shadow-md"
             >
               <p className="font-medium">{s.name}</p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-muted">
                 {s.steps.length} follow-up{s.steps.length === 1 ? "" : "s"}
               </p>
-              <ul className="mt-3 space-y-1 text-xs text-slate-400">
+              <ul className="mt-3 space-y-1 text-xs text-muted/70">
                 {s.steps.slice(0, 3).map((step, i) => (
                   <li key={i}>
                     ↓ wait {step.delayValue} {UNIT_LABEL[step.delayUnit]} → follow-up {i + 1}

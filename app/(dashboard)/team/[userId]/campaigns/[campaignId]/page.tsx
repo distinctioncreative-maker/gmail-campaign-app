@@ -38,29 +38,29 @@ export default async function RepCampaignPage({
 
   const badge = CAMPAIGN_STATUS_LABELS[campaign.status] ?? {
     label: campaign.status,
-    className: "bg-slate-100 text-slate-600",
+    className: "bg-surface-2 text-muted",
   };
   const sent = campaign.sentCount + campaign.followupSentCount;
   const rep = members.find((m) => m.userId === userId);
 
   return (
     <div>
-      <Link href={`/team/${userId}`} className="text-sm text-slate-500 hover:underline">
+      <Link href={`/team/${userId}`} className="text-sm text-muted hover:underline">
         ← {rep?.email ?? "Rep"}
       </Link>
       <div className="mt-2 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-semibold">{campaign.name}</h1>
         <span className={`badge ${badge.className}`}>{badge.label}</span>
-        <span className="badge bg-slate-100 text-slate-600">Read-only</span>
+        <span className="badge bg-surface-2 text-muted">Read-only</span>
       </div>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm text-muted">
         {sent} sent · {campaign.replyCount} repl{campaign.replyCount === 1 ? "y" : "ies"} ·{" "}
         {campaign.bounceCount} bounce{campaign.bounceCount === 1 ? "" : "s"}
       </p>
 
       <div className="mt-6 overflow-x-auto card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+          <thead className="border-b border-border text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-3">Recipient</th>
               <th className="px-4 py-3">Email</th>
@@ -71,7 +71,7 @@ export default async function RepCampaignPage({
           <tbody>
             {recipients.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-4 text-sm text-slate-500">
+                <td colSpan={4} className="px-4 py-4 text-sm text-muted">
                   No recipients.
                 </td>
               </tr>
@@ -79,13 +79,13 @@ export default async function RepCampaignPage({
               recipients.map((r) => {
                 const rb = recipientStatusBadge(r.status);
                 return (
-                  <tr key={r.recipientId} className="border-b border-slate-100 last:border-0">
+                  <tr key={r.recipientId} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 font-medium">{r.fullNameSnapshot || "—"}</td>
-                    <td className="px-4 py-3 text-slate-600">{r.emailSnapshot}</td>
+                    <td className="px-4 py-3 text-muted">{r.emailSnapshot}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-2 py-0.5 text-xs ${rb.className}`}>{rb.label}</span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-4 py-3 text-xs text-muted">
                       {r.initialSentAt ? <LocalTime value={r.initialSentAt} /> : "—"}
                     </td>
                   </tr>

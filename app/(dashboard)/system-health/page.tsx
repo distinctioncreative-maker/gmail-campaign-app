@@ -93,13 +93,13 @@ export default async function SystemHealthPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="overflow-hidden card">
-          <h2 className="border-b border-slate-100 px-4 py-3 font-medium">Platform checks</h2>
+          <h2 className="border-b border-border px-4 py-3 font-medium">Platform checks</h2>
           <table className="w-full text-left text-sm">
             <tbody>
               {checks.map(([label, value, ok]) => (
-                <tr key={label} className="border-b border-slate-100 last:border-0">
+                <tr key={label} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium">{label}</td>
-                  <td className="px-4 py-3 text-slate-600">{value}</td>
+                  <td className="px-4 py-3 text-muted">{value}</td>
                   <td className="px-4 py-3 text-right">
                     <span aria-hidden>{ok ? "✅" : "⚠️"}</span>
                   </td>
@@ -110,13 +110,13 @@ export default async function SystemHealthPage() {
         </div>
 
         <div className="overflow-hidden card">
-          <h2 className="border-b border-slate-100 px-4 py-3 font-medium">Background sweeps</h2>
+          <h2 className="border-b border-border px-4 py-3 font-medium">Background sweeps</h2>
           <table className="w-full text-left text-sm">
             <tbody>
               {sweeps.map(([label, at]) => (
-                <tr key={label} className="border-b border-slate-100 last:border-0">
+                <tr key={label} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium">{label}</td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-muted">
                     {at ? (
                       <>
                         Last ran <LocalTime value={at} />
@@ -132,7 +132,7 @@ export default async function SystemHealthPage() {
               ))}
             </tbody>
           </table>
-          <p className="px-4 py-3 text-xs text-slate-400">
+          <p className="px-4 py-3 text-xs text-muted/70">
             Sweeps run on a schedule. A warning here usually means Cloud Scheduler isn&apos;t set up
             or hasn&apos;t fired yet — see scripts/setup-cloud.sh.
           </p>
@@ -142,7 +142,7 @@ export default async function SystemHealthPage() {
       <h2 className="mt-8 mb-3 font-medium">People</h2>
       <div className="overflow-x-auto card">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+          <thead className="border-b border-border text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-3">Person</th>
               <th className="px-4 py-3">Gmail</th>
@@ -155,11 +155,11 @@ export default async function SystemHealthPage() {
             {memberRows.map(({ member: m, ...r }) => {
               const conn = CONNECTION_LABELS[r.connectionStatus] ?? { label: r.connectionStatus, ok: false };
               return (
-                <tr key={m.userId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={m.userId} className="border-b border-border last:border-0 hover:bg-surface-2">
                   <td className="px-4 py-3">
                     <span className="font-medium">{r.displayName || m.email}</span>
-                    {!m.active && <span className="ml-2 badge bg-slate-200 text-slate-600">disabled</span>}
-                    {r.displayName && <p className="text-xs text-slate-500">{m.email}</p>}
+                    {!m.active && <span className="ml-2 badge bg-border text-muted">disabled</span>}
+                    {r.displayName && <p className="text-xs text-muted">{m.email}</p>}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -180,10 +180,10 @@ export default async function SystemHealthPage() {
                         {r.erroredCampaigns} campaign{r.erroredCampaigns === 1 ? "" : "s"} errored
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-400">None</span>
+                      <span className="text-xs text-muted/70">None</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
+                  <td className="px-4 py-3 text-xs text-muted">
                     {r.lastLoginAt ? <LocalTime value={r.lastLoginAt} /> : "Never"}
                   </td>
                 </tr>
@@ -192,7 +192,7 @@ export default async function SystemHealthPage() {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-xs text-slate-400">
+      <p className="mt-3 text-xs text-muted/70">
         “Needs reconnect” means that person must open Settings and reconnect Gmail before their
         campaigns can send or scan replies.
       </p>

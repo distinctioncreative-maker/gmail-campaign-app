@@ -17,7 +17,7 @@ export default async function EditSequencePage({
 
   return (
     <div>
-      <Link href="/sequences" className="text-sm text-slate-500 hover:underline">
+      <Link href="/sequences" className="text-sm text-muted hover:underline">
         ← All sequences
       </Link>
       <h1 className="mt-2 text-2xl font-semibold">Edit sequence</h1>

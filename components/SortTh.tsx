@@ -26,10 +26,10 @@ export function SortTh<K extends string>({
       <button
         type="button"
         onClick={() => onToggle(sortKey)}
-        className={`inline-flex items-center gap-1 hover:text-slate-900 ${active ? "text-slate-900" : ""}`}
+        className={`inline-flex items-center gap-1 hover:text-foreground ${active ? "text-foreground" : ""}`}
       >
         {label}
-        <span className="text-[10px] text-slate-400">
+        <span className="text-[10px] text-muted/70">
           {active ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}
         </span>
       </button>

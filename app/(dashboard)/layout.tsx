@@ -86,7 +86,7 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-2">
             <Logo size={24} />
             {workspaceName && (
-              <span className="max-w-[9rem] truncate text-[11px] font-medium uppercase tracking-widest text-slate-400">
+              <span className="max-w-[9rem] truncate text-[11px] font-medium uppercase tracking-widest text-muted/70">
                 {workspaceName}
               </span>
             )}

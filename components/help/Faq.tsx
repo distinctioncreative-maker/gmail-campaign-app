@@ -82,15 +82,15 @@ export function Faq() {
     <div className="space-y-6">
       {SECTIONS.map((section) => (
         <div key={section.heading}>
-          <h3 className="mb-2 text-sm font-semibold text-slate-500">{section.heading}</h3>
+          <h3 className="mb-2 text-sm font-semibold text-muted">{section.heading}</h3>
           <div className="card divide-y divide-border">
             {section.items.map((item) => (
               <details key={item.q} className="group p-4">
-                <summary className="flex cursor-pointer list-none items-start gap-2 font-medium text-slate-800 marker:content-none">
-                  <span className="mt-0.5 text-slate-400 transition group-open:rotate-45">＋</span>
+                <summary className="flex cursor-pointer list-none items-start gap-2 font-medium text-foreground marker:content-none">
+                  <span className="mt-0.5 text-muted/70 transition group-open:rotate-45">＋</span>
                   <span>{item.q}</span>
                 </summary>
-                <p className="mt-2 pl-6 text-sm leading-relaxed text-slate-600">{item.a}</p>
+                <p className="mt-2 pl-6 text-sm leading-relaxed text-muted">{item.a}</p>
               </details>
             ))}
           </div>

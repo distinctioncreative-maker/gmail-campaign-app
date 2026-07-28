@@ -132,7 +132,7 @@ export function SuppressionsManager({
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search email"
           aria-label="Search do-not-email list"
-          className="w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="w-64 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
         <button
           onClick={() => setShowAdd((s) => !s)}
@@ -142,15 +142,15 @@ export function SuppressionsManager({
         </button>
         <button
           onClick={exportCsv}
-          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-2"
         >
           Export CSV
         </button>
       </div>
 
       {showAdd && (
-        <div className="mt-4 rounded-xl border border-slate-200 p-4">
-          <label htmlFor="add-suppressions" className="block text-sm font-medium text-slate-700">
+        <div className="mt-4 rounded-xl border border-border p-4">
+          <label htmlFor="add-suppressions" className="block text-sm font-medium text-foreground">
             Paste one or more emails (one per line, or separated by commas)
           </label>
           <textarea
@@ -158,10 +158,10 @@ export function SuppressionsManager({
             value={addText}
             onChange={(e) => setAddText(e.target.value)}
             rows={4}
-            className="mt-2 w-full rounded-xl border border-slate-200 p-3 font-mono text-sm focus:border-primary focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-border p-3 font-mono text-sm focus:border-primary focus:outline-none"
           />
           {isAdmin && (
-            <label className="mt-2 flex items-center gap-2 text-sm text-slate-600">
+            <label className="mt-2 flex items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={addScope === "ORGANIZATION"}
@@ -181,7 +181,7 @@ export function SuppressionsManager({
       )}
 
       {visible.length === 0 ? (
-        <p className="mt-4 text-sm text-slate-500">
+        <p className="mt-4 text-sm text-muted">
           {rows.length === 0
             ? "Nothing here yet. Opt-outs, unsubscribes, and bounces will appear automatically."
             : "No entries match this search."}
@@ -189,7 +189,7 @@ export function SuppressionsManager({
       ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-border text-xs uppercase text-muted">
               <tr>
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Why</th>
@@ -200,15 +200,15 @@ export function SuppressionsManager({
             </thead>
             <tbody>
               {visible.map((r) => (
-                <tr key={r.suppressionId} className="border-b border-slate-100 last:border-0">
+                <tr key={r.suppressionId} className="border-b border-border last:border-0">
                   <td className="px-3 py-2 font-medium">{r.email}</td>
-                  <td className="px-3 py-2 text-slate-600">
+                  <td className="px-3 py-2 text-muted">
                     {REASON_LABELS[r.reason] ?? r.reason}
                   </td>
-                  <td className="px-3 py-2 text-slate-600">
+                  <td className="px-3 py-2 text-muted">
                     {r.scope === "ORGANIZATION" ? "Whole team" : "Only you"}
                   </td>
-                  <td className="px-3 py-2 text-slate-600">
+                  <td className="px-3 py-2 text-muted">
                     <LocalTime value={r.createdAt} options={{ dateStyle: "medium" }} />
                   </td>
                   <td className="px-3 py-2 text-right">

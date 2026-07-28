@@ -175,29 +175,29 @@ export function ProductTour() {
       )}
 
       <div
-        className="absolute w-80 max-w-[calc(100vw-24px)] rounded-2xl bg-white p-5 shadow-2xl"
+        className="absolute w-80 max-w-[calc(100vw-24px)] rounded-2xl bg-surface p-5 shadow-2xl"
         style={tooltipStyle}
       >
         <div className="flex items-start gap-3">
           <span aria-hidden className="text-2xl">{step.emoji}</span>
           <div>
-            <p className="font-semibold text-slate-900">{step.title}</p>
-            <p className="mt-1 text-sm text-slate-600">{step.body}</p>
+            <p className="font-semibold text-foreground">{step.title}</p>
+            <p className="mt-1 text-sm text-muted">{step.body}</p>
           </div>
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <button onClick={finish} className="text-xs text-slate-400 hover:text-slate-600">
+          <button onClick={finish} className="text-xs text-muted/70 hover:text-muted">
             Skip tour
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-muted/70">
               {index + 1} / {STEPS.length}
             </span>
             {index > 0 && (
               <button
                 onClick={() => setIndex((i) => i - 1)}
-                className="rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+                className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface-2"
               >
                 Back
               </button>

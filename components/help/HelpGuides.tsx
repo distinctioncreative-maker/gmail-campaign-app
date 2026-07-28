@@ -224,12 +224,12 @@ export function HelpGuides() {
             <span aria-hidden className="text-2xl">{g.icon}</span>
             <span>
               <span className="block font-medium">{g.title}</span>
-              <span className="mt-0.5 block text-sm text-slate-500">{g.summary}</span>
+              <span className="mt-0.5 block text-sm text-muted">{g.summary}</span>
             </span>
           </button>
           {open === g.id && (
             <div className="mt-3 border-t border-border pt-3">
-              <ol className="list-decimal space-y-1.5 pl-5 text-sm text-slate-600">
+              <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted">
                 {g.steps.map((s, i) => (
                   <li key={i}>{s}</li>
                 ))}

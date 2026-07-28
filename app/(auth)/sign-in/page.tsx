@@ -45,7 +45,7 @@ export default function SignInPage() {
           }}
         />
         <div className="relative flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface/15 text-white backdrop-blur">
             <LogoMark size={26} className="[--brand-from:#fff] [--brand-to:#fff]" />
           </span>
           <span className="text-2xl font-semibold tracking-tight">{APP_NAME}</span>
@@ -63,7 +63,7 @@ export default function SignInPage() {
               ["reply", "Follow-ups stop automatically when someone replies"],
             ] as Array<[IconName, string]>).map(([icon, label]) => (
               <li key={label} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface/15 text-white">
                   <Icon name={icon} size={18} />
                 </span>
                 {label}
@@ -80,8 +80,8 @@ export default function SignInPage() {
             <Logo size={26} />
           </div>
 
-          <h1 className="text-[1.75rem] font-semibold tracking-tight text-slate-900">Welcome back</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <h1 className="text-[1.75rem] font-semibold tracking-tight text-foreground">Welcome back</h1>
+          <p className="mt-2 text-sm text-muted">
             Sign in with your work Google account to continue.
           </p>
 
@@ -97,7 +97,7 @@ export default function SignInPage() {
               {error}
             </p>
           )}
-          <p className="mt-6 text-xs text-slate-400">
+          <p className="mt-6 text-xs text-muted/70">
             Sign-in is limited to your company&apos;s Google Workspace accounts.
           </p>
         </div>

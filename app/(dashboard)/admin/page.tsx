@@ -49,11 +49,11 @@ export default async function AdminPage() {
         >
           <div>
             <h2 className="font-medium">Early-access waitlist</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-muted">
               View and export everyone who signed up from the public landing page.
             </p>
           </div>
-          <span aria-hidden className="text-slate-400">→</span>
+          <span aria-hidden className="text-muted/70">→</span>
         </Link>
       </div>
       <div className="mt-6">
@@ -63,11 +63,11 @@ export default async function AdminPage() {
         >
           <div>
             <h2 className="font-medium">Feature checklist</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-muted">
               What&apos;s shipped, in beta, or on the roadmap, kept accurate automatically.
             </p>
           </div>
-          <span aria-hidden className="text-slate-400">→</span>
+          <span aria-hidden className="text-muted/70">→</span>
         </Link>
       </div>
       <div className="mt-6">

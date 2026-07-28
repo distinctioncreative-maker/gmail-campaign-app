@@ -23,7 +23,7 @@ export default function HelpPage() {
       {/* Test Center */}
       <div className="mt-10">
         <h2 className="mb-1 font-medium">Test Center</h2>
-        <p className="mb-3 text-sm text-slate-500">
+        <p className="mb-3 text-sm text-muted">
           Run these any time to confirm everything works. Completely safe — test emails only go to
           you.
         </p>
@@ -39,7 +39,7 @@ export default function HelpPage() {
       {/* Feature suggestions */}
       <div className="mt-10">
         <h2 className="mb-1 font-medium">Suggest a feature</h2>
-        <p className="mb-3 text-sm text-slate-500">
+        <p className="mb-3 text-sm text-muted">
           Tell us what would make Cadence better — ideas are shared with your team.
         </p>
         <FeatureSuggestions />

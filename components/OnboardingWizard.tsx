@@ -82,7 +82,7 @@ export function OnboardingWizard({
                 ? "bg-green-100 text-green-700"
                 : i === step
                   ? "bg-primary text-white"
-                  : "bg-slate-100 text-slate-400"
+                  : "bg-surface-2 text-muted/70"
             }`}
           >
             {s}
@@ -96,7 +96,7 @@ export function OnboardingWizard({
         {step === 0 && (
           <>
             <h1 className="text-2xl font-semibold">Welcome, {displayName.split(" ")[0]} 👋</h1>
-            <ul className="mt-4 space-y-3 text-slate-600">
+            <ul className="mt-4 space-y-3 text-muted">
               <li>✉️ Emails send from <strong>your own Gmail</strong> — replies land in your inbox.</li>
               <li>🔒 Your leads and campaigns are <strong>private to you</strong>.</li>
               <li>🛑 When someone replies, follow-ups to them <strong>stop automatically</strong>.</li>
@@ -114,7 +114,7 @@ export function OnboardingWizard({
         {step === 1 && (
           <>
             <h1 className="text-2xl font-semibold">Connect your Gmail</h1>
-            <p className="mt-3 text-slate-600">
+            <p className="mt-3 text-muted">
               The app will be able to <strong>send emails as you</strong> and{" "}
               <strong>read replies to your campaign threads</strong>. It cannot delete your
               email or change your account settings. You can disconnect at any time from
@@ -146,7 +146,7 @@ export function OnboardingWizard({
         {step === 2 && (
           <>
             <h1 className="text-2xl font-semibold">Tell us about you</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted">
               These details fill in your email signatures and required footer.
             </p>
             <div className="mt-4">
@@ -162,7 +162,7 @@ export function OnboardingWizard({
         {step === 3 && (
           <>
             <h1 className="text-2xl font-semibold">Sending defaults</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted">
               Safe defaults are pre-filled — most people keep them.
             </p>
             <div className="mt-4">
@@ -177,7 +177,7 @@ export function OnboardingWizard({
         {step === 4 && (
           <>
             <h1 className="text-2xl font-semibold">Send yourself a test</h1>
-            <p className="mt-3 text-slate-600">
+            <p className="mt-3 text-muted">
               We&apos;ll send one test email through your Gmail so you can confirm everything
               looks right.
             </p>
@@ -209,7 +209,7 @@ export function OnboardingWizard({
         {step === 5 && (
           <>
             <h1 className="text-2xl font-semibold">You&apos;re all set 🎉</h1>
-            <p className="mt-3 text-slate-600">
+            <p className="mt-3 text-muted">
               Import your leads and build your first email — campaigns are next.
             </p>
             <div className="mt-5 flex gap-3">
@@ -221,7 +221,7 @@ export function OnboardingWizard({
               </Link>
               <Link
                 href="/templates"
-                className="rounded-xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-border px-5 py-2.5 font-medium text-foreground hover:bg-surface-2"
               >
                 Create a template
               </Link>

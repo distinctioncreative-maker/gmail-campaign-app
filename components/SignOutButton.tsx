@@ -15,7 +15,7 @@ export function SignOutButton() {
       }}
       aria-label="Sign out"
       title="Sign out"
-      className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+      className="rounded-lg p-2 text-muted/70 hover:bg-surface-2 hover:text-foreground"
     >
       <span aria-hidden>⎋</span>
     </button>

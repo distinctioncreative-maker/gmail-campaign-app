@@ -26,7 +26,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
         return (
           <div key={`${item.href}-wrap`} className="contents">
           {showHeading && (
-            <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400 first:pt-1">
+            <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-muted/70 first:pt-1">
               {item.section}
             </p>
           )}
@@ -38,7 +38,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
             className={`group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
               active
                 ? "bg-primary-soft text-primary shadow-sm"
-                : "text-slate-500 hover:bg-white hover:text-slate-900"
+                : "text-muted hover:bg-surface hover:text-foreground"
             }`}
           >
             {active && (
@@ -66,7 +66,7 @@ function Brand({ workspaceName }: { workspaceName?: string }) {
     <div className="px-2">
       <Logo size={26} />
       {workspaceName && (
-        <p className="mt-1.5 truncate text-[11px] font-medium uppercase tracking-widest text-slate-400">
+        <p className="mt-1.5 truncate text-[11px] font-medium uppercase tracking-widest text-muted/70">
           {workspaceName}
         </p>
       )}

@@ -54,13 +54,13 @@ export function SpamCheck({ subject, html }: { subject: string; html: string }) 
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-semibold tabular-nums text-slate-900">{score}</span>
-            <span className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Grade {grade}</span>
+            <span className="text-2xl font-semibold tabular-nums text-foreground">{score}</span>
+            <span className="text-[10px] font-medium uppercase tracking-wide text-muted/70">Grade {grade}</span>
           </div>
         </div>
         <div>
-          <p className="text-sm font-medium text-slate-800">Inbox-friendliness</p>
-          <p className="mt-0.5 text-sm text-slate-500">{verdict}</p>
+          <p className="text-sm font-medium text-foreground">Inbox-friendliness</p>
+          <p className="mt-0.5 text-sm text-muted">{verdict}</p>
         </div>
       </div>
 
@@ -76,12 +76,12 @@ export function SpamCheck({ subject, html }: { subject: string; html: string }) 
                 {m.icon}
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-800">
+                <p className="text-sm font-medium text-foreground">
                   {c.label}
-                  <span className="ml-2 font-normal text-slate-500">{c.detail}</span>
+                  <span className="ml-2 font-normal text-muted">{c.detail}</span>
                 </p>
                 {c.status !== "pass" && c.fix && (
-                  <p className="mt-0.5 text-xs text-slate-400">{c.fix}</p>
+                  <p className="mt-0.5 text-xs text-muted/70">{c.fix}</p>
                 )}
               </div>
             </li>
@@ -89,7 +89,7 @@ export function SpamCheck({ subject, html }: { subject: string; html: string }) 
         })}
       </ul>
 
-      <p className="mt-4 text-xs text-slate-400">
+      <p className="mt-4 text-xs text-muted/70">
         This is a content guide, not a guarantee of inbox placement. Replies and a clean list matter
         most.
       </p>

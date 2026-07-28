@@ -56,12 +56,12 @@ export default async function RepDetailPage({
 
   return (
     <div>
-      <Link href="/team" className="text-sm text-slate-500 hover:underline">
+      <Link href="/team" className="text-sm text-muted hover:underline">
         ← Team
       </Link>
       <div className="mt-2">
         <h1 className="text-2xl font-semibold">{repName}</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-muted">
           {repName !== rep.email && <>{rep.email} · </>}
           {team ? `Team ${team.name}` : "Not on a team"} · {rep.role === "ADMIN" ? "Administrator" : rep.role === "MANAGER" ? "Team Lead" : "Sales Rep"}
           {!rep.active && " · account disabled"}
@@ -71,7 +71,7 @@ export default async function RepDetailPage({
       <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {tiles.map(([label, value]) => (
           <div key={label} className="card p-4">
-            <p className="text-xs text-slate-500">{label}</p>
+            <p className="text-xs text-muted">{label}</p>
             <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
           </div>
         ))}
@@ -79,11 +79,11 @@ export default async function RepDetailPage({
 
       <h2 className="mt-8 mb-3 font-medium">Campaigns</h2>
       {campaigns.length === 0 ? (
-        <div className="card p-8 text-center text-sm text-slate-500">No campaigns yet.</div>
+        <div className="card p-8 text-center text-sm text-muted">No campaigns yet.</div>
       ) : (
         <div className="overflow-x-auto card">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-border text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-3">Campaign</th>
                 <th className="px-4 py-3">Status</th>
@@ -98,21 +98,21 @@ export default async function RepDetailPage({
               {campaigns.map((c) => {
                 const badge = CAMPAIGN_STATUS_LABELS[c.status] ?? {
                   label: c.status,
-                  className: "bg-slate-100 text-slate-600",
+                  className: "bg-surface-2 text-muted",
                 };
                 const cSent = c.sentCount + c.followupSentCount;
                 return (
-                  <tr key={c.campaignId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <tr key={c.campaignId} className="border-b border-border last:border-0 hover:bg-surface-2">
                     <td className="px-4 py-3 font-medium">{c.name}</td>
                     <td className="px-4 py-3">
                       <span className={`badge ${badge.className}`}>{badge.label}</span>
                     </td>
                     <td className="px-4 py-3 tabular-nums">{cSent}</td>
                     <td className="px-4 py-3 tabular-nums">{c.replyCount}</td>
-                    <td className="px-4 py-3 tabular-nums text-xs text-slate-500">
+                    <td className="px-4 py-3 tabular-nums text-xs text-muted">
                       {cSent > 0 ? formatPercent((c.replyCount / cSent) * 100) : "—"}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-4 py-3 text-xs text-muted">
                       <LocalTime value={c.updatedAt} />
                     </td>
                     <td className="px-4 py-3 text-right">

@@ -79,7 +79,7 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
   return (
     <div className="card p-6">
       <h2 className="font-medium">{solo ? "Invite a teammate" : "Invite teammates"}</h2>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm text-muted">
         {solo
           ? "Add someone by email to turn your workspace into a shared team. They join automatically when they sign in."
           : "Add teammates by email. They join your workspace automatically the next time they sign in."}
@@ -91,12 +91,12 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="teammate@company.com"
-          className="min-w-0 flex-1 rounded-xl border border-border bg-white px-3 py-2 text-sm"
+          className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm"
         />
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="rounded-xl border border-border bg-white px-3 py-2 text-sm"
+          className="rounded-xl border border-border bg-surface px-3 py-2 text-sm"
         >
           <option value="SALES_REP">Sales Rep</option>
           <option value="MANAGER">Team Lead</option>
@@ -110,10 +110,10 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
       {pending.length > 0 && (
         <ul className="mt-4 space-y-2">
           {pending.map((i) => (
-            <li key={i.email} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
+            <li key={i.email} className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-sm">
               <span>
                 <span className="font-medium">{i.email}</span>{" "}
-                <span className="text-slate-500">· {i.role.toLowerCase().replace("_", " ")} · pending</span>
+                <span className="text-muted">· {i.role.toLowerCase().replace("_", " ")} · pending</span>
               </span>
               <button onClick={() => void revoke(i.email)} className="text-xs font-medium text-red-600 hover:underline">
                 Revoke

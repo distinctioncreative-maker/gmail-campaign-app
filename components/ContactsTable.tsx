@@ -164,7 +164,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search name, business, or email"
           aria-label="Search contacts"
-          className="w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="w-64 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
         <div className="segmented flex">
           {FILTERS.map((f) => (
@@ -196,7 +196,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
           <button
             onClick={() => setSelected(new Set())}
             disabled={busy}
-            className="btn-ghost px-3 py-1.5 text-xs text-slate-500"
+            className="btn-ghost px-3 py-1.5 text-xs text-muted"
           >
             Clear
           </button>
@@ -204,7 +204,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
       )}
 
       {visible.length === 0 ? (
-        <p className="mt-3 rounded-2xl bg-white p-6 text-sm text-slate-500 shadow-sm">
+        <p className="mt-3 rounded-2xl bg-surface p-6 text-sm text-muted shadow-sm">
           {contacts.length === 0
             ? "No contacts yet. Import your first lead list above to get started."
             : "No contacts match this search."}
@@ -229,18 +229,18 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
                 />
                 <Link href={`/leads/${c.contactId}`} className="min-w-0 flex-1">
                   <p className="truncate font-medium">{c.fullName || c.email}</p>
-                  <p className="truncate text-xs text-slate-500">{c.businessName || c.email}</p>
+                  <p className="truncate text-xs text-muted">{c.businessName || c.email}</p>
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs ${b.className}`}>{b.label}</span>
                     {(c.emailsSentCount > 0 || c.campaignCount > 0) && (
-                      <span className="text-xs tabular-nums text-slate-500">
+                      <span className="text-xs tabular-nums text-muted">
                         {c.emailsSentCount} sent
                         {c.replyCount > 0 && <span className="font-medium text-green-600"> · {c.replyCount} replied</span>}
                       </span>
                     )}
                   </div>
                 </Link>
-                <span aria-hidden className="mt-1 text-slate-300">›</span>
+                <span aria-hidden className="mt-1 text-muted/50">›</span>
               </li>
             );
           })}
@@ -249,7 +249,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
         {/* Desktop: table */}
         <div className="mt-3 hidden overflow-x-auto card sm:block">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-border text-xs uppercase text-muted">
               <tr>
                 <th className="w-10 px-3 py-3">
                   <input
@@ -272,7 +272,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
               {sorted.map((c) => (
                 <tr
                   key={c.contactId}
-                  className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${
+                  className={`border-b border-border last:border-0 hover:bg-surface-2 ${
                     selected.has(c.contactId) ? "bg-primary-soft/40" : ""
                   }`}
                 >
@@ -290,12 +290,12 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
                       {c.fullName || "—"}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{c.businessName}</td>
-                  <td className="px-4 py-3 text-slate-600">{c.email}</td>
-                  <td className="px-4 py-3 text-slate-600">{c.phone}</td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-muted">{c.businessName}</td>
+                  <td className="px-4 py-3 text-muted">{c.email}</td>
+                  <td className="px-4 py-3 text-muted">{c.phone}</td>
+                  <td className="px-4 py-3 text-xs text-muted">
                     {c.emailsSentCount === 0 && c.campaignCount === 0 ? (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-muted/50">—</span>
                     ) : (
                       <span className="tabular-nums">
                         {c.emailsSentCount} sent

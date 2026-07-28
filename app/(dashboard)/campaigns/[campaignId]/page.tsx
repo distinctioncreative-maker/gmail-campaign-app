@@ -54,9 +54,9 @@ export default async function CampaignDetailPage({
   const remaining = Math.max(0, totalToSend - doneCount);
 
   const stats: Array<{ label: string; value: number; tone: string }> = [
-    { label: "Recipients", value: campaign.eligibleRecipients, tone: "text-slate-900" },
+    { label: "Recipients", value: campaign.eligibleRecipients, tone: "text-foreground" },
     { label: "Sent", value: totalSent(campaign), tone: "text-green-600" },
-    { label: "Follow-ups", value: campaign.followupSentCount, tone: "text-slate-900" },
+    { label: "Follow-ups", value: campaign.followupSentCount, tone: "text-foreground" },
     { label: "Replies", value: campaign.replyCount, tone: "text-indigo-600" },
     ...(campaign.trackingEnabled
       ? [
@@ -65,19 +65,19 @@ export default async function CampaignDetailPage({
         ]
       : []),
     { label: "Excluded", value: campaign.excludedRecipients, tone: "text-amber-600" },
-    { label: "Problems", value: campaign.errorCount, tone: campaign.errorCount > 0 ? "text-red-600" : "text-slate-400" },
+    { label: "Problems", value: campaign.errorCount, tone: campaign.errorCount > 0 ? "text-red-600" : "text-muted/70" },
   ];
 
   return (
     <div className="animate-rise">
-      <Link href="/campaigns" className="text-sm text-slate-500 hover:underline">
+      <Link href="/campaigns" className="text-sm text-muted hover:underline">
         ← All campaigns
       </Link>
 
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{campaign.name}</h1>
-          {campaign.description && <p className="mt-0.5 text-sm text-slate-500">{campaign.description}</p>}
+          {campaign.description && <p className="mt-0.5 text-sm text-muted">{campaign.description}</p>}
         </div>
         <div className="flex items-center gap-3">
           {campaign.status === "ACTIVE" && <LiveRefresh intervalMs={12000} />}
@@ -89,14 +89,14 @@ export default async function CampaignDetailPage({
       {totalToSend > 0 && (
         <div className="mt-5 card p-5">
           <div className="flex items-baseline justify-between">
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-sm font-medium text-foreground">
               {doneCount} of {totalToSend} sent
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted">
               {pct}% · {remaining} to go
             </p>
           </div>
-          <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-surface-2">
             <div
               className="h-full rounded-full brand-gradient transition-all"
               style={{ width: `${pct}%` }}
@@ -109,7 +109,7 @@ export default async function CampaignDetailPage({
         {stats.map((s) => (
           <div key={s.label} className="card card-hover p-4 text-center">
             <p className={`text-2xl font-semibold tabular-nums ${s.tone}`}>{s.value}</p>
-            <p className="mt-1 text-xs text-slate-500">{s.label}</p>
+            <p className="mt-1 text-xs text-muted">{s.label}</p>
           </div>
         ))}
       </div>
@@ -138,7 +138,7 @@ export default async function CampaignDetailPage({
           <h2 className="font-medium">Template performance (A/B)</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase text-slate-500">
+              <thead className="text-xs uppercase text-muted">
                 <tr>
                   <th className="py-2 pr-4">Template</th>
                   <th className="py-2 pr-4">Sent</th>
@@ -152,7 +152,7 @@ export default async function CampaignDetailPage({
                   const best = Math.max(...abRows.map((x) => (x.sent > 0 ? x.replied / x.sent : 0)));
                   const isBest = r.sent > 0 && r.replied / r.sent === best && best > 0;
                   return (
-                    <tr key={i} className="border-t border-slate-100">
+                    <tr key={i} className="border-t border-border">
                       <td className="py-2 pr-4 font-medium">
                         <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary-soft text-[10px] font-bold text-primary">
                           {String.fromCharCode(65 + i)}
@@ -164,10 +164,10 @@ export default async function CampaignDetailPage({
                       <td className="py-2 pr-4 tabular-nums">{r.replied}</td>
                       <td className="py-2">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100">
+                          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
                             <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.min(100, rate)}%` }} />
                           </div>
-                          <span className="tabular-nums text-xs text-slate-500">
+                          <span className="tabular-nums text-xs text-muted">
                             {r.sent > 0 ? `${rate.toFixed(1)}%` : "—"}
                           </span>
                         </div>
@@ -205,7 +205,7 @@ export default async function CampaignDetailPage({
           <h2 className="mb-3 font-medium">Activity</h2>
           <div className="card p-4">
             {events.length === 0 ? (
-              <p className="text-sm text-slate-500">Nothing yet.</p>
+              <p className="text-sm text-muted">Nothing yet.</p>
             ) : (
               <ul className="space-y-3">
                 {events.map((e) => (
@@ -216,12 +216,12 @@ export default async function CampaignDetailPage({
                           ? "text-red-700"
                           : e.severity === "WARNING"
                             ? "text-amber-700"
-                            : "text-slate-700"
+                            : "text-foreground"
                       }
                     >
                       {e.message}
                     </p>
-                    <LocalTime value={e.createdAt} className="text-xs text-slate-400" />
+                    <LocalTime value={e.createdAt} className="text-xs text-muted/70" />
                   </li>
                 ))}
               </ul>

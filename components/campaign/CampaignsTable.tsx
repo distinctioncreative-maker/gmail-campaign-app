@@ -91,18 +91,18 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
 
   return (
     <div className="mt-6 card overflow-hidden">
-      <div className="border-b border-slate-100 p-3">
+      <div className="border-b border-border p-3">
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search campaigns…"
-          className="w-full max-w-xs rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+          className="w-full max-w-xs rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
         />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+          <thead className="border-b border-border text-xs uppercase text-muted">
             <tr>
               <SortTh label="Campaign" sortKey="name" sort={sort} onToggle={toggle} />
               <SortTh label="Status" sortKey="status" sort={sort} onToggle={toggle} />
@@ -115,7 +115,7 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
           </thead>
           <tbody>
             {sorted.map((c) => (
-              <tr key={c.campaignId} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+              <tr key={c.campaignId} className="border-b border-border last:border-0 hover:bg-surface-2">
                 <td className="px-4 py-3 font-medium">
                   <Link href={`/campaigns/${c.campaignId}`} className="hover:underline">
                     {c.name}
@@ -127,7 +127,7 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                 <td className="px-4 py-3 tabular-nums">{c.recipients}</td>
                 <td className="px-4 py-3 tabular-nums">{c.sent}</td>
                 <td className="px-4 py-3 tabular-nums">{c.replies}</td>
-                <td className="px-4 py-3 text-slate-500">
+                <td className="px-4 py-3 text-muted">
                   <LocalTime value={c.updatedAt} options={{ dateStyle: "medium" }} />
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -147,7 +147,7 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                           onClick={() => void setArchived(c, true)}
                           disabled={busyId === c.campaignId}
                           title="Archive (hide from this list)"
-                          className="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 disabled:opacity-40"
+                          className="rounded-lg px-2 py-1 text-xs font-medium text-muted transition hover:bg-surface-2 disabled:opacity-40"
                         >
                           Archive
                         </button>
@@ -159,7 +159,7 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                         disabled={busyId === c.campaignId}
                         aria-label={`Delete ${c.name}`}
                         title="Delete"
-                        className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                        className="rounded-lg p-1.5 text-muted/70 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
                       >
                         <Icon name="trash" size={16} />
                       </button>

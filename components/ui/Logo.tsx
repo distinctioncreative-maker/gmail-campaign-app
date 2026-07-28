@@ -49,7 +49,7 @@ export function Logo({
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark size={size} />
       {wordmark && (
-        <span className="text-lg font-semibold tracking-tight text-slate-900">{APP_NAME}</span>
+        <span className="text-lg font-semibold tracking-tight text-foreground">{APP_NAME}</span>
       )}
     </span>
   );

@@ -53,7 +53,7 @@ export function TestCenter() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-medium">{c.label}</p>
-                  <p className="mt-1 text-sm text-slate-500">{c.description}</p>
+                  <p className="mt-1 text-sm text-muted">{c.description}</p>
                 </div>
                 <span aria-hidden className="text-xl">
                   {st === "pass" ? "✅" : st === "fail" ? "❌" : st === "running" ? "⏳" : "⚪"}
@@ -71,7 +71,7 @@ export function TestCenter() {
               <button
                 onClick={() => run(c.id)}
                 disabled={st === "running"}
-                className="mt-3 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="mt-3 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
               >
                 {st === "running" ? "Running…" : "Run check"}
               </button>

@@ -67,7 +67,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
                   ? "border-green-200 bg-green-50 text-green-800"
                   : t.variant === "error"
                     ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-slate-200 bg-white text-slate-800"
+                    : "border-border bg-surface text-foreground"
               }`}
             >
               {t.message}
@@ -82,10 +82,10 @@ export function UIProviders({ children }: { children: ReactNode }) {
             <div
               role="dialog"
               aria-modal="true"
-              className="relative w-full max-w-md animate-rise rounded-2xl bg-white p-6 shadow-2xl"
+              className="relative w-full max-w-md animate-rise rounded-2xl bg-surface p-6 shadow-2xl"
             >
-              <h2 className="text-lg font-semibold text-slate-900">{confirmState.title}</h2>
-              {confirmState.body && <p className="mt-2 text-sm text-slate-600">{confirmState.body}</p>}
+              <h2 className="text-lg font-semibold text-foreground">{confirmState.title}</h2>
+              {confirmState.body && <p className="mt-2 text-sm text-muted">{confirmState.body}</p>}
               <div className="mt-5 flex justify-end gap-2">
                 <button onClick={() => closeConfirm(false)} className="btn-ghost px-4 py-2 text-sm">
                   {confirmState.cancelLabel ?? "Cancel"}

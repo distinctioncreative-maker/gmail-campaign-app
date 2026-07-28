@@ -37,7 +37,7 @@ export default async function CampaignsPage({
               ← Back to active campaigns
             </Link>
           ) : (
-            <Link href="/campaigns?archived=1" className="text-sm text-slate-500 hover:underline">
+            <Link href="/campaigns?archived=1" className="text-sm text-muted hover:underline">
               View archived ({archivedCount}) →
             </Link>
           )}
@@ -46,8 +46,8 @@ export default async function CampaignsPage({
 
       {campaigns.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-slate-600">No campaigns yet.</p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-muted">No campaigns yet.</p>
+          <p className="mt-1 text-sm text-muted">
             A guided wizard walks you through leads, email, schedule, and a safety review.
           </p>
           <Link

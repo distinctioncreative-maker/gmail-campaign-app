@@ -76,14 +76,14 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
             rows={2}
             autoFocus
             placeholder="e.g. Three gentle nudges over two weeks for owners who didn't reply to a working-capital intro"
-            className="mt-2 w-full rounded-xl border border-primary/20 bg-white p-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-primary/20 bg-surface p-2.5 text-sm focus:border-primary focus:outline-none"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
             {IDEAS.map((i) => (
               <button
                 key={i}
                 onClick={() => setPrompt(i)}
-                className="rounded-full border border-primary/20 bg-white px-2.5 py-1 text-xs text-slate-600 hover:border-primary"
+                className="rounded-full border border-primary/20 bg-surface px-2.5 py-1 text-xs text-muted hover:border-primary"
               >
                 {i}
               </button>
@@ -100,7 +100,7 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
             <button onClick={() => setOpen(false)} className="btn-ghost px-3 py-2 text-sm">
               Close
             </button>
-            <span className="text-xs text-slate-400">Replaces the steps below — you can still edit each.</span>
+            <span className="text-xs text-muted/70">Replaces the steps below — you can still edit each.</span>
           </div>
         </div>
       )}

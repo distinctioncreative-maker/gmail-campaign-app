@@ -33,7 +33,7 @@ export function WorkspaceNameCard({ initial }: { initial: string }) {
   return (
     <div className="card p-6">
       <h2 className="font-medium">Workspace name</h2>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm text-muted">
         Your company&apos;s name, shown in the sidebar and on Home for everyone in this workspace —
         e.g. “Alpine Funding Partners” or “Everest Business Funding”.
       </p>
@@ -43,7 +43,7 @@ export function WorkspaceNameCard({ initial }: { initial: string }) {
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
           placeholder="Company name"
-          className="w-72 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="w-72 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
         <button
           onClick={() => void save()}

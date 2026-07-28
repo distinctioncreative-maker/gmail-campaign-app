@@ -73,7 +73,7 @@ export function LeadPreviewTable({
         <h2 className="font-medium">
           {leads.length} lead{leads.length === 1 ? "" : "s"} found — {selected.size} selected
         </h2>
-        <button onClick={onStartOver} className="text-sm text-slate-500 hover:underline">
+        <button onClick={onStartOver} className="text-sm text-muted hover:underline">
           Start over
         </button>
       </div>
@@ -86,7 +86,7 @@ export function LeadPreviewTable({
 
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+          <thead className="border-b border-border text-xs uppercase text-muted">
             <tr>
               <th className="px-3 py-2" />
               <th className="px-3 py-2">Name</th>
@@ -100,7 +100,7 @@ export function LeadPreviewTable({
             {leads.map((lead) => {
               const badge = badgeFor(lead.classification);
               return (
-                <tr key={lead.index} className="border-b border-slate-100 last:border-0">
+                <tr key={lead.index} className="border-b border-border last:border-0">
                   <td className="px-3 py-2">
                     <input
                       type="checkbox"
@@ -111,14 +111,14 @@ export function LeadPreviewTable({
                     />
                   </td>
                   <td className="px-3 py-2 font-medium">{lead.fullName || "—"}</td>
-                  <td className="px-3 py-2 text-slate-600">{lead.businessName || "—"}</td>
-                  <td className="px-3 py-2 text-slate-600">{lead.email ?? "—"}</td>
+                  <td className="px-3 py-2 text-muted">{lead.businessName || "—"}</td>
+                  <td className="px-3 py-2 text-muted">{lead.email ?? "—"}</td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
                       {badge.label}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-slate-500">
+                  <td className="px-3 py-2 text-xs text-muted">
                     {lead.classification === "CONTACTED_BEFORE" && lead.lastCampaignAt
                       ? `Last contacted ${new Date(lead.lastCampaignAt).toLocaleDateString()}`
                       : lead.warnings.slice(0, 2).join("; ")}

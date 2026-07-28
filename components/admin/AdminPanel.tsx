@@ -58,7 +58,7 @@ export function AdminPanel({
     setNotice(res.ok ? "Settings saved." : "Could not save settings.");
   }
 
-  const input = "rounded-xl border border-slate-200 px-3 py-2 text-sm";
+  const input = "rounded-xl border border-border px-3 py-2 text-sm";
 
   return (
     <div className="space-y-6">
@@ -68,7 +68,7 @@ export function AdminPanel({
         <h2 className="font-medium">Team members</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-border text-xs uppercase text-muted">
               <tr>
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Role</th>
@@ -77,7 +77,7 @@ export function AdminPanel({
             </thead>
             <tbody>
               {members.map((m) => (
-                <tr key={m.userId} className="border-b border-slate-100 last:border-0">
+                <tr key={m.userId} className="border-b border-border last:border-0">
                   <td className="px-3 py-2 font-medium">{m.email}</td>
                   <td className="px-3 py-2">
                     <select
@@ -93,7 +93,7 @@ export function AdminPanel({
                   </td>
                   <td className="px-3 py-2">
                     {m.userId === currentUserId ? (
-                      <span className="text-xs text-slate-400">You</span>
+                      <span className="text-xs text-muted/70">You</span>
                     ) : (
                       <button
                         onClick={() => updateMember(m.userId, { active: !m.active })}
@@ -114,7 +114,7 @@ export function AdminPanel({
       <div className="card p-6">
         <h2 className="font-medium">Organization policies</h2>
 
-        <label className="mt-4 block text-sm font-medium text-slate-700">
+        <label className="mt-4 block text-sm font-medium text-foreground">
           Prevent two reps emailing the same merchant
           <select
             value={settings.collisionPolicy}
@@ -129,7 +129,7 @@ export function AdminPanel({
         </label>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-foreground">
             Block window (days)
             <input
               type="number"
@@ -140,7 +140,7 @@ export function AdminPanel({
               className={`mt-1 block w-full ${input}`}
             />
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-foreground">
             Require typing SEND above this many recipients
             <input
               type="number"

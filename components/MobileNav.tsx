@@ -78,9 +78,9 @@ export function MobileNav({
               <Icon
                 name={item.icon}
                 size={22}
-                className={`transition ${active ? "text-primary" : "text-slate-400"}`}
+                className={`transition ${active ? "text-primary" : "text-muted/70"}`}
               />
-              <span className={active ? "text-primary" : "text-slate-500"}>{item.label}</span>
+              <span className={active ? "text-primary" : "text-muted"}>{item.label}</span>
             </Link>
           );
         })}
@@ -99,13 +99,13 @@ export function MobileNav({
             viewBox="0 0 24 24"
             fill="currentColor"
             aria-hidden
-            className={moreOpen || moreActive ? "text-primary" : "text-slate-400"}
+            className={moreOpen || moreActive ? "text-primary" : "text-muted/70"}
           >
             <circle cx="5" cy="12" r="2" />
             <circle cx="12" cy="12" r="2" />
             <circle cx="19" cy="12" r="2" />
           </svg>
-          <span className={moreOpen || moreActive ? "text-primary" : "text-slate-500"}>More</span>
+          <span className={moreOpen || moreActive ? "text-primary" : "text-muted"}>More</span>
         </button>
       </nav>
 
@@ -121,13 +121,13 @@ export function MobileNav({
             className="absolute inset-x-0 bottom-0 max-h-[82vh] overflow-y-auto rounded-t-3xl border-t border-border bg-surface p-5 shadow-2xl"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)", animation: "rise 0.26s cubic-bezier(0.22,1,0.36,1)" }}
           >
-            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-slate-200" aria-hidden />
+            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-border" aria-hidden />
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-500">Menu</h2>
+              <h2 className="text-sm font-semibold text-muted">Menu</h2>
               <button
                 onClick={() => setMoreOpen(false)}
                 aria-label="Close"
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+                className="rounded-lg p-1.5 text-muted/70 hover:bg-surface-2"
               >
                 <Icon name="x" size={18} />
               </button>
@@ -144,10 +144,10 @@ export function MobileNav({
                     className={`flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-center text-xs font-medium transition ${
                       active
                         ? "border-primary/30 bg-primary-soft text-primary"
-                        : "border-border text-slate-600 hover:bg-slate-50"
+                        : "border-border text-muted hover:bg-surface-2"
                     }`}
                   >
-                    <Icon name={item.icon} size={20} className={active ? "text-primary" : "text-slate-400"} />
+                    <Icon name={item.icon} size={20} className={active ? "text-primary" : "text-muted/70"} />
                     {item.label}
                   </Link>
                 );
@@ -155,7 +155,7 @@ export function MobileNav({
             </div>
 
             <div className="mt-4 flex items-center justify-between rounded-2xl border border-border p-2 pl-4">
-              <span className="text-sm text-slate-600">Appearance</span>
+              <span className="text-sm text-muted">Appearance</span>
               <ThemeToggle />
             </div>
 

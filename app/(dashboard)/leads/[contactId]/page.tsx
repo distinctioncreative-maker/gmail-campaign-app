@@ -41,13 +41,13 @@ export default async function ContactDetailPage({
 
   return (
     <div>
-      <Link href="/leads" className="text-sm text-slate-500 hover:underline">
+      <Link href="/leads" className="text-sm text-muted hover:underline">
         ← All leads
       </Link>
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">{contact.fullName || contact.email}</h1>
-          <p className="text-slate-600">{contact.businessName}</p>
+          <p className="text-muted">{contact.businessName}</p>
         </div>
         {suppression || contact.emailOptOut ? (
           <span className="rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700">
@@ -70,7 +70,7 @@ export default async function ContactDetailPage({
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {engagement.map((k) => (
           <div key={k.label} className="card p-5">
-            <p className="text-sm text-slate-500">{k.label}</p>
+            <p className="text-sm text-muted">{k.label}</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">{k.value}</p>
           </div>
         ))}
@@ -96,29 +96,29 @@ export default async function ContactDetailPage({
         <div className="card p-6">
           <h2 className="font-medium">Details</h2>
           <dl className="mt-3 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
-            <dt className="text-slate-500">Email</dt>
+            <dt className="text-muted">Email</dt>
             <dd>{contact.email}</dd>
-            <dt className="text-slate-500">Phone</dt>
+            <dt className="text-muted">Phone</dt>
             <dd>{contact.phone || "—"}</dd>
-            <dt className="text-slate-500">Region</dt>
+            <dt className="text-muted">Region</dt>
             <dd>{contact.region || "—"}</dd>
-            <dt className="text-slate-500">Requested amount</dt>
+            <dt className="text-muted">Requested amount</dt>
             <dd>
               {contact.requestedAmount !== null
                 ? `$${contact.requestedAmount.toLocaleString()}`
                 : "—"}
             </dd>
-            <dt className="text-slate-500">Lead source</dt>
+            <dt className="text-muted">Lead source</dt>
             <dd>{contact.leadSource || "—"}</dd>
-            <dt className="text-slate-500">First imported</dt>
+            <dt className="text-muted">First imported</dt>
             <dd>{fmt(contact.firstSeenAt)}</dd>
-            <dt className="text-slate-500">Last seen in an import</dt>
+            <dt className="text-muted">Last seen in an import</dt>
             <dd>{fmt(contact.lastSeenAt)}</dd>
           </dl>
           {contact.notes && (
-            <div className="mt-4 rounded-xl bg-slate-50 p-3">
-              <p className="text-xs font-medium uppercase text-slate-400">Notes</p>
-              <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{contact.notes}</p>
+            <div className="mt-4 rounded-xl bg-surface-2 p-3">
+              <p className="text-xs font-medium uppercase text-muted/70">Notes</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{contact.notes}</p>
             </div>
           )}
         </div>
@@ -126,22 +126,22 @@ export default async function ContactDetailPage({
         <div className="card p-6">
           <h2 className="font-medium">Outreach history</h2>
           {contact.campaignCount === 0 && contact.emailsSentCount === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">
+            <p className="mt-3 text-sm text-muted">
               This person has not been included in any of your campaigns yet.
             </p>
           ) : (
             <dl className="mt-3 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
-              <dt className="text-slate-500">Last campaign</dt>
+              <dt className="text-muted">Last campaign</dt>
               <dd>{contact.lastCampaignName ?? "—"}</dd>
-              <dt className="text-slate-500">Last emailed</dt>
+              <dt className="text-muted">Last emailed</dt>
               <dd>{fmt(contact.lastCampaignAt)}</dd>
-              <dt className="text-slate-500">First replied</dt>
+              <dt className="text-muted">First replied</dt>
               <dd>{fmt(contact.repliedAt)}</dd>
-              <dt className="text-slate-500">Most recent reply</dt>
+              <dt className="text-muted">Most recent reply</dt>
               <dd>{fmt(contact.lastRepliedAt)}</dd>
-              <dt className="text-slate-500">Bounced</dt>
+              <dt className="text-muted">Bounced</dt>
               <dd>{fmt(contact.bouncedAt)}</dd>
-              <dt className="text-slate-500">Unsubscribed</dt>
+              <dt className="text-muted">Unsubscribed</dt>
               <dd>{fmt(contact.unsubscribedAt)}</dd>
             </dl>
           )}
@@ -153,7 +153,7 @@ export default async function ContactDetailPage({
                 : `On your do-not-email list (${suppression?.reason.replaceAll("_", " ").toLowerCase()}).`}
             </p>
           )}
-          <p className="mt-4 text-xs text-slate-400">
+          <p className="mt-4 text-xs text-muted/70">
             Reply counts update on each reply scan. Use “Scan for replies” on the Reports page to
             sync everything now.
           </p>
