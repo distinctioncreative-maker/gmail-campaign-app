@@ -244,33 +244,57 @@
 .pipeEndpointR svg { color: var(--good); }
 @media (max-width: 560px) { .pipeEndpoint { display: none; } }
 
+/* Huge, low-opacity running total behind the whole scene — the enterprise
+   BI-dashboard trick of one dominant number as a watermark, with the sharp
+   animation playing on top of it. */
+.pipeWatermark {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-weight: 700; font-size: clamp(56px, 11vw, 132px);
+  letter-spacing: -0.02em; color: rgba(245, 197, 106, 0.1); pointer-events: none;
+  user-select: none; white-space: nowrap;
+}
+
 /* A big deal landing — one at a time, gold and unmistakable, not a swarm of
    emoji. Real MCA deal sizes deserve a moment, not a quiet tick of a number. */
 .pipeDeal {
   position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column;
-  align-items: center; pointer-events: none; animation: dealPop 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  align-items: center; pointer-events: none; animation: dealPop 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .pipeDealGlow {
-  position: absolute; top: 50%; left: 50%; width: 90px; height: 90px; border-radius: 50%;
+  position: absolute; top: 50%; left: 50%; width: 130px; height: 130px; border-radius: 50%;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(245, 197, 106, 0.55), rgba(245, 197, 106, 0) 70%);
+  background: radial-gradient(circle, rgba(245, 197, 106, 0.6), rgba(245, 197, 106, 0) 70%);
   filter: blur(2px);
 }
-.pipeDealEmoji { position: relative; font-size: 34px; line-height: 1; filter: drop-shadow(0 4px 18px rgba(245, 197, 106, 0.65)); }
+.pipeDealEmoji { position: relative; font-size: 52px; line-height: 1; filter: drop-shadow(0 6px 24px rgba(245, 197, 106, 0.7)); }
 .pipeDealAmount {
-  position: relative; margin-top: 2px; font-family: var(--mono); font-weight: 700; font-size: 15px;
+  position: relative; margin-top: 4px; font-family: var(--mono); font-weight: 800; font-size: 22px;
   letter-spacing: 0.02em; background: linear-gradient(120deg, #ffe6ab, #f5c56a 55%, #d89b3c);
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  text-shadow: 0 2px 16px rgba(245, 197, 106, 0.4);
+  text-shadow: 0 2px 20px rgba(245, 197, 106, 0.5);
 }
+/* Big deals (≥$300K) get a noticeably bigger, brighter moment — the
+   animation should feel the size of the deal, not treat every reply the same. */
+.pipeDealBig .pipeDealGlow { width: 190px; height: 190px; background: radial-gradient(circle, rgba(245, 197, 106, 0.75), rgba(245, 197, 106, 0) 72%); }
+.pipeDealBig .pipeDealEmoji { font-size: 76px; filter: drop-shadow(0 8px 32px rgba(245, 197, 106, 0.85)); }
+.pipeDealBig .pipeDealAmount { font-size: 30px; text-shadow: 0 2px 26px rgba(245, 197, 106, 0.7); }
 @keyframes dealPop {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
-  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-  32% { transform: translate(-50%, -50%) scale(1); }
-  78% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -120%) scale(0.92); }
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+  16% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -65%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -140%) scale(0.9); }
 }
 @media (prefers-reduced-motion: reduce) { .pipeDeal { animation: none; opacity: 0; } }
+@media (max-width: 560px) {
+  .pipeWatermark { font-size: clamp(36px, 14vw, 64px); }
+  .pipeDealEmoji { font-size: 38px; }
+  .pipeDealAmount { font-size: 16px; }
+  .pipeDealGlow { width: 90px; height: 90px; }
+  .pipeDealBig .pipeDealEmoji { font-size: 52px; }
+  .pipeDealBig .pipeDealAmount { font-size: 20px; }
+  .pipeDealBig .pipeDealGlow { width: 120px; height: 120px; }
+}
 
 .pipeStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
 .pipeChip { background: rgba(0, 0, 0, 0.5); padding: 16px 20px; text-align: left; }

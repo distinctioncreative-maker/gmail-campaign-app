@@ -216,17 +216,19 @@ function TypedDraft() {
 }
 
 /**
- * Hero animation: the one distinctive visual for the whole page. Outreach
- * arcs up and out of the inbox on the left; a share of it peels off as a
- * reply and drops into a live, self-leveling pipeline stack on the right —
- * "send → reply → revenue" as one continuous shape instead of three
- * disconnected stats. Isolated (own state) and paused when scrolled
- * off-screen, so it never taxes the rest of the page.
+ * Hero animation: the one distinctive visual for the whole page. Two lanes
+ * of outreach sweep up and out of the inbox on the left — mass mailing as a
+ * visible stream, not a single thin thread — a share peels off as a reply
+ * and slams into a live, self-leveling pipeline stack on the right, and a
+ * huge translucent watermark of the running total dominates the scene
+ * behind it all. "Send → reply → revenue" as one continuous, unmistakably
+ * large shape instead of three quiet stats. Isolated (own state) and
+ * paused when scrolled off-screen, so it never taxes the rest of the page.
  */
 function HeroPipeline() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [stats, setStats] = useState({ sent: 1284, rep: 96, rev: 8250000 });
-  const [deals, setDeals] = useState<Array<{ id: number; label: string; xPct: number; yPct: number }>>([]);
+  const [deals, setDeals] = useState<Array<{ id: number; label: string; xPct: number; yPct: number; big: boolean }>>([]);
   const dealIdRef = useRef(0);
 
   useEffect(() => {
@@ -243,14 +245,16 @@ function HeroPipeline() {
     // quote them ("a $185K deal"), not a fake-precise $184,732.
     const dealAmount = () => Math.round(rng(10, 500) / 5) * 5 * 1000;
 
-    // Outreach arcs up and over from the inbox on the left, lands at the
-    // delivery point, and a share of it peels down into a live pipeline
-    // stack on the right — the whole "send → reply → revenue" story in one
-    // continuous shape instead of three disconnected stats.
-    const inboxX = W * 0.07, inboxY = H * 0.56;
-    const deliverX = W * 0.78, deliverY = H * 0.5;
-    const ctrlX = W * 0.42, ctrlY = H * 0.14;
-    const bezier = (t: number) => {
+    // Two converging lanes (upper + lower) instead of one thin thread — the
+    // shape itself reads as "mass mailing," not a single careful email.
+    const inboxX = W * 0.065, inboxY = H * 0.5;
+    const deliverX = W * 0.76, deliverY = H * 0.5;
+    const lanes = [
+      { ctrlX: W * 0.4, ctrlY: H * 0.06 },
+      { ctrlX: W * 0.4, ctrlY: H * 0.9 },
+    ];
+    const bezier = (t: number, lane: number) => {
+      const { ctrlX, ctrlY } = lanes[lane];
       const u = 1 - t;
       return {
         x: u * u * inboxX + 2 * u * t * ctrlX + t * t * deliverX,
@@ -259,12 +263,21 @@ function HeroPipeline() {
     };
 
     const BAR_COUNT = 6;
-    const barBaseX = W * 0.83, barBaseY = H * 0.82, barMaxH = H * 0.5, barGap = W * 0.026;
-    const bars = Array.from({ length: BAR_COUNT }, () => ({ h: rng(6, 26), target: rng(6, 26) }));
+    // Kept well clear of the right edge — the deal popup's glow is wide
+    // enough that a bar sitting too close to the frame clips its label.
+    const barBaseX = W * 0.78, barBaseY = H * 0.86, barMaxH = H * 0.58, barGap = W * 0.024;
+    const bars = Array.from({ length: BAR_COUNT }, () => ({ h: rng(10, 40), target: rng(10, 40) }));
 
-    interface Env { t: number; speed: number; lane: number; reply: boolean; }
+    // Slow drifting depth field behind everything — cheap parallax that
+    // keeps the scene from reading as a flat, empty rectangle.
+    const STAR_COUNT = 46;
+    const stars = Array.from({ length: STAR_COUNT }, () => ({
+      x: rng(0, W), y: rng(0, H), r: rng(0.6, 1.8), phase: rng(0, Math.PI * 2), speed: rng(0.15, 0.4),
+    }));
+
+    interface Env { t: number; speed: number; lane: number; reply: boolean; big: boolean; }
     interface Drop { p: number; from: { x: number; y: number }; to: { x: number; y: number }; bar: number; amount: number; }
-    interface Burst { x: number; y: number; age: number; color: string; }
+    interface Burst { x: number; y: number; age: number; big: boolean; }
     const envelopes: Env[] = [];
     const drops: Drop[] = [];
     const bursts: Burst[] = [];
@@ -273,69 +286,96 @@ function HeroPipeline() {
     let spawnClock = 0;
     let lastTime = 0;
 
-    const spawnEnvelope = () => {
-      envelopes.push({ t: 0, speed: rng(0.34, 0.44), lane: rng(-22, 22), reply: Math.random() < 0.3 });
+    const spawnEnvelope = (lane: number) => {
+      const reply = Math.random() < 0.32;
+      envelopes.push({ t: 0, speed: rng(0.3, 0.4), lane, reply, big: reply && Math.random() < 0.3 });
     };
 
-    const drawLane = () => {
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(255,255,255,0.06)";
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([1, 7]);
-      for (let i = 0; i <= 60; i++) {
-        const t = i / 60;
-        const { x, y } = bezier(t);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+    const drawStars = (time: number) => {
+      for (const s of stars) {
+        const tw = 0.35 + 0.25 * Math.sin(time / 900 + s.phase);
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${tw * 0.4})`;
+        const x = (s.x + time * 0.006 * s.speed) % W;
+        ctx.arc(x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.stroke();
-      ctx.setLineDash([]);
     };
 
-    // Lane settles to 0 at both ends so envelopes converge cleanly on the
-    // inbox and delivery points instead of arriving off-center.
-    const pointAt = (e: Env, t: number) => {
-      const { x, y } = bezier(t);
-      return { x, y: y + e.lane * Math.sin(t * Math.PI) };
+    const drawLanes = () => {
+      for (let lane = 0; lane < lanes.length; lane++) {
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(255,255,255,0.07)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([1, 9]);
+        for (let i = 0; i <= 60; i++) {
+          const t = i / 60;
+          const { x, y } = bezier(t, lane);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
     };
+
+    const pointAt = (e: Env, t: number) => bezier(t, e.lane);
 
     const drawEnvelope = (e: Env) => {
       const color = e.reply ? "#30d158" : "#5eb3ff";
       const fade = Math.min(1, e.t * 8) * Math.min(1, (1 - e.t) * 8 + 0.15);
+      const scale = e.big ? 1.7 : 1;
 
-      // Short fading trail behind the head — the streak is what makes a
-      // stream of dots read as fast, purposeful motion instead of just dots.
-      for (let i = 5; i >= 1; i--) {
-        const tt = Math.max(0, e.t - i * 0.012);
+      // Longer, brighter trail — this is what turns dots into a fast,
+      // purposeful streak instead of a Pong ball.
+      for (let i = 9; i >= 1; i--) {
+        const tt = Math.max(0, e.t - i * 0.01);
         const { x, y } = pointAt(e, tt);
         ctx.beginPath();
         ctx.fillStyle = color;
-        ctx.globalAlpha = fade * (1 - i / 5.5) * 0.35;
-        ctx.arc(x, y, (e.reply ? 2.6 : 2) * (1 - i / 6), 0, Math.PI * 2);
+        ctx.globalAlpha = fade * (1 - i / 10) * 0.4;
+        ctx.arc(x, y, (e.reply ? 5 : 3.6) * scale * (1 - i / 11), 0, Math.PI * 2);
         ctx.fill();
       }
 
       const { x, y } = pointAt(e, e.t);
+      const angle = Math.atan2(
+        pointAt(e, Math.min(1, e.t + 0.01)).y - y,
+        pointAt(e, Math.min(1, e.t + 0.01)).x - x
+      );
       ctx.save();
       ctx.translate(x, y);
+      ctx.rotate(angle);
       ctx.beginPath();
       ctx.fillStyle = color;
       ctx.shadowColor = color;
-      ctx.shadowBlur = e.reply ? 14 : 9;
+      ctx.shadowBlur = (e.reply ? 26 : 18) * scale;
       ctx.globalAlpha = fade;
-      ctx.arc(0, 0, e.reply ? 3.4 : 2.6, 0, Math.PI * 2);
+      // Small envelope silhouette, not a plain dot.
+      const w = (e.reply ? 12 : 9) * scale, h = w * 0.68;
+      ctx.beginPath();
+      ctx.moveTo(-w / 2, -h / 2);
+      ctx.lineTo(w / 2, -h / 2);
+      ctx.lineTo(w / 2, h / 2);
+      ctx.lineTo(-w / 2, h / 2);
+      ctx.closePath();
       ctx.fill();
       ctx.restore();
     };
 
     const drawInboxNode = (time: number) => {
-      const pulse = 5 + Math.sin(time / 320) * 1.2;
+      const pulse = 9 + Math.sin(time / 300) * 2.2;
       ctx.beginPath();
       ctx.fillStyle = "#0a84ff";
       ctx.shadowColor = "#0a84ff";
-      ctx.shadowBlur = 16;
+      ctx.shadowBlur = 30;
       ctx.arc(inboxX, inboxY, pulse, 0, Math.PI * 2);
       ctx.fill();
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(10,132,255,0.35)";
+      ctx.lineWidth = 1.5;
+      ctx.arc(inboxX, inboxY, pulse + 8 + Math.sin(time / 300) * 3, 0, Math.PI * 2);
+      ctx.stroke();
       ctx.shadowBlur = 0;
     };
 
@@ -345,55 +385,79 @@ function HeroPipeline() {
         b.h = ease(b.h, b.target, 0.1);
         const x = barBaseX + i * barGap;
         const h = Math.min(barMaxH, b.h);
+        const bw = 14;
         const grad = ctx.createLinearGradient(0, barBaseY, 0, barBaseY - h);
-        grad.addColorStop(0, "rgba(48,209,88,0.55)");
-        grad.addColorStop(1, "rgba(150,255,190,0.95)");
+        grad.addColorStop(0, "rgba(48,209,88,0.5)");
+        grad.addColorStop(0.7, "rgba(120,240,170,0.9)");
+        grad.addColorStop(1, "rgba(220,255,235,1)");
         ctx.beginPath();
-        const r = 3;
-        ctx.moveTo(x - 8, barBaseY);
-        ctx.lineTo(x - 8, barBaseY - h + r);
-        ctx.arcTo(x - 8, barBaseY - h, x - 8 + r, barBaseY - h, r);
-        ctx.lineTo(x + 8 - r, barBaseY - h);
-        ctx.arcTo(x + 8, barBaseY - h, x + 8, barBaseY - h + r, r);
-        ctx.lineTo(x + 8, barBaseY);
+        const r = 4;
+        ctx.moveTo(x - bw / 2, barBaseY);
+        ctx.lineTo(x - bw / 2, barBaseY - h + r);
+        ctx.arcTo(x - bw / 2, barBaseY - h, x - bw / 2 + r, barBaseY - h, r);
+        ctx.lineTo(x + bw / 2 - r, barBaseY - h);
+        ctx.arcTo(x + bw / 2, barBaseY - h, x + bw / 2, barBaseY - h + r, r);
+        ctx.lineTo(x + bw / 2, barBaseY);
         ctx.closePath();
         ctx.fillStyle = grad;
+        ctx.shadowColor = "rgba(48,209,88,0.5)";
+        ctx.shadowBlur = 16;
         ctx.fill();
+        ctx.shadowBlur = 0;
+        // Bright glowing cap on top — makes the bars read as "alive," not static fills.
+        ctx.beginPath();
+        ctx.fillStyle = "#eafff2";
+        ctx.shadowColor = "#eafff2";
+        ctx.shadowBlur = 14;
+        ctx.arc(x, barBaseY - h, bw / 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
       }
       ctx.beginPath();
-      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.strokeStyle = "rgba(255,255,255,0.12)";
       ctx.lineWidth = 1;
-      ctx.moveTo(barBaseX - 20, barBaseY + 0.5);
-      ctx.lineTo(barBaseX + (BAR_COUNT - 1) * barGap + 20, barBaseY + 0.5);
+      ctx.moveTo(barBaseX - 24, barBaseY + 0.5);
+      ctx.lineTo(barBaseX + (BAR_COUNT - 1) * barGap + 24, barBaseY + 0.5);
       ctx.stroke();
     };
 
     const drawDrops = (dt: number) => {
       for (let i = drops.length - 1; i >= 0; i--) {
         const d = drops[i];
-        d.p += dt * 2.1;
+        d.p += dt * 1.9;
+        const big = d.amount >= 300000;
         if (d.p >= 1) {
-          bursts.push({ x: d.to.x, y: d.to.y, age: 0, color: "#30d158" });
+          bursts.push({ x: d.to.x, y: d.to.y, age: 0, big });
           // Bigger deals visibly slam the bar chart harder than small ones.
-          const growth = 8 + (d.amount / 500000) * 34;
+          const growth = 10 + (d.amount / 500000) * 46;
           bars[d.bar].target = Math.min(barMaxH, bars[d.bar].target + growth);
           const id = dealIdRef.current++;
+          // Clamped so a wide "big deal" glow never clips against the frame,
+          // even for a bar sitting near the edge.
+          const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
           setDeals((prev) => [
             ...prev,
-            { id, label: formatMoney(d.amount), xPct: (d.to.x / W) * 100, yPct: (d.to.y / H) * 100 },
+            {
+              id,
+              label: formatMoney(d.amount),
+              xPct: clamp((d.to.x / W) * 100, 12, 78),
+              yPct: clamp((d.to.y / H) * 100, 16, 78),
+              big,
+            },
           ]);
-          setTimeout(() => setDeals((prev) => prev.filter((deal) => deal.id !== id)), 1500);
+          setTimeout(() => setDeals((prev) => prev.filter((deal) => deal.id !== id)), big ? 2200 : 1600);
           drops.splice(i, 1);
           continue;
         }
         const p = d.p;
         const x = ease(d.from.x, d.to.x, p);
-        const y = ease(d.from.y, d.to.y, p) - Math.sin(p * Math.PI) * 34; // gentle hop, then drop
+        const y = ease(d.from.y, d.to.y, p) - Math.sin(p * Math.PI) * (big ? 60 : 40); // gentle hop, then drop
+        const r = big ? 5.5 : 4;
         ctx.beginPath();
         ctx.fillStyle = "#30d158";
         ctx.shadowColor = "#30d158";
-        ctx.shadowBlur = 12;
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.shadowBlur = big ? 22 : 15;
+        ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();
       }
     };
@@ -402,16 +466,25 @@ function HeroPipeline() {
       for (let i = bursts.length - 1; i >= 0; i--) {
         const b = bursts[i];
         b.age += 1;
-        const p = b.age / 26;
+        const life = b.big ? 44 : 28;
+        const p = b.age / life;
         if (p >= 1) {
           bursts.splice(i, 1);
           continue;
         }
+        const maxR = b.big ? 80 : 44;
         ctx.beginPath();
-        ctx.strokeStyle = `rgba(48,209,88,${(1 - p) * 0.6})`;
-        ctx.lineWidth = 2;
-        ctx.arc(b.x, b.y, 4 + p * 30, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(48,209,88,${(1 - p) * 0.65})`;
+        ctx.lineWidth = b.big ? 3 : 2;
+        ctx.arc(b.x, b.y, 6 + p * maxR, 0, Math.PI * 2);
         ctx.stroke();
+        if (b.big) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(245,197,106,${(1 - p) * 0.5})`;
+          ctx.lineWidth = 2;
+          ctx.arc(b.x, b.y, 4 + p * maxR * 0.6, 0, Math.PI * 2);
+          ctx.stroke();
+        }
       }
     };
 
@@ -420,13 +493,14 @@ function HeroPipeline() {
       lastTime = time;
       ctx.clearRect(0, 0, W, H);
 
-      drawLane();
+      drawStars(time);
+      drawLanes();
       drawBars();
 
       spawnClock += dt;
-      if (spawnClock > 0.42) {
+      if (spawnClock > 0.3) {
         spawnClock = 0;
-        spawnEnvelope();
+        spawnEnvelope(Math.random() < 0.5 ? 0 : 1);
       }
 
       for (let i = envelopes.length - 1; i >= 0; i--) {
@@ -436,7 +510,7 @@ function HeroPipeline() {
           sent += 1;
           if (e.reply) {
             rep += 1;
-            const amount = dealAmount();
+            const amount = e.big ? Math.round(rng(300, 500) / 5) * 5 * 1000 : dealAmount();
             rev += amount;
             const shortest = bars.reduce((min, b, idx) => (b.target < bars[min].target ? idx : min), 0);
             const barX = barBaseX + shortest * barGap;
@@ -461,8 +535,8 @@ function HeroPipeline() {
 
     if (reduce) {
       // Static, representative frame — no motion, no faked "live" numbers.
-      for (let i = 0; i < BAR_COUNT; i++) bars[i].h = bars[i].target = rng(20, barMaxH * 0.85);
-      for (let i = 0; i < 4; i++) envelopes.push({ t: rng(0.15, 0.85), speed: 0, lane: rng(-20, 20), reply: i % 2 === 0 });
+      for (let i = 0; i < BAR_COUNT; i++) bars[i].h = bars[i].target = rng(30, barMaxH * 0.85);
+      for (let i = 0; i < 6; i++) envelopes.push({ t: rng(0.15, 0.85), speed: 0, lane: i % 2, reply: i % 2 === 0, big: false });
       draw(0);
       return;
     }
@@ -503,6 +577,7 @@ function HeroPipeline() {
           <span className={styles.pipeTagR}>Every send compounds into pipeline</span>
         </div>
         <div className={styles.pipeCanvasWrap}>
+          <div className={styles.pipeWatermark} aria-hidden="true">{formatMoney(stats.rev)}</div>
           <canvas ref={canvasRef} width={1920} height={640} aria-hidden="true" />
           <div className={styles.pipeEndpoint} style={{ left: "5%" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -519,9 +594,13 @@ function HeroPipeline() {
             Pipeline
           </div>
           {deals.map((d) => (
-            <div key={d.id} className={styles.pipeDeal} style={{ left: `${d.xPct}%`, top: `${d.yPct}%` }}>
+            <div
+              key={d.id}
+              className={`${styles.pipeDeal} ${d.big ? styles.pipeDealBig : ""}`}
+              style={{ left: `${d.xPct}%`, top: `${d.yPct}%` }}
+            >
               <span className={styles.pipeDealGlow} aria-hidden="true" />
-              <span className={styles.pipeDealEmoji} aria-hidden="true">💰</span>
+              <span className={styles.pipeDealEmoji} aria-hidden="true">{d.big ? "🤑" : "💰"}</span>
               <span className={styles.pipeDealAmount}>{d.label}</span>
             </div>
           ))}
