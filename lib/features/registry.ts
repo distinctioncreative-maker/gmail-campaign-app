@@ -44,8 +44,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         name: "Google sign-in + server session",
         status: "shipped",
         description:
-          "Firebase Auth (Google provider) on the client, exchanged for an HttpOnly session cookie signed with jose. Every request resolves a typed AuthContext server-side before touching data.",
-        keyFiles: ["lib/auth/session.ts", "lib/auth/requireUser.ts", "app/api/auth/session"],
+          "Firebase Auth (Google provider) on the client, exchanged for an HttpOnly session cookie signed with jose. Every request resolves a typed AuthContext server-side before touching data. Visiting a protected app URL while signed out (a bookmark, a stale tab, a brand-new visitor) lands on the marketing site first, not a bare login form; the sign-in page itself carries the same brand-gradient/aurora treatment as the signed-in dashboard.",
+        keyFiles: ["lib/auth/session.ts", "lib/auth/requireUser.ts", "app/api/auth/session", "app/(dashboard)/layout.tsx", "app/(auth)/sign-in/page.tsx"],
       },
       {
         id: "dual-mode-tenancy",

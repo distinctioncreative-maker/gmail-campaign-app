@@ -8,8 +8,8 @@
 
 ## Auth & Tenancy
 
-- [x] **Google sign-in + server session** (Shipped) — Firebase Auth (Google provider) on the client, exchanged for an HttpOnly session cookie signed with jose. Every request resolves a typed AuthContext server-side before touching data.
-  - `lib/auth/session.ts`, `lib/auth/requireUser.ts`, `app/api/auth/session`
+- [x] **Google sign-in + server session** (Shipped) — Firebase Auth (Google provider) on the client, exchanged for an HttpOnly session cookie signed with jose. Every request resolves a typed AuthContext server-side before touching data. Visiting a protected app URL while signed out (a bookmark, a stale tab, a brand-new visitor) lands on the marketing site first, not a bare login form; the sign-in page itself carries the same brand-gradient/aurora treatment as the signed-in dashboard.
+  - `lib/auth/session.ts`, `lib/auth/requireUser.ts`, `app/api/auth/session`, `app/(dashboard)/layout.tsx`, `app/(auth)/sign-in/page.tsx`
 - [x] **Dual-mode tenancy (Solo vs Workspace)** (Shipped) — A custom email domain becomes a shared Workspace org (team, keyed by domain); a consumer provider (gmail.com, outlook.com, etc.) becomes a private Solo workspace keyed per user, so consumers never collide with each other or with a company's Workspace.
   - `lib/tenancy/accountType.ts`, `lib/tenancy/capabilities.ts`
 - [x] **Allowlist / open signup modes** (Shipped) — SIGNUP_MODE=allowlist (default) restricts sign-in to configured work domains; SIGNUP_MODE=open lets any verified Google account in, routing consumers to isolated Solo workspaces. Open mode is gated behind completed Google OAuth verification.

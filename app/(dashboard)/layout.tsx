@@ -58,7 +58,11 @@ export default async function DashboardLayout({
     organizationId = ctx.organizationId;
     tenantType = ctx.tenantType;
   } catch {
-    redirect("/sign-in");
+    // Send signed-out visitors (and brand-new users hitting a bookmarked
+    // app URL) to the marketing site first, not straight to a bare login
+    // form — "/" already redirects signed-in sessions on to /home, so this
+    // never traps an authenticated user.
+    redirect("/");
   }
 
   const nav = navFor(role, capabilitiesFor(tenantType));
