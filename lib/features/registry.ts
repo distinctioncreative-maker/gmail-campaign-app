@@ -487,7 +487,7 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "landing-page",
         name: "Public landing page",
         status: "shipped",
-        description: "Apple-keynote register: true black, San Francisco system type at real scale (no serif, no gold), Apple's own HIG system colors (blue/green/purple) as the entire palette, and real glass (backdrop-blur, not just a tint) on every card. The hero animation is a single calm breathing orb with an occasional traveling pulse along one quiet arc, not a busy particle field, with all labeling in crisp HTML rather than canvas text. Deliverability stat band and FAQ cite tuned, data-backed pacing and tease the anonymized benchmarks feature.",
+        description: "Apple-keynote register: true black, San Francisco system type at real scale (no serif, no gold), Apple's own HIG system colors (blue/green/purple) as the entire palette, and real glass (backdrop-blur, not just a tint) on every card. The hero animation shows outreach arcing out of an inbox, peeling off into replies (green), and dropping into a live, self-leveling pipeline bar-stack on the right — \"send → reply → revenue\" as one continuous canvas shape with real HTML/SVG endpoint labels (Outreach / Pipeline, reusing the same line-icon set as the feature grid) rather than emoji or canvas text. Deliverability stat band and FAQ cite tuned, data-backed pacing and tease the anonymized benchmarks feature.",
         keyFiles: ["components/marketing/Landing.tsx", "components/marketing/landing.module.css"],
       },
       {

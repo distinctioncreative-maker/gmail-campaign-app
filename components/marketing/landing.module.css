@@ -232,7 +232,17 @@
 .pipeTag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--good); box-shadow: 0 0 8px var(--good); animation: blip 2.6s ease-in-out infinite; }
 .pipeTagR { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--onDarkFaint); }
 @media (max-width: 560px) { .pipeTagR { display: none; } }
-.pipeGlass canvas { display: block; width: 100%; height: clamp(260px, 36vw, 380px); }
+.pipeCanvasWrap { position: relative; }
+.pipeCanvasWrap canvas { display: block; width: 100%; height: clamp(260px, 36vw, 380px); }
+.pipeEndpoint {
+  position: absolute; top: 16px; display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--onDarkMuted); pointer-events: none;
+}
+.pipeEndpoint svg { color: var(--accent); }
+.pipeEndpointR { color: var(--onDarkMuted); flex-direction: row-reverse; }
+.pipeEndpointR svg { color: var(--good); }
+@media (max-width: 560px) { .pipeEndpoint { display: none; } }
 .pipeStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
 .pipeChip { background: rgba(0, 0, 0, 0.5); padding: 16px 20px; text-align: left; }
 .pipeVal { font-size: clamp(20px, 3.2vw, 27px); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--onDark); }

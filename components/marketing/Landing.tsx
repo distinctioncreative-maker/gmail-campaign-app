@@ -208,17 +208,16 @@ function TypedDraft() {
 }
 
 /**
- * Hero "deliverability gate" animation + live counters. The one distinctive
- * visual for the whole page: it has to *show*, not just claim, the three
- * things the product sells — reach (a field of inboxes), clearing spam
- * filters (a lit gate every send visibly passes through, with an SPF/DKIM/
- * DMARC label), and revenue (replies becoming a rising ledger). Isolated
- * (own state) and paused when scrolled off-screen, so it never taxes the
- * rest of the page.
+ * Hero animation: the one distinctive visual for the whole page. Outreach
+ * arcs up and out of the inbox on the left; a share of it peels off as a
+ * reply and drops into a live, self-leveling pipeline stack on the right —
+ * "send → reply → revenue" as one continuous shape instead of three
+ * disconnected stats. Isolated (own state) and paused when scrolled
+ * off-screen, so it never taxes the rest of the page.
  */
 function HeroPipeline() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [stats, setStats] = useState({ sent: 128, rep: 34, rev: 8400 });
+  const [stats, setStats] = useState({ sent: 1284, rep: 96, rev: 41200 });
 
   useEffect(() => {
     const cv = canvasRef.current;
@@ -229,125 +228,168 @@ function HeroPipeline() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const rng = (a: number, b: number) => a + Math.random() * (b - a);
-    // A hockey-stick growth curve, not a level line — the shape itself has
-    // to read as "this takes off," even in a single still frame. Slow start,
-    // steep late acceleration, the tipping point every growth story has.
-    const startX = W * 0.05, endX = W * 0.95;
-    const startY = H * 0.84, endY = H * 0.12;
-    const curveX = (t: number) => startX + (endX - startX) * t;
-    const curveY = (t: number) => startY + (endY - startY) * Math.pow(t, 2.3);
+    const ease = (a: number, b: number, f: number) => a + (b - a) * f;
 
-    type Spark = { t: number; age: number; life: number; dx: number; dy: number };
-    type Burst = { age: number };
-    const sparks: Spark[] = [];
+    // Outreach arcs up and over from the inbox on the left, lands at the
+    // delivery point, and a share of it peels down into a live pipeline
+    // stack on the right — the whole "send → reply → revenue" story in one
+    // continuous shape instead of three disconnected stats.
+    const inboxX = W * 0.07, inboxY = H * 0.56;
+    const deliverX = W * 0.78, deliverY = H * 0.5;
+    const ctrlX = W * 0.42, ctrlY = H * 0.14;
+    const bezier = (t: number) => {
+      const u = 1 - t;
+      return {
+        x: u * u * inboxX + 2 * u * t * ctrlX + t * t * deliverX,
+        y: u * u * inboxY + 2 * u * t * ctrlY + t * t * deliverY,
+      };
+    };
+
+    const BAR_COUNT = 6;
+    const barBaseX = W * 0.83, barBaseY = H * 0.82, barMaxH = H * 0.5, barGap = W * 0.026;
+    const bars = Array.from({ length: BAR_COUNT }, () => ({ h: rng(6, 26), target: rng(6, 26) }));
+
+    interface Env { t: number; speed: number; lane: number; reply: boolean; }
+    interface Drop { p: number; from: { x: number; y: number }; to: { x: number; y: number }; bar: number; }
+    interface Burst { x: number; y: number; age: number; color: string; }
+    const envelopes: Env[] = [];
+    const drops: Drop[] = [];
     const bursts: Burst[] = [];
+
     let sent = stats.sent, rep = stats.rep, rev = stats.rev;
-    let cometT = 0;
+    let spawnClock = 0;
     let lastTime = 0;
 
-    const drawTrack = () => {
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(255,255,255,0.08)";
-      ctx.lineWidth = 2;
-      for (let i = 0; i <= 100; i++) {
-        const t = i / 100;
-        const x = curveX(t), y = curveY(t);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      // Brightens toward the end — the curve itself sells the payoff.
-      const grad = ctx.createLinearGradient(startX, startY, endX, endY);
-      grad.addColorStop(0, "rgba(10,132,255,0.08)");
-      grad.addColorStop(0.65, "rgba(10,132,255,0.3)");
-      grad.addColorStop(1, "rgba(200,240,255,0.75)");
-      ctx.beginPath();
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 2.5;
-      for (let i = 0; i <= 100; i++) {
-        const t = i / 100;
-        const x = curveX(t), y = curveY(t);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
+    const spawnEnvelope = () => {
+      envelopes.push({ t: 0, speed: rng(0.34, 0.44), lane: rng(-22, 22), reply: Math.random() < 0.3 });
     };
 
-    const drawComet = () => {
-      // Fading trail behind the comet head, along the curve.
-      for (let i = 0; i < 20; i++) {
-        const tt = Math.max(0, cometT - i * 0.007);
-        const x = curveX(tt), y = curveY(tt);
-        const a = (1 - i / 20) * 0.5;
+    const drawLane = () => {
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([1, 7]);
+      for (let i = 0; i <= 60; i++) {
+        const t = i / 60;
+        const { x, y } = bezier(t);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    };
+
+    // Lane settles to 0 at both ends so envelopes converge cleanly on the
+    // inbox and delivery points instead of arriving off-center.
+    const pointAt = (e: Env, t: number) => {
+      const { x, y } = bezier(t);
+      return { x, y: y + e.lane * Math.sin(t * Math.PI) };
+    };
+
+    const drawEnvelope = (e: Env) => {
+      const color = e.reply ? "#30d158" : "#5eb3ff";
+      const fade = Math.min(1, e.t * 8) * Math.min(1, (1 - e.t) * 8 + 0.15);
+
+      // Short fading trail behind the head — the streak is what makes a
+      // stream of dots read as fast, purposeful motion instead of just dots.
+      for (let i = 5; i >= 1; i--) {
+        const tt = Math.max(0, e.t - i * 0.012);
+        const { x, y } = pointAt(e, tt);
         ctx.beginPath();
-        ctx.fillStyle = `rgba(160,215,255,${a})`;
-        ctx.arc(x, y, 2.6 * (1 - i / 20) + 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = fade * (1 - i / 5.5) * 0.35;
+        ctx.arc(x, y, (e.reply ? 2.6 : 2) * (1 - i / 6), 0, Math.PI * 2);
         ctx.fill();
       }
-      const x = curveX(cometT), y = curveY(cometT);
+
+      const { x, y } = pointAt(e, e.t);
+      ctx.save();
+      ctx.translate(x, y);
       ctx.beginPath();
-      ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "#8fd6ff";
-      ctx.shadowBlur = 28;
-      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = e.reply ? 14 : 9;
+      ctx.globalAlpha = fade;
+      ctx.arc(0, 0, e.reply ? 3.4 : 2.6, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
-      if (Math.random() < 0.75) {
-        sparks.push({ t: cometT, age: 0, life: rng(0.6, 1.3), dx: rng(-0.5, 0.5), dy: rng(-1.5, -0.5) });
-      }
+      ctx.restore();
     };
 
-    const drawSparks = (dt: number) => {
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const s = sparks[i];
-        s.age += dt;
-        if (s.age >= s.life) {
-          sparks.splice(i, 1);
-          continue;
-        }
-        const p = s.age / s.life;
-        const x = curveX(s.t) + s.dx * s.age * 46;
-        const y = curveY(s.t) + s.dy * s.age * 46;
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(210,235,255,${(1 - p) * 0.85})`;
-        ctx.arc(x, y, 1.7 * (1 - p) + 0.4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    };
-
-    const drawEndpoints = (time: number) => {
+    const drawInboxNode = (time: number) => {
+      const pulse = 5 + Math.sin(time / 320) * 1.2;
       ctx.beginPath();
       ctx.fillStyle = "#0a84ff";
       ctx.shadowColor = "#0a84ff";
-      ctx.shadowBlur = 12;
-      ctx.arc(startX, startY, 4, 0, Math.PI * 2);
+      ctx.shadowBlur = 16;
+      ctx.arc(inboxX, inboxY, pulse, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
+    };
 
-      const pulse = 6 + Math.sin(time / 260) * 1.6;
+    const drawBars = () => {
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const b = bars[i];
+        b.h = ease(b.h, b.target, 0.1);
+        const x = barBaseX + i * barGap;
+        const h = Math.min(barMaxH, b.h);
+        const grad = ctx.createLinearGradient(0, barBaseY, 0, barBaseY - h);
+        grad.addColorStop(0, "rgba(48,209,88,0.55)");
+        grad.addColorStop(1, "rgba(150,255,190,0.95)");
+        ctx.beginPath();
+        const r = 3;
+        ctx.moveTo(x - 8, barBaseY);
+        ctx.lineTo(x - 8, barBaseY - h + r);
+        ctx.arcTo(x - 8, barBaseY - h, x - 8 + r, barBaseY - h, r);
+        ctx.lineTo(x + 8 - r, barBaseY - h);
+        ctx.arcTo(x + 8, barBaseY - h, x + 8, barBaseY - h + r, r);
+        ctx.lineTo(x + 8, barBaseY);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
       ctx.beginPath();
-      ctx.fillStyle = "#eafff2";
-      ctx.shadowColor = "#30d158";
-      ctx.shadowBlur = 32;
-      ctx.arc(endX, endY, pulse, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.lineWidth = 1;
+      ctx.moveTo(barBaseX - 20, barBaseY + 0.5);
+      ctx.lineTo(barBaseX + (BAR_COUNT - 1) * barGap + 20, barBaseY + 0.5);
+      ctx.stroke();
+    };
+
+    const drawDrops = (dt: number) => {
+      for (let i = drops.length - 1; i >= 0; i--) {
+        const d = drops[i];
+        d.p += dt * 2.1;
+        if (d.p >= 1) {
+          bursts.push({ x: d.to.x, y: d.to.y, age: 0, color: "#30d158" });
+          bars[d.bar].target = Math.min(barMaxH, bars[d.bar].target + rng(9, 22));
+          drops.splice(i, 1);
+          continue;
+        }
+        const p = d.p;
+        const x = ease(d.from.x, d.to.x, p);
+        const y = ease(d.from.y, d.to.y, p) - Math.sin(p * Math.PI) * 34; // gentle hop, then drop
+        ctx.beginPath();
+        ctx.fillStyle = "#30d158";
+        ctx.shadowColor = "#30d158";
+        ctx.shadowBlur = 12;
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
     };
 
     const drawBursts = () => {
       for (let i = bursts.length - 1; i >= 0; i--) {
         const b = bursts[i];
         b.age += 1;
-        const p = b.age / 32;
+        const p = b.age / 26;
         if (p >= 1) {
           bursts.splice(i, 1);
           continue;
         }
         ctx.beginPath();
-        ctx.strokeStyle = `rgba(48,209,88,${(1 - p) * 0.55})`;
+        ctx.strokeStyle = `rgba(48,209,88,${(1 - p) * 0.6})`;
         ctx.lineWidth = 2;
-        ctx.arc(endX, endY, 6 + p * 46, 0, Math.PI * 2);
+        ctx.arc(b.x, b.y, 4 + p * 30, 0, Math.PI * 2);
         ctx.stroke();
       }
     };
@@ -356,29 +398,45 @@ function HeroPipeline() {
       const dt = lastTime ? Math.min(0.05, (time - lastTime) / 1000) : 0.016;
       lastTime = time;
       ctx.clearRect(0, 0, W, H);
-      drawTrack();
-      drawSparks(dt);
-      drawComet();
-      drawEndpoints(time);
-      drawBursts();
 
-      cometT += dt * 0.28;
-      if (cometT >= 1) {
-        cometT = 0;
-        sent += 1;
-        bursts.push({ age: 0 });
-        if (Math.random() < 0.4) {
-          rep += 1;
-          rev += Math.round(rng(400, 2200));
-        }
+      drawLane();
+      drawBars();
+
+      spawnClock += dt;
+      if (spawnClock > 0.42) {
+        spawnClock = 0;
+        spawnEnvelope();
       }
+
+      for (let i = envelopes.length - 1; i >= 0; i--) {
+        const e = envelopes[i];
+        e.t += dt * e.speed;
+        if (e.t >= 1) {
+          sent += 1;
+          if (e.reply) {
+            rep += 1;
+            rev += Math.round(rng(300, 1800));
+            const shortest = bars.reduce((min, b, idx) => (b.target < bars[min].target ? idx : min), 0);
+            const barX = barBaseX + shortest * barGap;
+            drops.push({ p: 0, from: { x: deliverX, y: deliverY }, to: { x: barX, y: barBaseY - bars[shortest].target }, bar: shortest });
+          }
+          envelopes.splice(i, 1);
+          continue;
+        }
+        drawEnvelope(e);
+      }
+
+      drawDrops(dt);
+      drawInboxNode(time);
+      drawBursts();
     };
 
     if (reduce) {
-      cometT = 0.82;
+      // Static, representative frame — no motion, no faked "live" numbers.
+      for (let i = 0; i < BAR_COUNT; i++) bars[i].h = bars[i].target = rng(20, barMaxH * 0.85);
+      for (let i = 0; i < 4; i++) envelopes.push({ t: rng(0.15, 0.85), speed: 0, lane: rng(-20, 20), reply: i % 2 === 0 });
       draw(0);
-      const t = setTimeout(() => setStats({ sent: 1280, rep: 326, rev: 52400 }), 0);
-      return () => clearTimeout(t);
+      return;
     }
 
     let raf = 0, running = false;
@@ -414,9 +472,25 @@ function HeroPipeline() {
       <div className={styles.pipeGlass}>
         <div className={styles.pipeTop}>
           <span className={styles.pipeTag}>Live outreach</span>
-          <span className={styles.pipeTagR}>Every send climbs toward pipeline</span>
+          <span className={styles.pipeTagR}>Every send compounds into pipeline</span>
         </div>
-        <canvas ref={canvasRef} width={1920} height={640} aria-hidden="true" />
+        <div className={styles.pipeCanvasWrap}>
+          <canvas ref={canvasRef} width={1920} height={640} aria-hidden="true" />
+          <div className={styles.pipeEndpoint} style={{ left: "5%" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 2 2 9.5l7.2 2.8L12 19.5 22 2Z" />
+              <path d="M22 2 9.2 12.3" />
+            </svg>
+            Outreach
+          </div>
+          <div className={`${styles.pipeEndpoint} ${styles.pipeEndpointR}`} style={{ right: "3%" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 4v16h16" />
+              <path d="M8 16v-3M12 16V8M16 16v-6" />
+            </svg>
+            Pipeline
+          </div>
+        </div>
         <div className={styles.pipeStats}>
           <div className={styles.pipeChip}>
             <div className={styles.pipeVal}>{stats.sent.toLocaleString()}</div>
@@ -424,7 +498,7 @@ function HeroPipeline() {
           </div>
           <div className={styles.pipeChip}>
             <div className={styles.pipeVal} style={{ color: "var(--accent)" }}>{stats.rep.toLocaleString()}</div>
-            <div className={styles.pipeLab}>Replies</div>
+            <div className={styles.pipeLab}>Replies earned</div>
           </div>
           <div className={styles.pipeChip}>
             <div className={styles.pipeVal} style={{ color: "var(--good)" }}>${stats.rev.toLocaleString()}</div>
@@ -498,8 +572,8 @@ export function Landing() {
           </h1>
           <p className={styles.sub}>
             Cadence sends personalized campaigns from your own Gmail, clears the deliverability
-            bar most tools miss, and turns every reply into pipeline, at a pace built to protect
-            the sender reputation you&apos;ve spent years earning.
+            bar most tools miss, and turns every reply into revenue — at a pace built to protect
+            the sender reputation your pipeline depends on.
           </p>
           <div id="waitlist">
             <WaitField
