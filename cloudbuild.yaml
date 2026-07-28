@@ -3,19 +3,19 @@ steps:
     args:
       - build
       - -t
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/app/gmail-campaign:$COMMIT_SHA
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA
       - .
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/app/gmail-campaign:$COMMIT_SHA
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
       - run
       - deploy
       - outreach
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/app/gmail-campaign:$COMMIT_SHA
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA
       - --region=${_REGION}
       - --platform=managed
       # The marketing site and auth entry point are public. Sensitive API,
@@ -23,5 +23,7 @@ steps:
       - --allow-unauthenticated
 substitutions:
   _REGION: us-central1
+  _REPOSITORY: cloud-run-source-deploy
+  _IMAGE: outreach
 options:
   logging: CLOUD_LOGGING_ONLY
