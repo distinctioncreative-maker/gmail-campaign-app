@@ -326,7 +326,7 @@ export function SequenceBuilder({
       <button
         onClick={save}
         disabled={busy || steps.length === 0}
-        className="mt-6 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+        className="mt-6 btn-primary px-5 py-2.5"
       >
         {busy ? "Saving…" : sequenceId ? "Save changes" : "Save sequence"}
       </button>

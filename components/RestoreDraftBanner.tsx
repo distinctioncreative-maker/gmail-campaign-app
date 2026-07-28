@@ -10,8 +10,8 @@ export function RestoreDraftBanner({
   what?: string;
 }) {
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
-      <p className="text-sm text-amber-800">
+    <div className="alert-warning mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3">
+      <p className="text-sm text-warning">
         💾 You have an unsaved {what} from before. Restore it?
       </p>
       <div className="flex gap-2">

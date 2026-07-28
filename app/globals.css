@@ -261,6 +261,18 @@ a.card-hover:focus-visible {
 .btn-danger:hover { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); }
 .btn:disabled, .btn-primary:disabled, .btn-ghost:disabled, .btn-secondary:disabled, .btn-danger:disabled { opacity: 0.55; }
 
+/* Token-driven danger/success panels — for cases like a "type GO LIVE to
+   confirm" warning box or a toast, where the Tailwind red-200/green-200/
+   red-800/green-800 shades used are NOT in the dark-mode override table
+   above (only the *-50/*-100/*-700 shades are), so they'd render washed
+   out in dark mode. text-danger/text-success/border-danger/border-success
+   already exist as plain Tailwind utilities via the --color-danger/
+   --color-success tokens registered in @theme inline below — only the
+   combined border+background panel treatment needs a dedicated class. */
+.alert-danger { border-color: color-mix(in srgb, var(--danger) 35%, transparent); background: color-mix(in srgb, var(--danger) 10%, var(--surface)); }
+.alert-success { border-color: color-mix(in srgb, var(--success) 35%, transparent); background: color-mix(in srgb, var(--success) 10%, var(--surface)); }
+.alert-warning { border-color: color-mix(in srgb, var(--warning) 40%, transparent); background: color-mix(in srgb, var(--warning) 12%, var(--surface)); }
+
 /* ── Button loading spinner + success flash (components/ui/Button.tsx) ─── */
 @keyframes btn-spin { to { transform: rotate(360deg); } }
 .btn-spinner {

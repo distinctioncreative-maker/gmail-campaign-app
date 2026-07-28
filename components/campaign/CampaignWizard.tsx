@@ -803,9 +803,9 @@ export function CampaignWizard() {
             )}
 
             {paceRisk.risky && (
-              <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
-                <p className="text-sm font-semibold text-amber-800">⚠️ This pace risks your deliverability</p>
-                <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-amber-800">
+              <div className="alert-warning mt-4 rounded-xl border p-4">
+                <p className="text-sm font-semibold text-warning">⚠️ This pace risks your deliverability</p>
+                <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-warning">
                   {paceRisk.reasons.map((r) => (
                     <li key={r}>{r}</li>
                   ))}
@@ -857,7 +857,7 @@ export function CampaignWizard() {
               </label>
             </div>
 
-            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+            <div className="alert-warning mt-3 rounded-xl border p-3">
               <label className="flex items-start gap-2 text-sm text-foreground">
                 <input
                   type="checkbox"
@@ -970,13 +970,13 @@ export function CampaignWizard() {
               at the pace you chose.
             </p>
             {testMode === true && (
-              <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+              <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-warning">
                 🛡️ You&apos;re in test mode — these emails go only to your test address, not real
                 recipients. Perfect for a practice run.
               </p>
             )}
             {testMode === false && (
-              <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+              <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-success">
                 ● Live mode — these emails will be sent to real recipients.
               </p>
             )}
@@ -984,7 +984,7 @@ export function CampaignWizard() {
               <button
                 onClick={() => void confirmAndLaunch()}
                 disabled={busy}
-                className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+                className="btn-primary px-5 py-2.5"
               >
                 {busy ? "Starting…" : "Start now"}
               </button>

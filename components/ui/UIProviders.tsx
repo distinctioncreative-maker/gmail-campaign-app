@@ -64,9 +64,9 @@ export function UIProviders({ children }: { children: ReactNode }) {
               role="status"
               className={`pointer-events-auto animate-rise rounded-xl border px-4 py-3 text-sm shadow-lg ${
                 t.variant === "success"
-                  ? "border-green-200 bg-green-50 text-green-800"
+                  ? "alert-success text-success"
                   : t.variant === "error"
-                    ? "border-red-200 bg-red-50 text-red-800"
+                    ? "alert-danger text-danger"
                     : "border-border bg-surface text-foreground"
               }`}
             >

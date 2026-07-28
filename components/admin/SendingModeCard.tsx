@@ -111,11 +111,11 @@ export function SendingModeCard() {
               Switch to real sending…
             </button>
           ) : (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-800">
+            <div className="alert-danger mt-5 rounded-xl border p-4">
+              <p className="text-sm font-medium text-danger">
                 This turns on real emails for everyone on the team.
               </p>
-              <p className="mt-1 text-sm text-red-700">
+              <p className="mt-1 text-sm text-muted">
                 From this moment, campaigns send to actual recipients — not your test address.
                 Type <strong>GO LIVE</strong> to confirm.
               </p>
@@ -124,7 +124,7 @@ export function SendingModeCard() {
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="GO LIVE"
-                  className="w-40 rounded-xl border border-red-300 px-3 py-2 text-sm"
+                  className="w-40 rounded-xl border border-danger px-3 py-2 text-sm"
                 />
                 <button
                   onClick={() => flip("LIVE")}
@@ -148,13 +148,13 @@ export function SendingModeCard() {
         </div>
       ) : (
         <div className="mt-5">
-          <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+          <p className="rounded-lg bg-green-50 p-3 text-sm text-success">
             The team is sending real emails. New campaigns go to actual recipients.
           </p>
           <button
             onClick={() => flip("TEST")}
             disabled={busy}
-            className="mt-4 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+            className="btn-ghost mt-4 px-5 py-2.5 text-sm"
           >
             {busy ? "Switching…" : "Switch back to test mode"}
           </button>

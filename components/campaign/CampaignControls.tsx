@@ -106,10 +106,8 @@ export function CampaignControls({
   }
 
   const busy = busyAction !== null;
-  const btn =
-    "rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50";
-  const dangerBtn =
-    "rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50";
+  const btn = "btn-ghost px-4 py-2 text-sm";
+  const dangerBtn = "btn-danger px-4 py-2 text-sm";
   const numInput =
     "w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none";
 
@@ -259,9 +257,9 @@ export function CampaignControls({
             ))}
           </div>
           {assessPaceRisk(draft).risky && (
-            <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
-              <p className="text-xs font-semibold text-amber-800">⚠️ This pace risks your deliverability</p>
-              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-amber-800">
+            <div className="alert-warning mt-3 rounded-lg border p-3">
+              <p className="text-xs font-semibold text-warning">⚠️ This pace risks your deliverability</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-warning">
                 {assessPaceRisk(draft).reasons.map((r) => (
                   <li key={r}>{r}</li>
                 ))}

@@ -102,7 +102,7 @@ export default async function DashboardLayout({
         </header>
         {/* Always-visible sending-mode banner so no one is ever unsure. */}
         {sending.testMode ? (
-          <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-50 to-amber-100/60 px-4 py-1.5 text-center text-xs font-medium text-amber-800">
+          <div className="alert-warning flex items-center justify-center gap-2 border-y px-4 py-1.5 text-center text-xs font-medium text-warning">
             <span aria-hidden>🛡️</span>
             Test mode — emails only go to your test address, never real recipients.
           </div>

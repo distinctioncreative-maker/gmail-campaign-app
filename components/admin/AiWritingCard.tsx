@@ -89,7 +89,7 @@ export function AiWritingCard() {
           <button
             onClick={() => toggle(false)}
             disabled={busy}
-            className="rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+            className="btn-ghost px-5 py-2.5 text-sm"
           >
             {busy ? "Saving…" : "Turn AI writing off"}
           </button>

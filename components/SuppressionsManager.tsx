@@ -134,16 +134,10 @@ export function SuppressionsManager({
           aria-label="Search do-not-email list"
           className="w-64 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
-        <button
-          onClick={() => setShowAdd((s) => !s)}
-          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
-        >
+        <button onClick={() => setShowAdd((s) => !s)} className="btn-primary px-4 py-2 text-sm">
           Add emails
         </button>
-        <button
-          onClick={exportCsv}
-          className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-2"
-        >
+        <button onClick={exportCsv} className="btn-secondary px-4 py-2 text-sm">
           Export CSV
         </button>
       </div>
@@ -173,7 +167,7 @@ export function SuppressionsManager({
           <button
             onClick={addEmails}
             disabled={busy || addText.trim() === ""}
-            className="mt-3 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+            className="btn-primary mt-3 px-4 py-2 text-sm disabled:opacity-50"
           >
             {busy ? "Adding…" : "Add to do-not-email list"}
           </button>

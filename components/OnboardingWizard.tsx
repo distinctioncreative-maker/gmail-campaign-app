@@ -104,7 +104,7 @@ export function OnboardingWizard({
             </ul>
             <button
               onClick={() => setStep(1)}
-              className="mt-6 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+              className="mt-6 btn-primary px-5 py-2.5"
             >
               Let&apos;s get set up
             </button>
@@ -127,7 +127,7 @@ export function OnboardingWizard({
                 </p>
                 <button
                   onClick={() => setStep(2)}
-                  className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+                  className="mt-4 btn-primary px-5 py-2.5"
                 >
                   Continue
                 </button>
@@ -135,7 +135,7 @@ export function OnboardingWizard({
             ) : (
               <a
                 href="/api/gmail/connect"
-                className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+                className="btn-primary mt-5 px-5 py-2.5"
               >
                 Connect Gmail
               </a>
@@ -185,7 +185,7 @@ export function OnboardingWizard({
               <button
                 onClick={sendTest}
                 disabled={busy}
-                className="mt-5 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+                className="mt-5 btn-primary px-5 py-2.5"
               >
                 {busy ? "Sending…" : "Send the test email"}
               </button>
@@ -197,7 +197,7 @@ export function OnboardingWizard({
                 <button
                   onClick={() => void advance("COMPLETE", 5)}
                   disabled={busy}
-                  className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+                  className="mt-4 btn-primary px-5 py-2.5"
                 >
                   It looked good — finish setup
                 </button>
@@ -215,13 +215,13 @@ export function OnboardingWizard({
             <div className="mt-5 flex gap-3">
               <Link
                 href="/leads"
-                className="rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+                className="btn-primary px-5 py-2.5"
               >
                 Import leads
               </Link>
               <Link
                 href="/templates"
-                className="rounded-xl border border-border px-5 py-2.5 font-medium text-foreground hover:bg-surface-2"
+                className="btn-ghost px-5 py-2.5"
               >
                 Create a template
               </Link>

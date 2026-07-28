@@ -93,7 +93,7 @@ export function TestCenter() {
     <div>
       <button
         onClick={runAll}
-        className="mb-4 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+        className="mb-4 btn-primary px-5 py-2.5"
       >
         Run all checks
       </button>
@@ -135,7 +135,7 @@ export function TestCenter() {
               <button
                 onClick={() => run(c.id)}
                 disabled={st === "running"}
-                className="mt-3 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+                className="btn-ghost mt-3 px-3 py-1.5 text-sm"
               >
                 {st === "running" ? "Running…" : "Run check"}
               </button>

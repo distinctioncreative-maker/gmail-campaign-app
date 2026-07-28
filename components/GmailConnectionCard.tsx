@@ -45,7 +45,7 @@ export function GmailConnectionCard({
           <button
             onClick={disconnect}
             disabled={busy}
-            className="mt-4 rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+            className="btn-danger mt-4 px-4 py-2 text-sm"
           >
             {busy ? "Disconnecting…" : "Disconnect Gmail"}
           </button>
@@ -53,7 +53,7 @@ export function GmailConnectionCard({
       ) : (
         <a
           href="/api/gmail/connect"
-          className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
+          className="btn-primary mt-4 px-5 py-2.5"
         >
           Connect Gmail
         </a>

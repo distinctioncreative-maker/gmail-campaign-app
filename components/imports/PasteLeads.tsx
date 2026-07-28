@@ -72,7 +72,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
           <button
             onClick={preview}
             disabled={busy || text.trim().length === 0}
-            className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+            className="mt-4 btn-primary px-5 py-2.5"
           >
             {busy ? "Reading…" : "Preview leads"}
           </button>
