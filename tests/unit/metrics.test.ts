@@ -8,6 +8,7 @@ import {
   formatDuration,
   totalSent,
   replyRateForCampaign,
+  openClickRates,
   type RecipientPoint,
 } from "@/lib/analytics/metrics";
 
@@ -33,6 +34,28 @@ describe("totals", () => {
     expect(t.bounced).toBe(1);
     expect(t.replyRate).toBeCloseTo(33.33, 1);
     expect(t.bounceRate).toBeCloseTo(33.33, 1);
+  });
+});
+
+describe("openClickRates", () => {
+  it("rates opens and clicks against sent, not against every point", () => {
+    const r = openClickRates([
+      p({ initialSentAt: 1, openedAt: 2, firstClickedAt: 3 }),
+      p({ initialSentAt: 1, openedAt: 2 }),
+      p({ initialSentAt: 1 }),
+      p({ initialSentAt: 1 }),
+      p({}), // never sent — excluded from the denominator entirely
+    ]);
+    expect(r.sent).toBe(4);
+    expect(r.opened).toBe(2);
+    expect(r.clicked).toBe(1);
+    expect(r.openRate).toBeCloseTo(50, 5);
+    expect(r.clickRate).toBeCloseTo(25, 5);
+  });
+
+  it("returns all zeros when nothing has sent", () => {
+    const r = openClickRates([p({}), p({})]);
+    expect(r).toEqual({ sent: 0, opened: 0, clicked: 0, openRate: 0, clickRate: 0 });
   });
 });
 

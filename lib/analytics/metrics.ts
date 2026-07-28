@@ -9,6 +9,10 @@ export interface RecipientPoint {
   repliedAt: number | null;
   bouncedAt: number | null;
   unsubscribedAt: number | null;
+  /** Only meaningful for recipients of a campaign with trackingEnabled — null
+   * on every recipient of an untracked campaign, not just "not opened yet". */
+  openedAt?: number | null;
+  firstClickedAt?: number | null;
 }
 
 const HOUR = 60 * 60 * 1000;
@@ -61,6 +65,34 @@ export function totals(points: RecipientPoint[]): Totals {
     replyRate: rate(replied),
     bounceRate: rate(bounced),
     unsubscribeRate: rate(unsubscribed),
+  };
+}
+
+export interface OpenClickRates {
+  sent: number;
+  opened: number;
+  clicked: number;
+  openRate: number; // 0–100, of sent
+  clickRate: number; // 0–100, of sent
+}
+
+/**
+ * Open/click rates over sent recipients. Callers must pre-filter `points` to
+ * recipients of tracking-enabled campaigns — mixing in untracked campaigns
+ * (where openedAt/firstClickedAt are permanently null) would silently dilute
+ * the rate rather than reflect "no one opened it".
+ */
+export function openClickRates(points: RecipientPoint[]): OpenClickRates {
+  const sentPoints = points.filter((p) => p.initialSentAt !== null);
+  const sent = sentPoints.length;
+  const opened = sentPoints.filter((p) => p.openedAt != null).length;
+  const clicked = sentPoints.filter((p) => p.firstClickedAt != null).length;
+  return {
+    sent,
+    opened,
+    clicked,
+    openRate: sent > 0 ? (opened / sent) * 100 : 0,
+    clickRate: sent > 0 ? (clicked / sent) * 100 : 0,
   };
 }
 

@@ -15,6 +15,7 @@ import {
   formatPercent as pct,
   totalSent,
   replyRateForCampaign,
+  openClickRates,
   type RecipientPoint,
 } from "@/lib/analytics/metrics";
 
@@ -50,6 +51,25 @@ export default async function ReportsPage() {
   const heat = replyHeatmap(points, tz);
   const best = bestSendTimes(points, tz).filter((r) => r.sent >= 2);
   const trend = dailyTrend(points, tz);
+
+  // Open/click rate is opt-in per campaign and off by default, so it's only
+  // meaningful over recipients of campaigns that actually turned it on —
+  // mixing in untracked campaigns would dilute the rate toward zero.
+  const trackedScanned = scanned.filter((c) => c.trackingEnabled);
+  const trackedCampaignCount = trackedScanned.length;
+  const trackedPoints: RecipientPoint[] = scanned.flatMap((c, i) =>
+    c.trackingEnabled
+      ? recipientLists[i].map((r) => ({
+          initialSentAt: r.initialSentAt,
+          repliedAt: r.repliedAt,
+          bouncedAt: r.bouncedAt,
+          unsubscribedAt: r.unsubscribedAt,
+          openedAt: r.openedAt,
+          firstClickedAt: r.firstClickedAt,
+        }))
+      : []
+  );
+  const tracking = openClickRates(trackedPoints);
 
   // Headline totals use the same source as Home and the leaderboard: cached
   // per-campaign counters across ALL campaigns, not the capped recipient
@@ -144,6 +164,40 @@ export default async function ReportsPage() {
           <p className="mb-3 text-xs text-muted">Reply rate by the hour an email went out.</p>
           <BestSendTimes rows={best} />
         </div>
+        <div className="card p-5">
+          <h2 className="font-medium">Opens &amp; clicks</h2>
+          {trackedCampaignCount === 0 ? (
+            <p className="text-sm text-muted">
+              Off by default. Turn on tracking in a campaign&apos;s Schedule step to see open and click rates here
+              — it&apos;s a known deliverability tradeoff, so only turn it on when you specifically need the numbers.
+            </p>
+          ) : (
+            <>
+              <p className="mb-3 text-xs text-muted">
+                Across {trackedCampaignCount} tracked campaign{trackedCampaignCount === 1 ? "" : "s"}, {tracking.sent} sent.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted">Open rate</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-sky-600">
+                    {tracking.sent ? pct(tracking.openRate) : "—"}
+                  </p>
+                  <p className="text-xs text-muted/70">{tracking.opened} opened</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted">Click rate</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-purple-600">
+                    {tracking.sent ? pct(tracking.clickRate) : "—"}
+                  </p>
+                  <p className="text-xs text-muted/70">{tracking.clicked} clicked</p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6">
         <div className="card p-5">
           <h2 className="font-medium">Time to reply</h2>
           <p className="mb-3 text-xs text-muted">

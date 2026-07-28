@@ -210,8 +210,15 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "open-click-tracking",
         name: "Optional open/click tracking",
         status: "shipped",
-        description: "Off by default, opt-in per campaign in the wizard, clearly labeled as a deliverability tradeoff. A signed, tamper-evident token (not a client-supplied URL) drives both the open pixel and the click-redirect endpoint, which only ever redirects to a destination looked up server-side from the recipient's own stored links — never an open redirect. The unsubscribe link is never rewritten.",
-        keyFiles: ["lib/tracking/inject.ts", "lib/tracking/token.ts", "app/api/t/o/[token]", "app/api/t/c/[token]/[index]"],
+        description: "Off by default, opt-in per campaign in the wizard, clearly labeled as a deliverability tradeoff. A signed, tamper-evident token (not a client-supplied URL) drives both the open pixel and the click-redirect endpoint, which only ever redirects to a destination looked up server-side from the recipient's own stored links — never an open redirect. The unsubscribe link is never rewritten. Open and click rates surface on the Reports page (scoped only to tracking-enabled campaigns, so untracked campaigns never dilute the rate toward zero) and as raw counts on each campaign's detail page.",
+        keyFiles: [
+          "lib/tracking/inject.ts",
+          "lib/tracking/token.ts",
+          "app/api/t/o/[token]",
+          "app/api/t/c/[token]/[index]",
+          "lib/analytics/metrics.ts",
+          "app/(dashboard)/reports/page.tsx",
+        ],
       },
       {
         id: "campaign-controls",
