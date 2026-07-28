@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listSequences } from "@/lib/repositories/sequences";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const UNIT_LABEL: Record<string, string> = {
   MINUTES: "min",
@@ -27,25 +28,20 @@ export default async function SequencesPage() {
       />
 
       {sequences.length === 0 ? (
-        <div className="card p-10 text-center">
-          <p className="text-muted">No sequences yet.</p>
-          <p className="mt-1 text-sm text-muted">
-            Build a timeline of follow-ups once, then reuse it in any campaign.
-          </p>
-          <Link
-            href="/sequences/new"
-            className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
-          >
-            Create your first sequence
-          </Link>
-        </div>
+        <EmptyState
+          icon="repeat"
+          title="No sequences yet."
+          description="Build a timeline of follow-ups once, then reuse it in any campaign."
+          action={{ href: "/sequences/new", label: "Create your first sequence" }}
+        />
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sequences.map((s) => (
+          {sequences.map((s, i) => (
             <Link
               key={s.sequenceId}
               href={`/sequences/${s.sequenceId}`}
-              className="card p-5 hover:shadow-md"
+              className="card card-hover animate-rise p-5"
+              style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
             >
               <p className="font-medium">{s.name}</p>
               <p className="mt-1 text-sm text-muted">

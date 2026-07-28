@@ -114,8 +114,12 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((c) => (
-              <tr key={c.campaignId} className="border-b border-border last:border-0 hover:bg-surface-2">
+            {sorted.map((c, i) => (
+              <tr
+                key={c.campaignId}
+                className="animate-rise border-b border-border last:border-0 hover:bg-surface-2"
+                style={{ animationDelay: `${Math.min(i, 10) * 25}ms` }}
+              >
                 <td className="px-4 py-3 font-medium">
                   <Link href={`/campaigns/${c.campaignId}`} className="hover:underline">
                     {c.name}

@@ -6,6 +6,7 @@ import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { ReplyHeatmap, TrendChart, BestSendTimes } from "@/components/analytics/Charts";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
+import { CountUp } from "@/components/ui/CountUp";
 import {
   timeToReply,
   replyHeatmap,
@@ -90,13 +91,27 @@ export default async function ReportsPage() {
     .sort((a, b) => b.rate - a.rate);
   const bestCampaign = leaderboard[0];
 
-  const kpis = [
-    { label: "Emails sent", value: String(totalSentAll), tone: "text-foreground" },
-    { label: "Reply rate", value: totalSentAll ? pct(overallReplyRate) : "—", tone: "text-green-600" },
-    { label: "Median time to reply", value: formatDuration(ttr.medianMs), tone: "text-indigo-600" },
-    { label: "Active campaigns", value: String(activeCount), tone: "text-foreground" },
-    { label: "Sent today", value: String(sentToday), tone: "text-foreground" },
-    { label: "Bounce rate", value: totalSentAll ? pct(overallBounceRate) : "—", tone: overallBounceRate > 3 ? "text-red-600" : "text-muted" },
+  type Kpi =
+    | { label: string; tone: string; count: number; decimals?: number; suffix?: string }
+    | { label: string; tone: string; text: string };
+
+  const kpis: Kpi[] = [
+    { label: "Emails sent", tone: "text-foreground", count: totalSentAll },
+    totalSentAll
+      ? { label: "Reply rate", tone: "text-green-600", count: overallReplyRate, decimals: 1, suffix: "%" }
+      : { label: "Reply rate", tone: "text-green-600", text: "—" },
+    { label: "Median time to reply", tone: "text-indigo-600", text: formatDuration(ttr.medianMs) },
+    { label: "Active campaigns", tone: "text-foreground", count: activeCount },
+    { label: "Sent today", tone: "text-foreground", count: sentToday },
+    totalSentAll
+      ? {
+          label: "Bounce rate",
+          tone: overallBounceRate > 3 ? "text-red-600" : "text-muted",
+          count: overallBounceRate,
+          decimals: 1,
+          suffix: "%",
+        }
+      : { label: "Bounce rate", tone: "text-muted", text: "—" },
   ];
 
   const csvRows = leaderboard.map((l) => [
@@ -130,10 +145,16 @@ export default async function ReportsPage() {
 
       {/* KPI tiles */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {kpis.map((k) => (
-          <div key={k.label} className="card card-hover p-5">
+        {kpis.map((k, i) => (
+          <div
+            key={k.label}
+            className="card card-hover animate-rise p-5"
+            style={{ animationDelay: `${i * 40}ms` }}
+          >
             <p className="text-sm text-muted">{k.label}</p>
-            <p className={`mt-1 text-2xl font-semibold tabular-nums ${k.tone}`}>{k.value}</p>
+            <p className={`mt-1 text-2xl font-semibold tabular-nums ${k.tone}`}>
+              {"count" in k ? <CountUp value={k.count} decimals={k.decimals} suffix={k.suffix} /> : k.text}
+            </p>
           </div>
         ))}
       </div>
@@ -180,14 +201,14 @@ export default async function ReportsPage() {
                 <div>
                   <p className="text-sm text-muted">Open rate</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-sky-600">
-                    {tracking.sent ? pct(tracking.openRate) : "—"}
+                    {tracking.sent ? <CountUp value={tracking.openRate} decimals={1} suffix="%" /> : "—"}
                   </p>
                   <p className="text-xs text-muted/70">{tracking.opened} opened</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted">Click rate</p>
                   <p className="mt-1 text-2xl font-semibold tabular-nums text-purple-600">
-                    {tracking.sent ? pct(tracking.clickRate) : "—"}
+                    {tracking.sent ? <CountUp value={tracking.clickRate} decimals={1} suffix="%" /> : "—"}
                   </p>
                   <p className="text-xs text-muted/70">{tracking.clicked} clicked</p>
                 </div>

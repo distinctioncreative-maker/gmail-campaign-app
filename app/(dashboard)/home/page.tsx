@@ -16,7 +16,7 @@ import { getOrganization } from "@/lib/repositories/orgSettings";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PulseChart } from "@/components/home/PulseChart";
-import { CountUp } from "@/components/home/CountUp";
+import { CountUp } from "@/components/ui/CountUp";
 import { RangeTabs, type HomeRange } from "@/components/home/RangeTabs";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { buildBriefing } from "@/lib/home/briefing";

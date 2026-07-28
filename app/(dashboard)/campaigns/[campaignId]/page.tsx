@@ -15,6 +15,7 @@ import { RecipientTable } from "@/components/campaign/RecipientTable";
 import { LocalTime } from "@/components/LocalTime";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { totalSent } from "@/lib/analytics/metrics";
+import { CountUp } from "@/components/ui/CountUp";
 
 export default async function CampaignDetailPage({
   params,
@@ -106,9 +107,15 @@ export default async function CampaignDetailPage({
       )}
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {stats.map((s) => (
-          <div key={s.label} className="card card-hover p-4 text-center">
-            <p className={`text-2xl font-semibold tabular-nums ${s.tone}`}>{s.value}</p>
+        {stats.map((s, i) => (
+          <div
+            key={s.label}
+            className="card card-hover animate-rise p-4 text-center"
+            style={{ animationDelay: `${i * 35}ms` }}
+          >
+            <p className={`text-2xl font-semibold tabular-nums ${s.tone}`}>
+              <CountUp value={s.value} />
+            </p>
             <p className="mt-1 text-xs text-muted">{s.label}</p>
           </div>
         ))}

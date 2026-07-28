@@ -4,6 +4,7 @@ import { listTemplates } from "@/lib/repositories/templates";
 import { TemplateListActions } from "@/components/templates/TemplateListActions";
 import { LocalTime } from "@/components/LocalTime";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function TemplatesPage() {
   const ctx = await requireUser();
@@ -24,22 +25,20 @@ export default async function TemplatesPage() {
       />
 
       {active.length === 0 ? (
-        <div className="card p-10 text-center">
-          <p className="text-muted">No templates yet.</p>
-          <p className="mt-1 text-sm text-muted">
-            Start from a ready-made layout, paste your own HTML, or import a Gmail draft.
-          </p>
-          <Link
-            href="/templates/new"
-            className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
-          >
-            Create your first template
-          </Link>
-        </div>
+        <EmptyState
+          icon="mail"
+          title="No templates yet."
+          description="Start from a ready-made layout, paste your own HTML, or import a Gmail draft."
+          action={{ href: "/templates/new", label: "Create your first template" }}
+        />
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {active.map((t) => (
-            <div key={t.templateId} className="flex flex-col card p-5">
+          {active.map((t, i) => (
+            <div
+              key={t.templateId}
+              className="flex flex-col card card-hover p-5 animate-rise"
+              style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
+            >
               <Link href={`/templates/${t.templateId}`} className="font-medium hover:underline">
                 {t.name}
               </Link>

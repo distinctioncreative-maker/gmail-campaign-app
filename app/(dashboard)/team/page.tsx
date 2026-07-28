@@ -10,7 +10,7 @@ import { ledTeamIds } from "@/lib/teams/access";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { CountUp } from "@/components/home/CountUp";
+import { CountUp } from "@/components/ui/CountUp";
 import { TeamManager, RosterActions, RemoveFromTeamButton } from "@/components/team/TeamManager";
 import type { Member, Team } from "@/schemas/user";
 import { formatPercent } from "@/lib/analytics/metrics";

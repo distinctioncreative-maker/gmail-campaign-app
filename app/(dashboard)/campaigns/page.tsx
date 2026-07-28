@@ -4,6 +4,7 @@ import { listCampaigns, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { CampaignsTable } from "@/components/campaign/CampaignsTable";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function CampaignsPage({
   searchParams,
@@ -45,18 +46,12 @@ export default async function CampaignsPage({
       )}
 
       {campaigns.length === 0 ? (
-        <div className="card p-10 text-center">
-          <p className="text-muted">No campaigns yet.</p>
-          <p className="mt-1 text-sm text-muted">
-            A guided wizard walks you through leads, email, schedule, and a safety review.
-          </p>
-          <Link
-            href="/campaigns/new"
-            className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 font-medium text-white hover:bg-primary-hover"
-          >
-            Create your first campaign
-          </Link>
-        </div>
+        <EmptyState
+          icon="rocket"
+          title="No campaigns yet."
+          description="A guided wizard walks you through leads, email, schedule, and a safety review."
+          action={{ href: "/campaigns/new", label: "Create your first campaign" }}
+        />
       ) : (
         <CampaignsTable
           campaigns={campaigns.map((c) => {

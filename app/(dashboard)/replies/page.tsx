@@ -9,6 +9,7 @@ import { ReplyThreadViewer } from "@/components/replies/ReplyThreadViewer";
 import { formatDuration } from "@/lib/analytics/metrics";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 // Cap the recipient-level scan so the page stays fast even with many campaigns.
 const MAX_CAMPAIGNS_SCANNED = 60;
@@ -118,14 +119,13 @@ export default async function RepliesPage() {
 
       <div className="mt-6">
         {rows.length === 0 ? (
-          <div className="card p-10 text-center">
-            <p className="text-sm font-medium">No replies yet</p>
-            <p className="mx-auto mt-1 max-w-md text-sm text-muted">
-              When someone replies to a campaign email it shows up here. If you&apos;re expecting
-              one, hit “Scan for replies” above — replies are also picked up automatically in the
-              background.
-            </p>
-          </div>
+          <EmptyState
+            icon="reply"
+            title="No replies yet"
+            description={
+              'When someone replies to a campaign email it shows up here. If you\'re expecting one, hit "Scan for replies" above — replies are also picked up automatically in the background.'
+            }
+          />
         ) : (
           <>
           {/* Mobile: reply cards */}
