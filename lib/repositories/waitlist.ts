@@ -10,7 +10,7 @@ export interface WaitlistEntry {
 /**
  * List early-access waitlist signups, newest first. The collection is written
  * by the public /api/waitlist route (one doc per hashed email). Read access is
- * admin-only — the caller enforces the role.
+ * admin-only: the caller enforces the role.
  */
 export async function listWaitlist(limit = 1000): Promise<WaitlistEntry[]> {
   const snap = await firestore()

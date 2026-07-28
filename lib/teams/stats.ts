@@ -13,7 +13,7 @@ export interface RepStats {
 }
 
 /** Roll one rep's campaign counters into leaderboard stats. Uses the cheap
- * per-campaign counters — no recipient-level reads. */
+ * per-campaign counters: no recipient-level reads. */
 export async function statsForRep(organizationId: string, userId: string): Promise<RepStats> {
   const campaigns = await listCampaigns({ userId, organizationId }, 200);
   let sent = 0;

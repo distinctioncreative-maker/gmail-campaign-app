@@ -131,7 +131,7 @@ function parseFromEmail(from: string): string {
 /**
  * List recent inbox messages with just enough metadata to match senders
  * against campaign recipients. One list call + bounded-parallel metadata
- * fetches — this is what lets the scan catch someone who replied by
+ * fetches: this is what lets the scan catch someone who replied by
  * composing a brand-new email instead of replying in-thread.
  */
 export async function listRecentInbound(userId: string): Promise<RecentInboundRef[]> {

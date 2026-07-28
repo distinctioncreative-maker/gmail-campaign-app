@@ -39,7 +39,7 @@ export default async function SystemHealthPage() {
     resolveSendingState(organizationId),
   ]);
 
-  // Per-member diagnostics, all in parallel — one row per person.
+  // Per-member diagnostics, all in parallel: one row per person.
   const memberRows = await Promise.all(
     members.map(async (m) => {
       const owner = { userId: m.userId, organizationId };
@@ -74,7 +74,7 @@ export default async function SystemHealthPage() {
   const checks: Array<[string, string, boolean]> = [
     [
       "Sending mode",
-      sending.testMode ? "TEST — all mail goes to the test address" : "LIVE — real recipients",
+      sending.testMode ? "TEST: all mail goes to the test address" : "LIVE: real recipients",
       true,
     ],
     [
@@ -94,7 +94,7 @@ export default async function SystemHealthPage() {
     <div>
       <PageHeader
         title="System health"
-        description="Troubleshooting console — platform checks, background sweeps, and each person's connection at a glance."
+        description="Troubleshooting console: platform checks, background sweeps, and each person's connection at a glance."
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -140,7 +140,7 @@ export default async function SystemHealthPage() {
           </table>
           <p className="px-4 py-3 text-xs text-muted/70">
             Sweeps run on a schedule. A warning here usually means Cloud Scheduler isn&apos;t set up
-            or hasn&apos;t fired yet — see scripts/setup-cloud.sh.
+            or hasn&apos;t fired yet: see scripts/setup-cloud.sh.
           </p>
         </div>
       </div>

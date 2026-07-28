@@ -76,7 +76,7 @@ export default function SignInPage() {
           </h2>
           <ul className="mt-8 space-y-4 text-white/90">
             {([
-              ["mail", "Sends through your Gmail — replies come to your inbox"],
+              ["mail", "Sends through your Gmail: replies come to your inbox"],
               ["shield", "Clears the deliverability gate before every send"],
               ["reply", "Follow-ups stop automatically when someone replies"],
             ] as Array<[IconName, string]>).map(([icon, label]) => (

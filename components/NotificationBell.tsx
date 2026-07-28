@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { LocalTime } from "@/components/LocalTime";
 
@@ -9,6 +10,7 @@ interface Notification {
   title: string;
   body: string;
   severity: string;
+  campaignId: string | null;
   read: boolean;
   createdAt: number;
 }
@@ -79,7 +81,17 @@ export function NotificationBell() {
             ) : (
               items.map((n) => (
                 <div key={n.notificationId} className="border-b border-border px-4 py-3 last:border-0">
-                  <p className="text-sm font-medium">{n.title}</p>
+                  {n.campaignId ? (
+                    <Link
+                      href={`/campaigns/${n.campaignId}`}
+                      onClick={() => setOpen(false)}
+                      className="text-sm font-medium text-foreground hover:text-primary"
+                    >
+                      {n.title}
+                    </Link>
+                  ) : (
+                    <p className="text-sm font-medium">{n.title}</p>
+                  )}
                   <p className="text-sm text-muted">{n.body}</p>
                   <LocalTime value={n.createdAt} className="mt-1 block text-xs text-muted/70" />
                 </div>

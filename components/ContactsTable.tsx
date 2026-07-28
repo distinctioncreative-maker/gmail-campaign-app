@@ -7,6 +7,7 @@ import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
+import { Icon } from "@/components/ui/Icon";
 
 export interface ContactRow {
   contactId: string;
@@ -149,7 +150,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
       setSelected(new Set());
       router.refresh();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "That didn't work — try again.", "error");
+      toast(err instanceof Error ? err.message : "That didn't work: try again.", "error");
     } finally {
       setBusy(false);
     }
@@ -157,26 +158,40 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, business, or email"
-          aria-label="Search contacts"
-          className="w-64 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
-        />
-        <div className="segmented flex">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`seg-btn ${filter === f.id ? "is-active" : ""}`}
-            >
-              {f.label}
-            </button>
-          ))}
+      <div className="card flex flex-col gap-3 p-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="relative w-full max-w-sm">
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted/70">
+            <Icon name="search" size={16} />
+          </span>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, business, or email"
+            aria-label="Search contacts"
+            className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+          />
         </div>
+        <div className="overflow-x-auto pb-1">
+          <div className="segmented min-w-max">
+            {FILTERS.map((f) => {
+              const count = contacts.filter((contact) => matches(contact, f.id)).length;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => setFilter(f.id)}
+                  className={`seg-btn ${filter === f.id ? "is-active" : ""}`}
+                >
+                  {f.label}
+                  <span className="ml-1 tabular-nums opacity-70">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <p className="text-xs text-muted xl:ml-auto">
+          {sorted.length} shown
+        </p>
       </div>
 
       {selected.size > 0 && (
@@ -287,7 +302,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
                   </td>
                   <td className="px-4 py-3 font-medium">
                     <Link href={`/leads/${c.contactId}`} className="hover:underline">
-                      {c.fullName || "—"}
+                      {c.fullName || "Not available"}
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-muted">{c.businessName}</td>
@@ -295,7 +310,7 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
                   <td className="px-4 py-3 text-muted">{c.phone}</td>
                   <td className="px-4 py-3 text-xs text-muted">
                     {c.emailsSentCount === 0 && c.campaignCount === 0 ? (
-                      <span className="text-muted/50">—</span>
+                      <span className="text-muted/50">: </span>
                     ) : (
                       <span className="tabular-nums">
                         {c.emailsSentCount} sent

@@ -138,7 +138,7 @@ export async function resolveTenant(identity: {
 }
 
 /** Promote a Solo (consumer) workspace into a real team org so the owner can
- * invite teammates. Same org id and data — just unlocks team capabilities.
+ * invite teammates. Same org id and data: just unlocks team capabilities.
  * No-op for orgs that are already a WORKSPACE. */
 export async function promoteConsumerToWorkspace(organizationId: string): Promise<void> {
   await firestore()

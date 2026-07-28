@@ -11,7 +11,7 @@ import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 
 /**
  * Read-only view of one rep's campaign for their Team Lead / an Admin.
- * No controls here on purpose — leads coach; only the rep (or an admin in
+ * No controls here on purpose: leads coach; only the rep (or an admin in
  * the rep's own UI) operates the campaign.
  */
 export default async function RepCampaignPage({
@@ -83,13 +83,13 @@ export default async function RepCampaignPage({
                 const rb = recipientStatusBadge(r.status);
                 return (
                   <tr key={r.recipientId} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3 font-medium">{r.fullNameSnapshot || "—"}</td>
+                    <td className="px-4 py-3 font-medium">{r.fullNameSnapshot || "Not available"}</td>
                     <td className="px-4 py-3 text-muted">{r.emailSnapshot}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-2 py-0.5 text-xs ${rb.className}`}>{rb.label}</span>
                     </td>
                     <td className="px-4 py-3 text-xs text-muted">
-                      {r.initialSentAt ? <LocalTime value={r.initialSentAt} /> : "—"}
+                      {r.initialSentAt ? <LocalTime value={r.initialSentAt} /> : "Not available"}
                     </td>
                   </tr>
                 );

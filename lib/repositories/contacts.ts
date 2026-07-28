@@ -58,7 +58,7 @@ export async function getContact(
 }
 
 /**
- * Mark a contact as actually contacted — called when an email is genuinely
+ * Mark a contact as actually contacted: called when an email is genuinely
  * sent (not at launch), so prior-contact detection reflects real sends and
  * recipients who were cancelled/skipped are never counted as contacted.
  * The campaign count increments atomically.
@@ -78,7 +78,7 @@ export async function markContacted(
       updatedAt: info.at,
     })
     .catch(() => {
-      // Contact may have been deleted between launch and send — ignore.
+      // Contact may have been deleted between launch and send: ignore.
     });
 }
 
@@ -200,7 +200,7 @@ export async function recordEmailSent(ctx: Scope, contactId: string, at: number)
     .doc(contactId)
     .update({ emailsSentCount: FieldValue.increment(1), lastOutcome: "EMAILED", updatedAt: at })
     .catch(() => {
-      // Contact may have been deleted after launch — ignore.
+      // Contact may have been deleted after launch: ignore.
     });
 }
 
@@ -268,7 +268,7 @@ export async function undoContactUnsubscribe(
 }
 
 /** Overwrite a contact's engagement fields with authoritative rolled-up
- * values (used by the reconcile sweep — recipient records win). */
+ * values (used by the reconcile sweep: recipient records win). */
 export async function setContactEngagement(
   ctx: Scope,
   contactId: string,
@@ -292,7 +292,7 @@ export async function setContactEngagement(
       updatedAt: Date.now(),
     })
     .catch(() => {
-      // Contact deleted since the campaign ran — ignore.
+      // Contact deleted since the campaign ran: ignore.
     });
 }
 

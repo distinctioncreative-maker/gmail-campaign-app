@@ -1,6 +1,6 @@
 /**
  * Pure bucketing + aggregation math for the deliverability benchmarks
- * feature. No I/O here on purpose — lib/benchmarks/aggregate.ts does the
+ * feature. No I/O here on purpose: lib/benchmarks/aggregate.ts does the
  * Firestore/Admin SDK fetching and calls into this module, so the actual
  * statistics logic is unit-testable without mocking Firestore.
  */
@@ -35,7 +35,7 @@ export interface BucketStat {
 export interface DimensionAggregate {
   dimension: string;
   label: string;
-  /** Only buckets meeting the minimum-sample threshold — see
+  /** Only buckets meeting the minimum-sample threshold: see
    * MIN_SAMPLE_TO_SURFACE. A dimension can legitimately have zero buckets
    * if nothing in the system has enough campaigns behind it yet. */
   buckets: BucketStat[];

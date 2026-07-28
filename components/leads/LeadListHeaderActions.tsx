@@ -39,7 +39,7 @@ export function LeadListHeaderActions({ listId, name }: { listId: string; name: 
   async function remove() {
     const ok = await confirm({
       title: `Delete “${name}”?`,
-      body: "The list is removed. Your leads are kept — they just leave this list.",
+      body: "The list is removed. Your leads are kept: they just leave this list.",
       danger: true,
       confirmLabel: "Delete list",
     });

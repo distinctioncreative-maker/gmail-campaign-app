@@ -7,7 +7,7 @@ import { ContactPatchSchema } from "@/lib/leads/engagement";
 type Params = { params: Promise<{ contactId: string }> };
 
 /** Edit a lead's details (name, business, phone, region, amount, source,
- * notes, opt-out). Email is not editable — it's the dedup key. */
+ * notes, opt-out). Email is not editable: it's the dedup key. */
 export const PATCH = handleApiErrors(async (req: NextRequest, { params }: Params) => {
   const ctx = await requireUser();
   const { contactId } = await params;

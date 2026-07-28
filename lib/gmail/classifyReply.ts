@@ -52,7 +52,7 @@ export function stripQuotedText(body: string): string {
   return fresh.join("\n").trim();
 }
 
-/** Explicit, directed opt-out requests — honored at any message length. */
+/** Explicit, directed opt-out requests: honored at any message length. */
 const UNSUB_STRONG_PATTERNS = [
   /(?:^|\n)\s*(?:please\s+)?unsubscribe(?:\s+me)?\s*[.!]*\s*(?:$|\n)/i,
   /\b(?:please\s+)?remove me from\b/i,
@@ -62,12 +62,12 @@ const UNSUB_STRONG_PATTERNS = [
   /\bopt me out\b/i,
   /\bi (?:want|would like|wish) to (?:unsubscribe|opt[ -]?out)\b/i,
   // The universal SMS/email opt-out convention ("reply STOP to unsubscribe")
-  // — anchored to the WHOLE fresh reply so an unrelated sentence that merely
+  // This is anchored to the WHOLE fresh reply so an unrelated sentence that merely
   // contains "stop" (e.g. "can we stop by Tuesday?") is never matched.
   /^\s*stop\s*[.!]*\s*$/i,
 ];
 
-/** Weaker mentions — only count when the whole fresh reply is a short
+/** Weaker mentions: only count when the whole fresh reply is a short
  * opt-out-shaped message, never inside a longer conversation. */
 const UNSUB_WEAK_PATTERNS = [/\bunsubscribe\b/i, /\bopt(?:\s|-)?out\b/i];
 const UNSUB_WEAK_MAX_LENGTH = 160;
@@ -89,7 +89,7 @@ const OOO_SUBJECT_PATTERNS = [
   /\bOOO\b/,
 ];
 
-/** Positive buying signals — a reply that reads like real interest, so the
+/** Positive buying signals: a reply that reads like real interest, so the
  * inbox can float it to the top. Applied to the fresh (unquoted) text only. */
 const POSITIVE_PATTERNS = [
   /\binterested\b/i,
@@ -118,7 +118,7 @@ export function classifyInboundMessage(msg: InboundMessage): ReplyClass {
   const autoreply = header(msg, "X-Autoreply") || header(msg, "X-Autorespond");
   const precedence = header(msg, "Precedence").toLowerCase();
 
-  // Classify only what the person actually typed — never the quoted
+  // Classify only what the person actually typed: never the quoted
   // original email underneath their reply.
   const fresh = stripQuotedText(msg.bodyText || msg.snippet);
   const bodyAndSubject = `${msg.subject}\n${msg.bodyText || msg.snippet}`;

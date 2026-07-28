@@ -171,7 +171,7 @@ export function LeadEditor({
         />
       </label>
       <p className="mt-2 text-xs text-muted/70">
-        The email address can&apos;t be changed — it identifies this lead across imports and campaigns.
+        The email address can&apos;t be changed: it identifies this lead across imports and campaigns.
       </p>
       <div className="mt-4 flex gap-2">
         <button onClick={() => void save()} disabled={busy} className="btn-primary px-4 py-2 text-sm">

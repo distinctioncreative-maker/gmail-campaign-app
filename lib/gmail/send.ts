@@ -85,7 +85,7 @@ function buildMime(input: {
 
 /**
  * Send one email through the user's connected Gmail. The test-mode
- * safety gate is applied here, immediately before the API call — there
+ * safety gate is applied here, immediately before the API call: there
  * is no send path around it.
  */
 export async function sendEmail(input: SendEmailInput): Promise<{

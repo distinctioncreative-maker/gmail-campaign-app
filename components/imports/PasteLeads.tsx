@@ -25,7 +25,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Could not read that list.");
       if (!body.leads || body.leads.length === 0) {
-        // Don't switch to an empty preview table — keep the paste box and
+        // Don't switch to an empty preview table: keep the paste box and
         // explain what to try instead.
         setError(
           body.globalWarnings?.[0] ??
@@ -54,7 +54,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
             Paste your Salesforce lead list
           </label>
           <p className="mt-1 text-sm text-muted">
-            Copy your leads straight out of Salesforce and paste them here — either
+            Copy your leads straight out of Salesforce and paste them here: either
             format works: the list view with columns (First Name, Last Name, Email…)
             or the row-by-row layout that starts each lead with “Select Item”. We’ll
             figure out the columns for you.

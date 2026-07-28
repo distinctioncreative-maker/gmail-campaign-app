@@ -100,7 +100,7 @@ function isMonitorable(r: Recipient): boolean {
   );
 }
 
-/** Campaign states worth scanning for replies — includes STOPPED so a
+/** Campaign states worth scanning for replies: includes STOPPED so a
  * reply to a campaign you halted still gets counted. */
 const REPLY_MONITOR_STATUSES = ["ACTIVE", "PAUSED", "COMPLETED", "STOPPED"];
 
@@ -146,7 +146,7 @@ async function actOnInbound(
     await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "UNSUBSCRIBED", now);
     await recordEvent(owner, campaign.campaignId, {
       type: "UNSUBSCRIBE",
-      message: `${r.emailSnapshot} asked to unsubscribe — added to your do-not-email list.`,
+      message: `${r.emailSnapshot} asked to unsubscribe: added to your do-not-email list.`,
       severity: "WARNING",
       recipientEmail: r.emailSnapshot,
     });
@@ -182,7 +182,7 @@ async function actOnInbound(
         returnDate
       );
     }
-    // OOO is not a human reply — do not stop the sequence outright.
+    // OOO is not a human reply: do not stop the sequence outright.
     return false;
   }
 
@@ -216,7 +216,7 @@ async function actOnInbound(
     await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "REPLIED", now);
     await recordEvent(owner, campaign.campaignId, {
       type: "REPLY",
-      message: `${r.emailSnapshot} replied — follow-ups stopped.`,
+      message: `${r.emailSnapshot} replied: follow-ups stopped.`,
       severity: "INFO",
       recipientEmail: r.emailSnapshot,
     });
@@ -235,8 +235,8 @@ async function actOnInbound(
 
 /**
  * Scan a user's campaigns for replies (spec §16). Two passes:
- * 1. Thread pass — read each monitorable recipient's thread, in parallel.
- * 2. Inbox sweep — match recent inbox senders against still-unreplied
+ * 1. Thread pass: read each monitorable recipient's thread, in parallel.
+ * 2. Inbox sweep: match recent inbox senders against still-unreplied
  *    recipients, so replies composed as NEW emails (not in-thread) are
  *    caught too.
  */
@@ -275,7 +275,7 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
         connection.connectedEmail
       );
     } catch {
-      return; // token/thread issue — try again next sweep
+      return; // token/thread issue: try again next sweep
     }
     if (result.inbound.length === 0) return;
     const classes = result.inbound.map(classifyInboundMessage);
@@ -296,7 +296,7 @@ export async function processRepliesForUser(owner: OwnerRef): Promise<{ checked:
     try {
       inboxRefs = await listRecentInbound(owner.userId);
     } catch {
-      // Inbox listing failed — thread-pass results still stand.
+      // Inbox listing failed: thread-pass results still stand.
     }
     const matches = inboxRefs.filter((m) => {
       const candidates = pending.get(m.fromEmail) ?? [];
@@ -448,7 +448,7 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
     );
     await recordEvent(owner, match.campaignId, {
       type: "BOUNCE",
-      message: `${match.recipient.emailSnapshot} ${type === "HARD" ? "hard-bounced — added to your do-not-email list" : "soft-bounced"}.`,
+      message: `${match.recipient.emailSnapshot} ${type === "HARD" ? "hard-bounced: added to your do-not-email list" : "soft-bounced"}.`,
       severity: "WARNING",
       recipientEmail: match.recipient.emailSnapshot,
     });

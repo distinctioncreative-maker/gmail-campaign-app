@@ -9,7 +9,7 @@ interface EmptyStateProps {
   className?: string;
 }
 
-/** Shared "nothing here yet" panel — icon, plain-language title/description,
+/** Shared "nothing here yet" panel: icon, plain-language title/description,
  * and an optional primary CTA. Used for a page's first-ever empty state, not
  * small in-page sub-panels (those stay a plain muted line). */
 export function EmptyState({ icon, title, description, action, className = "" }: EmptyStateProps) {

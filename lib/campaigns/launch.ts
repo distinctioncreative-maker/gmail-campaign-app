@@ -61,10 +61,10 @@ export async function validateForLaunch(
     } else {
       const profile = await getSenderProfile(ctx);
       if (!profile.physicalAddress.trim()) {
-        problems.push("Add your company mailing address in Settings — required for commercial email.");
+        problems.push("Add your company mailing address in Settings: required for commercial email.");
       }
       if (!profile.unsubscribeText.trim()) {
-        problems.push("Add an opt-out sentence in Settings — required for commercial email.");
+        problems.push("Add an opt-out sentence in Settings: required for commercial email.");
       }
       const missing = missingCommercialEmailPlaceholders(template.htmlTemplate);
       if (missing.length > 0) {
@@ -83,7 +83,7 @@ export async function validateForLaunch(
       campaign.templateRotation.map((id) => getTemplate(ctx, id))
     );
     if (resolved.some((t) => !t || !t.active)) {
-      problems.push("One of the rotation templates no longer exists — re-check your template selection.");
+      problems.push("One of the rotation templates no longer exists: re-check your template selection.");
     }
     for (const template of resolved) {
       if (
@@ -315,13 +315,13 @@ export async function launchCampaign(
   });
 
   // NOTE: contacts are marked "contacted" only when an email actually sends
-  // (in the send worker), never here at launch — otherwise recipients who are
+  // (in the send worker), never here at launch: otherwise recipients who are
   // paused, cancelled, or skipped before sending would be wrongly treated as
   // contacted and excluded from future campaigns.
 
   // Enqueue one Cloud Task per email. A failure here (e.g. queue not yet
   // provisioned) must not abort the launch after we've written recipients and
-  // queue items — the items stay SCHEDULED and the repair sweep / manual retry
+  // queue items: the items stay SCHEDULED and the repair sweep / manual retry
   // re-enqueues them. We record the failure so it's visible instead of a 500.
   let enqueueFailures = 0;
   for (const item of queueItems) {
@@ -352,9 +352,9 @@ export async function launchCampaign(
   }
 
   const launchMessage = !tasksConfigured()
-    ? `Campaign created with ${eligibleRecipients.length} recipients, but background sending is not configured yet — an administrator must set up Cloud Tasks.`
+    ? `Campaign created with ${eligibleRecipients.length} recipients, but background sending is not configured yet: an administrator must set up Cloud Tasks.`
     : enqueueFailures > 0
-      ? `Campaign started, but ${enqueueFailures} of ${eligibleRecipients.length} emails could not be scheduled with the sending service. Use “Retry failed” once it's fixed — nothing was lost.`
+      ? `Campaign started, but ${enqueueFailures} of ${eligibleRecipients.length} emails could not be scheduled with the sending service. Use “Retry failed” once it's fixed: nothing was lost.`
       : `Campaign started: ${eligibleRecipients.length} emails scheduled, ${excluded} excluded for safety.`;
   await recordEvent(owner, campaign.campaignId, {
     type: "LAUNCHED",

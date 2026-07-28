@@ -5,7 +5,7 @@ import { LeadPreviewTable } from "./LeadPreviewTable";
 import type { ClassifiedLead } from "./leadBadges";
 
 const FIELD_LABELS: Record<string, string> = {
-  ignore: "— Skip this column —",
+  ignore: ": Skip this column: ",
   firstName: "First name",
   lastName: "Last name",
   fullName: "Full name",

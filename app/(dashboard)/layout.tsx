@@ -10,6 +10,7 @@ import { ProductTour } from "@/components/tour/ProductTour";
 import { UIProviders } from "@/components/ui/UIProviders";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
+import { Icon } from "@/components/ui/Icon";
 
 const BASE_NAV: NavItem[] = [
   { href: "/home", label: "Home", icon: "home", section: "Overview" },
@@ -60,7 +61,7 @@ export default async function DashboardLayout({
   } catch {
     // Send signed-out visitors (and brand-new users hitting a bookmarked
     // app URL) to the marketing site first, not straight to a bare login
-    // form — "/" already redirects signed-in sessions on to /home, so this
+    // form: "/" already redirects signed-in sessions on to /home, so this
     // never traps an authenticated user.
     redirect("/");
   }
@@ -107,20 +108,20 @@ export default async function DashboardLayout({
         {/* Always-visible sending-mode banner so no one is ever unsure. */}
         {sending.testMode ? (
           <div className="alert-warning flex items-center justify-center gap-2 border-y px-4 py-1.5 text-center text-xs font-medium text-warning">
-            <span aria-hidden>🛡️</span>
-            Test mode — emails only go to your test address, never real recipients.
+            <Icon name="shield" size={14} />
+            Test mode: emails only go to your test address, never real recipients.
           </div>
         ) : (
           <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 px-4 py-1.5 text-center text-xs font-semibold text-white">
             <span aria-hidden>●</span>
-            Live — campaigns send real emails to real recipients.
+            Live: campaigns send real emails to real recipients.
           </div>
         )}
         <div className="glass sticky top-0 z-10 hidden items-center justify-end gap-1 border-b border-border px-6 py-2.5 sm:flex">
           <ThemeToggle />
           <NotificationBell />
         </div>
-        <main className="mx-auto w-full max-w-6xl flex-1 p-4 pb-28 sm:p-6 sm:pb-6 md:p-8">
+        <main className="mx-auto w-full max-w-[1440px] flex-1 p-4 pb-28 sm:p-6 sm:pb-6 md:p-8">
           <div className="animate-rise">{children}</div>
         </main>
       </div>

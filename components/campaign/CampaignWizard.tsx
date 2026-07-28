@@ -257,8 +257,10 @@ export function CampaignWizard() {
     if (res.ok) setPreview(await res.json());
   }
 
-  /** Gate an actually-risky pace behind an explicit, informative confirm —
-   * the whole point is that no one launches a spam-flagged pace by accident. */
+  /**
+   * Gate an actually risky pace behind an explicit, informative confirmation
+   * so no one launches a spam-flagged pace by accident.
+   */
   async function confirmAndLaunch() {
     if (paceRisk.risky) {
       const ok = await confirm({
@@ -432,7 +434,7 @@ export function CampaignWizard() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. July new leads — Central region"
+                placeholder="e.g. July new leads: Central region"
                 className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
               />
             </label>
@@ -463,7 +465,7 @@ export function CampaignWizard() {
               </div>
             ) : contacts.length === 0 ? (
               <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
-                You have no contacts yet — import leads first.
+                You have no contacts yet: import leads first.
               </p>
             ) : (
               <>
@@ -558,7 +560,7 @@ export function CampaignWizard() {
                                 onChange={() => toggleContact(c.contactId)}
                               />
                             </td>
-                            <td className="px-3 py-2 font-medium">{c.fullName || "—"}</td>
+                            <td className="px-3 py-2 font-medium">{c.fullName || "Not available"}</td>
                             <td className="px-3 py-2 text-muted">{c.businessName}</td>
                             <td className="px-3 py-2 text-muted">{c.email}</td>
                             <td className="px-3 py-2">
@@ -601,13 +603,13 @@ export function CampaignWizard() {
                 onChange={(e) => setPriorPolicy(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm"
               >
-                <option value="ONLY_NEW">Skip them — only email new people (recommended)</option>
+                <option value="ONLY_NEW">Skip them: only email new people (recommended)</option>
                 <option value="EXCLUDE_RECENT">Skip anyone contacted in the last 30 days</option>
                 <option value="INCLUDE_AFTER_WARNING">Include the ones I ticked, I understand</option>
               </select>
             </label>
             <p className="mt-3 text-xs text-muted">
-              Opted-out, unsubscribed, and bounced people are always excluded — that can&apos;t be
+              Opted-out, unsubscribed, and bounced people are always excluded: that can&apos;t be
               overridden.
             </p>
           </>
@@ -627,7 +629,7 @@ export function CampaignWizard() {
               </button>
             </div>
             <p className="mt-1 text-sm text-muted">
-              Write it right here — saving drops you back into this campaign with the template
+              Write it right here: saving drops you back into this campaign with the template
               picked, no need to leave and come back.
             </p>
             <div className="mt-4">
@@ -646,7 +648,7 @@ export function CampaignWizard() {
               <div>
                 <h2 className="text-xl font-semibold">Choose the email</h2>
                 <p className="mt-1 text-sm text-muted">
-                  Pick one template — or select two or more to <strong>A/B test</strong>. When you pick
+                  Pick one template: or select two or more to <strong>A/B test</strong>. When you pick
                   several, the app rotates them across your recipients and shows which gets more replies.
                 </p>
               </div>
@@ -663,7 +665,7 @@ export function CampaignWizard() {
               </div>
             ) : templates.length === 0 ? (
               <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
-                No templates yet —{" "}
+                No templates yet: {" "}
                 <button
                   onClick={() => setEditing({ templateId: null, initial: null })}
                   className="font-medium text-primary hover:underline"
@@ -800,7 +802,7 @@ export function CampaignWizard() {
                   )}
                 </div>
                 <p className="mt-2 text-xs text-muted">
-                  Higher numbers send faster but can hurt deliverability — Gmail limits how much you
+                  Higher numbers send faster but can hurt deliverability: Gmail limits how much you
                   can send per day. You can change all of this later on the campaign page.
                 </p>
               </div>
@@ -856,7 +858,7 @@ export function CampaignWizard() {
                   checked={draftStrategy === "DRAFT_ONLY"}
                   onChange={(e) => setDraftStrategy(e.target.checked ? "DRAFT_ONLY" : "SEND")}
                 />
-                Create Gmail drafts only — I&apos;ll review and send them myself
+                Create Gmail drafts only: I&apos;ll review and send them myself
                 <HelpTip text="Instead of sending automatically, the app prepares each email as a draft in your Gmail. You open and send them yourself. Good for extra control on important lists." />
               </label>
             </div>
@@ -872,8 +874,8 @@ export function CampaignWizard() {
                 <span>
                   Track opens and clicks <span className="font-normal text-amber-700">(optional)</span>
                   <span className="mt-0.5 block text-xs text-muted">
-                    Adds an invisible open pixel and rewrites links to measure clicks. Off by default —
-                    <strong className="font-medium text-amber-700"> tracking pixels and rewritten links are a
+                    Adds an invisible open pixel and rewrites links to measure clicks. Off by default.{" "}
+                    <strong className="font-medium text-amber-700">Tracking pixels and rewritten links are a
                     known deliverability risk</strong> and can lower inbox placement. Leave this off unless
                     you specifically need open/click numbers for this campaign.
                   </span>
@@ -894,7 +896,7 @@ export function CampaignWizard() {
                     ✨ Add an AI-personalized opening line to each email
                     <span className="mt-0.5 block text-xs text-muted">
                       Writes one tailored sentence per lead based on their business, added to the top
-                      of the first email. Best for focused lists — capped at the first 150 recipients
+                      of the first email. Best for focused lists: capped at the first 150 recipients
                       to keep it fast. Add <code className="rounded bg-surface px-1">{"{{ai_opener}}"}</code>{" "}
                       in your template to place it yourself; otherwise it goes up top.
                     </span>
@@ -926,7 +928,7 @@ export function CampaignWizard() {
                 {preset === "custom"
                   ? `${customPace.emailsPerBatch} per batch · ${customPace.minDelaySeconds}–${customPace.maxDelaySeconds}s apart · ${customPace.interBatchDelayMinutes} min between batches · ${customPace.dailySendLimit}/day`
                   : PRESETS[preset].detail}
-                {paceRisk.risky && <span className="ml-1 font-medium text-amber-700">— risky, see above</span>}
+                {paceRisk.risky && <span className="ml-1 font-medium text-amber-700">: risky, see above</span>}
               </li>
               <li>✅ Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</li>
               <li>
@@ -938,10 +940,10 @@ export function CampaignWizard() {
             <div className="mt-4 rounded-xl bg-surface-2 p-4 text-sm text-muted">
               <p className="font-medium text-foreground">How replies are handled automatically</p>
               <ul className="mt-1.5 list-disc space-y-1 pl-5">
-                <li>Any reply stops follow-ups for that person — you take the conversation over in Gmail.</li>
+                <li>Any reply stops follow-ups for that person: you take the conversation over in Gmail.</li>
                 <li>
                   Someone is only marked <strong>unsubscribed</strong> (and added to your
-                  do-not-email list) when they explicitly ask — e.g. “unsubscribe” or “remove me
+                  do-not-email list) when they explicitly ask: e.g. “unsubscribe” or “remove me
                   from your list”. Questions and normal replies never trigger it.
                 </li>
                 <li>If one is ever flagged wrong, the campaign page has an Undo next to that person.</li>
@@ -955,7 +957,7 @@ export function CampaignWizard() {
             )}
             {counts.selected > 100 && (
               <label className="mt-4 block text-sm font-medium text-foreground">
-                This is a large campaign — type <strong>SEND</strong> to confirm
+                This is a large campaign: type <strong>SEND</strong> to confirm
                 <input
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
@@ -975,13 +977,13 @@ export function CampaignWizard() {
             </p>
             {testMode === true && (
               <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-warning">
-                🛡️ You&apos;re in test mode — these emails go only to your test address, not real
+                🛡️ You&apos;re in test mode: these emails go only to your test address, not real
                 recipients. Perfect for a practice run.
               </p>
             )}
             {testMode === false && (
               <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-success">
-                ● Live mode — these emails will be sent to real recipients.
+                ● Live mode: these emails will be sent to real recipients.
               </p>
             )}
             <div className="mt-5 flex flex-wrap gap-3">

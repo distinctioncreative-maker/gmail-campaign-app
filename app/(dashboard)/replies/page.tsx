@@ -45,7 +45,7 @@ const INTENT_META: Record<ReplyIntent, { label: string; className: string; rank:
 };
 
 /**
- * Every reply across all campaigns in one inbox — newest first, one click to
+ * Every reply across all campaigns in one inbox: newest first, one click to
  * the lead or straight into the Gmail thread. This is the page reps live in
  * once campaigns are running.
  */
@@ -123,7 +123,7 @@ export default async function RepliesPage() {
             icon="reply"
             title="No replies yet"
             description={
-              'When someone replies to a campaign email it shows up here. If you\'re expecting one, hit "Scan for replies" above — replies are also picked up automatically in the background.'
+              'When someone replies to a campaign email it shows up here. If you\'re expecting one, hit "Scan for replies" above: replies are also picked up automatically in the background.'
             }
           />
         ) : (

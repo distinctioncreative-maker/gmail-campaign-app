@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Email-authentication DNS checks (SPF / DKIM / DMARC) for the sending
  * domain. Parsing is pure and unit-tested; the actual DNS lookups live in
- * dnsLookup.ts (server-only). No external services — just DNS.
+ * dnsLookup.ts (server-only). No external services: just DNS.
  */
 
 export const CheckStatusSchema = z.enum(["PASS", "WARN", "FAIL"]);
@@ -36,7 +36,7 @@ export function evaluateSpf(txtRecords: string[]): DnsCheck {
       id: "spf",
       label: "SPF",
       status: "FAIL",
-      detail: "Your SPF record ends in +all, which lets anyone send as your domain — a spam red flag.",
+      detail: "Your SPF record ends in +all, which lets anyone send as your domain: a spam red flag.",
       fix: 'Change the record to end in "~all" (softfail) or "-all" (hard fail).',
     };
   }
@@ -101,7 +101,7 @@ export function evaluateDmarc(txtRecords: string[]): DnsCheck {
       label: "DMARC",
       status: "FAIL",
       detail: "No DMARC record. Google requires DMARC for bulk senders and rewards it for everyone.",
-      fix: 'Add a TXT record at _dmarc.yourdomain: "v=DMARC1; p=none; rua=mailto:postmaster@yourdomain". Start with p=none — it\'s monitoring-only and can\'t break anything.',
+      fix: 'Add a TXT record at _dmarc.yourdomain: "v=DMARC1; p=none; rua=mailto:postmaster@yourdomain". Start with p=none: it\'s monitoring-only and can\'t break anything.',
     };
   }
   if (policy === "none" || policy === null) {
@@ -110,7 +110,7 @@ export function evaluateDmarc(txtRecords: string[]): DnsCheck {
       label: "DMARC",
       status: "PASS",
       detail: `DMARC is set up (policy: ${policy ?? "none"}). That meets Google's minimum requirement.`,
-      fix: "Once you're confident, tightening to p=quarantine improves trust further — optional.",
+      fix: "Once you're confident, tightening to p=quarantine improves trust further: optional.",
     };
   }
   return {

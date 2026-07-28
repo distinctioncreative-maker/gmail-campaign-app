@@ -46,7 +46,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   }
   if (!recipient.gmailThreadId) {
     return NextResponse.json(
-      { error: "No Gmail thread is linked to this reply yet — open it in Gmail and reply there." },
+      { error: "No Gmail thread is linked to this reply yet: open it in Gmail and reply there." },
       { status: 409 }
     );
   }
@@ -95,6 +95,6 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   return NextResponse.json({
     draftId,
     threadId: recipient.gmailThreadId,
-    message: "Draft ready in Gmail — open the thread to review and send.",
+    message: "Draft ready in Gmail: open the thread to review and send.",
   });
 });

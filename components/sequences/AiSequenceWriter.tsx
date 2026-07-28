@@ -43,10 +43,10 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
         body: JSON.stringify({ prompt: prompt.trim() }),
       });
       onResult(res.steps);
-      toast(`Drafted ${res.steps.length} follow-up${res.steps.length === 1 ? "" : "s"} — edit to taste.`, "success");
+      toast(`Drafted ${res.steps.length} follow-up${res.steps.length === 1 ? "" : "s"}: edit to taste.`, "success");
       setOpen(false);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Couldn't draft that — try again.", "error");
+      toast(err instanceof Error ? err.message : "Couldn't draft that: try again.", "error");
     } finally {
       setBusy(false);
     }
@@ -100,7 +100,7 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
             <button onClick={() => setOpen(false)} className="btn-ghost px-3 py-2 text-sm">
               Close
             </button>
-            <span className="text-xs text-muted/70">Replaces the steps below — you can still edit each.</span>
+            <span className="text-xs text-muted/70">Replaces the steps below: you can still edit each.</span>
           </div>
         </div>
       )}

@@ -49,11 +49,11 @@ export default async function LeadListDetailPage({
         <LeadListHeaderActions listId={list.listId} name={list.name} />
       </div>
 
-      {/* Add leads to this list — duplicates already in the list are skipped */}
+      {/* Add leads to this list: duplicates already in the list are skipped */}
       <div className="mt-6">
         <h2 className="mb-1 font-medium">Add leads to this list</h2>
         <p className="mb-3 text-sm text-muted">
-          Paste or upload leads — anyone already in “{list.name}” is skipped, so you can keep topping
+          Paste or upload leads: anyone already in “{list.name}” is skipped, so you can keep topping
           it up safely.
         </p>
         <ImportChooser listId={list.listId} />

@@ -250,8 +250,8 @@ export function SequenceBuilder({
               <label className="mt-3 block text-sm font-medium text-foreground">
                 Follow-up message
                 <span className="block text-xs font-normal text-muted">
-                  Write it here. Use placeholders like {"{{first_name}}"} and {"{{signature}}"} —
-                  basic HTML is allowed.
+                  Write it here. Use placeholders like {"{{first_name}}"} and {"{{signature}}"}. Basic
+                  HTML is allowed.
                 </span>
                 <textarea
                   value={step.customHtml}
@@ -311,7 +311,7 @@ export function SequenceBuilder({
         <h3 className="font-medium">Stop rules</h3>
         <p className="mt-1 text-sm text-muted">
           Follow-ups always stop when someone replies, unsubscribes, or bounces. These can&apos;t
-          be turned off — they keep you safe.
+          be turned off: they keep you safe.
         </p>
         <label className="mt-4 block text-sm font-medium text-foreground">
           If someone is out of office

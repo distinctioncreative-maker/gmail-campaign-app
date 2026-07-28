@@ -73,9 +73,9 @@ export default async function WaitlistPage() {
               {entries.map((e) => (
                 <tr key={e.email} className="border-b border-border last:border-0 hover:bg-surface-2">
                   <td className="px-4 py-3 font-medium">{e.email}</td>
-                  <td className="px-4 py-3 text-muted">{e.source || "—"}</td>
+                  <td className="px-4 py-3 text-muted">{e.source || "Not available"}</td>
                   <td className="px-4 py-3 text-muted">
-                    {e.createdAt ? <LocalTime value={e.createdAt} /> : "—"}
+                    {e.createdAt ? <LocalTime value={e.createdAt} /> : "Not available"}
                   </td>
                 </tr>
               ))}

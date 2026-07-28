@@ -9,6 +9,7 @@ import { SpamCheck } from "@/components/spam/SpamCheck";
 import { AiEmailWriter } from "./AiEmailWriter";
 import { AiEmailTools } from "./AiEmailTools";
 import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -57,7 +58,7 @@ export function TemplateEditor({
   initial: { name: string; subjectTemplate: string; htmlTemplate: string; type: string } | null;
   /**
    * When provided, a successful save calls this instead of redirecting to
-   * /templates — lets a caller (e.g. the campaign wizard) embed the editor
+   * /templates: lets a caller (e.g. the campaign wizard) embed the editor
    * inline and stay put on save rather than navigating the user away.
    */
   onSaved?: (template: SavedTemplate) => void;
@@ -119,7 +120,7 @@ export function TemplateEditor({
   }
 
   /** Insert a {{placeholder}} into the subject line at the cursor, same as
-   *  the body editor's "Insert placeholder" menu — subjects support the
+   *  the body editor's "Insert placeholder" menu: subjects support the
    *  exact same tokens end to end (render + launch validation both cover
    *  subjectTemplate), this was previously the only field without a menu. */
   function insertSubjectPlaceholder(token: string) {
@@ -165,7 +166,7 @@ export function TemplateEditor({
       if (!name) setName(body.draft.subject);
       setMode("visual");
       setNotice(
-        "Draft imported — you can now personalize it with placeholders. Your signature " +
+        "Draft imported: you can now personalize it with placeholders. Your signature " +
           "is already part of this draft, so don’t add {{signature}}; we won’t append one."
       );
     } catch (err) {
@@ -259,9 +260,11 @@ export function TemplateEditor({
   }
 
   const canSave = subject.trim() !== "" && html.trim() !== "";
+  const bodyText = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const wordCount = bodyText ? bodyText.split(" ").length : 0;
 
   return (
-    <div>
+    <div className="min-w-0">
       {restored && (
         <RestoreDraftBanner
           what="template"
@@ -278,8 +281,23 @@ export function TemplateEditor({
           }}
         />
       )}
-      <div className="grid gap-6 xl:grid-cols-2">
-      <div className="card p-6">
+      <div className="grid items-start gap-5 2xl:grid-cols-[minmax(0,1.15fr)_minmax(28rem,0.85fr)]">
+      <section className="card min-w-0 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-2 px-4 py-3 sm:px-6">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Email workspace</p>
+            <p className="text-xs text-muted">Compose, personalize, validate, and test from one screen.</p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted">
+            <span className="rounded-full border border-border bg-surface px-2.5 py-1">
+              {wordCount} word{wordCount === 1 ? "" : "s"}
+            </span>
+            <span className="rounded-full border border-border bg-surface px-2.5 py-1">
+              Browser autosave on
+            </span>
+          </div>
+        </div>
+        <div className="p-4 sm:p-6">
         {notice && <p className="mb-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
         {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {cssWarnings.map((w) => (
@@ -300,7 +318,7 @@ export function TemplateEditor({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. First outreach — funding intro"
+            placeholder="e.g. First outreach: funding intro"
             className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
         </label>
@@ -334,34 +352,36 @@ export function TemplateEditor({
             className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
           <p className="mt-1 text-xs text-muted/70">
-            Placeholders work in the subject too — personalize it the same way as the body.
+            Placeholders work in the subject too: personalize it the same way as the body.
           </p>
         </div>
 
         <AiEmailTools subject={subject} html={html} onSubject={setSubject} onHtml={setHtml} />
 
-        <div className="mt-5 flex gap-1 border-b border-border text-sm">
-          {(
-            [
-              ["visual", "Write email"],
-              ["starter", "Start from a layout"],
-              ["html", "Paste HTML"],
-              ["gmail", "Import Gmail draft"],
-            ] as Array<[Mode, string]>
-          ).map(([m, label]) => (
-            <button
-              key={m}
-              onClick={() => {
-                setMode(m);
-                if (m === "gmail" && drafts === null) void loadDrafts();
-              }}
-              className={`rounded-t-lg px-3 py-2 font-medium ${
-                mode === m ? "border border-b-0 border-border bg-surface text-primary" : "text-muted hover:text-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="mt-5 overflow-x-auto border-b border-border">
+          <div className="flex min-w-max gap-1 text-sm">
+            {(
+              [
+                ["visual", "Write email"],
+                ["starter", "Start from a layout"],
+                ["html", "Paste HTML"],
+                ["gmail", "Import Gmail draft"],
+              ] as Array<[Mode, string]>
+            ).map(([m, label]) => (
+              <button
+                key={m}
+                onClick={() => {
+                  setMode(m);
+                  if (m === "gmail" && drafts === null) void loadDrafts();
+                }}
+                className={`rounded-t-lg px-3 py-2 font-medium ${
+                  mode === m ? "border border-b-0 border-border bg-surface text-primary" : "text-muted hover:text-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {mode === "visual" && (
@@ -424,7 +444,7 @@ export function TemplateEditor({
               role="textbox"
               aria-multiline="true"
               aria-label="Email body"
-              className="prose-sm mt-2 min-h-[28rem] w-full rounded-xl border border-border p-5 text-sm leading-relaxed focus:border-primary focus:outline-none"
+              className="prose-sm mt-2 min-h-[32rem] w-full overflow-auto rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
             />
           </>
         )}
@@ -453,10 +473,10 @@ export function TemplateEditor({
           <textarea
             value={html}
             onChange={(e) => setHtml(e.target.value)}
-            rows={16}
+            rows={28}
             spellCheck={false}
             aria-label="Email HTML"
-            className="mt-3 w-full rounded-xl border border-border p-3 font-mono text-xs focus:border-primary focus:outline-none"
+            className="mt-3 min-h-[32rem] w-full resize-y rounded-xl border border-border bg-surface p-4 font-mono text-xs leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
           />
         )}
 
@@ -500,7 +520,7 @@ export function TemplateEditor({
           </div>
         )}
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-6 flex flex-wrap gap-2 border-t border-border bg-surface/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
           <Button
             onClick={save}
             disabled={busy || !canSave}
@@ -533,10 +553,11 @@ export function TemplateEditor({
             Send me a test
           </Button>
         </div>
-      </div>
+        </div>
+      </section>
 
-      <div className="card p-6">
-        <div className="flex items-center justify-between">
+      <aside className="card min-w-0 p-4 sm:p-6 2xl:sticky 2xl:top-20 2xl:max-h-[calc(100vh-6rem)] 2xl:overflow-y-auto">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="segmented flex">
             {(["preview", "spam"] as const).map((t) => (
               <button
@@ -549,14 +570,22 @@ export function TemplateEditor({
             ))}
           </div>
           {rightTab === "preview" && (
-            <label className="flex items-center gap-2 text-xs text-muted">
-              <input
-                type="checkbox"
-                checked={mobilePreview}
-                onChange={(e) => setMobilePreview(e.target.checked)}
-              />
-              Phone size
-            </label>
+            <div className="segmented" aria-label="Preview width">
+              <button
+                type="button"
+                onClick={() => setMobilePreview(false)}
+                className={`seg-btn ${!mobilePreview ? "is-active" : ""}`}
+              >
+                Desktop
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobilePreview(true)}
+                className={`seg-btn ${mobilePreview ? "is-active" : ""}`}
+              >
+                Phone
+              </button>
+            </div>
           )}
         </div>
 
@@ -569,18 +598,22 @@ export function TemplateEditor({
             {preview.unresolved.length > 0 && (
               <p className="mt-3 rounded-lg bg-amber-50 p-2 text-xs text-amber-700">
                 Some placeholders have no value yet:{" "}
-                {preview.unresolved.map((u) => `{{${u}}}`).join(", ")} — fill in your sender
+                {preview.unresolved.map((u) => `{{${u}}}`).join(", ")}: fill in your sender
                 profile in Settings, or they&apos;ll show as-is in sent emails.
               </p>
             )}
-            <p className="mt-3 border-b border-border pb-2 text-sm">
-              <span className="text-muted">Subject:</span>{" "}
-              <span className="font-medium">{preview.subject}</span>
-            </p>
+            <div className="mt-4 rounded-xl border border-border bg-surface-2 p-3">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted">Subject preview</p>
+              <p className="mt-1 break-words text-sm font-medium">{preview.subject}</p>
+            </div>
             {/* Isolated in an iframe so the email's own CSS can never leak
                 into the app and clip the layout (the old "half display"
                 glitch). Auto-sizes to its content on load. */}
-            <div className={`mt-3 ${mobilePreview ? "mx-auto max-w-xs" : ""}`}>
+            <div
+              className={`mt-3 transition-[max-width] ${
+                mobilePreview ? "mx-auto max-w-[390px]" : "max-w-full"
+              }`}
+            >
               <iframe
                 title="Email preview"
                 sandbox=""
@@ -590,21 +623,27 @@ export function TemplateEditor({
                     const h = f.contentWindow?.document.body?.scrollHeight;
                     if (h) f.style.height = `${Math.min(h + 32, 1600)}px`;
                   } catch {
-                    /* cross-origin guard — ignore */
+                    /* cross-origin guard: ignore */
                   }
                 }}
                 className="w-full rounded-xl border border-border bg-surface"
-                style={{ height: "24rem" }}
+                style={{ height: "32rem" }}
                 srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
               />
             </div>
           </>
         ) : (
-          <p className="mt-3 text-sm text-muted">
-            Click Preview to see this email with example lead data filled in.
-          </p>
+          <div className="mt-4 rounded-xl border border-dashed border-border bg-surface-2 p-8 text-center">
+            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+              <Icon name="mail" size={19} />
+            </span>
+            <p className="mt-3 text-sm font-medium text-foreground">Preview example lead data</p>
+            <p className="mt-1 text-sm text-muted">
+              Click Preview to render placeholders and inspect the final email at desktop or phone width.
+            </p>
+          </div>
         )}
-      </div>
+      </aside>
       </div>
     </div>
   );

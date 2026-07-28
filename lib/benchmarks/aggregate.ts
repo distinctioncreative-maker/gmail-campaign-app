@@ -24,7 +24,7 @@ function wordCount(html: string): number {
     .filter(Boolean).length;
 }
 
-/** Anonymized signal for one campaign — pacing, content, and outcomes, with
+/** Anonymized signal for one campaign: pacing, content, and outcomes, with
  * no user/campaign identifier attached. Returns null when the campaign
  * doesn't have enough sends or a resolvable template to be meaningful. */
 async function signalForCampaign(
@@ -78,7 +78,7 @@ async function signalForCampaign(
 /**
  * Recompute the global, anonymized deliverability benchmarks by scanning
  * every user's campaigns (same cross-tenant enumeration pattern the
- * existing reply/bounce/repair sweeps already use — see
+ * existing reply/bounce/repair sweeps already use: see
  * lib/campaigns/repair.ts listAllOwners). Only ever writes bucket-level
  * counts and averages to Firestore; no campaign or user identifier is ever
  * included in the stored snapshot. Meant to run periodically from

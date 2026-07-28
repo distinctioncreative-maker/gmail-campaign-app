@@ -8,7 +8,7 @@ export function ReplyHeatmap({ grid }: { grid: number[][] }) {
   const max = Math.max(1, ...grid.flat());
   const total = grid.flat().reduce((a, b) => a + b, 0);
   if (total === 0) {
-    return <p className="text-sm text-muted/70">No replies yet — the heatmap fills in as people reply.</p>;
+    return <p className="text-sm text-muted/70">No replies in this period yet. The heatmap fills in as people reply.</p>;
   }
   return (
     <div className="overflow-x-auto">
@@ -29,7 +29,7 @@ export function ReplyHeatmap({ grid }: { grid: number[][] }) {
               return (
                 <div
                   key={h}
-                  title={`${WEEKDAYS[d]} ${h}:00 — ${count} repl${count === 1 ? "y" : "ies"}`}
+                  title={`${WEEKDAYS[d]} ${h}:00, ${count} repl${count === 1 ? "y" : "ies"}`}
                   className="m-[1px] h-3 w-3 rounded-[3px]"
                   style={{
                     background:
@@ -52,7 +52,7 @@ export function TrendChart({ rows }: { rows: Array<{ day: string; sent: number; 
   const max = Math.max(1, ...rows.map((r) => r.sent));
   const totalSent = rows.reduce((a, r) => a + r.sent, 0);
   if (totalSent === 0) {
-    return <p className="text-sm text-muted/70">No sends in the last 30 days yet.</p>;
+    return <p className="text-sm text-muted/70">No sends in this period yet.</p>;
   }
   return (
     <div className="flex h-32 items-end gap-[3px]">
@@ -74,7 +74,7 @@ export function TrendChart({ rows }: { rows: Array<{ day: string; sent: number; 
   );
 }
 
-/** Reply rate by send hour — which hours produced the most replies. */
+/** Reply rate by send hour: which hours produced the most replies. */
 export function BestSendTimes({
   rows,
 }: {

@@ -17,7 +17,7 @@ export const CAMPAIGN_STATUS_LABELS: Record<
   ERROR: { label: "Needs attention", className: "bg-red-100 text-red-700" },
 };
 
-/** Friendly labels for recipient states — one source of truth for every
+/** Friendly labels for recipient states: one source of truth for every
  * recipient table (campaign detail, team read-only view, …). */
 export const RECIPIENT_STATUS_LABELS: Record<string, { label: string; className: string }> = {
   PENDING: { label: "Waiting", className: "bg-surface-2 text-muted" },

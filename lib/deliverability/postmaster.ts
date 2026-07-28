@@ -28,7 +28,7 @@ function toDay(name: string | null | undefined): string {
 
 /**
  * Pull the user's Google Postmaster Tools stats for their sending domain.
- * Uses the same stored Gmail refresh token — connections made before the
+ * Uses the same stored Gmail refresh token: connections made before the
  * postmaster scope was added surface NEEDS_RECONNECT. Never throws.
  */
 export async function getPostmasterStats(

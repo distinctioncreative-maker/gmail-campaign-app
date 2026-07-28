@@ -3,7 +3,7 @@ import { signTrackingToken, type TrackingPayload } from "./token";
 
 export interface TrackingResult {
   html: string;
-  /** Original destination URLs, in link order — index N matches the
+  /** Original destination URLs, in link order: index N matches the
    * /api/t/c/{token}/N path segment. Stored server-side on the recipient so
    * the click-redirect endpoint never trusts a client-supplied URL. */
   linkUrls: string[];
@@ -14,7 +14,7 @@ const HREF_RE = /<a\s+([^>]*?)href\s*=\s*(["'])(.*?)\2([^>]*)>/gi;
 /**
  * Rewrite <a href> links to click-redirect URLs and append a 1x1 open
  * pixel. mailto:/tel:/anchor links and the unsubscribe link are left alone
- * — an opt-out link must never depend on a tracking redirect working.
+ * because an opt-out link must never depend on a tracking redirect working.
  */
 export function injectTracking(
   html: string,

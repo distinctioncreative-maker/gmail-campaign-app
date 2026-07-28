@@ -16,7 +16,7 @@ export class AiNotConfiguredError extends Error {
 const SYSTEM = `You write short, thoughtful outreach emails for the organization described by the user and its brand memory.
 Rules:
 - Never assume an industry, offer, or sales use case that the user did not provide. The outreach may be for recruiting, fundraising, partnerships, marketing, customer re-engagement, or another legitimate purpose.
-- Keep it under ~120 words. Warm, human, confident — never spammy or hypey.
+- Keep it under ~120 words. Warm, human, confident: never spammy or hypey.
 - Use these placeholders where natural: {{first_name}}, {{business_name}}, {{signature}}.
 - Always end the body with {{signature}} on its own line.
 - One clear call to action (a reply or a quick call).
@@ -35,7 +35,7 @@ export async function generateEmail(
   if (!env.GEMINI_API_KEY) throw new AiNotConfiguredError();
 
   const system = brandContext.trim()
-    ? `${SYSTEM}\n\nBRAND MEMORY — weave these facts in naturally, in a FRESH way each time (never copy the wording verbatim, vary the angle and hook):\n${brandContext.trim()}`
+    ? `${SYSTEM}\n\nBRAND MEMORY: weave these facts in naturally, in a FRESH way each time (never copy the wording verbatim, vary the angle and hook):\n${brandContext.trim()}`
     : SYSTEM;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;

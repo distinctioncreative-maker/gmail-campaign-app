@@ -11,7 +11,7 @@ export const GET = handleApiErrors(async () => {
 
 const CreateSchema = z.object({ name: z.string().trim().min(1).max(80) });
 
-/** Create a new lead list (e.g. "Alpine offers — all time"). */
+/** Create a new lead list (e.g. "Alpine offers: all time"). */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
   const { name } = CreateSchema.parse(await req.json());

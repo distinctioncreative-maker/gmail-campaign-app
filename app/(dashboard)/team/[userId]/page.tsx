@@ -14,7 +14,7 @@ import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 
 /**
  * Team Lead / Admin drill-down into one rep's campaigns. Access is checked
- * server-side against team membership — a lead can only open reps on teams
+ * server-side against team membership: a lead can only open reps on teams
  * they lead; reps can never open this page for anyone but themselves.
  */
 export default async function RepDetailPage({
@@ -53,7 +53,7 @@ export default async function RepDetailPage({
     ["Campaigns", String(campaigns.length)],
     ["Emails sent", String(sent)],
     ["Replies", String(replies)],
-    ["Reply rate", sent > 0 ? formatPercent((replies / sent) * 100) : "—"],
+    ["Reply rate", sent > 0 ? formatPercent((replies / sent) * 100) : "Not available"],
     ["Bounces", String(bounces)],
   ];
 
@@ -113,7 +113,7 @@ export default async function RepDetailPage({
                     <td className="px-4 py-3 tabular-nums">{cSent}</td>
                     <td className="px-4 py-3 tabular-nums">{c.replyCount}</td>
                     <td className="px-4 py-3 tabular-nums text-xs text-muted">
-                      {cSent > 0 ? formatPercent((c.replyCount / cSent) * 100) : "—"}
+                      {cSent > 0 ? formatPercent((c.replyCount / cSent) * 100) : "Not available"}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted">
                       <LocalTime value={c.updatedAt} />

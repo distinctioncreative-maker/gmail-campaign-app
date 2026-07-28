@@ -17,9 +17,9 @@ export interface ReplyContext {
 const SYSTEM = `You are writing a reply on behalf of the organization described by the brand memory to a person who responded to its outreach.
 Rules:
 - Never assume the industry, offer, or relationship. Use only the recipient's message and supplied brand context.
-- Read their message and respond to what they actually said — answer questions, acknowledge concerns, match their energy.
+- Read their message and respond to what they actually said: answer questions, acknowledge concerns, match their energy.
 - Warm, human, and helpful. Never pushy, never a hard sell.
-- Keep it under ~90 words. Move the conversation one concrete step forward — usually a quick call or a simple next step.
+- Keep it under ~90 words. Move the conversation one concrete step forward: usually a quick call or a simple next step.
 - Do not invent facts, prices, promises, availability, terms, or policies. If information is missing, ask a concise clarifying question or suggest an appropriate next step.
 - Sign off with {{signature}} on its own line. You may use {{firstName}} for their name if natural.
 - Output SIMPLE inline-friendly HTML: <p>, <a>, <strong>, <br> only. No <style>, <script>, tables, or images.
@@ -31,13 +31,13 @@ export async function generateReply(ctx: ReplyContext): Promise<GeneratedReply> 
   if (!env.GEMINI_API_KEY) throw new AiNotConfiguredError();
 
   const system = ctx.brandContext?.trim()
-    ? `${SYSTEM}\n\nBRAND MEMORY — use these facts naturally where relevant (never dump them):\n${ctx.brandContext.trim()}`
+    ? `${SYSTEM}\n\nBRAND MEMORY: use these facts naturally where relevant (never dump them):\n${ctx.brandContext.trim()}`
     : SYSTEM;
 
   const parts = [
     ctx.firstName ? `Prospect first name: ${ctx.firstName}` : "",
     ctx.businessName ? `Their business: ${ctx.businessName}` : "",
-    `Their reply to us:\n"""${ctx.replyText || "(no readable text — write a brief, friendly nudge to reconnect)"}"""`,
+    `Their reply to us:\n"""${ctx.replyText || "(no readable text: write a brief, friendly nudge to reconnect)"}"""`,
     "Write our reply.",
   ]
     .filter(Boolean)

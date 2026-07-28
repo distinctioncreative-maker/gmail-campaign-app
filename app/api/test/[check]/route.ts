@@ -73,7 +73,7 @@ export const POST = handleApiErrors(
           detail:
             rendered.unresolved.length === 0
               ? `Placeholders filled in: "${rendered.subject}"`
-              : `Unfilled placeholders: ${rendered.unresolved.join(", ")} — complete your sender profile.`,
+              : `Unfilled placeholders: ${rendered.unresolved.join(", ")}: complete your sender profile.`,
         };
         break;
       }

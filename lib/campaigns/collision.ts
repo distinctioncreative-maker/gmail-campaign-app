@@ -5,7 +5,7 @@ import { getCollisionSecret, getOrgSettings } from "@/lib/repositories/orgSettin
 
 /**
  * Privacy-preserving cross-user collision detection (spec §4). Emails are
- * stored only as HMAC-SHA256 digests keyed by an org secret — never as
+ * stored only as HMAC-SHA256 digests keyed by an org secret: never as
  * plain or unsalted hashes, and never with recipient identity exposed to
  * other sales reps.
  */

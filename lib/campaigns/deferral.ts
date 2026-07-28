@@ -24,7 +24,7 @@ export function nextDayWindowStart(now: number, schedule: Campaign["schedule"]):
 /**
  * When the daily limit is hit, re-spread EVERY remaining queued email across
  * the next sending day using the campaign's own pacing (batches, delays,
- * gaps) — exactly like launch does. Without this, each blocked email lands
+ * gaps), exactly like launch does. Without this, each blocked email lands
  * on the identical "window open" instant and the whole backlog blasts out
  * at once the next morning (the 9:00:0x stampede).
  *
@@ -72,7 +72,7 @@ export async function deferCampaignToNextDay(
 
   await recordEvent(owner, campaign.campaignId, {
     type: "DAILY_LIMIT",
-    message: `Daily limit reached — ${open.length} remaining email${open.length === 1 ? "" : "s"} rescheduled across tomorrow with your normal pacing.`,
+    message: `Daily limit reached: ${open.length} remaining email${open.length === 1 ? "" : "s"} rescheduled across tomorrow with your normal pacing.`,
     severity: "INFO",
     recipientEmail: null,
   });

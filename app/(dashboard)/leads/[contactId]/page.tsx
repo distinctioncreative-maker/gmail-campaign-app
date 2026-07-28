@@ -7,11 +7,11 @@ import { LocalTime } from "@/components/LocalTime";
 import { LeadEditor } from "@/components/leads/LeadEditor";
 
 function fmt(ms: number | null) {
-  return ms ? <LocalTime value={ms} /> : "—";
+  return ms ? <LocalTime value={ms} /> : "Not available";
 }
 
 const OUTCOME_LABELS: Record<string, string> = {
-  EMAILED: "Emailed — awaiting reply",
+  EMAILED: "Emailed: awaiting reply",
   REPLIED: "Replied",
   BOUNCED: "Bounced",
   UNSUBSCRIBED: "Unsubscribed",
@@ -99,17 +99,17 @@ export default async function ContactDetailPage({
             <dt className="text-muted">Email</dt>
             <dd>{contact.email}</dd>
             <dt className="text-muted">Phone</dt>
-            <dd>{contact.phone || "—"}</dd>
+            <dd>{contact.phone || "Not available"}</dd>
             <dt className="text-muted">Region</dt>
-            <dd>{contact.region || "—"}</dd>
+            <dd>{contact.region || "Not available"}</dd>
             <dt className="text-muted">Requested amount</dt>
             <dd>
               {contact.requestedAmount !== null
                 ? `$${contact.requestedAmount.toLocaleString()}`
-                : "—"}
+                : "Not available"}
             </dd>
             <dt className="text-muted">Lead source</dt>
-            <dd>{contact.leadSource || "—"}</dd>
+            <dd>{contact.leadSource || "Not available"}</dd>
             <dt className="text-muted">First imported</dt>
             <dd>{fmt(contact.firstSeenAt)}</dd>
             <dt className="text-muted">Last seen in an import</dt>
@@ -132,7 +132,7 @@ export default async function ContactDetailPage({
           ) : (
             <dl className="mt-3 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
               <dt className="text-muted">Last campaign</dt>
-              <dd>{contact.lastCampaignName ?? "—"}</dd>
+              <dd>{contact.lastCampaignName ?? "Not available"}</dd>
               <dt className="text-muted">Last emailed</dt>
               <dd>{fmt(contact.lastCampaignAt)}</dd>
               <dt className="text-muted">First replied</dt>

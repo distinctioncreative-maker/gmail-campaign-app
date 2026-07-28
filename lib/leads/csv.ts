@@ -106,7 +106,7 @@ export function parseCsvLeads(csvText: string, mapping?: CsvMapping): CsvParseOu
 
   if (!fieldToHeader.has("email")) {
     globalWarnings.push(
-      'No column is mapped to "Email" — map one before importing.'
+      'No column is mapped to "Email": map one before importing.'
     );
   }
 

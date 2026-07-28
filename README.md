@@ -1,14 +1,15 @@
 # Cadence
 
-Cadence is a multi-tenant SaaS platform for mass, personalized email outreach.
-Each user connects their own Gmail or Google Workspace account and runs
-campaigns at scale from their real inbox: import contacts, write emails
-(optionally AI-assisted), send at a human pace, triage replies and bounces,
-and report on results.
+Cadence is an AI-assisted, Gmail-native outreach platform for small teams that
+want useful automation without giving up control. Each user connects their own
+Gmail or Google Workspace account, imports a relevant audience, writes
+on-brand emails with optional AI, sends at a controlled pace, works real reply
+threads, and learns from campaign-level outcomes.
 
-**"Send real, personalized email from your own inbox, at scale, without
-wrecking your deliverability"** is the core promise. Sales outreach is the
-first use case, not the ceiling — the same product serves founders,
+**"Turn relevant outreach into real conversations from your own Gmail"** is
+the core promise. Cadence supports safer execution and clearer learning; it
+does not guarantee inbox placement, replies, or revenue. Sales outreach is the
+first use case, not the ceiling. The same product serves founders,
 marketers, recruiters, agencies, fundraising, partnerships, and newsletters.
 
 For the full structural map of routes, modules, and components, see
@@ -76,7 +77,7 @@ breakdown, and [DATA_MODEL.md](DATA_MODEL.md) for the Firestore schema.
 | Campaigns & sequences | Campaign wizard, Cloud Tasks sending engine, idempotent worker, pacing/caps/windows, pause/resume/cancel/retry/clone, collision detection, follow-up sequences |
 | Replies | Reply triage (Interested/Needs reply/Not now), AI reply drafts, bounce + unsubscribe handling, scheduled sweeps |
 | Deliverability | SPF/DKIM/DMARC checks, Gmail Postmaster reputation, spam-risk checker |
-| Reporting & teams | Analytics dashboard, team-lead dashboards + leaderboards, read-only drill-down, home briefing |
+| Reporting & teams | Per-campaign intelligence, date cohorts, funnel and timing analysis, comparison export, team-lead dashboards, read-only drill-down, home briefing |
 | Billing | Stripe Checkout + portal, plan catalog, plan-based send caps (test-mode keys wired; live wiring in progress) |
 | Admin & ops | Admin console, sending-mode go-live gate, system health page, Help/Test Center, waitlist admin, in-app feature checklist |
 | Observability | Structured error reporting + webhook alerts, `/api/health` |
@@ -132,6 +133,9 @@ var locks an environment into test mode and disables the in-app switch
   invariants, changed flows, validation state, and deployment follow-ups
 - [PUBLIC_LAUNCH_AUDIT.md](PUBLIC_LAUNCH_AUDIT.md) — sell-today pilot scope,
   public-launch gates, competitor position, and mobile-readiness plan
+- [PRODUCT_STRATEGY_2026.md](PRODUCT_STRATEGY_2026.md) — source-backed
+  competitor analysis, sending-volume position, product gaps, and P0/P1/P2
+  roadmap
 - [FEATURES.md](FEATURES.md) — generated, living feature checklist
 - [SETUP.md](SETUP.md) — local development and Google Cloud configuration
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Cloud Run deployment

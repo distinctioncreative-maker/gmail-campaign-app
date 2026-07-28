@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Pure engagement math for leads — no Firestore access, fully unit-testable.
+ * Pure engagement math for leads: no Firestore access, fully unit-testable.
  * The recipient records on campaigns are the source of truth; these helpers
  * roll them up into the per-contact engagement fields shown on the Leads
  * pages (emails sent, replies back, last outcome).

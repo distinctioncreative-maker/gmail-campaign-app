@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   const job = req.nextUrl.searchParams.get("job") ?? "reply";
 
-  // Cross-tenant aggregate, not a per-owner sweep — recomputes its own
+  // Cross-tenant aggregate, not a per-owner sweep: recomputes its own
   // owner list internally (see lib/benchmarks/aggregate.ts).
   if (job === "benchmarks") {
     const snapshot = await recomputeBenchmarks();

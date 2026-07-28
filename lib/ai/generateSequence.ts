@@ -13,7 +13,7 @@ const SYSTEM = `You write a short outreach FOLLOW-UP sequence for the organizati
 Each step is sent only if the recipient has not replied.
 Rules:
 - Never assume an industry, product, or sales use case that was not supplied.
-- Produce 2 or 3 steps that escalate gently — a light nudge, then a useful value-add, then a respectful final check-in. Never pushy or guilt-trippy.
+- Produce 2 or 3 steps that escalate gently: a light nudge, then a useful value-add, then a respectful final check-in. Never pushy or guilt-trippy.
 - Each email under ~80 words. Warm, human, one clear ask.
 - Use placeholders where natural: {{first_name}}, {{business_name}}, {{signature}}. End each body with {{signature}} on its own line.
 - waitDays = business days to wait after the PREVIOUS email (first step ~3, later steps ~4-5).
@@ -28,7 +28,7 @@ export async function generateSequence(input: {
   if (!env.GEMINI_API_KEY) throw new AiNotConfiguredError();
 
   const system = input.brandContext?.trim()
-    ? `${SYSTEM}\n\nBRAND MEMORY — weave in naturally, fresh each step:\n${input.brandContext.trim()}`
+    ? `${SYSTEM}\n\nBRAND MEMORY: weave in naturally, fresh each step:\n${input.brandContext.trim()}`
     : SYSTEM;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;

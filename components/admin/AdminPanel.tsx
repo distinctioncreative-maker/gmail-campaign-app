@@ -121,7 +121,7 @@ export function AdminPanel({
             onChange={(e) => setSettings((s) => ({ ...s, collisionPolicy: e.target.value }))}
             className={`mt-1 block w-full ${input}`}
           >
-            <option value="OFF">Off — each rep only sees their own history</option>
+            <option value="OFF">Off: each rep only sees their own history</option>
             <option value="PRIVATE_WARNING">Warn privately (no names revealed)</option>
             <option value="MANAGER_VISIBLE">Warn reps; team leads can see who contacted</option>
             <option value="BLOCK_RECENT_TEAM_CONTACT">Block recently team-contacted leads</option>

@@ -10,7 +10,7 @@ import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { CountUp } from "@/components/ui/CountUp";
 
 /** Which bucket the signed-in user's OWN current default falls into, for
- * dimensions we can compare against a live setting (pacing only — content
+ * dimensions we can compare against a live setting (pacing only: content
  * dimensions like image/link count are per-template, not a standing default). */
 const OWN_SETTING_BUCKET: Partial<Record<string, (n: number) => string>> = {
   emailsPerBatch: bucketBatchSize,
@@ -34,7 +34,7 @@ const REPUTATION_PILL: Record<string, string> = {
 };
 
 function spamPct(ratio: number | null): string {
-  return ratio === null ? "—" : formatPercent(ratio * 100);
+  return ratio === null ? "Not available" : formatPercent(ratio * 100);
 }
 
 export default async function DeliverabilityPage() {
@@ -60,7 +60,7 @@ export default async function DeliverabilityPage() {
         description={`Is ${domain} set up to land in inboxes? Domain authentication is checked live; reputation comes from Google Postmaster Tools.`}
       />
 
-      {/* DNS auth — zero setup, always available */}
+      {/* DNS auth: zero setup, always available */}
       <h2 className="mb-3 font-medium">Domain authentication</h2>
       <div className="card divide-y divide-border overflow-hidden">
         {dnsChecks.map((c) => (
@@ -104,7 +104,7 @@ export default async function DeliverabilityPage() {
                 {postmaster.days[0]?.spamRatio != null ? (
                   <CountUp value={postmaster.days[0].spamRatio * 100} decimals={1} suffix="%" />
                 ) : (
-                  "—"
+                  "Not available"
                 )}
               </p>
               <p className="mt-1 text-xs text-muted/70">Keep under 0.1%. 0.3%+ is the danger zone.</p>
@@ -142,7 +142,7 @@ export default async function DeliverabilityPage() {
                           {d.domainReputation}
                         </span>
                       ) : (
-                        "—"
+                        "Not available"
                       )}
                     </td>
                     <td className="px-4 py-3 tabular-nums">{spamPct(d.spfSuccess)}</td>
@@ -155,14 +155,14 @@ export default async function DeliverabilityPage() {
           </div>
           <p className="mt-2 text-xs text-muted/70">
             Google only publishes daily stats when enough of your mail reached Gmail inboxes that
-            day — gaps are normal for lower volumes.
+            day: gaps are normal for lower volumes.
           </p>
         </>
       ) : (
         <div className="card p-6">
           {postmaster.state === "NOT_CONNECTED" && (
             <p className="text-sm text-muted">
-              Connect Gmail in <span className="font-medium">Settings</span> first — Postmaster data
+              Connect Gmail in <span className="font-medium">Settings</span> first: Postmaster data
               is read with your Google sign-in.
             </p>
           )}
@@ -172,7 +172,7 @@ export default async function DeliverabilityPage() {
               <p className="mt-1 text-sm text-muted">
                 Your Gmail was connected before Postmaster access was added. Go to{" "}
                 <span className="font-medium">Settings → Reconnect Gmail</span> and approve the
-                Google screen once — then this page fills in automatically.
+                Google screen once: then this page fills in automatically.
               </p>
             </>
           )}
@@ -192,14 +192,14 @@ export default async function DeliverabilityPage() {
                   </a>{" "}
                   with their {domain} account.
                 </li>
-                <li>Click “+” and add {domain} — since Google already knows your Workspace owns it, verification is usually instant.</li>
+                <li>Click “+” and add {domain}: since Google already knows your Workspace owns it, verification is usually instant.</li>
                 <li>Data starts appearing within a day or two of normal sending. This page then shows it automatically.</li>
               </ol>
             </>
           )}
           {postmaster.state === "NO_DATA" && (
             <>
-              <p className="font-medium">{domain} is registered — no published data yet</p>
+              <p className="font-medium">{domain} is registered: no published data yet</p>
               <p className="mt-1 text-sm text-muted">
                 Google only publishes stats for days with meaningful Gmail volume. Keep sending at a
                 steady daily pace and data will appear here. Meanwhile the domain-authentication
@@ -210,14 +210,14 @@ export default async function DeliverabilityPage() {
         </div>
       )}
 
-      {/* Deliverability Insights — anonymized, cross-user benchmarks */}
+      {/* Deliverability Insights: anonymized, cross-user benchmarks */}
       <h2 className="mt-10 mb-3 font-medium">Deliverability insights</h2>
       {surfacedDimensions.length === 0 ? (
         <div className="card p-6 text-sm text-muted">
           <p className="font-medium text-foreground">Still gathering data</p>
           <p className="mt-1">
             This learns what actually drives deliverability, reply rate, and click rate, across every
-            Cadence campaign, fully anonymized — a setting only shows up here once enough campaigns
+            Cadence campaign, fully anonymized: a setting only shows up here once enough campaigns
             have used it that no single campaign could be identified. Check back soon.
           </p>
         </div>
@@ -225,7 +225,7 @@ export default async function DeliverabilityPage() {
         <>
           <p className="mb-4 text-xs text-muted/70">
             From {benchmarks?.totalCampaignsConsidered ?? 0} anonymized campaigns across every Cadence
-            user — nothing here is traceable to one account, and a setting only appears once enough
+            user: nothing here is traceable to one account, and a setting only appears once enough
             campaigns share it.
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -243,10 +243,10 @@ export default async function DeliverabilityPage() {
       <div className="card mt-8 p-5">
         <h3 className="font-medium">If replies are low, work this list in order</h3>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
-          <li>Fix anything red or amber above — authentication is the foundation.</li>
+          <li>Fix anything red or amber above: authentication is the foundation.</li>
           <li>{dailyLimitTip(surfacedDimensions)}</li>
           <li>Run the spam checker on your template (Templates → your template) and cut risky wording.</li>
-          <li>Personalize the first line — identical bodies to hundreds of people is the pattern filters hunt for.</li>
+          <li>Personalize the first line: identical bodies to hundreds of people is the pattern filters hunt for.</li>
           <li>Expect replies on days 2–5, not day 1. A 1–5% reply rate is normal for cold outreach.</li>
         </ol>
       </div>
@@ -255,7 +255,7 @@ export default async function DeliverabilityPage() {
 }
 
 /** Tip #2 cites the actual best-performing daily-limit bucket once real,
- * anonymized data backs it — falls back to the general guidance until then. */
+ * anonymized data backs it: falls back to the general guidance until then. */
 function dailyLimitTip(dimensions: DimensionAggregate[]): string {
   const dim = dimensions.find((d) => d.dimension === "dailySendLimit");
   const best = dim?.buckets[0];

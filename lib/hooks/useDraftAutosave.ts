@@ -42,7 +42,7 @@ export function useDraftAutosave<T>(
       try {
         localStorage.setItem(key, JSON.stringify(snapshot));
       } catch {
-        // storage full / unavailable — non-fatal
+        // storage full / unavailable: non-fatal
       }
     }, debounceMs);
     return () => {

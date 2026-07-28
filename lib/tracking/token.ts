@@ -8,7 +8,7 @@ export interface TrackingPayload {
   campaignId: string;
   recipientId: string;
   /** Sequence step this specific email was sent for (0 = initial, 1+ =
-   * follow-ups) — click URLs are stored per-step, since each send has its
+   * follow-ups): click URLs are stored per-step, since each send has its
    * own set of links. */
   step: number;
   issuedAt?: number;
@@ -17,7 +17,7 @@ export interface TrackingPayload {
 
 export const TRACKING_TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
-// Domain-separated derivation of the session secret — a leaked tracking
+// Domain-separated derivation of the session secret: a leaked tracking
 // token can never be replayed as a session credential, or vice versa.
 function trackingSecret(): string {
   return `${env.SESSION_SECRET}:email-tracking`;

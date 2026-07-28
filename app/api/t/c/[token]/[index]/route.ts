@@ -21,9 +21,9 @@ function safeFallback(): NextResponse {
 
 /**
  * Optional click-tracking redirect (schemas/campaign.ts CampaignSchema.
- * trackingEnabled — off by default). The destination is ALWAYS looked up
+ * trackingEnabled: off by default). The destination is ALWAYS looked up
  * server-side from trackedLinkUrls on the recipient doc, keyed by the
- * step this link's index came from — never taken from the request. That's
+ * step this link's index came from: never taken from the request. That's
  * what keeps this from being an open redirect: a caller can only select an
  * index into a list the template's own author wrote, never supply an
  * arbitrary URL. Falls back to the app home on anything invalid.

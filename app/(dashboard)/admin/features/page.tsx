@@ -12,7 +12,7 @@ const STATUS_BADGE: Record<FeatureStatus, { label: string; className: string }> 
   planned: { label: "Planned", className: "bg-surface-2 text-muted" },
 };
 
-/** Admin-only, live view of lib/features/registry.ts — the same source that
+/** Admin-only, live view of lib/features/registry.ts: the same source that
  * generates FEATURES.md. Editing the registry and redeploying is the only
  * way to change what shows up here, so this view can never drift from the
  * doc the way a hand-maintained checklist would. */

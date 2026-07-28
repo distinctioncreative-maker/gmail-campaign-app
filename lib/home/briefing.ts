@@ -1,6 +1,6 @@
 /**
  * Turns raw Home metrics into a short, human "mission briefing" sentence and
- * a set of suggested next actions — the JARVIS-style summary. Pure and
+ * a set of suggested next actions: the JARVIS-style summary. Pure and
  * unit-tested; no data access here.
  */
 
@@ -40,11 +40,11 @@ function joinClauses(parts: string[]): string {
 }
 
 export function buildBriefing(m: BriefingInput): Briefing {
-  // Not connected yet — the only thing that matters.
+  // Not connected yet: the only thing that matters.
   if (!m.gmailConnected) {
     return {
       sentence:
-        "let's get you set up — connect your Gmail and you'll be ready to send in under a minute.",
+        "let's get you set up: connect your Gmail and you'll be ready to send in under a minute.",
       status: "SETUP",
       suggestions: [
         { href: "/settings", label: "Connect Gmail", icon: "shield" },
@@ -74,7 +74,7 @@ export function buildBriefing(m: BriefingInput): Briefing {
     sentence = `${joinClauses(clauses)}.`;
     status = m.unreadReplies > 0 ? "REPLIES" : m.activeCampaigns > 0 ? "SENDING" : "READY";
   } else if (m.hasCampaigns) {
-    sentence = "all quiet on the wire — nothing sending. Ready to launch the next one?";
+    sentence = "all quiet on the wire: nothing sending. Ready to launch the next one?";
     status = "READY";
   } else {
     sentence = "your outreach starts here. Import a list, write one email, and let it run.";

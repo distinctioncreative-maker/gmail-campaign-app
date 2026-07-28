@@ -6,7 +6,7 @@ import { runReplyScan } from "@/lib/campaigns/replyScan";
 
 type Params = { params: Promise<{ campaignId: string }> };
 
-/** Per-campaign entry point for the same on-demand scan — kept so the
+/** Per-campaign entry point for the same on-demand scan: kept so the
  * campaign page's "Check for replies now" button can 404 on a bad id. */
 export const POST = handleApiErrors(async (_req: NextRequest, { params }: Params) => {
   const ctx = await requireUser();

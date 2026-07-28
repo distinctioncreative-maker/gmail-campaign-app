@@ -32,7 +32,7 @@ export function CampaignControls({
   const toast = useToast();
   const confirm = useConfirm();
   // Which action is in flight / just succeeded, so only the clicked button
-  // shows its own spinner or success flash — siblings just stay disabled.
+  // shows its own spinner or success flash: siblings just stay disabled.
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [successAction, setSuccessAction] = useState<string | null>(null);
   const [showPace, setShowPace] = useState(false);
@@ -283,7 +283,7 @@ export function CampaignControls({
           </div>
           <p className="mt-2 text-xs text-muted">
             Saving re-spaces every remaining email with these settings. Higher numbers send faster but
-            can hurt deliverability — Gmail limits how much you can send per day.
+            can hurt deliverability: Gmail limits how much you can send per day.
           </p>
         </div>
       )}

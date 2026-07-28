@@ -23,19 +23,19 @@ in `Sidebar`, `UIProviders` (toast/confirm), `ProductTour`, `NotificationBell`,
 | Route | What it does |
 |---|---|
 | `/home` | Personal briefing: greeting, activity pulse chart, campaign status, quick counts. |
-| `/campaigns`, `/campaigns/new`, `/campaigns/[campaignId]` | List, create (wizard), and manage one campaign — status, pause/resume/cancel, diagnostics, recipients, A/B performance, event log. |
+| `/campaigns`, `/campaigns/new`, `/campaigns/[campaignId]` | Campaign command center: counted status segments, progress, outcome rates, create wizard, controls, configuration, diagnostics, recipients, A/B performance, event log, and dedicated-report links. |
 | `/replies` | Cross-campaign reply inbox, triaged by intent, with AI draft + manual scan actions. |
-| `/leads`, `/leads/[contactId]`, `/leads/lists/[listId]` | Master contacts table, single-contact detail/engagement, and named lead lists. |
-| `/templates`, `/templates/[templateId]`, `/templates/new` | Reusable email templates (visual/starter/pasted HTML/Gmail draft). |
+| `/leads`, `/leads/[contactId]`, `/leads/lists/[listId]` | Audience KPI summary, searchable/countable contacts table, safe bulk actions, single-contact detail/engagement, and named lead lists. |
+| `/templates`, `/templates/[templateId]`, `/templates/new` | Reusable email workspace with full-height visual/HTML editing, desktop/phone preview, spam check, starter layouts, and Gmail draft import. |
 | `/sequences`, `/sequences/[sequenceId]`, `/sequences/new` | Follow-up sequences (multi-step, auto-stop on reply). |
-| `/reports` | Analytics: totals, time-to-reply, reply heatmap, best-send-times, daily trend, CSV export. |
+| `/reports` | Campaign intelligence: all-campaign or single-campaign scope, 30/90/365-day send cohorts, exact all-time KPIs, funnel, timing analysis, tracked-engagement caveats, comparison table, and CSV export. |
 | `/deliverability` | SPF/DKIM/DMARC + Postmaster reputation for the sending domain. |
 | `/suppressions` | Do-not-email management (personal + org scope). |
 | `/team`, `/team/[userId]`, `/team/[userId]/campaigns/[campaignId]` | Manager/Admin roster + leaderboard, read-only rep drill-down. |
 | `/settings` | Gmail connection status, sender profile/signature, invite teammates. |
 | `/system-health` | Admin-only ops view: cron freshness, member Gmail health, sending-mode state, env summary. |
 | `/onboarding` | First-run wizard: connect Gmail, sender profile, sending defaults. |
-| `/help` | Guides, FAQ, Test Center (safe self-checks), feature-suggestion box, replayable tour. |
+| `/help` | Task-first knowledge center, searchable professional guides, expanded FAQ, safe Test Center, feature suggestions, and replayable tour. |
 | `/admin`, `/admin/waitlist`, `/admin/features` | Admin console (see below), waitlist signups, live feature checklist. |
 | `(auth)/sign-in` | Sign-in (outside the dashboard layout). |
 
@@ -97,7 +97,7 @@ Zod schemas.
 | `suppressions` | List/add/deactivate do-not-email entries. |
 | `teams/*` | Team CRUD + membership. |
 | `invites` | List/create/revoke invites; can promote Solo → Workspace. |
-| `me`, `settings/profile`, `onboarding`, `notifications` | Self-service user state. |
+| `me`, `settings/profile`, `onboarding`, `notifications` | Self-service user state. Tracked campaigns write one transactional notification for the first detected open per recipient; the notification explicitly warns that email clients may preload images. |
 | `feature-suggestions`, `waitlist` | Lightweight feedback board; public landing-page signup capture. |
 | `sending-mode` | Read-only current TEST/LIVE state for any signed-in user. |
 | `health` | Public readiness probe (Firestore connectivity) for uptime monitors. |
@@ -132,7 +132,7 @@ Zod schemas.
 | `tasks/` | Cloud Tasks enqueue + OIDC verification. |
 | `teams/` | Team-scoped access control + stats. |
 | `deliverability/` | DNS auth checks + Postmaster stats. |
-| `analytics/` | Reporting math shared by Reports/Home/Replies. |
+| `analytics/` | Shared campaign performance math, send-cohort windows, and report visualizations used by Reports, Campaigns, Home, and Replies. |
 | `home/` | Home-page briefing composition. |
 | `features/` | `registry.ts` — the feature checklist single source of truth (this doc's companion). |
 | `util/`, `hooks/` | Generic helpers (concurrency pool, rate limit) and shared client hooks. |
@@ -154,6 +154,12 @@ Feature-folder based, not atomic-design based:
   feature-specific: `Sidebar`, `AccountMenu`, `MobileNav`, `NotificationBell`,
   `ContactsTable`, `SuppressionsManager`, `GmailConnectionCard`,
   `OnboardingWizard`, `TestCenter`, etc.
+
+`components/analytics/ReportFilters.tsx` owns the client navigation for
+campaign and cohort selectors. The Reports page remains a Server Component:
+it validates the requested campaign against the signed-in owner's records,
+loads recipient data server-side, and passes only rendered/serialized values
+to interactive controls.
 
 Shared `Button` and modal/confirm behavior live in `components/ui/`; common
 surface classes (`.card`, `.card-hover`, `.btn-primary`) remain Tailwind

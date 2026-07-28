@@ -15,6 +15,7 @@ import {
   type QueueItem,
   type Recipient,
 } from "@/schemas/campaign";
+import { setNotificationOnce } from "@/lib/repositories/notifications";
 
 /** Owner identity for worker paths, where there is no session AuthContext.
  * Workers derive this from the task payload and re-verify document paths. */
@@ -259,6 +260,22 @@ export async function recordRecipientOpen(
     const snap = await tx.get(ref);
     if (!snap.exists) return;
     const data = snap.data() ?? {};
+    if (data.openedAt == null) {
+      const lead = data.fullNameSnapshot || data.emailSnapshot || "A recipient";
+      setNotificationOnce(
+        tx,
+        owner,
+        `tracked-open:${campaignId}:${recipientId}`,
+        {
+          type: "TRACKED_OPEN",
+          title: "Open detected",
+          body: `${lead} loaded the tracking pixel. Email apps can preload images, so use this as an engagement signal rather than proof of a human read.`,
+          severity: "SUCCESS",
+          campaignId,
+        },
+        at
+      );
+    }
     tx.update(ref, {
       openedAt: data.openedAt ?? at,
       openCount: FieldValue.increment(1),
@@ -278,12 +295,28 @@ export async function recordRecipientClick(
     const snap = await tx.get(ref);
     if (!snap.exists) return;
     const data = snap.data() ?? {};
+    if (data.openedAt == null) {
+      const lead = data.fullNameSnapshot || data.emailSnapshot || "A recipient";
+      setNotificationOnce(
+        tx,
+        owner,
+        `tracked-open:${campaignId}:${recipientId}`,
+        {
+          type: "TRACKED_OPEN",
+          title: "Engagement detected",
+          body: `${lead} clicked a tracked link. This also counts as an open signal because the message was engaged with.`,
+          severity: "SUCCESS",
+          campaignId,
+        },
+        at
+      );
+    }
     tx.update(ref, {
       firstClickedAt: data.firstClickedAt ?? at,
       clickCount: FieldValue.increment(1),
       openedAt: data.openedAt ?? at,
       // Count an implied open only when this is the first engagement.
-      ...(data.openedAt ? {} : { openCount: FieldValue.increment(1) }),
+      ...(data.openedAt == null ? { openCount: FieldValue.increment(1) } : {}),
       updatedAt: at,
     });
   });
@@ -383,7 +416,7 @@ export async function updateQueueItem(
 /**
  * Transactionally claim a queue item for processing. Returns the claimed
  * item, or null when it is not claimable (already complete, cancelled,
- * processing elsewhere) — which makes duplicate Cloud Tasks delivery a
+ * processing elsewhere): which makes duplicate Cloud Tasks delivery a
  * harmless no-op.
  */
 export async function claimQueueItem(
@@ -441,7 +474,7 @@ export async function listQueueItems(
 
 /**
  * Reserve an idempotency key inside a transaction, recording the send.
- * Returns false when the key already exists — the message was already sent
+ * Returns false when the key already exists: the message was already sent
  * and MUST NOT be sent again.
  */
 export async function reserveIdempotencyKey(
@@ -679,7 +712,7 @@ export async function listEvents(
 }
 
 /** Claim the once-per-day right to mass-defer a campaign's queue. Returns
- * true for exactly one caller per (campaign, dayKey) — everyone else gets
+ * true for exactly one caller per (campaign, dayKey): everyone else gets
  * false and must not re-spread the queue again. */
 export async function claimDeferralForDay(
   owner: OwnerRef,
@@ -703,7 +736,7 @@ export interface DailyActivityRow {
   replied: number;
 }
 
-/** Last-N-days activity from the per-day counter docs — one getAll, no
+/** Last-N-days activity from the per-day counter docs: one getAll, no
  * recipient scans. Powers the Home pulse chart. */
 export async function getDailyActivity(
   owner: OwnerRef,
