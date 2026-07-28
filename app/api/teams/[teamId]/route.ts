@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { getTeam, updateTeam, deleteTeam } from "@/lib/repositories/teams";
+import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -15,10 +17,24 @@ const PatchSchema = z.object({
 export const PATCH = handleApiErrors(async (req: NextRequest, { params }: Params) => {
   const ctx = await requireRole("ADMIN");
   const { teamId } = await params;
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).teams) {
+    return NextResponse.json({ error: "Team features require the Team plan." }, { status: 403 });
+  }
   if (!(await getTeam(ctx.organizationId, teamId)))
     return NextResponse.json({ error: "Team not found." }, { status: 404 });
 
   const patch = PatchSchema.parse(await req.json());
+  if (patch.leadUserId) {
+    const members = await listMembers(ctx.organizationId);
+    const lead = members.find((member) => member.userId === patch.leadUserId);
+    if (!lead?.active || (lead.role !== "MANAGER" && lead.role !== "ADMIN")) {
+      return NextResponse.json(
+        { error: "Choose an active manager from this organization as the team lead." },
+        { status: 400 }
+      );
+    }
+  }
   await updateTeam(ctx.organizationId, teamId, patch);
   return NextResponse.json({ ok: true, message: "Team updated." });
 });
@@ -27,6 +43,10 @@ export const PATCH = handleApiErrors(async (req: NextRequest, { params }: Params
 export const DELETE = handleApiErrors(async (_req: NextRequest, { params }: Params) => {
   const ctx = await requireRole("ADMIN");
   const { teamId } = await params;
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).teams) {
+    return NextResponse.json({ error: "Team features require the Team plan." }, { status: 403 });
+  }
   if (!(await getTeam(ctx.organizationId, teamId)))
     return NextResponse.json({ error: "Team not found." }, { status: 404 });
 

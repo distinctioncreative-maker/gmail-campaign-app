@@ -99,12 +99,42 @@ export interface RenderResult {
   unresolved: string[];
 }
 
+const SAFE_HTML_PLACEHOLDERS: ReadonlySet<Placeholder> = new Set(["signature"]);
+
+export function escapeHtmlText(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 /**
  * Replace {{placeholders}} in a template. Unknown or empty placeholders are
  * left in place and reported so the UI can highlight them and launch can be
  * blocked (spec: never send with unresolved placeholders).
  */
 export function renderTemplate(template: string, values: PlaceholderValues): RenderResult {
+  return renderWith(template, values, false);
+}
+
+/** Render an HTML body while treating contact/profile placeholders as text.
+ * The signature is the sole HTML-valued placeholder and is sanitized at its
+ * repository boundary. Callers still sanitize the final rendered document as
+ * defense-in-depth for URL-valued attributes. */
+export function renderHtmlTemplate(
+  template: string,
+  values: PlaceholderValues
+): RenderResult {
+  return renderWith(template, values, true);
+}
+
+function renderWith(
+  template: string,
+  values: PlaceholderValues,
+  htmlContext: boolean
+): RenderResult {
   const unresolved = new Set<string>();
   const output = template.replace(PLACEHOLDER_RE, (whole, name: string) => {
     const value = values[name as Placeholder];
@@ -115,7 +145,9 @@ export function renderTemplate(template: string, values: PlaceholderValues): Ren
       unresolved.add(name);
       return whole;
     }
-    return value;
+    return htmlContext && !SAFE_HTML_PLACEHOLDERS.has(name as Placeholder)
+      ? escapeHtmlText(value)
+      : value;
   });
   return { output, unresolved: [...unresolved] };
 }

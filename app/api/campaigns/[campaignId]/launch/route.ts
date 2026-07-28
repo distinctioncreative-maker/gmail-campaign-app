@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
-import { getCampaign, ownerFromCtx } from "@/lib/repositories/campaigns";
+import {
+  claimCampaignLaunch,
+  getCampaign,
+  ownerFromCtx,
+  releaseCampaignLaunch,
+} from "@/lib/repositories/campaigns";
 import { launchCampaign, validateForLaunch } from "@/lib/campaigns/launch";
+import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { PLANS } from "@/lib/billing/plans";
 
 const SEND_CONFIRM_THRESHOLD = 100;
 
@@ -22,6 +30,7 @@ const BodySchema = z.object({
   confirmText: z.string().optional(),
   validateOnly: z.boolean().default(false),
   personalize: z.boolean().default(false),
+  acceptPaceRisk: z.boolean().default(false),
 });
 
 /** Validate and launch a campaign with the selected recipients. */
@@ -51,7 +60,31 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
     );
   }
 
-  const includedCount = body.selections.filter((s) => s.included).length;
+  const settings = await getOrgSettings(ctx.organizationId);
+  const planCap = PLANS[settings.billing.plan].maxDailySends;
+  if (campaign.schedule.dailySendLimit > planCap) {
+    return NextResponse.json(
+      {
+        error: `Your ${PLANS[settings.billing.plan].name} plan allows up to ${planCap} emails per day. Lower this campaign's pace before launching.`,
+      },
+      { status: 400 }
+    );
+  }
+
+  const paceRisk = assessPaceRisk(campaign.schedule);
+  if (paceRisk.risky && !body.acceptPaceRisk) {
+    return NextResponse.json(
+      {
+        error: "This pace risks your sender reputation. Review the warning and explicitly confirm it before launching.",
+        requiresPaceConfirmation: true,
+        reasons: paceRisk.reasons,
+      },
+      { status: 400 }
+    );
+  }
+
+  const selections = [...new Map(body.selections.map((s) => [s.contactId, s])).values()];
+  const includedCount = selections.filter((s) => s.included).length;
   if (includedCount > SEND_CONFIRM_THRESHOLD && body.confirmText !== "SEND") {
     return NextResponse.json(
       {
@@ -62,19 +95,33 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
     );
   }
 
-  const result = await launchCampaign(
-    ctx,
-    campaign,
-    body.selections.map((s) => ({
-      contactId: s.contactId,
-      included: s.included,
-      exclusionReason: s.included ? null : "DESELECTED",
-      warning: false,
-      overrideReason: s.overrideReason,
-    })),
-    body.startNow,
-    body.personalize
-  );
+  const claimed = await claimCampaignLaunch(owner, campaignId);
+  if (!claimed) {
+    return NextResponse.json(
+      { error: "This campaign is already launching or has already started." },
+      { status: 409 }
+    );
+  }
+
+  let result;
+  try {
+    result = await launchCampaign(
+      ctx,
+      claimed,
+      selections.map((s) => ({
+        contactId: s.contactId,
+        included: s.included,
+        exclusionReason: s.included ? null : "DESELECTED",
+        warning: false,
+        overrideReason: s.overrideReason,
+      })),
+      body.startNow,
+      body.personalize
+    );
+  } catch (err) {
+    await releaseCampaignLaunch(owner, campaignId);
+    throw err;
+  }
 
   return NextResponse.json({ ok: true, ...result, warnings: validation.warnings });
 });

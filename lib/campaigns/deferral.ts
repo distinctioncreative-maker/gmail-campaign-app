@@ -6,7 +6,7 @@ import {
   recordEvent,
   updateQueueItem,
 } from "@/lib/repositories/campaigns";
-import { enqueueTask } from "@/lib/tasks/enqueue";
+import { deleteTask, enqueueTask } from "@/lib/tasks/enqueue";
 import { computeSendTimestamps, localDayKey, nextValidTime } from "@/lib/scheduling/window";
 import type { Campaign } from "@/schemas/campaign";
 
@@ -47,21 +47,27 @@ export async function deferCampaignToNextDay(
 
   const times = computeSendTimestamps(startAt, open.length, campaign.schedule);
   for (let i = 0; i < open.length; i++) {
-    await updateQueueItem(owner, campaign.campaignId, open[i].queueItemId, {
+    const item = open[i];
+    if (item.cloudTaskName) await deleteTask(item.cloudTaskName);
+    await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
       status: "SCHEDULED",
       scheduledAt: times[i],
+      cloudTaskName: null,
       lastError: "DAILY_LIMIT_REACHED",
     });
-    await enqueueTask(
+    const taskName = await enqueueTask(
       "send-message",
       {
         organizationId: owner.organizationId,
         ownerUserId: owner.userId,
         campaignId: campaign.campaignId,
-        queueItemId: open[i].queueItemId,
+        queueItemId: item.queueItemId,
       },
       times[i]
     );
+    await updateQueueItem(owner, campaign.campaignId, item.queueItemId, {
+      cloudTaskName: taskName,
+    });
   }
 
   await recordEvent(owner, campaign.campaignId, {

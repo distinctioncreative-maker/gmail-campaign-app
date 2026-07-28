@@ -3,6 +3,9 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { getCampaign, ownerFromCtx, updateCampaign } from "@/lib/repositories/campaigns";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { PLANS } from "@/lib/billing/plans";
+import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
 import {
   cancelAndDeleteDrafts,
   cancelRemaining,
@@ -48,6 +51,7 @@ const BodySchema = z.object({
   ]),
   recipientId: z.string().optional(),
   pace: PaceSchema.optional(),
+  acceptPaceRisk: z.boolean().default(false),
 });
 
 export const POST = handleApiErrors(async (req: NextRequest, { params }: { params: Promise<{ campaignId: string }> }) => {
@@ -56,7 +60,7 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
   const campaign = await getCampaign(ownerFromCtx(ctx), campaignId);
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
 
-  const { action, recipientId, pace } = BodySchema.parse(await req.json());
+  const { action, recipientId, pace, acceptPaceRisk } = BodySchema.parse(await req.json());
 
   switch (action) {
     case "pause":
@@ -97,6 +101,27 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
         return NextResponse.json({ error: "No pace changes were provided." }, { status: 400 });
       if (pace.maxDelaySeconds !== undefined && pace.minDelaySeconds !== undefined && pace.maxDelaySeconds < pace.minDelaySeconds)
         return NextResponse.json({ error: "Max delay must be greater than or equal to min delay." }, { status: 400 });
+      const settings = await getOrgSettings(ctx.organizationId);
+      const planCap = PLANS[settings.billing.plan].maxDailySends;
+      const requestedDailyLimit = pace.dailySendLimit ?? campaign.schedule.dailySendLimit;
+      if (requestedDailyLimit > planCap) {
+        return NextResponse.json(
+          { error: `Your ${PLANS[settings.billing.plan].name} plan allows up to ${planCap} emails per day.` },
+          { status: 403 }
+        );
+      }
+      const merged = { ...campaign.schedule, ...pace };
+      const risk = assessPaceRisk(merged);
+      if (risk.risky && !acceptPaceRisk) {
+        return NextResponse.json(
+          {
+            error: "This pace risks deliverability. Review and explicitly confirm the warning before saving it.",
+            requiresPaceConfirmation: true,
+            reasons: risk.reasons,
+          },
+          { status: 400 }
+        );
+      }
       return NextResponse.json({ message: await updatePace(ctx, campaign, pace) });
     }
     case "release_leads":

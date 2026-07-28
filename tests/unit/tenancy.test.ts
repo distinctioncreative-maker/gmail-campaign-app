@@ -20,22 +20,24 @@ describe("tenantTypeFor", () => {
 });
 
 describe("capabilitiesFor", () => {
-  it("gives Workspace the full team product", () => {
-    const c = capabilitiesFor("WORKSPACE");
+  it("gives a paid Team workspace the full team product", () => {
+    const c = capabilitiesFor("WORKSPACE", "TEAM");
     expect(c.teams).toBe(true);
     expect(c.adminConsole).toBe(true);
     expect(c.requiresWarmup).toBe(false);
     expect(c.maxDailySends).toBeGreaterThan(0);
   });
-  it("keeps Solo single-user, warmup-gated, and low-volume", () => {
-    const c = capabilitiesFor("CONSUMER");
+  it("keeps a free Solo account single-user, warmup-gated, and low-volume", () => {
+    const c = capabilitiesFor("CONSUMER", "FREE");
     expect(c.teams).toBe(false);
     expect(c.adminConsole).toBe(false);
     expect(c.requiresWarmup).toBe(true);
-    expect(c.maxDailySends).toBeLessThan(capabilitiesFor("WORKSPACE").maxDailySends);
+    expect(c.maxDailySends).toBeLessThan(capabilitiesFor("WORKSPACE", "TEAM").maxDailySends);
   });
-  it("lets both tenant types invite (Solo invite promotes to a team)", () => {
-    expect(capabilitiesFor("CONSUMER").invites).toBe(true);
-    expect(capabilitiesFor("WORKSPACE").invites).toBe(true);
+  it("requires a Team plan for invitations regardless of email domain", () => {
+    expect(capabilitiesFor("CONSUMER", "FREE").invites).toBe(false);
+    expect(capabilitiesFor("WORKSPACE", "STARTER").invites).toBe(false);
+    expect(capabilitiesFor("CONSUMER", "TEAM").invites).toBe(true);
+    expect(capabilitiesFor("WORKSPACE", "TEAM").invites).toBe(true);
   });
 });

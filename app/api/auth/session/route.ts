@@ -3,12 +3,26 @@ import { z } from "zod";
 import { createSessionCookie, SESSION_COOKIE } from "@/lib/auth/session";
 import { handleApiErrors } from "@/lib/api";
 import { requireUser } from "@/lib/auth/requireUser";
+import { enforceRateLimit, requestRateLimitKey } from "@/lib/util/rateLimit";
 
 const BodySchema = z.object({ idToken: z.string().min(10) });
 
 /** Exchange a Firebase ID token for an HttpOnly session cookie, then
  * provision user + org membership. */
 export const POST = handleApiErrors(async (req: NextRequest) => {
+  const withinLimit = await enforceRateLimit(
+    "auth-session",
+    requestRateLimitKey(req, "auth-session"),
+    20,
+    15 * 60 * 1000,
+    { failClosed: true }
+  );
+  if (!withinLimit) {
+    return NextResponse.json(
+      { error: "Too many sign-in attempts. Please wait and try again." },
+      { status: 429 }
+    );
+  }
   const { idToken } = BodySchema.parse(await req.json());
   const { cookieValue, maxAgeSeconds } = await createSessionCookie(idToken);
 

@@ -13,11 +13,16 @@ import Link from "next/link";
 
 export default async function AdminPage() {
   const ctx = await requireUser();
-  if (ctx.role !== "ADMIN" || !capabilitiesFor(ctx.tenantType).adminConsole) redirect("/home");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (
+    ctx.role !== "ADMIN" ||
+    !capabilitiesFor(ctx.tenantType, settings.billing.plan).adminConsole
+  ) {
+    redirect("/home");
+  }
 
-  const [members, settings, org] = await Promise.all([
+  const [members, org] = await Promise.all([
     listMembers(ctx.organizationId),
-    getOrgSettings(ctx.organizationId),
     getOrganization(ctx.organizationId),
   ]);
 

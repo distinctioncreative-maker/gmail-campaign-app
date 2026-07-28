@@ -48,3 +48,29 @@ export function defaultPlanFor(tenantType: "WORKSPACE" | "CONSUMER"): PlanId {
 export function checkoutablePlans(): PlanDef[] {
   return [PLANS.STARTER, PLANS.TEAM];
 }
+
+/**
+ * Return the paid seat ceiling that must be enforced by membership writes.
+ *
+ * Legacy workspaces have TEAM capabilities but no Stripe subscription or
+ * purchased quantity; returning null preserves their grandfathered access.
+ * Enterprise arrangements can opt into the same enforcement by storing a
+ * positive seat quantity with a subscription.
+ */
+export function purchasedSeatLimit(billing: {
+  plan: PlanId;
+  status: string;
+  stripeSubscriptionId: string | null;
+  seats: number;
+}): number | null {
+  if (
+    !PLANS[billing.plan].teams ||
+    !billing.stripeSubscriptionId ||
+    !["trialing", "active", "past_due", "canceled"].includes(billing.status) ||
+    !Number.isInteger(billing.seats) ||
+    billing.seats < 1
+  ) {
+    return null;
+  }
+  return billing.seats;
+}

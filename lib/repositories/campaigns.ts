@@ -59,7 +59,7 @@ export async function createCampaign(
   input: Omit<
     Campaign,
     | "campaignId" | "ownerUserId" | "organizationId" | "createdByUserId"
-    | "createdAt" | "updatedAt"
+    | "createdAt" | "updatedAt" | "launchStartedAt"
   >
 ): Promise<Campaign> {
   const now = Date.now();
@@ -94,9 +94,24 @@ export async function deleteCampaign(owner: OwnerRef, campaignId: string): Promi
   await firestore().recursiveDelete(campaignRef(owner, campaignId));
 }
 
-export async function listCampaigns(owner: OwnerRef, limit = 100): Promise<Campaign[]> {
-  const snap = await campaignsRef(owner).orderBy("updatedAt", "desc").limit(limit).get();
-  return snap.docs.map((d) => CampaignSchema.parse(d.data()));
+export async function listCampaigns(
+  owner: OwnerRef,
+  maxItems = 100
+): Promise<Campaign[]> {
+  const rows: Campaign[] = [];
+  let cursor: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+  while (rows.length < maxItems) {
+    const pageSize = Math.min(500, maxItems - rows.length);
+    let query = campaignsRef(owner)
+      .orderBy("updatedAt", "desc")
+      .limit(pageSize);
+    if (cursor) query = query.startAfter(cursor);
+    const snap = await query.get();
+    rows.push(...snap.docs.map((doc) => CampaignSchema.parse(doc.data())));
+    if (snap.empty || snap.size < pageSize) break;
+    cursor = snap.docs.at(-1) ?? null;
+  }
+  return rows;
 }
 
 export async function updateCampaign(
@@ -114,6 +129,48 @@ export async function setCampaignStatus(
   extra: Partial<Campaign> = {}
 ): Promise<void> {
   await updateCampaign(owner, campaignId, { status, ...extra });
+}
+
+/** Atomically move a launchable campaign into PREPARING. Exactly one request
+ * can win, so double-clicks, concurrent tabs, and HTTP retries cannot create
+ * separate recipient/queue generations. */
+export async function claimCampaignLaunch(
+  owner: OwnerRef,
+  campaignId: string
+): Promise<Campaign | null> {
+  const ref = campaignRef(owner, campaignId);
+  return firestore().runTransaction(async (tx: Transaction) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return null;
+    const campaign = CampaignSchema.parse(snap.data());
+    if (campaign.status !== "DRAFT" && campaign.status !== "READY") return null;
+    const claimed = CampaignSchema.parse({
+      ...campaign,
+      status: "PREPARING",
+      launchStartedAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    tx.set(ref, claimed);
+    return claimed;
+  });
+}
+
+/** Release a failed pre-activation launch. This is conditional so an ACTIVE
+ * campaign can never be rolled backward by a late error handler. */
+export async function releaseCampaignLaunch(
+  owner: OwnerRef,
+  campaignId: string
+): Promise<void> {
+  const ref = campaignRef(owner, campaignId);
+  await firestore().runTransaction(async (tx: Transaction) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists || snap.data()?.status !== "PREPARING") return;
+    tx.update(ref, {
+      status: "READY",
+      launchStartedAt: null,
+      updatedAt: Date.now(),
+    });
+  });
 }
 
 export async function incrementCampaignCounters(
@@ -162,10 +219,20 @@ export async function getRecipient(
 export async function listRecipients(
   owner: OwnerRef,
   campaignId: string,
-  limit = 1000
+  maxItems = Number.POSITIVE_INFINITY
 ): Promise<Recipient[]> {
-  const snap = await recipientsRef(owner, campaignId).orderBy("createdAt", "asc").limit(limit).get();
-  return snap.docs.map((d) => RecipientSchema.parse(d.data()));
+  const rows: Recipient[] = [];
+  let cursor: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+  while (rows.length < maxItems) {
+    const pageSize = Math.min(500, maxItems - rows.length);
+    let query = recipientsRef(owner, campaignId).orderBy("createdAt", "asc").limit(pageSize);
+    if (cursor) query = query.startAfter(cursor);
+    const snap = await query.get();
+    rows.push(...snap.docs.map((d) => RecipientSchema.parse(d.data())));
+    if (snap.empty || snap.size < pageSize) break;
+    cursor = snap.docs[snap.docs.length - 1];
+  }
+  return rows;
 }
 
 export async function updateRecipient(
@@ -177,6 +244,103 @@ export async function updateRecipient(
   await recipientsRef(owner, campaignId)
     .doc(recipientId)
     .update({ ...patch, updatedAt: Date.now() });
+}
+
+/** Atomic engagement updates avoid losing increments when email clients load
+ * the same tracking URL concurrently. */
+export async function recordRecipientOpen(
+  owner: OwnerRef,
+  campaignId: string,
+  recipientId: string,
+  at: number
+): Promise<void> {
+  const ref = recipientsRef(owner, campaignId).doc(recipientId);
+  await firestore().runTransaction(async (tx: Transaction) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return;
+    const data = snap.data() ?? {};
+    tx.update(ref, {
+      openedAt: data.openedAt ?? at,
+      openCount: FieldValue.increment(1),
+      updatedAt: at,
+    });
+  });
+}
+
+export async function recordRecipientClick(
+  owner: OwnerRef,
+  campaignId: string,
+  recipientId: string,
+  at: number
+): Promise<void> {
+  const ref = recipientsRef(owner, campaignId).doc(recipientId);
+  await firestore().runTransaction(async (tx: Transaction) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return;
+    const data = snap.data() ?? {};
+    tx.update(ref, {
+      firstClickedAt: data.firstClickedAt ?? at,
+      clickCount: FieldValue.increment(1),
+      openedAt: data.openedAt ?? at,
+      // Count an implied open only when this is the first engagement.
+      ...(data.openedAt ? {} : { openCount: FieldValue.increment(1) }),
+      updatedAt: at,
+    });
+  });
+}
+
+/**
+ * Atomically claim a mailbox outcome and increment its campaign counter.
+ * Concurrent Scheduler/manual scans can observe the same Gmail message, but
+ * exactly one is allowed to apply side effects.
+ */
+export async function commitRecipientOutcome(
+  owner: OwnerRef,
+  campaignId: string,
+  recipientId: string,
+  outcome: "REPLY" | "UNSUBSCRIBE" | "BOUNCE",
+  patch: Partial<Recipient>,
+  dayKey: string
+): Promise<boolean> {
+  const recipient = recipientsRef(owner, campaignId).doc(recipientId);
+  const campaign = campaignRef(owner, campaignId);
+  const daily = userRef(owner).collection("counters").doc(dayKey);
+  return firestore().runTransaction(async (tx: Transaction) => {
+    const snap = await tx.get(recipient);
+    if (!snap.exists) return false;
+    const current = RecipientSchema.parse(snap.data());
+    const alreadyApplied =
+      outcome === "REPLY"
+        ? current.repliedAt !== null
+        : outcome === "UNSUBSCRIBE"
+          ? current.unsubscribedAt !== null
+          : current.bouncedAt !== null;
+    if (alreadyApplied) return false;
+    const counter =
+      outcome === "REPLY"
+        ? "replyCount"
+        : outcome === "UNSUBSCRIBE"
+          ? "unsubscribeCount"
+          : "bounceCount";
+    const now = Date.now();
+    tx.update(recipient, { ...patch, updatedAt: now });
+    tx.update(campaign, {
+      [counter]: FieldValue.increment(1),
+      updatedAt: now,
+    });
+    const dailyField =
+      outcome === "REPLY"
+        ? "replies"
+        : outcome === "UNSUBSCRIBE"
+          ? "unsubscribes"
+          : "bounces";
+    tx.set(
+      daily,
+      { [dailyField]: FieldValue.increment(1), updatedAt: now },
+      { merge: true }
+    );
+    return true;
+  });
 }
 
 // ── Queue items ──────────────────────────────────────────────────
@@ -241,6 +405,7 @@ export async function claimQueueItem(
       status: "PROCESSING",
       attemptCount: item.attemptCount + 1,
       startedAt: Date.now(),
+      cloudTaskName: null,
       updatedAt: Date.now(),
     };
     tx.set(ref, claimed);
@@ -253,15 +418,23 @@ export async function listQueueItems(
   campaignId: string,
   statuses?: QueueItem["status"][]
 ): Promise<QueueItem[]> {
-  let q = queueRef(owner, campaignId).orderBy("scheduledAt", "asc").limit(2000);
-  if (statuses && statuses.length > 0 && statuses.length <= 10) {
-    q = queueRef(owner, campaignId)
-      .where("status", "in", statuses)
-      .orderBy("scheduledAt", "asc")
-      .limit(2000);
+  const rows: QueueItem[] = [];
+  let cursor: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+  while (true) {
+    let q = queueRef(owner, campaignId).orderBy("scheduledAt", "asc").limit(500);
+    if (statuses && statuses.length > 0 && statuses.length <= 10) {
+      q = queueRef(owner, campaignId)
+        .where("status", "in", statuses)
+        .orderBy("scheduledAt", "asc")
+        .limit(500);
+    }
+    if (cursor) q = q.startAfter(cursor);
+    const snap = await q.get();
+    rows.push(...snap.docs.map((d) => QueueItemSchema.parse(d.data())));
+    if (snap.empty || snap.size < 500) break;
+    cursor = snap.docs[snap.docs.length - 1];
   }
-  const snap = await q.get();
-  return snap.docs.map((d) => QueueItemSchema.parse(d.data()));
+  return rows;
 }
 
 // ── Messages (idempotency records) ───────────────────────────────
@@ -282,16 +455,9 @@ export async function reserveIdempotencyKey(
   const ref = messagesRef(owner, campaignId).doc(idempotencyKey.replaceAll("/", "_"));
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (snap.exists) {
-      const data = snap.data();
-      // Already finalized as SENT → never re-send.
-      if (data?.status === "SENT") return false;
-      // A reservation exists but was never finalized (a prior attempt crashed
-      // between reserving and finalizing). Only the SAME queue item may
-      // re-proceed — this makes a pre-send retry safe without ever letting a
-      // different item reuse the key.
-      return data?.queueItemId === record.queueItemId;
-    }
+    // Any existing reservation means a delivery attempt may already have
+    // reached Gmail. Never infer "safe to retry" from an unfinished record.
+    if (snap.exists) return false;
     tx.set(ref, {
       idempotencyKey,
       ...record,
@@ -305,18 +471,111 @@ export async function reserveIdempotencyKey(
   });
 }
 
-export async function finalizeMessage(
+/**
+ * Atomically commit the authoritative result of a Gmail delivery. Message,
+ * recipient, queue, and cached campaign counters either all advance or none
+ * do, eliminating post-send metric/state drift.
+ */
+export async function commitDeliveryResult(
   owner: OwnerRef,
   campaignId: string,
-  idempotencyKey: string,
-  result: { gmailMessageId: string; gmailThreadId: string; sentTo: string; subject: string }
-): Promise<void> {
-  await messagesRef(owner, campaignId)
-    .doc(idempotencyKey.replaceAll("/", "_"))
-    .set(
-      { ...result, status: "SENT", sentAt: Date.now() },
+  input: {
+    idempotencyKey: string;
+    queueItemId: string;
+    recipientId: string;
+    recipientPatch: Partial<Recipient>;
+    counter: "sentCount" | "followupSentCount" | "draftedCount";
+    completedAt: number;
+    /** Durable outbox record for the next follow-up, created in this same
+     * transaction. Cloud Task publication happens after the commit. */
+    nextQueueItem?: QueueItem | null;
+    result: {
+      gmailMessageId: string;
+      gmailThreadId: string;
+      sentTo: string;
+      subject: string;
+      status: "SENT" | "DRAFTED";
+      gmailDraftId?: string;
+    };
+  }
+): Promise<{ nextFollowupCommitted: boolean }> {
+  const db = firestore();
+  const message = messagesRef(owner, campaignId).doc(
+    input.idempotencyKey.replaceAll("/", "_")
+  );
+  const recipient = recipientsRef(owner, campaignId).doc(input.recipientId);
+  const queue = queueRef(owner, campaignId).doc(input.queueItemId);
+  const campaign = campaignRef(owner, campaignId);
+
+  return db.runTransaction(async (tx: Transaction) => {
+    const [messageSnap, recipientSnap, campaignSnap] = await Promise.all([
+      tx.get(message),
+      tx.get(recipient),
+      tx.get(campaign),
+    ]);
+    if (!messageSnap.exists || messageSnap.data()?.status !== "RESERVED") {
+      throw new Error("Delivery reservation is not in a committable state");
+    }
+    if (!recipientSnap.exists) {
+      throw new Error("Delivery recipient no longer exists");
+    }
+    if (!campaignSnap.exists) {
+      throw new Error("Delivery campaign no longer exists");
+    }
+    const currentRecipient = RecipientSchema.parse(recipientSnap.data());
+    const currentCampaign = CampaignSchema.parse(campaignSnap.data());
+    const preserveTerminalStatus =
+      currentRecipient.repliedAt !== null
+        ? "REPLIED"
+        : currentRecipient.unsubscribedAt !== null
+          ? "UNSUBSCRIBED"
+          : currentRecipient.bouncedAt !== null
+            ? "BOUNCED"
+            : null;
+    const nextFollowupCommitted =
+      input.nextQueueItem !== null &&
+      input.nextQueueItem !== undefined &&
+      preserveTerminalStatus === null &&
+      (currentCampaign.status === "ACTIVE" || currentCampaign.status === "PAUSED");
+    tx.set(
+      message,
+      {
+        ...input.result,
+        [input.result.status === "DRAFTED" ? "draftedAt" : "sentAt"]:
+          input.completedAt,
+      },
       { merge: true }
     );
+    tx.update(recipient, {
+      ...input.recipientPatch,
+      ...(input.nextQueueItem
+        ? {
+            nextFollowupAt: nextFollowupCommitted
+              ? input.nextQueueItem.scheduledAt
+              : null,
+          }
+        : {}),
+      ...(preserveTerminalStatus ? { status: preserveTerminalStatus } : {}),
+      updatedAt: input.completedAt,
+    });
+    tx.update(queue, {
+      status: "COMPLETE",
+      completedAt: input.completedAt,
+      lastError: null,
+      updatedAt: input.completedAt,
+    });
+    tx.update(campaign, {
+      [input.counter]: FieldValue.increment(1),
+      updatedAt: input.completedAt,
+    });
+    if (nextFollowupCommitted && input.nextQueueItem) {
+      tx.set(
+        queueRef(owner, campaignId).doc(input.nextQueueItem.queueItemId),
+        input.nextQueueItem
+      );
+    }
+    return { nextFollowupCommitted };
+  });
 }
 
 export async function isIdempotencyKeyUsed(
@@ -327,42 +586,65 @@ export async function isIdempotencyKeyUsed(
   const snap = await messagesRef(owner, campaignId)
     .doc(idempotencyKey.replaceAll("/", "_"))
     .get();
-  return snap.exists && snap.data()?.status === "SENT";
+  return snap.exists;
+}
+
+export async function getIdempotencyStatus(
+  owner: OwnerRef,
+  campaignId: string,
+  idempotencyKey: string
+): Promise<"RESERVED" | "SENT" | "DRAFTED" | null> {
+  const snap = await messagesRef(owner, campaignId)
+    .doc(idempotencyKey.replaceAll("/", "_"))
+    .get();
+  const status = snap.data()?.status;
+  return status === "RESERVED" || status === "SENT" || status === "DRAFTED"
+    ? status
+    : null;
 }
 
 // ── Daily send counters ──────────────────────────────────────────
 
-/** Transactionally increment today's send counter; returns the new count. */
-export async function incrementDailyCounter(
-  owner: OwnerRef,
-  dayKey: string
-): Promise<number> {
-  const ref = userRef(owner).collection("counters").doc(dayKey);
-  return firestore().runTransaction(async (tx) => {
-    const snap = await tx.get(ref);
-    const current = (snap.data()?.sent as number | undefined) ?? 0;
-    tx.set(ref, { sent: current + 1, updatedAt: Date.now() }, { merge: true });
-    return current + 1;
-  });
-}
-
-/** Cheap per-day activity rollup on the same counters doc the send limiter
- * uses — replies/bounces/unsubscribes accrue next to `sent`, so daily trend
- * dashboards never need recipient-level scans. */
-export async function incrementDailyActivity(
-  owner: OwnerRef,
-  dayKey: string,
-  field: "replies" | "bounces" | "unsubscribes"
-): Promise<void> {
-  await userRef(owner)
-    .collection("counters")
-    .doc(dayKey)
-    .set({ [field]: FieldValue.increment(1), updatedAt: Date.now() }, { merge: true });
-}
-
 export async function getDailyCount(owner: OwnerRef, dayKey: string): Promise<number> {
   const snap = await userRef(owner).collection("counters").doc(dayKey).get();
   return (snap.data()?.sent as number | undefined) ?? 0;
+}
+
+/**
+ * Atomically reserve one unit of today's send allowance. The reservation is
+ * keyed by the message idempotency key, so a crash before the Gmail call can
+ * retry without consuming a second unit, while concurrent workers can never
+ * collectively pass the cap.
+ */
+export async function reserveDailySend(
+  owner: OwnerRef,
+  dayKey: string,
+  limit: number,
+  idempotencyKey: string
+): Promise<{ reserved: boolean; count: number }> {
+  const counter = userRef(owner).collection("counters").doc(dayKey);
+  const reservation = counter
+    .collection("sendReservations")
+    .doc(idempotencyKey.replaceAll("/", "_"));
+  return firestore().runTransaction(async (tx: Transaction) => {
+    const [counterSnap, reservationSnap] = await Promise.all([
+      tx.get(counter),
+      tx.get(reservation),
+    ]);
+    const current = (counterSnap.data()?.sent as number | undefined) ?? 0;
+    if (reservationSnap.exists) return { reserved: true, count: current };
+    if (current >= limit) return { reserved: false, count: current };
+    tx.set(
+      counter,
+      { sent: current + 1, updatedAt: Date.now() },
+      { merge: true }
+    );
+    tx.create(reservation, {
+      idempotencyKey,
+      reservedAt: Date.now(),
+    });
+    return { reserved: true, count: current + 1 };
+  });
 }
 
 // ── Events (friendly activity feed) ──────────────────────────────

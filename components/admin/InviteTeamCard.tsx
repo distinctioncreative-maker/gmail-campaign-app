@@ -12,9 +12,8 @@ interface Invite {
 }
 
 /**
- * Invite teammates by email. Works for team workspaces, and for a Solo
- * workspace it turns it into a team on the first invite. The invited person
- * joins automatically the next time they sign in.
+ * Invite teammates by email on the Team plan. A paid Solo workspace is
+ * promoted into a shared workspace on its first invitation.
  */
 export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
   const router = useRouter();

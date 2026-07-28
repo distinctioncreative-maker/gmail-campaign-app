@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
-import { listMembers } from "@/lib/repositories/orgSettings";
+import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { listCampaigns } from "@/lib/repositories/campaigns";
 import { canViewRep } from "@/lib/teams/access";
@@ -9,6 +9,7 @@ import { getUser } from "@/lib/repositories/users";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { LocalTime } from "@/components/LocalTime";
 import { formatPercent } from "@/lib/analytics/metrics";
+import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 
 
 /**
@@ -23,6 +24,8 @@ export default async function RepDetailPage({
 }) {
   const ctx = await requireUser();
   if (ctx.role !== "MANAGER" && ctx.role !== "ADMIN") redirect("/home");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).teams) redirect("/home");
   const { userId } = await params;
 
   const [teams, members] = await Promise.all([

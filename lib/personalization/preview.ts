@@ -4,6 +4,7 @@ import { getContact } from "@/lib/repositories/contacts";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import {
   FAKE_PREVIEW_VALUES,
+  renderHtmlTemplate,
   renderTemplate,
   valuesFromContact,
   valuesFromSenderProfile,
@@ -44,7 +45,7 @@ export async function renderForPreview(
   }
 
   const subject = renderTemplate(subjectTemplate, values);
-  const body = renderTemplate(htmlTemplate, values);
+  const body = renderHtmlTemplate(htmlTemplate, values);
   return {
     subject: subject.output,
     html: body.output,

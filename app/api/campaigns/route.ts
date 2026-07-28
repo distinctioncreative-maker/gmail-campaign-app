@@ -15,6 +15,7 @@ import {
   PriorContactPolicySchema,
 } from "@/schemas/campaign";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
+import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
 
 export const GET = handleApiErrors(async () => {
   const ctx = await requireUser();
@@ -36,6 +37,7 @@ const CreateSchema = z.object({
   sourceListId: z.string().nullable().default(null),
   /** Optional open/click tracking — off by default, see CampaignSchema. */
   trackingEnabled: z.boolean().default(false),
+  acceptPaceRisk: z.boolean().default(false),
 });
 
 /** Create a DRAFT campaign, defaulting schedule values from the user's
@@ -50,6 +52,29 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   const cap = PLANS[settings.billing.plan].maxDailySends;
   const requestedLimit = input.schedule?.dailySendLimit ?? profile.sendingDefaults.dailySendLimit;
   const dailySendLimit = Math.min(requestedLimit, cap);
+  const schedule = CampaignScheduleSchema.parse({
+    timezone: profile.timezone,
+    allowedWeekdays: profile.sendingDefaults.allowedWeekdays,
+    sendWindowStart: profile.sendingDefaults.sendWindowStart,
+    sendWindowEnd: profile.sendingDefaults.sendWindowEnd,
+    emailsPerBatch: profile.sendingDefaults.emailsPerBatch,
+    minDelaySeconds: profile.sendingDefaults.minDelaySeconds,
+    maxDelaySeconds: profile.sendingDefaults.maxDelaySeconds,
+    interBatchDelayMinutes: profile.sendingDefaults.interBatchDelayMinutes,
+    ...input.schedule,
+    dailySendLimit,
+  });
+  const paceRisk = assessPaceRisk(schedule);
+  if (paceRisk.risky && !input.acceptPaceRisk) {
+    return NextResponse.json(
+      {
+        error: "This pace risks deliverability. Review and explicitly confirm the warning before saving it.",
+        requiresPaceConfirmation: true,
+        reasons: paceRisk.reasons,
+      },
+      { status: 400 }
+    );
+  }
 
   const campaign = await createCampaign(ctx, {
     name: input.name,
@@ -60,19 +85,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     sequenceId: input.sequenceId,
     sourceType: input.sourceListId ? "LEAD_LIST" : "CONTACTS",
     sourceReference: input.sourceListId,
-    schedule: CampaignScheduleSchema.parse({
-      timezone: profile.timezone,
-      allowedWeekdays: profile.sendingDefaults.allowedWeekdays,
-      sendWindowStart: profile.sendingDefaults.sendWindowStart,
-      sendWindowEnd: profile.sendingDefaults.sendWindowEnd,
-      emailsPerBatch: profile.sendingDefaults.emailsPerBatch,
-      minDelaySeconds: profile.sendingDefaults.minDelaySeconds,
-      maxDelaySeconds: profile.sendingDefaults.maxDelaySeconds,
-      interBatchDelayMinutes: profile.sendingDefaults.interBatchDelayMinutes,
-      ...input.schedule,
-      // Enforce the tenant's safe ceiling regardless of requested/default.
-      dailySendLimit,
-    }),
+    schedule,
     gmailQuotaReserve: 50,
     priorContactPolicy: input.priorContactPolicy,
     priorContactExcludeDays: input.priorContactExcludeDays,

@@ -39,6 +39,19 @@ describe("applySendSafety (test-mode destination override)", () => {
     const out = applySendSafety({ to: "lead@x.com", subject: "Hello" }, false);
     expect(out).toEqual({ to: "lead@x.com", subject: "Hello" });
   });
+
+  it("allows an explicit server-verified self-test destination", async () => {
+    const { applySendSafety } = await loadSafety({
+      TEST_EMAIL_DESTINATION: "shared-test@company.com",
+    });
+    const out = applySendSafety(
+      { to: "ignored@example.com", subject: "Preview" },
+      true,
+      "signed-in-user@company.com"
+    );
+    expect(out.to).toBe("signed-in-user@company.com");
+    expect(out.subject).toBe("[TEST] Preview");
+  });
 });
 
 describe("envForcesTestMode (deployment lock)", () => {

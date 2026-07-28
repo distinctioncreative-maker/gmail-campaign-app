@@ -3,7 +3,7 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import { handleApiErrors } from "@/lib/api";
 import { firestore } from "@/lib/firebase/admin";
-import { enforceRateLimit } from "@/lib/util/rateLimit";
+import { enforceRateLimit, requestRateLimitKey } from "@/lib/util/rateLimit";
 
 // Public, unauthenticated: the coming-soon landing page captures early-access
 // signups here. No account is created — just an email on a list.
@@ -22,13 +22,14 @@ function normalize(email: string): string {
 }
 
 /** Hashed client IP, so we throttle per source without storing raw IPs. */
-function clientKey(req: NextRequest): string {
-  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || "unknown";
-  return crypto.createHash("sha256").update(ip).digest("hex").slice(0, 32);
-}
-
 export const POST = handleApiErrors(async (req: NextRequest) => {
-  const withinLimit = await enforceRateLimit("waitlist", clientKey(req), RATE_LIMIT, RATE_WINDOW_MS);
+  const withinLimit = await enforceRateLimit(
+    "waitlist",
+    requestRateLimitKey(req, "waitlist"),
+    RATE_LIMIT,
+    RATE_WINDOW_MS,
+    { failClosed: true }
+  );
   if (!withinLimit) {
     return NextResponse.json(
       { error: "You've already joined — we'll be in touch. Try again later if this is a mistake." },

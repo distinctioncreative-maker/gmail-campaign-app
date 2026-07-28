@@ -1,13 +1,11 @@
 import "server-only";
 import crypto from "node:crypto";
-import type { Campaign } from "@/schemas/campaign";
-import type { SequenceStep } from "@/schemas/sequence";
+import type { Campaign, QueueItem } from "@/schemas/campaign";
+import type { Sequence, SequenceStep } from "@/schemas/sequence";
 import {
-  batchCreateQueueItems,
-  updateRecipient,
+  updateQueueItem,
   type OwnerRef,
 } from "@/lib/repositories/campaigns";
-import { getSequence } from "@/lib/repositories/sequences";
 import { addBusinessDays, nextValidTime } from "@/lib/scheduling/window";
 import { enqueueTask } from "@/lib/tasks/enqueue";
 import { idempotencyKey } from "@/lib/campaigns/idempotency";
@@ -28,72 +26,78 @@ function stepDelayMs(step: SequenceStep, from: number, campaign: Campaign): numb
   }
 }
 
-/**
- * After a confirmed send at `completedStep`, schedule the next enabled
- * follow-up step for this recipient — computed only now (spec §15), rolled
- * into the send window, enqueued as its own Cloud Task. A campaign with no
- * sequence simply has no follow-up work.
- */
-export async function scheduleNextFollowup(
+/** Build the durable queue record for the next enabled follow-up. The worker
+ * commits this record atomically with the Gmail result; publishing the Cloud
+ * Task is a separate, retryable projection. */
+export function buildNextFollowupQueueItem(
   owner: OwnerRef,
   campaign: Campaign,
+  sequence: Sequence | null,
   recipientId: string,
-  completedStep: number
-): Promise<void> {
-  if (!campaign.sequenceId || campaign.followupsPaused) return;
-
-  const sequence = await getSequence(owner, campaign.sequenceId);
-  if (!sequence || !sequence.active) return;
+  completedStep: number,
+  completedAt: number
+): QueueItem | null {
+  if (!campaign.sequenceId || !sequence || !sequence.active) return null;
 
   // steps[0] is follow-up #1 (sent after the initial email at step 0).
   const step = sequence.steps[completedStep];
-  if (!step || !step.enabled) return;
+  if (!step || !step.enabled) return null;
 
-  const now = Date.now();
-  const scheduledAt = nextValidTime(stepDelayMs(step, now, campaign), campaign.schedule);
+  const scheduledAt = nextValidTime(
+    stepDelayMs(step, completedAt, campaign),
+    campaign.schedule
+  );
   const sequenceStep = completedStep + 1;
-  const queueItemId = crypto.randomUUID();
+  const key = idempotencyKey(
+    owner.organizationId,
+    owner.userId,
+    campaign.campaignId,
+    recipientId,
+    sequenceStep
+  );
+  const queueItemId = crypto.createHash("sha256").update(key).digest("hex");
 
-  await batchCreateQueueItems(owner, campaign.campaignId, [
-    {
-      queueItemId,
-      organizationId: owner.organizationId,
-      ownerUserId: owner.userId,
-      campaignId: campaign.campaignId,
-      recipientId,
-      type: "SEND_FOLLOWUP",
-      sequenceStep,
-      scheduledAt,
-      status: "SCHEDULED",
-      attemptCount: 0,
-      idempotencyKey: idempotencyKey(
-        owner.organizationId,
-        owner.userId,
-        campaign.campaignId,
-        recipientId,
-        sequenceStep
-      ),
-      cloudTaskName: null,
-      startedAt: null,
-      completedAt: null,
-      lastError: null,
-      createdAt: now,
-      updatedAt: now,
-    },
-  ]);
+  return {
+    queueItemId,
+    organizationId: owner.organizationId,
+    ownerUserId: owner.userId,
+    campaignId: campaign.campaignId,
+    recipientId,
+    type: "SEND_FOLLOWUP",
+    sequenceStep,
+    scheduledAt,
+    status: "SCHEDULED",
+    attemptCount: 0,
+    idempotencyKey: key,
+    cloudTaskName: null,
+    startedAt: null,
+    completedAt: null,
+    lastError: null,
+    createdAt: completedAt,
+    updatedAt: completedAt,
+  };
+}
 
-  await updateRecipient(owner, campaign.campaignId, recipientId, {
-    nextFollowupAt: scheduledAt,
-  });
-
-  await enqueueTask(
+/** Publish a queue record that is already durable. A null task name means the
+ * item is beyond Cloud Tasks' 30-day horizon (or Tasks are not configured);
+ * the repair sweep will publish it later. */
+export async function publishFollowupQueueItem(
+  owner: OwnerRef,
+  item: QueueItem
+): Promise<void> {
+  const taskName = await enqueueTask(
     "send-message",
     {
       organizationId: owner.organizationId,
       ownerUserId: owner.userId,
-      campaignId: campaign.campaignId,
-      queueItemId,
+      campaignId: item.campaignId,
+      queueItemId: item.queueItemId,
     },
-    scheduledAt
+    item.scheduledAt
   );
+  if (taskName) {
+    await updateQueueItem(owner, item.campaignId, item.queueItemId, {
+      cloudTaskName: taskName,
+    });
+  }
 }

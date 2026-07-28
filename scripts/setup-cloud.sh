@@ -10,12 +10,33 @@ SERVICE="${3:-outreach}"
 
 gcloud config set project "$PROJECT_ID"
 
+echo "── Required APIs ──"
+gcloud services enable \
+  run.googleapis.com \
+  cloudtasks.googleapis.com \
+  cloudscheduler.googleapis.com \
+  iamcredentials.googleapis.com
+
+echo "── Firestore TTL ──"
+gcloud firestore fields ttls update expiresAt \
+  --collection-group=rateLimits \
+  --enable-ttl \
+  --async
+gcloud firestore fields ttls update expiresAt \
+  --collection-group=stripeEvents \
+  --enable-ttl \
+  --async
+
 echo "── Service URL ──"
 SERVICE_URL=$(gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)')
 echo "$SERVICE_URL"
 
 echo "── Cloud Tasks queue ──"
 gcloud tasks queues create campaign-sends --location="$REGION" 2>/dev/null || echo "queue exists"
+gcloud tasks queues update campaign-sends \
+  --location="$REGION" \
+  --max-dispatches-per-second=5 \
+  --max-concurrent-dispatches=20
 
 echo "── Tasks service account ──"
 TASKS_SA="outreach-tasks@${PROJECT_ID}.iam.gserviceaccount.com"
@@ -67,6 +88,7 @@ create_job outreach-reply-sweep  "*/10 * * * *" reply
 create_job outreach-bounce-sweep "*/30 * * * *" bounce
 create_job outreach-repair       "0 * * * *"    repair
 create_job outreach-metrics      "0 6 * * *"    metrics
+create_job outreach-benchmarks   "30 6 * * *"   benchmarks
 
 echo
-echo "Done. Background sending, reply/bounce sweeps, and repair are configured."
+echo "Done. Background sending, monitoring, repair, metrics, and benchmarks are configured."

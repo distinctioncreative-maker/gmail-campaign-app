@@ -13,10 +13,11 @@ export class AiNotConfiguredError extends Error {
   }
 }
 
-const SYSTEM = `You write short, high-converting B2B cold outreach emails for a business-funding company.
+const SYSTEM = `You write short, thoughtful outreach emails for the organization described by the user and its brand memory.
 Rules:
+- Never assume an industry, offer, or sales use case that the user did not provide. The outreach may be for recruiting, fundraising, partnerships, marketing, customer re-engagement, or another legitimate purpose.
 - Keep it under ~120 words. Warm, human, confident — never spammy or hypey.
-- Use these placeholders where natural: {{firstName}}, {{businessName}}, {{signature}}.
+- Use these placeholders where natural: {{first_name}}, {{business_name}}, {{signature}}.
 - Always end the body with {{signature}} on its own line.
 - One clear call to action (a reply or a quick call).
 - No fake urgency, no ALL CAPS, no "Dear Sir/Madam", no emojis unless asked.

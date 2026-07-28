@@ -23,19 +23,14 @@ import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { generateOpener } from "@/lib/ai/generateOpener";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { mapWithConcurrency } from "@/lib/util/pool";
+import { idempotencyKey } from "@/lib/campaigns/idempotency";
 
 /** Safety caps for per-lead AI personalization at launch. */
 const MAX_PERSONALIZED = 150;
 const PERSONALIZE_CONCURRENCY = 3;
 
-export function idempotencyKey(
-  organizationId: string,
-  userId: string,
-  campaignId: string,
-  recipientId: string,
-  step: number
-): string {
-  return `${organizationId}:${userId}:${campaignId}:${recipientId}:${step}`;
+function stableDocumentId(kind: "recipient" | "queue", ...parts: string[]): string {
+  return `${kind}_${crypto.createHash("sha256").update(parts.join("\u001f")).digest("hex").slice(0, 40)}`;
 }
 
 export interface LaunchValidation {
@@ -122,7 +117,12 @@ export async function launchCampaign(
   const recipients: Recipient[] = [];
   let excluded = 0;
 
-  for (const sel of selections) {
+  // A caller may accidentally submit the same contact more than once. Keep the
+  // final explicit choice, then use deterministic document IDs so a safe
+  // pre-activation retry overwrites the same records instead of duplicating.
+  const uniqueSelections = [...new Map(selections.map((s) => [s.contactId, s])).values()];
+
+  for (const sel of uniqueSelections) {
     const contact = await getContact(ctx, sel.contactId);
     if (!contact) continue;
 
@@ -182,7 +182,7 @@ export async function launchCampaign(
     if (!included) excluded++;
 
     recipients.push({
-      recipientId: crypto.randomUUID(),
+      recipientId: stableDocumentId("recipient", campaign.campaignId, contact.contactId),
       campaignId: campaign.campaignId,
       contactId: contact.contactId,
       ownerUserId: ctx.userId,
@@ -242,7 +242,7 @@ export async function launchCampaign(
     recipient.initialScheduledAt = timestamps[i];
     if (rotation.length > 0) recipient.templateIdSnapshot = rotation[i % rotation.length];
     return {
-      queueItemId: crypto.randomUUID(),
+      queueItemId: stableDocumentId("queue", campaign.campaignId, recipient.recipientId, "0"),
       organizationId: ctx.organizationId,
       ownerUserId: ctx.userId,
       campaignId: campaign.campaignId,
@@ -287,6 +287,17 @@ export async function launchCampaign(
   await batchCreateRecipients(owner, campaign.campaignId, recipients);
   await batchCreateQueueItems(owner, campaign.campaignId, queueItems);
 
+  // Activate only after all durable work exists, but before publishing tasks.
+  // Immediate tasks can now run safely; they can never observe PREPARING and
+  // cancel themselves while launch is still enqueueing siblings.
+  await setCampaignStatus(owner, campaign.campaignId, "ACTIVE", {
+    totalRecipients: recipients.length,
+    eligibleRecipients: eligibleRecipients.length,
+    excludedRecipients: excluded,
+    startedAt: now,
+    launchStartedAt: null,
+  });
+
   // NOTE: contacts are marked "contacted" only when an email actually sends
   // (in the send worker), never here at launch — otherwise recipients who are
   // paused, cancelled, or skipped before sending would be wrongly treated as
@@ -323,13 +334,6 @@ export async function launchCampaign(
       });
     }
   }
-
-  await setCampaignStatus(owner, campaign.campaignId, "ACTIVE", {
-    totalRecipients: recipients.length,
-    eligibleRecipients: eligibleRecipients.length,
-    excludedRecipients: excluded,
-    startedAt: now,
-  });
 
   const launchMessage = !tasksConfigured()
     ? `Campaign created with ${eligibleRecipients.length} recipients, but background sending is not configured yet — an administrator must set up Cloud Tasks.`

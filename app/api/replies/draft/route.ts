@@ -10,6 +10,9 @@ import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { assertAiWritingEnabled } from "@/lib/ai/enabled";
 import { createReplyDraft } from "@/lib/gmail/drafts";
 import { getThreadSubject } from "@/lib/gmail/threads";
+import { aiRequestAllowed } from "@/lib/ai/rateLimit";
+import { escapeHtmlText } from "@/lib/personalization/render";
+import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
 const BodySchema = z.object({
   campaignId: z.string().min(1),
@@ -20,8 +23,8 @@ const BodySchema = z.object({
  * so it can't rely on the campaign send-time renderer). */
 function fill(html: string, v: { firstName: string; businessName: string; signature: string }): string {
   return html
-    .replace(/\{\{\s*(firstName|first_name)\s*\}\}/g, v.firstName || "there")
-    .replace(/\{\{\s*(businessName|business_name)\s*\}\}/g, v.businessName || "")
+    .replace(/\{\{\s*(firstName|first_name)\s*\}\}/g, escapeHtmlText(v.firstName || "there"))
+    .replace(/\{\{\s*(businessName|business_name)\s*\}\}/g, escapeHtmlText(v.businessName || ""))
     .replace(/\{\{\s*signature\s*\}\}/g, v.signature || "");
 }
 
@@ -31,6 +34,9 @@ function fill(html: string, v: { firstName: string; businessName: string; signat
  */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
+  if (!(await aiRequestAllowed(ctx.organizationId, ctx.userId))) {
+    return NextResponse.json({ error: "AI writing limit reached. Please try again later." }, { status: 429 });
+  }
   const owner = ownerFromCtx(ctx);
   const { campaignId, recipientId } = BodySchema.parse(await req.json());
 
@@ -66,11 +72,11 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     throw err;
   }
 
-  const html = fill(reply.html, {
+  const html = sanitizeEmailHtml(fill(reply.html, {
     firstName: recipient.firstNameSnapshot,
     businessName: recipient.businessNameSnapshot,
     signature: profile.signature ?? "",
-  });
+  }));
 
   const original = await getThreadSubject(ctx.userId, recipient.gmailThreadId);
   const subject = original

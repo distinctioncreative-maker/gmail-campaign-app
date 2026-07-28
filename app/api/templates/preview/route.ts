@@ -21,5 +21,8 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     sanitizeEmailHtml(htmlTemplate),
     contactId
   );
-  return NextResponse.json(rendered);
+  return NextResponse.json({
+    ...rendered,
+    html: sanitizeEmailHtml(rendered.html),
+  });
 });

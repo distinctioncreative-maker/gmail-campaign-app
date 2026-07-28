@@ -22,4 +22,17 @@ describe("errorSummary", () => {
     expect(s.message).toBe("just a string");
     expect(s.scope).toBe("worker");
   });
+
+  it("redacts email addresses and common credential formats", () => {
+    const s = errorSummary(
+      new Error(
+        "user person@example.com failed with Bearer abc.def.ghi and sk_live_supersecret"
+      )
+    );
+    expect(s.message).not.toContain("person@example.com");
+    expect(s.message).not.toContain("abc.def.ghi");
+    expect(s.message).not.toContain("sk_live_supersecret");
+    expect(s.message).toContain("[email]");
+    expect(s.message).toContain("[secret]");
+  });
 });

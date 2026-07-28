@@ -6,11 +6,18 @@ import { listWaitlist } from "@/lib/repositories/waitlist";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
 /** Admin-only view of early-access waitlist signups, with CSV export. */
 export default async function WaitlistPage() {
   const ctx = await requireUser();
-  if (ctx.role !== "ADMIN" || !capabilitiesFor(ctx.tenantType).adminConsole) redirect("/home");
+  const settings = await getOrgSettings(ctx.organizationId);
+  if (
+    ctx.role !== "ADMIN" ||
+    !capabilitiesFor(ctx.tenantType, settings.billing.plan).adminConsole
+  ) {
+    redirect("/home");
+  }
 
   const entries = await listWaitlist();
   const rows = entries.map((e) => [

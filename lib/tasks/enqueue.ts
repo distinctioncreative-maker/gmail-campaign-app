@@ -8,6 +8,18 @@ import { env } from "@/lib/env";
 // on every request — which on a small Cloud Run instance can spike memory and
 // get the container OOM-killed mid-request (surfacing as a bare 500).
 let client: CloudTasksClient | undefined;
+/** Cloud Tasks rejects schedule times more than 30 days ahead. Keep one day
+ * of clock/processing margin; durable queue records wait for repair to
+ * publish them once they enter this horizon. */
+export const CLOUD_TASK_SCHEDULE_HORIZON_MS = 29 * 24 * 60 * 60 * 1000;
+
+export function isWithinTaskScheduleHorizon(
+  scheduleAtMs: number,
+  now = Date.now()
+): boolean {
+  return scheduleAtMs <= now + CLOUD_TASK_SCHEDULE_HORIZON_MS;
+}
+
 async function tasks(): Promise<CloudTasksClient> {
   if (!client) {
     const { CloudTasksClient: Ctor } = await import("@google-cloud/tasks");
@@ -49,6 +61,9 @@ export async function enqueueTask(
   payload: TaskPayload,
   scheduleAtMs: number
 ): Promise<string | null> {
+  if (!isWithinTaskScheduleHorizon(scheduleAtMs)) {
+    return null;
+  }
   if (!tasksConfigured()) {
     console.warn("[tasks] Cloud Tasks not configured; task not enqueued", { path });
     return null;

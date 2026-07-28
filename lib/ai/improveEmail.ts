@@ -31,7 +31,8 @@ async function callGeminiJson(system: string, user: string): Promise<Record<stri
   }
 }
 
-const IMPROVE_SYSTEM = `You edit an existing B2B cold outreach email for a business-funding company.
+const IMPROVE_SYSTEM = `You edit an existing outreach email for the organization and audience described by the email, user instruction, and brand memory.
+- Never add an industry, offer, fact, or sales assumption that is not already present.
 - Apply the user's instruction while KEEPING every placeholder exactly as-is: {{first_name}}, {{business_name}}, {{signature}}, and any other {{...}} tokens. Never remove, rename, or invent placeholders.
 - Keep it human and non-spammy. Simple inline HTML only (<p>, <a>, <strong>, <br>). No <style>, <script>, tables, or images.
 - Return the FULL rewritten email, not a diff.

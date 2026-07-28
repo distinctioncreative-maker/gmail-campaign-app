@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         const r = await repairOwner(owner);
         summary.reset = (summary.reset ?? 0) + r.reset;
         summary.requeued = (summary.requeued ?? 0) + r.requeued;
+        summary.ambiguous = (summary.ambiguous ?? 0) + r.ambiguous;
       } else if (job === "metrics") {
         // Recalculate lightweight metrics timestamp marker.
         await firestore()

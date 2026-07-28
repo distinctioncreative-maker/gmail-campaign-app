@@ -49,6 +49,9 @@ export const GET = handleApiErrors(async (req: NextRequest) => {
     const email = ticket.getPayload()?.email;
     if (email) connectedEmail = email.toLowerCase();
   }
+  if (connectedEmail !== ctx.email.toLowerCase()) {
+    return settingsRedirect({ gmail: "account_mismatch" });
+  }
 
   const encryptedRefreshToken = await encryptSecret(tokens.refresh_token);
   await saveConnection({

@@ -3,7 +3,9 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { listMembers, setMemberActive, setMemberRole } from "@/lib/repositories/orgSettings";
+import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { RoleSchema } from "@/schemas/common";
+import { purchasedSeatLimit } from "@/lib/billing/plans";
 
 export const GET = handleApiErrors(async () => {
   const ctx = await requireRole("ADMIN");
@@ -28,7 +30,24 @@ export const PATCH = handleApiErrors(async (req: NextRequest) => {
     );
   }
 
+  if (active !== undefined) {
+    const settings = await getOrgSettings(ctx.organizationId);
+    const result = await setMemberActive(
+      ctx.organizationId,
+      userId,
+      active,
+      purchasedSeatLimit(settings.billing)
+    );
+    if (result === "NOT_FOUND") {
+      return NextResponse.json({ error: "Member not found." }, { status: 404 });
+    }
+    if (result === "SEAT_LIMIT") {
+      return NextResponse.json(
+        { error: "Purchase another seat before reactivating this member." },
+        { status: 409 }
+      );
+    }
+  }
   if (role) await setMemberRole(ctx.organizationId, userId, role);
-  if (active !== undefined) await setMemberActive(ctx.organizationId, userId, active);
   return NextResponse.json({ ok: true });
 });

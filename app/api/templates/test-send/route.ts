@@ -28,13 +28,15 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     sanitizeEmailHtml(htmlTemplate),
     contactId
   );
+  const safeHtml = sanitizeEmailHtml(rendered.html);
 
   const result = await sendEmail({
     userId: ctx.userId,
     to: ctx.email,
     subject: `[TEST] ${rendered.subject}`,
-    htmlBody: rendered.html,
+    htmlBody: safeHtml,
     testMode: true, // a "send me a test" email always goes only to the user
+    verifiedTestDestination: ctx.email,
   });
 
   if (ctx.user.onboardingStatus === "DEFAULTS_SET") {

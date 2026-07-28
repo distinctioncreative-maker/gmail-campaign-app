@@ -14,6 +14,33 @@ export class BillingNotConfiguredError extends Error {
   }
 }
 
+function validSeatQuantity(value: unknown): number | null {
+  const quantity = Number(value);
+  return Number.isInteger(quantity) && quantity >= 1 && quantity <= 500
+    ? quantity
+    : null;
+}
+
+/**
+ * Resolve the billable quantity from Stripe payloads. Checkout Sessions do
+ * not include expanded line items, so their signed metadata is authoritative.
+ * Subscription updates do include current items and must prefer them over the
+ * original checkout metadata, which otherwise goes stale after a portal
+ * quantity change.
+ */
+export function resolveStripeSeatCount(
+  obj: Record<string, unknown>,
+  metadata: Record<string, string>,
+  preferSubscriptionItems: boolean
+): number {
+  const items = obj.items as { data?: Array<{ quantity?: unknown }> } | undefined;
+  const fromItems = validSeatQuantity(items?.data?.[0]?.quantity);
+  const fromMetadata = validSeatQuantity(metadata.seats);
+  return preferSubscriptionItems
+    ? fromItems ?? fromMetadata ?? 1
+    : fromMetadata ?? fromItems ?? 1;
+}
+
 /** Encode a nested object as Stripe's form format (a[b]=c). */
 function form(obj: Record<string, unknown>, prefix = ""): string {
   const parts: string[] = [];
@@ -86,14 +113,25 @@ export async function createPortalSession(customerId: string, returnUrl: string)
 export function verifyWebhook(payload: string, sigHeader: string): { type: string; data: { object: Record<string, unknown> } } {
   const secret = env.STRIPE_WEBHOOK_SECRET;
   if (!secret) throw new Error("Webhook secret not configured");
-  const parts = Object.fromEntries(sigHeader.split(",").map((p) => p.split("=") as [string, string]));
-  const t = parts.t;
-  const v1 = parts.v1;
-  if (!t || !v1) throw new Error("Malformed signature header");
+  const parsed = sigHeader.split(",").map((part) => {
+    const index = part.indexOf("=");
+    return index > 0
+      ? { key: part.slice(0, index).trim(), value: part.slice(index + 1).trim() }
+      : { key: "", value: "" };
+  });
+  const t = parsed.find((part) => part.key === "t")?.value;
+  const signatures = parsed
+    .filter((part) => part.key === "v1")
+    .map((part) => part.value);
+  if (!t || signatures.length === 0 || !Number.isFinite(Number(t))) {
+    throw new Error("Malformed signature header");
+  }
   const expected = crypto.createHmac("sha256", secret).update(`${t}.${payload}`).digest("hex");
-  const ok =
-    expected.length === v1.length &&
-    crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
+  const ok = signatures.some(
+    (signature) =>
+      expected.length === signature.length &&
+      crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+  );
   if (!ok) throw new Error("Signature mismatch");
   if (Math.abs(Date.now() / 1000 - Number(t)) > 300) throw new Error("Timestamp outside tolerance");
   return JSON.parse(payload);

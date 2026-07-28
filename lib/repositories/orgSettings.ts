@@ -15,6 +15,12 @@ export interface OrgBilling {
   stripeSubscriptionId: string | null;
   seats: number;
   currentPeriodEnd: number | null;
+  /** Stripe event creation time (seconds). Older out-of-order events cannot
+   * overwrite newer subscription state. */
+  lastStripeEventCreated: number;
+  /** Tie-breaker for distinct event types created in the same Stripe second:
+   * checkout < subscription update < subscription deletion. */
+  lastStripeEventPriority: number;
 }
 
 function orgRef(organizationId: string) {
@@ -106,6 +112,10 @@ function resolveBilling(raw: unknown, tenantType: "WORKSPACE" | "CONSUMER"): Org
     stripeSubscriptionId: typeof b.stripeSubscriptionId === "string" ? b.stripeSubscriptionId : null,
     seats: typeof b.seats === "number" ? b.seats : 0,
     currentPeriodEnd: typeof b.currentPeriodEnd === "number" ? b.currentPeriodEnd : null,
+    lastStripeEventCreated:
+      typeof b.lastStripeEventCreated === "number" ? b.lastStripeEventCreated : 0,
+    lastStripeEventPriority:
+      typeof b.lastStripeEventPriority === "number" ? b.lastStripeEventPriority : 0,
   };
 }
 
@@ -116,6 +126,48 @@ export async function saveBilling(organizationId: string, patch: Partial<OrgBill
     .collection("organizationSettings")
     .doc("main")
     .set({ billing: patch, updatedAt: Date.now() }, { merge: true });
+}
+
+/** Apply Stripe-originated billing state only when the event is at least as
+ * new as the last one already committed for this organization. */
+export async function saveBillingFromStripe(
+  organizationId: string,
+  eventCreated: number,
+  patch: Partial<OrgBilling>,
+  eventPriority = 0
+): Promise<boolean> {
+  const ref = orgRef(organizationId).collection("organizationSettings").doc("main");
+  return firestore().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const billing = (snap.data()?.billing ?? {}) as Record<string, unknown>;
+    const last =
+      typeof billing.lastStripeEventCreated === "number"
+        ? billing.lastStripeEventCreated
+        : 0;
+    const lastPriority =
+      typeof billing.lastStripeEventPriority === "number"
+        ? billing.lastStripeEventPriority
+        : 0;
+    if (
+      eventCreated < last ||
+      (eventCreated === last && eventPriority < lastPriority)
+    ) {
+      return false;
+    }
+    tx.set(
+      ref,
+      {
+        billing: {
+          ...patch,
+          lastStripeEventCreated: eventCreated,
+          lastStripeEventPriority: eventPriority,
+        },
+        updatedAt: Date.now(),
+      },
+      { merge: true }
+    );
+    return true;
+  });
 }
 
 /** Turn all AI writing features on or off for the org (admin only — the
@@ -238,16 +290,50 @@ export async function setMemberRole(
   role: Role
 ): Promise<void> {
   const now = Date.now();
-  await orgRef(organizationId).collection("members").doc(userId).update({ role, updatedAt: now });
-  await firestore().collection("users").doc(userId).update({ role, updatedAt: now });
+  const memberRef = orgRef(organizationId).collection("members").doc(userId);
+  const userRef = firestore().collection("users").doc(userId);
+  await firestore().runTransaction(async (tx) => {
+    const [memberSnap, userSnap] = await Promise.all([
+      tx.get(memberRef),
+      tx.get(userRef),
+    ]);
+    if (!memberSnap.exists || !userSnap.exists) {
+      throw new Error("Member or user record not found");
+    }
+    tx.update(memberRef, { role, updatedAt: now });
+    tx.update(userRef, { role, updatedAt: now });
+  });
 }
 
 export async function setMemberActive(
   organizationId: string,
   userId: string,
-  active: boolean
-): Promise<void> {
+  active: boolean,
+  maxActiveMembers: number | null = null
+): Promise<"UPDATED" | "NOT_FOUND" | "SEAT_LIMIT"> {
   const now = Date.now();
-  await orgRef(organizationId).collection("members").doc(userId).update({ active, updatedAt: now });
-  await firestore().collection("users").doc(userId).update({ active, updatedAt: now });
+  const memberRef = orgRef(organizationId).collection("members").doc(userId);
+  const userRef = firestore().collection("users").doc(userId);
+  return firestore().runTransaction(async (tx) => {
+    const [memberSnap, userSnap] = await Promise.all([
+      tx.get(memberRef),
+      tx.get(userRef),
+    ]);
+    if (!memberSnap.exists || !userSnap.exists) return "NOT_FOUND";
+    if (memberSnap.data()?.active === active && userSnap.data()?.active === active) {
+      return "UPDATED";
+    }
+    if (active && maxActiveMembers !== null) {
+      const activeSnap = await tx.get(
+        orgRef(organizationId)
+          .collection("members")
+          .where("active", "==", true)
+          .limit(maxActiveMembers)
+      );
+      if (activeSnap.size >= maxActiveMembers) return "SEAT_LIMIT";
+    }
+    tx.update(memberRef, { active, updatedAt: now });
+    tx.update(userRef, { active, updatedAt: now });
+    return "UPDATED";
+  });
 }
