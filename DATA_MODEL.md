@@ -6,21 +6,29 @@ Firestore, native mode. Timestamps are epoch milliseconds. Zod schemas in
 ```text
 organizations/{organizationId}                  — org profile + collision policy
 organizations/{organizationId}/members/{userId} — role, active flag
+organizations/{organizationId}/organizationSettings/main — sending, AI, billing policy
 organizations/{organizationId}/suppressions/…   — org-scoped suppressions
-organizations/{organizationId}/teamCollisionHashes/{hash}   (phase 6)
+organizations/{organizationId}/teamCollisionHashes/{hash}
+organizations/{organizationId}/invites/{inviteId}
 
 users/{userId}                                  — profile, role snapshot, onboarding
 users/{userId}/gmailConnections/primary         — encrypted refresh token (server-only)
 users/{userId}/contacts/{contactId}             — leads incl. campaign history fields
 users/{userId}/imports/{importId}               — import audit record
 users/{userId}/suppressions/{suppressionId}     — user-scoped suppressions
-users/{userId}/templates/{templateId}           (phase 3)
-users/{userId}/sequences/{sequenceId}           (phase 5)
-users/{userId}/campaigns/{campaignId}           (phase 4)
+users/{userId}/templates/{templateId}
+users/{userId}/sequences/{sequenceId}
+users/{userId}/campaigns/{campaignId}
   …/recipients/{recipientId}
   …/events/{eventId}
-  …/queue/{queueItemId}                         — server-only
-  …/messages/{messageId}
+  …/queue/{queueItemId}                         — durable task outbox, server-only
+  …/messages/{messageId}                        — delivery reservation/result
+users/{userId}/counters/{localDay}
+  …/sendReservations/{idempotencyKey}
+
+stripeEvents/{eventId}                          — webhook claim + expiresAt TTL
+stripeCustomers/{customerId}                    — customer → organization pointer
+rateLimits/{bucketAndFingerprint}               — fixed window + expiresAt TTL
 ```
 
 ## Isolation invariants
@@ -31,6 +39,8 @@ users/{userId}/campaigns/{campaignId}           (phase 4)
    session, never accepted from the client.
 3. Sensitive collections (gmailConnections, queue) are excluded from
    client reads in `firestore.rules` regardless of owner.
+4. A Gmail result, recipient status, current queue completion, campaign
+   counter, and next follow-up queue record commit atomically.
 
 ## Key document shapes
 

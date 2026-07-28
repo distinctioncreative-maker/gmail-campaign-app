@@ -3,14 +3,14 @@
 ## Commands
 
 ```bash
-npm test              # vitest unit suite (109 tests)
+npm test              # vitest unit suite (278 tests at this revision)
 npm run test:emulator # Firestore rules isolation suite (needs Java)
 npm run typecheck     # tsc --noEmit (strict)
 npm run lint          # eslint
 npm run build         # production build (Turbopack)
 ```
 
-## Unit coverage (109 tests, `tests/unit/`)
+## Unit coverage (`tests/unit/`)
 
 - **Salesforce parser**: ten required fixtures (complete, no amount, no
   source ID, extra tabs, extra blank lines, invalid email, opt-out true,
@@ -21,7 +21,7 @@ npm run build         # production build (Turbopack)
 - **Normalization**: email casing/tags, phone country-code, business
   suffixes, name splitting.
 - **Send safety**: test-mode destination override, `[TEST]` prefixing,
-  fail-closed on missing config, literal-`false` semantics.
+  server-verified self-test destination, fail-closed on missing config.
 - **Token encryption boundary**: round-trip, fresh IV, tamper rejection,
   production refusal of the dev cipher.
 - **Scheduling** (`window.test.ts`): 8 PM rollover, weekend rollover,
@@ -29,13 +29,18 @@ npm run build         # production build (Turbopack)
   timezone day keys.
 - **Eligibility**: every pre-send block reason incl. replay safety and
   idempotency; retryable vs terminal.
-- **Personalization**: 17 placeholders, unresolved detection, fake-data
-  preview coverage.
+- **Personalization**: placeholder coverage, unresolved detection,
+  HTML escaping, sanitized signature handling, fake-data previews.
 - **HTML sanitization**: script/handler stripping, table/inline-style
   preservation, `javascript:` blocking, plain-text fallback.
 - **Reply/bounce classification**: human/unsub/OOO/auto detection
   (header-first), hard/soft bounce codes, failed-recipient parsing.
 - **Collision HMAC**: keyed, deterministic, not a plain hash, one-way.
+- **Billing/tracking/tenancy**: Stripe multi-signature verification and
+  timestamp rejection, current subscription seat quantity, purchased-seat
+  enforcement, expiring tracking tokens, and plan-aware capability behavior.
+- **Durable follow-up outbox**: deterministic next-step work and Cloud Tasks'
+  supported scheduling horizon.
 
 ## Emulator coverage (`tests/emulator/isolation.test.ts`)
 
@@ -49,9 +54,10 @@ OR-granted reads a separate deny block could not revoke.)
 ## Test-mode guarantee
 
 No automated test sends real email. Every send path funnels through
-`applySendSafety`, which — while `TEST_MODE` is on (the default) — forces
-mail to `TEST_EMAIL_DESTINATION` with a `[TEST]` subject.
+`applySendSafety`, which forces campaign mail to
+`TEST_EMAIL_DESTINATION` with a `[TEST]` subject while the organization is
+in TEST mode.
 
 ## Recommended next
 
-- Playwright e2e (sign-in mocked) for the wizard against the emulator, in CI.
+- Playwright e2e (sign-in mocked) for the wizard against the emulator.

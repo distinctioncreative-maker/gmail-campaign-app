@@ -2,7 +2,7 @@
 
 ## Emails going to real recipients unexpectedly
 
-1. Set `TEST_MODE=true` on the Cloud Run service and redeploy
+1. Set `FORCE_TEST_MODE=true` on the Cloud Run service and redeploy
    (fastest global stop — the safety gate then redirects everything).
 2. Verify no worker path bypassed `applySendSafety` (there should be
    exactly one call site: `lib/gmail/send.ts`).

@@ -4,6 +4,23 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Cross-agent handoff (read before editing)
+
+Cadence is actively maintained with both ChatGPT Codex and Claude Code.
+Before changing this branch, read `HARDENING_HANDOFF.md`,
+`CAMPAIGN_SAFETY.md`, `SECURITY.md`, and `ARCHITECTURE.md`, then run:
+
+```bash
+git status --short
+git log --oneline -12
+```
+
+Treat existing uncommitted changes as another agent's work. Do not discard,
+reformat wholesale, push, deploy, change cloud resources, or enable
+`SIGNUP_MODE=open` without explicit user authorization. Record current
+quality-gate results and unresolved external steps in
+`HARDENING_HANDOFF.md` before handing control to the other agent.
+
 # Documentation upkeep (required for every change)
 
 Cadence keeps three things in sync so documentation never silently rots:
