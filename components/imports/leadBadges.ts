@@ -23,7 +23,7 @@ export function badgeFor(classification: string) {
   return (
     BADGES[classification] ?? {
       label: classification,
-      className: "bg-slate-100 text-slate-600",
+      className: "bg-surface-2 text-muted",
       selectable: false,
     }
   );
