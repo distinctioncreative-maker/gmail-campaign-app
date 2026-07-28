@@ -5,7 +5,7 @@ import { fetchJson } from "@/lib/fetchJson";
 import { useToast } from "@/components/ui/UIProviders";
 
 /**
- * "Draft reply with AI" — generates an on-brand reply to a prospect and drops
+ * "Draft reply with AI": generates an on-brand reply to a prospect and drops
  * it into the Gmail thread as a draft (never auto-sent). Shown only when the
  * AI writer is configured on the server.
  */
@@ -26,7 +26,7 @@ export function DraftReplyButton({
 
   async function draft() {
     if (!threadId) {
-      toast("Open this one in Gmail to reply — no thread is linked yet.", "error");
+      toast("Open this one in Gmail to reply: no thread is linked yet.", "error");
       return;
     }
     setBusy(true);

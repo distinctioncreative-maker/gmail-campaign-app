@@ -12,7 +12,7 @@ import {
 import { reportError } from "@/lib/observability/report";
 import { enforceRateLimit } from "@/lib/util/rateLimit";
 
-// The smallest valid transparent GIF — the standard open-tracking beacon.
+// The smallest valid transparent GIF: the standard open-tracking beacon.
 const PIXEL = Buffer.from("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", "base64");
 
 function pixelResponse(): NextResponse {
@@ -30,7 +30,7 @@ type Params = { params: Promise<{ token: string }> };
 
 /**
  * Optional open-tracking pixel (schemas/campaign.ts CampaignSchema.
- * trackingEnabled — off by default). Public and unauthenticated by nature
+ * trackingEnabled: off by default). Public and unauthenticated by nature
  * (email clients load it directly): always returns the pixel regardless of
  * outcome, since a broken image or error page here is worse than a missed
  * open count.

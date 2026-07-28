@@ -27,7 +27,7 @@ const PutSchema = z.object({
     .max(12),
 });
 
-/** Replace the org's brand-memory profiles. Admins only — they shape every
+/** Replace the org's brand-memory profiles. Admins only: they shape every
  * AI email the whole team writes. */
 export const PUT = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireRole("ADMIN");

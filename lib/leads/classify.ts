@@ -14,7 +14,7 @@ export interface ClassifiedLeadInfo {
 /**
  * Classify one prospective lead against the CURRENT USER's history and
  * suppressions. Used at import preview, campaign review, and again at
- * launch — the classification is never trusted from an earlier stage.
+ * launch: the classification is never trusted from an earlier stage.
  */
 export async function classifyLead(
   ctx: Scope,

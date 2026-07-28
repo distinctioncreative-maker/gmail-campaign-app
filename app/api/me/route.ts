@@ -9,7 +9,7 @@ const PatchSchema = z.object({
 });
 
 /** Update the signed-in user's own display name (shown on Team pages and
- * the account menu — never affects the email address emails send from). */
+ * the account menu: never affects the email address emails send from). */
 export const PATCH = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
   const { displayName } = PatchSchema.parse(await req.json());

@@ -35,6 +35,6 @@ export async function signInWithGoogle(): Promise<string> {
  * account chooser instead of silently re-selecting the last account. */
 export async function signOutGoogle(): Promise<void> {
   await signOut(getAuth(clientApp())).catch(() => {
-    // Already signed out — fine.
+    // Already signed out: fine.
   });
 }

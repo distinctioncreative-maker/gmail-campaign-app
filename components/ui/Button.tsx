@@ -18,7 +18,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   loading?: boolean;
   /**
    * True for a brief window right after an action resolves, to show a
-   * success flash. Controlled by the caller (e.g. clear it on a timeout) —
+   * success flash. Controlled by the caller (e.g. clear it on a timeout);
    * this component just renders whatever state it's given.
    */
   success?: boolean;

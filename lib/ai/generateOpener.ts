@@ -4,14 +4,14 @@ import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
 const SYSTEM = `You write ONE short, natural opening line for a personalized outreach email.
 Rules:
-- One sentence, under 22 words. Warm and specific to the available recipient or organization details — never generic flattery or invented facts.
+- One sentence, under 22 words. Warm and specific to the available recipient or organization details: never generic flattery or invented facts.
 - No greeting ("Hi ..."), no sign-off, no placeholders. Just the line itself.
 - Plain text only. It will be inserted as the email's first line.
 Return ONLY minified JSON: {"line":"..."} with no markdown fences.`;
 
 /**
  * Generate a single personalized opening line for one lead. Never throws for
- * a bad response — returns "" so a launch can continue gracefully. The caller
+ * a bad response: returns "" so a launch can continue gracefully. The caller
  * is responsible for capping volume and concurrency (rate limits/cost).
  */
 export async function generateOpener(input: {

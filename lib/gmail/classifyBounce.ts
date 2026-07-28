@@ -1,6 +1,6 @@
 /**
  * Detect and classify delivery-failure (bounce) messages. Gmail-based
- * bounce detection is less comprehensive than a dedicated ESP — documented
+ * bounce detection is less comprehensive than a dedicated ESP: documented
  * in CAMPAIGN_SAFETY.md. Pure and unit-tested.
  */
 

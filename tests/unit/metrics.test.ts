@@ -8,6 +8,9 @@ import {
   formatDuration,
   totalSent,
   replyRateForCampaign,
+  campaignPerformance,
+  recipientsSentSince,
+  reportWindow,
   openClickRates,
   type RecipientPoint,
 } from "@/lib/analytics/metrics";
@@ -141,9 +144,88 @@ describe("replyRateForCampaign", () => {
   });
 });
 
+describe("campaignPerformance", () => {
+  it("keeps progress based on initial sends while rates use every send", () => {
+    const result = campaignPerformance({
+      eligibleRecipients: 100,
+      sentCount: 80,
+      followupSentCount: 40,
+      replyCount: 12,
+      bounceCount: 3,
+      unsubscribeCount: 1,
+    });
+
+    expect(result.sent).toBe(120);
+    expect(result.progressRate).toBe(80);
+    expect(result.replyRate).toBe(10);
+    expect(result.bounceRate).toBe(2.5);
+    expect(result.unsubscribeRate).toBeCloseTo(0.833, 2);
+  });
+
+  it("does not divide by zero or exceed 100% progress", () => {
+    expect(
+      campaignPerformance({
+        eligibleRecipients: 0,
+        sentCount: 0,
+        followupSentCount: 0,
+        replyCount: 0,
+        bounceCount: 0,
+        unsubscribeCount: 0,
+      })
+    ).toEqual({
+      sent: 0,
+      progressRate: 0,
+      replyRate: 0,
+      bounceRate: 0,
+      unsubscribeRate: 0,
+    });
+
+    expect(
+      campaignPerformance({
+        eligibleRecipients: 10,
+        sentCount: 11,
+        followupSentCount: 0,
+        replyCount: 0,
+        bounceCount: 0,
+        unsubscribeCount: 0,
+      }).progressRate
+    ).toBe(100);
+  });
+});
+
+describe("recipientsSentSince", () => {
+  it("keeps only recipients whose initial send belongs to the selected cohort", () => {
+    const since = 100;
+    expect(
+      recipientsSentSince(
+        [
+          p({ initialSentAt: 99 }),
+          p({ initialSentAt: 100 }),
+          p({ initialSentAt: 101 }),
+          p({ initialSentAt: null, repliedAt: 200 }),
+        ],
+        since
+      )
+    ).toEqual([
+      p({ initialSentAt: 100 }),
+      p({ initialSentAt: 101 }),
+    ]);
+  });
+});
+
+describe("reportWindow", () => {
+  it("returns a stable lookback boundary from an injected clock", () => {
+    const now = 10 * 24 * 3600_000;
+    expect(reportWindow(3, now)).toEqual({
+      since: 7 * 24 * 3600_000,
+      now,
+    });
+  });
+});
+
 describe("formatDuration", () => {
   it("formats minutes, hours, days", () => {
-    expect(formatDuration(null)).toBe("—");
+    expect(formatDuration(null)).toBe("Not available");
     expect(formatDuration(30 * 60_000)).toBe("30m");
     expect(formatDuration(2 * 3600_000 + 15 * 60_000)).toBe("2h 15m");
     expect(formatDuration(3 * 24 * 3600_000)).toBe("3d");

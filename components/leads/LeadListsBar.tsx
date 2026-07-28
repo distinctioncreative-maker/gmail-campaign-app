@@ -52,7 +52,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
         )}
       </div>
       <p className="mb-3 text-sm text-muted">
-        Named collections you keep topping up — paste more leads any time and duplicates are skipped
+        Named collections you keep topping up: paste more leads any time and duplicates are skipped
         automatically.
       </p>
 
@@ -63,7 +63,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && void create()}
-            placeholder="e.g. Alpine offers — all time"
+            placeholder="e.g. Alpine offers: all time"
             className="w-72 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
           <button onClick={() => void create()} disabled={busy || !name.trim()} className="btn-primary px-4 py-2 text-sm">
@@ -78,7 +78,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
       {lists.length === 0 ? (
         !creating && (
           <div className="card p-5 text-sm text-muted">
-            No lists yet. Create one to keep an ever-growing collection like “Alpine offers — all time”.
+            No lists yet. Create one to keep an ever-growing collection like “Alpine offers: all time”.
           </div>
         )
       ) : (

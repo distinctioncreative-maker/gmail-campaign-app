@@ -16,7 +16,7 @@ export async function fetchJson<T = unknown>(
     try {
       body = JSON.parse(text);
     } catch {
-      // Not JSON — the platform (not our API) returned an error page/string.
+      // Not JSON: the platform (not our API) returned an error page/string.
       const snippet = text.trim().slice(0, 120);
       if (!res.ok) {
         throw new Error(

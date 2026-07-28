@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Lightweight readiness probe for uptime monitors. Public and unauthenticated
- * (reveals no data) — checks that the process is up and Firestore is
+ * (reveals no data): checks that the process is up and Firestore is
  * reachable. Returns 200 when healthy, 503 when a dependency is down.
  */
 export async function GET() {

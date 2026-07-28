@@ -1,4 +1,4 @@
-/* Cadence landing — one continuous canvas, Apple-keynote register: true black,
+/* Cadence landing: one continuous canvas, Apple-keynote register: true black,
    San Francisco system type at real scale, one restrained accent, and glass
    that actually blurs. Scoped via CSS Modules. Sections stay transparent over
    a single gradient field so the page reads as one surface, not a stack of
@@ -123,7 +123,7 @@
 .head h2 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.05; margin-top: 16px; }
 .head p { font-size: 18px; margin: 16px 0 0; color: var(--onDarkMuted); }
 
-/* Smooth, restrained reveal — a small rise, not a slide */
+/* Smooth, restrained reveal: a small rise, not a slide */
 .reveal { opacity: 0; transform: translateY(16px); filter: blur(3px); transition: opacity 1s var(--ease), transform 1s var(--ease), filter 1s var(--ease); }
 .reveal.in { opacity: 1; transform: none; filter: none; }
 .features .feat:nth-child(3n+2), .secGrid .sec:nth-child(3n+2), .prices .price:nth-child(2) { transition-delay: 0.07s; }
@@ -140,7 +140,7 @@
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-/* A hairline of light along the top edge — quiet, not jeweled. */
+/* A hairline of light along the top edge: quiet, not jeweled. */
 .feat::before, .sec::before, .price::before, .frame::before, .pipeGlass::before, .col::before {
   content: "";
   position: absolute;
@@ -177,7 +177,7 @@
 .sec h3 { font-size: 16.5px; margin-top: 16px; }
 .sec p { font-size: 14px; color: var(--onDarkMuted); margin: 8px 0 0; line-height: 1.55; }
 
-/* Value — before/after compare */
+/* Value: before/after compare */
 .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
 @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
 .col { padding: 32px 32px 36px; }
@@ -244,7 +244,7 @@
 .pipeEndpointR svg { color: var(--good); }
 @media (max-width: 560px) { .pipeEndpoint { display: none; } }
 
-/* Huge, low-opacity running total behind the whole scene — the enterprise
+/* Huge, low-opacity running total behind the whole scene: the enterprise
    BI-dashboard trick of one dominant number as a watermark, with the sharp
    animation playing on top of it. */
 .pipeWatermark {
@@ -254,8 +254,8 @@
   user-select: none; white-space: nowrap;
 }
 
-/* A big deal landing — one at a time, gold and unmistakable, not a swarm of
-   emoji. Real MCA deal sizes deserve a moment, not a quiet tick of a number. */
+/* A qualified opportunity lands one at a time, with a restrained pipeline
+   signal instead of playful imagery. */
 .pipeDeal {
   position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column;
   align-items: center; pointer-events: none; animation: dealPop 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -266,17 +266,29 @@
   background: radial-gradient(circle, rgba(245, 197, 106, 0.6), rgba(245, 197, 106, 0) 70%);
   filter: blur(2px);
 }
-.pipeDealEmoji { position: relative; font-size: 52px; line-height: 1; filter: drop-shadow(0 6px 24px rgba(245, 197, 106, 0.7)); }
+.pipeDealSignal {
+  position: relative; display: grid; width: 50px; height: 50px; place-items: center;
+  border: 1px solid rgba(245, 197, 106, 0.66); border-radius: 15px;
+  color: #ffe6ab; background: linear-gradient(145deg, rgba(245, 197, 106, 0.24), rgba(16, 25, 40, 0.9));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 8px 28px rgba(245, 197, 106, 0.35);
+}
+.pipeDealSignal svg { width: 31px; height: 31px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .pipeDealAmount {
   position: relative; margin-top: 4px; font-family: var(--mono); font-weight: 800; font-size: 22px;
   letter-spacing: 0.02em; background: linear-gradient(120deg, #ffe6ab, #f5c56a 55%, #d89b3c);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 2px 20px rgba(245, 197, 106, 0.5);
 }
-/* Big deals (≥$300K) get a noticeably bigger, brighter moment — the
+.pipeDealLabel {
+  position: relative; margin-top: 2px; font-family: var(--mono); font-size: 8px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 238, 202, 0.72);
+  white-space: nowrap;
+}
+/* Big deals (≥$300K) get a noticeably bigger, brighter moment: the
    animation should feel the size of the deal, not treat every reply the same. */
 .pipeDealBig .pipeDealGlow { width: 190px; height: 190px; background: radial-gradient(circle, rgba(245, 197, 106, 0.75), rgba(245, 197, 106, 0) 72%); }
-.pipeDealBig .pipeDealEmoji { font-size: 76px; filter: drop-shadow(0 8px 32px rgba(245, 197, 106, 0.85)); }
+.pipeDealBig .pipeDealSignal { width: 68px; height: 68px; border-radius: 20px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 34px rgba(245, 197, 106, 0.48); }
+.pipeDealBig .pipeDealSignal svg { width: 42px; height: 42px; }
 .pipeDealBig .pipeDealAmount { font-size: 30px; text-shadow: 0 2px 26px rgba(245, 197, 106, 0.7); }
 @keyframes dealPop {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
@@ -288,10 +300,13 @@
 @media (prefers-reduced-motion: reduce) { .pipeDeal { animation: none; opacity: 0; } }
 @media (max-width: 560px) {
   .pipeWatermark { font-size: clamp(36px, 14vw, 64px); }
-  .pipeDealEmoji { font-size: 38px; }
+  .pipeDealSignal { width: 40px; height: 40px; border-radius: 12px; }
+  .pipeDealSignal svg { width: 25px; height: 25px; }
   .pipeDealAmount { font-size: 16px; }
+  .pipeDealLabel { font-size: 6px; }
   .pipeDealGlow { width: 90px; height: 90px; }
-  .pipeDealBig .pipeDealEmoji { font-size: 52px; }
+  .pipeDealBig .pipeDealSignal { width: 52px; height: 52px; border-radius: 15px; }
+  .pipeDealBig .pipeDealSignal svg { width: 32px; height: 32px; }
   .pipeDealBig .pipeDealAmount { font-size: 20px; }
   .pipeDealBig .pipeDealGlow { width: 120px; height: 120px; }
 }

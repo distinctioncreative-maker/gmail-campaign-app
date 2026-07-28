@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Animated number that counts up from 0 to `value` on mount — the little
+ * Animated number that counts up from 0 to `value` on mount: the little
  * motion that makes a dashboard feel alive. Respects reduced-motion.
  */
 export function CountUp({

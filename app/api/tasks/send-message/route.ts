@@ -57,7 +57,7 @@ const PayloadSchema = z.object({
 const AUTO_PAUSE_ERROR_THRESHOLD = 5;
 // How many times a *pre-send* failure (DB blip, token refresh, rendering) may
 // be retried before we give up on the item. Failures at/after the Gmail send
-// are never auto-retried (the outcome is ambiguous — a retry could double-send).
+// are never auto-retried (the outcome is ambiguous: a retry could double-send).
 const MAX_PRESEND_ATTEMPTS = 4;
 
 /**
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   if (!item) return NextResponse.json({ ok: true, reason: "NOT_CLAIMABLE" });
 
   // Stale-delivery guard: if this item was mass-rescheduled to a future
-  // time (e.g. a daily-limit re-spread), release it — the Cloud Task
+  // time (e.g. a daily-limit re-spread), release it: the Cloud Task
   // enqueued for the new time owns it now.
   if (item.scheduledAt > Date.now() + 5 * 60_000) {
     await updateQueueItem(owner, campaignId, queueItemId, { status: "SCHEDULED" });
@@ -178,8 +178,8 @@ export async function POST(req: NextRequest) {
           const result = await deferCampaignToNextDay(owner, campaign);
           if (result === null) {
             // Another task already ran today's re-spread. If it happened
-            // before we released our claim, our item may have been missed —
-            // give it its own next-day slot, preserving its time of day.
+            // before we released our claim, our item may have been missed.
+            // Give it its own next-day slot, preserving its time of day.
             const base = item.scheduledAt > 0 ? item.scheduledAt : Date.now();
             let candidate = base;
             while (candidate <= Date.now()) candidate += 24 * 60 * 60 * 1000;
@@ -453,7 +453,7 @@ export async function POST(req: NextRequest) {
     const testMode = await isTestModeForOrg(organizationId);
     const threaded = isFollowup && step?.sameThread && recipient.gmailThreadId;
 
-    // Optional open/click tracking — opt-in per campaign, off by default
+    // Optional open/click tracking: opt-in per campaign, off by default
     // (see schemas/campaign.ts CampaignSchema.trackingEnabled), and skipped
     // in test mode so test sends never write real tracking data.
     let finalHtml = sanitizeEmailHtml(body.output);
@@ -468,7 +468,7 @@ export async function POST(req: NextRequest) {
       trackingLinkUrls = injected.linkUrls;
     }
 
-    // Past this point a failure's outcome is ambiguous — never retry.
+    // Past this point a failure's outcome is ambiguous: never retry.
     reachedDeliveryAttempt = true;
     const deliveryInput = {
       userId: ownerUserId,
@@ -634,7 +634,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Pre-send failures (Firestore blips, token refresh, rendering) never put
-    // an email on the wire, so re-claiming is safe — retry a bounded number of
+    // an email on the wire, so re-claiming is safe: retry a bounded number of
     // times instead of silently dropping the recipient. The item-scoped
     // idempotency reservation guarantees the retry can't double-send.
     if (!reachedDeliveryAttempt && item.attemptCount < MAX_PRESEND_ATTEMPTS) {
@@ -694,7 +694,7 @@ async function maybeMarkCompleted(owner: OwnerRef, campaignId: string): Promise<
       await setCampaignStatus(owner, campaignId, "COMPLETED", { completedAt: Date.now() });
       await recordEvent(owner, campaignId, {
         type: "COMPLETED",
-        message: "Campaign finished — every scheduled email has been handled.",
+        message: "Campaign finished: every scheduled email has been handled.",
         severity: "INFO",
         recipientEmail: null,
       });

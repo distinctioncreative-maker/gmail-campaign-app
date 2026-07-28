@@ -4,7 +4,7 @@ import type { BenchmarksSnapshot } from "./buckets";
 
 /**
  * Read the last computed global benchmarks snapshot. Never computes it
- * live — that only ever happens in the scheduled sweep (job=benchmarks) —
+ * live. That only ever happens in the scheduled sweep (job=benchmarks),
  * so reading this is cheap regardless of how many users/campaigns exist.
  * Returns null before the sweep has ever run.
  */

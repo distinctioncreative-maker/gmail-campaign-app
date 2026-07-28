@@ -18,7 +18,7 @@ const BodySchema = z.object({
 /**
  * Add or remove a rep on a team. Admins manage any team; a Team Lead
  * (MANAGER) manages only teams they lead, and can only pull in reps who are
- * unassigned — moving someone off another lead's team takes an admin.
+ * unassigned: moving someone off another lead's team takes an admin.
  */
 export const POST = handleApiErrors(async (req: NextRequest, { params }: Params) => {
   const ctx = await requireRole("MANAGER", "ADMIN");
@@ -52,7 +52,7 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: Params)
       return NextResponse.json({ ok: true, message: "Already on this team." });
     if (target.teamId !== null && ctx.role !== "ADMIN") {
       return NextResponse.json(
-        { error: "That person is already on another team — ask an admin to move them." },
+        { error: "That person is already on another team: ask an admin to move them." },
         { status: 409 }
       );
     }

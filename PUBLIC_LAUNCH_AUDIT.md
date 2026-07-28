@@ -46,6 +46,27 @@ The sell-today offer is:
 - Clarified the Team plan's two-seat minimum across marketing and billing UI.
 - Replaced the obsolete user guide with the shipped workflow and safety model.
 
+## Enterprise workflow follow-up
+
+The next review branch adds a coherent operator-experience phase without
+changing the managed-pilot launch decision:
+
+- Reports can isolate one campaign or compare all campaigns and analyze
+  30-day, 90-day, or 12-month send cohorts.
+- Exact all-time counters are clearly separated from cohort timing charts.
+- Campaign, lead, template, and Help surfaces use denser enterprise layouts
+  with clearer filters, progress, rates, and professional iconography.
+- A tracked campaign creates one deduplicated first-open notification per
+  recipient, with explicit wording that image preloading can cause the signal.
+- Application copy no longer uses em dashes, with a source-level regression
+  test.
+- `PRODUCT_STRATEGY_2026.md` records current first-party competitor evidence,
+  responsible sending-volume language, and the P0/P1/P2 product sequence.
+
+These are product and UX improvements. They do not authorize
+`SIGNUP_MODE=open`, live Stripe, a production deployment, or weakened sending
+controls.
+
 ## P0 gates before public self-service
 
 | Gate | Current state | Required evidence | Owner |
@@ -139,6 +160,10 @@ small teams that value control and real threads more than mailbox farms**.
 Pricing is intentionally below many scale-first competitors, but Cadence also
 supports fewer inboxes and lower volume. Sell the safety, Gmail fidelity,
 guided setup, and workflow quality rather than claiming feature parity.
+
+The dated source set, provider-limit analysis, and expanded competitor matrix
+now live in [PRODUCT_STRATEGY_2026.md](PRODUCT_STRATEGY_2026.md). Recheck those
+first-party pages before publishing any named comparison or price claim.
 
 ## Mobile readiness plan
 

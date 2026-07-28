@@ -7,7 +7,7 @@ import { engagementFromRecipients, type RecipientEngagementRow } from "@/lib/lea
 /**
  * Recompute every contact's engagement fields (emails sent, replies back,
  * bounce/unsubscribe state, last outcome) from the recipient records on the
- * user's campaigns — the authoritative source. Runs as part of the manual
+ * user's campaigns: the authoritative source. Runs as part of the manual
  * "Scan for replies" action so historical activity backfills too, not just
  * events caught live by the monitors.
  */

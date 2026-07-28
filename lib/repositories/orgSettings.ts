@@ -49,7 +49,7 @@ export interface OrgSettings {
    * which one to use; only admins can edit them. */
   aiBrandProfiles: AiBrandProfile[];
   /** Admin-controlled master switch for all AI writing features. Defaults
-   * off — AI stays hidden from users until an admin turns it on. */
+   * off: AI stays hidden from users until an admin turns it on. */
   aiEnabled: boolean;
   /** Subscription / plan state. Defaults preserve current behavior: existing
    * workspaces read as the TEAM plan, so nothing is gated until billing
@@ -170,7 +170,7 @@ export async function saveBillingFromStripe(
   });
 }
 
-/** Turn all AI writing features on or off for the org (admin only — the
+/** Turn all AI writing features on or off for the org (admin only: the
  * caller enforces the role). */
 export async function setAiEnabled(organizationId: string, enabled: boolean): Promise<void> {
   await orgRef(organizationId)
@@ -196,7 +196,7 @@ function resolveBrandFields(data: Record<string, unknown>): {
   return { aiBrandProfiles, aiBrandContext: aiBrandProfiles[0]?.content ?? legacy };
 }
 
-/** Replace the org's brand-memory profiles (admin only — caller enforces).
+/** Replace the org's brand-memory profiles (admin only: caller enforces).
  * Also mirrors the first profile into aiBrandContext for back-compat. */
 export async function saveBrandProfiles(
   organizationId: string,

@@ -10,7 +10,7 @@ import { isValidEmail, splitFullName } from "./normalize";
  * numeric source ID) rather than by fixed position, so a missing optional
  * field (amount, source ID, flags) never shifts the remaining fields.
  * Free-text lines are assigned positionally: name, business, region,
- * lead source — in that order.
+ * lead source: in that order.
  */
 
 const RECORD_MARKER = /^\s*Select\s+(?:All\s+)?Item\s+\d+\s*$/im;
@@ -116,7 +116,7 @@ function parseRecord(rawRecord: string, index: number): ParsedLead {
   if (textLines.length > 4) {
     penalize(
       0.15,
-      `Unexpected extra line(s): ${textLines.slice(4).join(" | ")} — please review field placement`
+      `Unexpected extra line(s): ${textLines.slice(4).join(" | ")}: please review field placement`
     );
   }
 
@@ -170,7 +170,7 @@ function parseRecord(rawRecord: string, index: number): ParsedLead {
  * fallback ignores position entirely: it splits the paste into one block per
  * email address, then classifies each line by TYPE (email, phone, amount,
  * date, timezone, status) and drops values that repeat across most rows
- * (owner, lead source, status — the shared column constants). What's left is
+ * (owner, lead source, status: the shared column constants). What's left is
  * the person's name and business. Records with no email are skipped, since
  * they can't be emailed anyway.
  * ------------------------------------------------------------------ */
@@ -183,10 +183,11 @@ const FALLBACK_TZ_RE =
 const FALLBACK_STATUS_RE = /^(active|inactive|open|closed|new|won|lost|prospecting)$/i;
 const FALLBACK_COMPANY_RE =
   /\b(llc|l\.l\.c\.|inc|inc\.|incorporated|corp|corporation|co\.|company|services|service|group|enterprises?|industries|solutions|construction|trucking|transport(?:ation)?|holdings|partners|associates|consulting|studios?|salon|clinic|medical|dental|restaurant|cafe|catering|market|deli|foods?|design|builders?|contracting|roofing|painting|insurance|realty|properties|logistics|global|corp)\b|&|,\s*(?:inc|llc)/i;
+const SALESFORCE_EM_DASH = String.fromCodePoint(0x2014);
 const FALLBACK_NOISE = new Set([
-  "-", "—", "--", "feature not included", "not included", "active", "0.00", "$0.00", "0",
+  "-", SALESFORCE_EM_DASH, "Not available", "--", "feature not included", "not included", "active", "0.00", "$0.00", "0",
 ]);
-// Buy/factor rates like "1.329" or "1.44" — numeric column noise, not a name.
+// Buy/factor rates like "1.329" or "1.44": numeric column noise, not a name.
 const FALLBACK_RATE_RE = /^\d+\.\d{1,4}$/;
 
 function isStructuralLine(l: string): boolean {
@@ -222,7 +223,8 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
   // Detect record boundaries by ROW-NUMBER markers, order-independent (a
   // Salesforce report can be many pages pasted out of order, starting at any
   // number). A marker is a bare 1–7 digit line whose next line begins a record
-  // — a name/company (non-structural) or a leading timezone cell. Points-sold
+  // when followed by a name/company (non-structural) or a leading timezone
+  // cell. Points-sold
   // numbers ("5" followed by a date) and 10-digit phones never qualify. Any
   // header block sits before the first marker and is skipped automatically.
   const rowMarkerIdxs: number[] = [];
@@ -243,7 +245,7 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
       blocks.push(lines.slice(s, e));
     }
   } else {
-    // No row numbers — one block per email (trailing fields filtered below).
+    // No row numbers: one block per email (trailing fields filtered below).
     let start = 0;
     lines.forEach((l, i) => {
       if (EMAIL_LINE_RE.test(l)) {
@@ -291,7 +293,7 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
     } else {
       nameCandidate = persons[0] ?? "";
     }
-    // No company keyword matched — fall back to the leftover text (a business
+    // No company keyword matched: fall back to the leftover text (a business
     // named without LLC/Inc etc., e.g. "OMNI METAL FINISHING").
     if (!businessName) {
       businessName =
@@ -305,7 +307,7 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
     const { firstName, lastName } = splitFullName(nameCandidate);
     const emailValid = isValidEmail(email);
     const warnings: string[] = [];
-    if (!nameCandidate) warnings.push("No contact name detected — please add one");
+    if (!nameCandidate) warnings.push("No contact name detected: please add one");
     if (!businessName) warnings.push("No business name detected");
     if (!emailValid) warnings.push(`Email looks invalid: ${email}`);
 
@@ -338,7 +340,7 @@ export function parseSalesforceByEmail(normalized: string): ParseResult | null {
     totalRecords: leads.length,
     globalWarnings: [
       `Matched ${leads.length} lead${leads.length === 1 ? "" : "s"} by email. ` +
-        "Names and businesses were detected automatically — please skim the preview and fix any that look off. " +
+        "Names and businesses were detected automatically: please skim the preview and fix any that look off. " +
         "For perfect columns, export from Salesforce as CSV and use “Upload CSV”.",
     ],
   };
@@ -355,7 +357,7 @@ export function parseSalesforceText(text: string): ParseResult {
 
   if (records.length === 0) {
     // No "Select Item N" markers. Try the strict column/grid format, then the
-    // resilient email-anchored fallback — prefer whichever yields more leads
+    // resilient email-anchored fallback: prefer whichever yields more leads
     // with a valid email (the grid parser misaligns when cells collapse).
     const columnResult = parseSalesforceColumns(normalized);
     const emailResult = parseSalesforceByEmail(normalized);
@@ -454,14 +456,14 @@ const BARE_INT_RE = /^\d{1,7}$/;
 /** A copied cell is empty when Salesforce shows a dash. */
 function cleanCell(value: string): string {
   const v = value.trim();
-  return v === "-" || v === "—" || v === "--" ? "" : v;
+  return v === "-" || v === SALESFORCE_EM_DASH || v === "Not available" || v === "--" ? "" : v;
 }
 
 function parseGridOptOut(value: string): boolean | null {
   const v = cleanCell(value).toLowerCase();
   if (!v) return null;
   // "feature not included" appears when the org hasn't enabled the opt-out
-  // feature — nobody is opted out, so treat it as false.
+  // feature: nobody is opted out, so treat it as false.
   if (v.includes("feature not included") || v.includes("not included")) return false;
   if (["true", "yes", "y", "1", "checked", "✓"].includes(v)) return true;
   if (["false", "no", "n", "0", "unchecked"].includes(v)) return false;
@@ -503,7 +505,7 @@ export function parseSalesforceColumns(normalized: string): ParseResult | null {
   let i = firstRowIdx;
   while (i < lines.length) {
     if (!BARE_INT_RE.test(lines[i])) {
-      // Alignment slipped — skip the stray line and resync on the next number.
+      // Alignment slipped: skip the stray line and resync on the next number.
       i += 1;
       continue;
     }

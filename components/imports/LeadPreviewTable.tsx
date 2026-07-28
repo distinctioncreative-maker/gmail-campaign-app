@@ -71,7 +71,7 @@ export function LeadPreviewTable({
     <div>
       <div className="flex items-center justify-between">
         <h2 className="font-medium">
-          {leads.length} lead{leads.length === 1 ? "" : "s"} found — {selected.size} selected
+          {leads.length} lead{leads.length === 1 ? "" : "s"} found: {selected.size} selected
         </h2>
         <button onClick={onStartOver} className="text-sm text-muted hover:underline">
           Start over
@@ -110,9 +110,9 @@ export function LeadPreviewTable({
                       onChange={() => toggle(lead.index, badge.selectable)}
                     />
                   </td>
-                  <td className="px-3 py-2 font-medium">{lead.fullName || "—"}</td>
-                  <td className="px-3 py-2 text-muted">{lead.businessName || "—"}</td>
-                  <td className="px-3 py-2 text-muted">{lead.email ?? "—"}</td>
+                  <td className="px-3 py-2 font-medium">{lead.fullName || "Not available"}</td>
+                  <td className="px-3 py-2 text-muted">{lead.businessName || "Not available"}</td>
+                  <td className="px-3 py-2 text-muted">{lead.email ?? "Not available"}</td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
                       {badge.label}

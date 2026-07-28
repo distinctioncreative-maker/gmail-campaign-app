@@ -1,6 +1,6 @@
 /**
  * Pure analytics aggregations over campaign recipients. No I/O, no open
- * tracking — everything is derived from send/reply/bounce timestamps the app
+ * tracking: everything is derived from send/reply/bounce timestamps the app
  * already stores, so this is unit-testable and cheap.
  */
 
@@ -9,7 +9,7 @@ export interface RecipientPoint {
   repliedAt: number | null;
   bouncedAt: number | null;
   unsubscribedAt: number | null;
-  /** Only meaningful for recipients of a campaign with trackingEnabled — null
+  /** Only meaningful for recipients of a campaign with trackingEnabled: null
    * on every recipient of an untracked campaign, not just "not opened yet". */
   openedAt?: number | null;
   firstClickedAt?: number | null;
@@ -78,7 +78,7 @@ export interface OpenClickRates {
 
 /**
  * Open/click rates over sent recipients. Callers must pre-filter `points` to
- * recipients of tracking-enabled campaigns — mixing in untracked campaigns
+ * recipients of tracking-enabled campaigns: mixing in untracked campaigns
  * (where openedAt/firstClickedAt are permanently null) would silently dilute
  * the rate rather than reflect "no one opened it".
  */
@@ -186,7 +186,7 @@ export function dailyTrend(
 
 /** Format a duration for humans: "2h 15m", "3d", "45m". */
 export function formatDuration(ms: number | null): string {
-  if (ms === null) return "—";
+  if (ms === null) return "Not available";
   if (ms < HOUR) return `${Math.max(1, Math.round(ms / (60 * 1000)))}m`;
   if (ms < DAY) {
     const h = Math.floor(ms / HOUR);
@@ -198,7 +198,7 @@ export function formatDuration(ms: number | null): string {
   return h > 0 ? `${d}d ${h}h` : `${d}d`;
 }
 
-/** "12.3%" — shared percent formatting for KPI surfaces. */
+/** "12.3%": shared percent formatting for KPI surfaces. */
 export function formatPercent(n: number): string {
   return `${n.toFixed(1)}%`;
 }
@@ -221,4 +221,56 @@ export function totalSent(campaign: Pick<CampaignCounters, "sentCount" | "follow
 export function replyRateForCampaign(campaign: CampaignCounters): number {
   const sent = totalSent(campaign);
   return sent > 0 ? (campaign.replyCount / sent) * 100 : 0;
+}
+
+export interface CampaignPerformanceInput extends CampaignCounters {
+  eligibleRecipients: number;
+  bounceCount: number;
+  unsubscribeCount: number;
+}
+
+export interface CampaignPerformance {
+  sent: number;
+  progressRate: number;
+  replyRate: number;
+  bounceRate: number;
+  unsubscribeRate: number;
+}
+
+/**
+ * Shared campaign-level performance math for Campaigns, Reports, and the
+ * campaign detail view. Progress is based on initial sends because follow-ups
+ * should not make a campaign look more than 100% complete. Outcome rates use
+ * every send so the denominator matches the app-wide "emails sent" number.
+ */
+export function campaignPerformance(campaign: CampaignPerformanceInput): CampaignPerformance {
+  const sent = totalSent(campaign);
+  const rate = (count: number) => (sent > 0 ? (count / sent) * 100 : 0);
+  return {
+    sent,
+    progressRate:
+      campaign.eligibleRecipients > 0
+        ? Math.min(100, (campaign.sentCount / campaign.eligibleRecipients) * 100)
+        : 0,
+    replyRate: rate(campaign.replyCount),
+    bounceRate: rate(campaign.bounceCount),
+    unsubscribeRate: rate(campaign.unsubscribeCount),
+  };
+}
+
+/** Keep cohort-based charts honest when a report date range is selected. */
+export function recipientsSentSince(
+  points: RecipientPoint[],
+  since: number
+): RecipientPoint[] {
+  return points.filter(
+    (point) => point.initialSentAt !== null && point.initialSentAt >= since
+  );
+}
+
+export function reportWindow(
+  days: number,
+  now = Date.now()
+): { since: number; now: number } {
+  return { since: now - days * DAY, now };
 }

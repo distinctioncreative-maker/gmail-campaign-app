@@ -14,8 +14,12 @@ import { CampaignDiagnostics } from "@/components/campaign/CampaignDiagnostics";
 import { RecipientTable } from "@/components/campaign/RecipientTable";
 import { LocalTime } from "@/components/LocalTime";
 import { LiveRefresh } from "@/components/LiveRefresh";
-import { totalSent } from "@/lib/analytics/metrics";
+import {
+  campaignPerformance,
+  formatPercent,
+} from "@/lib/analytics/metrics";
 import { CountUp } from "@/components/ui/CountUp";
+import { Icon } from "@/components/ui/Icon";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
 
@@ -56,20 +60,61 @@ export default async function CampaignDetailPage({
   const doneCount = campaign.sentCount;
   const pct = totalToSend > 0 ? Math.min(100, Math.round((doneCount / totalToSend) * 100)) : 0;
   const remaining = Math.max(0, totalToSend - doneCount);
+  const performance = campaignPerformance(campaign);
+  const openedCount = recipients.filter((recipient) => recipient.openedAt !== null).length;
+  const clickedCount = recipients.filter(
+    (recipient) => recipient.firstClickedAt !== null
+  ).length;
+  const trackedSentCount = recipients.filter(
+    (recipient) => recipient.initialSentAt !== null
+  ).length;
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const sendingDays = campaign.schedule.allowedWeekdays
+    .map((day) => dayNames[day])
+    .join(", ");
 
-  const stats: Array<{ label: string; value: number; tone: string }> = [
-    { label: "Recipients", value: campaign.eligibleRecipients, tone: "text-foreground" },
-    { label: "Sent", value: totalSent(campaign), tone: "text-green-600" },
-    { label: "Follow-ups", value: campaign.followupSentCount, tone: "text-foreground" },
-    { label: "Replies", value: campaign.replyCount, tone: "text-indigo-600" },
-    ...(campaign.trackingEnabled
-      ? [
-          { label: "Opens", value: recipients.filter((r) => r.openedAt !== null).length, tone: "text-sky-600" },
-          { label: "Clicks", value: recipients.filter((r) => r.firstClickedAt !== null).length, tone: "text-sky-600" },
-        ]
-      : []),
-    { label: "Excluded", value: campaign.excludedRecipients, tone: "text-amber-600" },
-    { label: "Problems", value: campaign.errorCount, tone: campaign.errorCount > 0 ? "text-red-600" : "text-muted/70" },
+  const stats: Array<{
+    label: string;
+    value: number;
+    detail: string;
+    tone: string;
+  }> = [
+    {
+      label: "Eligible leads",
+      value: campaign.eligibleRecipients,
+      detail: `${campaign.excludedRecipients} excluded`,
+      tone: "text-foreground",
+    },
+    {
+      label: "Total sends",
+      value: performance.sent,
+      detail: `${campaign.sentCount} initial, ${campaign.followupSentCount} follow-ups`,
+      tone: "text-green-600",
+    },
+    {
+      label: "Replies",
+      value: campaign.replyCount,
+      detail: `${formatPercent(performance.replyRate)} reply rate`,
+      tone: "text-indigo-600",
+    },
+    {
+      label: "Bounces",
+      value: campaign.bounceCount,
+      detail: `${formatPercent(performance.bounceRate)} bounce rate`,
+      tone: campaign.bounceCount > 0 ? "text-amber-600" : "text-muted",
+    },
+    {
+      label: "Unsubscribes",
+      value: campaign.unsubscribeCount,
+      detail: `${formatPercent(performance.unsubscribeRate)} of sends`,
+      tone: campaign.unsubscribeCount > 0 ? "text-amber-600" : "text-muted",
+    },
+    {
+      label: "Problems",
+      value: campaign.errorCount,
+      detail: campaign.errorCount > 0 ? "Review diagnostics below" : "No active errors",
+      tone: campaign.errorCount > 0 ? "text-red-600" : "text-muted",
+    },
   ];
 
   return (
@@ -83,31 +128,108 @@ export default async function CampaignDetailPage({
           <h1 className="text-2xl font-semibold tracking-tight">{campaign.name}</h1>
           {campaign.description && <p className="mt-0.5 text-sm text-muted">{campaign.description}</p>}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {campaign.status === "ACTIVE" && <LiveRefresh intervalMs={12000} />}
+          <Link
+            href={`/reports?campaign=${campaign.campaignId}&range=30`}
+            className="btn-ghost px-3 py-2 text-xs"
+          >
+            <Icon name="chart" size={15} />
+            View report
+          </Link>
           <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>{badge.label}</span>
         </div>
       </div>
 
-      {/* Progress */}
-      {totalToSend > 0 && (
-        <div className="mt-5 card p-5">
-          <div className="flex items-baseline justify-between">
-            <p className="text-sm font-medium text-foreground">
-              {doneCount} of {totalToSend} sent
-            </p>
-            <p className="text-sm text-muted">
-              {pct}% · {remaining} to go
-            </p>
+      <nav
+        aria-label="Campaign sections"
+        className="mt-5 flex gap-1 overflow-x-auto rounded-xl border border-border bg-surface p-1"
+      >
+        {[
+          ["#overview", "Overview"],
+          ["#controls", "Controls"],
+          ["#recipients", "Recipients"],
+          ["#activity", "Activity"],
+        ].map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="min-w-max rounded-lg px-3 py-2 text-xs font-medium text-muted hover:bg-surface-2 hover:text-foreground"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      <div id="overview" className="mt-5 grid scroll-mt-24 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <section className="card p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                Initial-send progress
+              </p>
+              <p className="mt-1 text-lg font-semibold text-foreground">
+                {doneCount.toLocaleString()} of {totalToSend.toLocaleString()} leads contacted
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-semibold tabular-nums text-primary">{pct}%</p>
+              <p className="text-xs text-muted">{remaining.toLocaleString()} remaining</p>
+            </div>
           </div>
-          <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-surface-2">
+          <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-surface-2">
             <div
               className="h-full rounded-full brand-gradient transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
-        </div>
-      )}
+          <p className="mt-3 text-xs leading-relaxed text-muted">
+            Follow-up sends are reported separately and do not inflate campaign completion.
+          </p>
+        </section>
+
+        <section className="card p-5 sm:p-6">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">
+            Campaign setup
+          </p>
+          <dl className="mt-3 grid grid-cols-2 gap-x-5 gap-y-3 text-sm">
+            <div>
+              <dt className="text-xs text-muted">Sending days</dt>
+              <dd className="mt-0.5 font-medium">{sendingDays}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Local window</dt>
+              <dd className="mt-0.5 font-medium">
+                {campaign.schedule.sendWindowStart} to {campaign.schedule.sendWindowEnd}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Timezone</dt>
+              <dd className="mt-0.5 truncate font-medium" title={campaign.schedule.timezone}>
+                {campaign.schedule.timezone}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Daily limit</dt>
+              <dd className="mt-0.5 font-medium tabular-nums">
+                {campaign.schedule.dailySendLimit}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Delivery mode</dt>
+              <dd className="mt-0.5 font-medium">
+                {campaign.draftStrategy === "DRAFT_ONLY" ? "Gmail drafts" : "Send"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Open and click tracking</dt>
+              <dd className="mt-0.5 font-medium">
+                {campaign.trackingEnabled ? "Enabled" : "Off"}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {stats.map((s, i) => (
@@ -119,12 +241,35 @@ export default async function CampaignDetailPage({
             <p className={`text-2xl font-semibold tabular-nums ${s.tone}`}>
               <CountUp value={s.value} />
             </p>
-            <p className="mt-1 text-xs text-muted">{s.label}</p>
+            <p className="mt-1 text-xs font-medium text-muted">{s.label}</p>
+            <p className="mt-1 text-[11px] leading-tight text-muted/70">{s.detail}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-6">
+      {campaign.trackingEnabled ? (
+        <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <p>
+              <span className="font-semibold text-sky-600">{openedCount}</span>{" "}
+              open detection{openedCount === 1 ? "" : "s"}
+              {trackedSentCount > 0
+                ? ` (${((openedCount / trackedSentCount) * 100).toFixed(1)}%)`
+                : ""}
+            </p>
+            <p>
+              <span className="font-semibold text-purple-600">{clickedCount}</span>{" "}
+              unique clicker{clickedCount === 1 ? "" : "s"}
+            </p>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            Open detections can include privacy preloading by email clients. Use replies and clicks
+            as stronger intent signals.
+          </p>
+        </div>
+      ) : null}
+
+      <div id="controls" className="mt-6 scroll-mt-24">
         <CampaignControls
           campaignId={campaign.campaignId}
           status={campaign.status}
@@ -169,7 +314,7 @@ export default async function CampaignDetailPage({
                           {String.fromCharCode(65 + i)}
                         </span>
                         {r.name}
-                        {isBest && <span className="ml-2 text-xs font-semibold text-green-600">★ best</span>}
+                        {isBest && <span className="ml-2 text-xs font-semibold text-green-600">Leading variant</span>}
                       </td>
                       <td className="py-2 pr-4 tabular-nums">{r.sent}</td>
                       <td className="py-2 pr-4 tabular-nums">{r.replied}</td>
@@ -179,7 +324,7 @@ export default async function CampaignDetailPage({
                             <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.min(100, rate)}%` }} />
                           </div>
                           <span className="tabular-nums text-xs text-muted">
-                            {r.sent > 0 ? `${rate.toFixed(1)}%` : "—"}
+                            {r.sent > 0 ? `${rate.toFixed(1)}%` : "Not available"}
                           </span>
                         </div>
                       </td>
@@ -193,7 +338,7 @@ export default async function CampaignDetailPage({
       )}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <div>
+        <div id="recipients" className="scroll-mt-24">
           <h2 className="mb-3 font-medium">Recipients</h2>
           <RecipientTable
             campaignId={campaign.campaignId}
@@ -212,7 +357,7 @@ export default async function CampaignDetailPage({
             }))}
           />
         </div>
-        <div>
+        <div id="activity" className="scroll-mt-24">
           <h2 className="mb-3 font-medium">Activity</h2>
           <div className="card p-4">
             {events.length === 0 ? (

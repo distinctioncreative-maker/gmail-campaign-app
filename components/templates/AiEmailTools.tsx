@@ -49,9 +49,9 @@ export function AiEmailTools({
       });
       onSubject(res.subject);
       onHtml(res.html);
-      toast(`Updated — ${label.toLowerCase()}.`, "success");
+      toast(`Updated: ${label.toLowerCase()}.`, "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "That didn't work — try again.", "error");
+      toast(err instanceof Error ? err.message : "That didn't work: try again.", "error");
     } finally {
       setBusy(null);
     }
@@ -78,7 +78,7 @@ export function AiEmailTools({
 
   return (
     <div className="mt-3 rounded-xl border border-border bg-surface-2 p-3">
-      <p className="text-xs font-medium text-muted">✨ AI tools — improve what you&apos;ve written</p>
+      <p className="text-xs font-medium text-muted">✨ AI tools: improve what you&apos;ve written</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {IMPROVE_ACTIONS.map((a) => (
           <button

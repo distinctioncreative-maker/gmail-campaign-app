@@ -32,7 +32,7 @@ const CHECKS: Check[] = [
     id: "send-test-email",
     label: "Send a test email",
     verifies: "Sends one real email, only to your own address.",
-    passMeans: "Sending genuinely works end to end — check your inbox.",
+    passMeans: "Sending genuinely works end to end: check your inbox.",
     onFailure: "If it doesn't arrive within a minute, check Settings for a Gmail connection problem.",
   },
   {
@@ -40,28 +40,28 @@ const CHECKS: Check[] = [
     label: "Personalized email",
     verifies: "Fills a sample template's placeholders with your real profile data.",
     passMeans: "Placeholders like {{first_name}} will resolve correctly on real sends.",
-    onFailure: "Complete your sender profile in Settings — that's usually the unfilled placeholder.",
+    onFailure: "Complete your sender profile in Settings: that's usually the unfilled placeholder.",
   },
   {
     id: "parser",
     label: "Salesforce paste parser",
     verifies: "Parses a sample Salesforce lead list, including a record with a missing amount.",
     passMeans: "Pasting your own Salesforce rows on the Leads page will parse correctly.",
-    onFailure: "This is an internal check, not something in your data — contact support if it fails.",
+    onFailure: "This is an internal check, not something in your data: contact support if it fails.",
   },
   {
     id: "reply-detection",
     label: "Reply detection",
     verifies: "Classifies a sample human reply and a sample unsubscribe request.",
     passMeans: "Real replies and unsubscribe requests will be classified correctly.",
-    onFailure: "This is an internal check, not something in your data — contact support if it fails.",
+    onFailure: "This is an internal check, not something in your data: contact support if it fails.",
   },
   {
     id: "bounce-detection",
     label: "Bounce detection",
     verifies: "Classifies a sample hard-bounce delivery failure message.",
     passMeans: "Real bounces will be detected and marked so you stop emailing that address.",
-    onFailure: "This is an internal check, not something in your data — contact support if it fails.",
+    onFailure: "This is an internal check, not something in your data: contact support if it fails.",
   },
 ];
 

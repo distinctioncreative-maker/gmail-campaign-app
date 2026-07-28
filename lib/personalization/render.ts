@@ -91,7 +91,7 @@ export const FAKE_PREVIEW_VALUES: PlaceholderValues = {
   physical_address: "123 Main St, Suite 400, New York, NY 10001",
   unsubscribe_text: "If you'd prefer not to hear from me again, just reply and let me know.",
   signature: "Alex Salesperson · Funding Advisor · Your Company",
-  ai_opener: "Congrats on the recent expansion at Rivera Roofing — impressive momentum.",
+  ai_opener: "Congrats on the recent expansion at Rivera Roofing: impressive momentum.",
 };
 
 export interface RenderResult {

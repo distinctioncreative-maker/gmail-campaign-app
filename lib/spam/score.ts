@@ -1,6 +1,6 @@
 /**
  * Built-in "will this land in the inbox?" content analyzer. Pure and
- * unit-testable — deterministic heuristics over the email's subject + HTML,
+ * unit-testable: deterministic heuristics over the email's subject + HTML,
  * no external service and no real sends. This is guidance, not a guarantee
  * of inbox placement.
  */
@@ -84,7 +84,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
           label: "Spam trigger words",
           status: triggers.length >= 3 ? "fail" : "warn",
           detail: `Found ${triggers.length}: ${triggers.slice(0, 5).map((t) => `“${t}”`).join(", ")}.`,
-          fix: "Rewrite these in plain, personal language — they read as marketing to spam filters.",
+          fix: "Rewrite these in plain, personal language: they read as marketing to spam filters.",
           weight: Math.min(24, triggers.length * 6),
         }
   );
@@ -98,7 +98,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
           label: "Subject casing",
           status: subjCaps > 0.6 ? "fail" : "warn",
           detail: "Subject has a lot of ALL-CAPS words.",
-          fix: "Write the subject like a normal sentence — caps look shouty and spammy.",
+          fix: "Write the subject like a normal sentence: caps look shouty and spammy.",
           weight: subjCaps > 0.6 ? 12 : 6,
         }
   );
@@ -112,7 +112,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
           label: "Punctuation",
           status: "warn",
           detail: "Subject has repeated ! or $ symbols.",
-          fix: "Drop the extra exclamation points and $$$ — filters weight these heavily.",
+          fix: "Drop the extra exclamation points and $$$: filters weight these heavily.",
           weight: 8,
         }
   );
@@ -121,7 +121,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
   const subjLen = subject.trim().length;
   checks.push(
     subjLen >= 15 && subjLen <= 70
-      ? { label: "Subject length", status: "pass", detail: `${subjLen} characters — a good length.`, weight: 0 }
+      ? { label: "Subject length", status: "pass", detail: `${subjLen} characters: a good length.`, weight: 0 }
       : {
           label: "Subject length",
           status: "warn",
@@ -164,7 +164,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
       : {
           label: "Links",
           status: links > 8 ? "fail" : "warn",
-          detail: `${links} links — that's a lot for a personal email.`,
+          detail: `${links} links: that's a lot for a personal email.`,
           fix: "Keep it to 1–3 links. Many links reads as bulk marketing.",
           weight: links > 8 ? 12 : 7,
         }
@@ -179,7 +179,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
           label: "Link domains",
           status: "fail",
           detail: `Uses link shorteners (${shorteners.join(", ")}).`,
-          fix: "Use full, real URLs — shorteners are a strong spam signal.",
+          fix: "Use full, real URLs: shorteners are a strong spam signal.",
           weight: 12,
         }
   );
@@ -192,7 +192,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
           label: "Opt-out line",
           status: "fail",
           detail: "No opt-out line found.",
-          fix: "Add {{unsubscribe_text}} — it's legally required and improves deliverability.",
+          fix: "Add {{unsubscribe_text}}: it's legally required and improves deliverability.",
           weight: 14,
         }
   );
@@ -205,7 +205,7 @@ export function analyzeSpam(input: SpamInput): SpamResult {
           label: "Mailing address",
           status: "warn",
           detail: "No physical mailing address found.",
-          fix: "Add {{physical_address}} — required by anti-spam law (CAN-SPAM).",
+          fix: "Add {{physical_address}}: required by anti-spam law (CAN-SPAM).",
           weight: 8,
         }
   );
@@ -219,8 +219,8 @@ export function analyzeSpam(input: SpamInput): SpamResult {
       : grade === "B"
         ? "Solid. A couple of small tweaks could help."
         : grade === "C"
-          ? "Some spam signals — worth cleaning up before you send."
-          : "High spam risk — fix the flagged items before sending.";
+          ? "Some spam signals: worth cleaning up before you send."
+          : "High spam risk: fix the flagged items before sending.";
 
   // Sort worst-first so the important fixes surface at the top.
   const order: Record<SpamStatus, number> = { fail: 0, warn: 1, pass: 2 };

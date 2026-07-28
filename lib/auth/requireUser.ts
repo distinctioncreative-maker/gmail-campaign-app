@@ -36,7 +36,7 @@ export class ForbiddenError extends Error {
 
 /**
  * Verify the session cookie AND organization membership server-side.
- * All owner/organization scoping downstream derives from this context —
+ * All owner/organization scoping downstream derives from this context,
  * never from client-supplied IDs.
  *
  * Users are grouped into an organization by their email domain, so different

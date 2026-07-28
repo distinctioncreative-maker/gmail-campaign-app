@@ -77,7 +77,7 @@ export function SendingModeCard() {
             live ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
           }`}
         >
-          {live ? "● LIVE — real emails" : "● TEST — safe mode"}
+          {live ? "● LIVE: real emails" : "● TEST: safe mode"}
         </span>
       </div>
 
@@ -116,7 +116,7 @@ export function SendingModeCard() {
                 This turns on real emails for everyone on the team.
               </p>
               <p className="mt-1 text-sm text-muted">
-                From this moment, campaigns send to actual recipients — not your test address.
+                From this moment, campaigns send to actual recipients: not your test address.
                 Type <strong>GO LIVE</strong> to confirm.
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">

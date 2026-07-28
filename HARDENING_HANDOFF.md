@@ -10,22 +10,24 @@ chat history.
 |---|---|
 | Date | 2026-07-28 |
 | Repository | `distinctioncreative-maker/gmail-campaign-app` |
-| Base commit | `e8872c6` |
-| Working branch | `codex/cadence-hardening` |
+| Base commit | `703ae2e` (`main`, merged production registry fix) |
+| Working branch | `codex/enterprise-campaign-workspace` |
 | Production service | `outreach`, `us-central1`, project `email-tool-502714` |
 | Production owner | Alpine Google Workspace account |
-| Local commits | `f20ca01` implementation; `3981400` documentation; `c5c1c47` public-launch follow-up |
-| Push/deploy status | Published to `codex/cadence-hardening`; draft PR #1 is open with a green quality gate; not merged or deployed |
-| Baseline before changes | Typecheck, lint, 264 unit tests, and build passed |
-| Last completed gate | Clean install, typecheck, lint, 278 unit tests, production build, docs generation, diff check, shell syntax check, and production audit passed before the public-launch follow-up |
-| Current follow-up | Production release scan: corrected manual Cloud Build commit tagging, preserved deployment test-mode locks in setup automation, added index-first deployment/health/rollback steps, and reran typecheck, lint, 281 unit tests, production build, runtime audit, generated docs, shell syntax, and diff checks |
+| Previous release | Hardening PR #1 and registry-fix PR #7 were merged. The operator reported a successful Firestore deployment and corrected Cloud Build deployment of `main` at `703ae2e`; runtime health checks were not independently observed in this workspace |
+| Push/deploy status | Current product branch is local and verified; publish to a draft PR only. Do not merge or deploy this branch |
+| Baseline before this branch | Typecheck, lint, 36 test files / 281 unit tests, and production build passed |
+| Last completed gate | Clean install, typecheck, lint, 38 test files / 288 unit tests, 69-route production build, runtime dependency audit, feature-doc generation, diff check, and setup-script syntax check passed |
+| Current follow-up | Enterprise campaign intelligence and daily workflow: campaign-scoped reports, campaign command centers, wider template workspace, cleaner leads/help surfaces, first-open notifications, and product strategy |
 | Emulator status | Blocked locally: Java 17 installed; Firebase CLI 15 requires Java 21. GitHub CI installs Temurin 21 and runs it |
 | CLI status in this terminal | Workspace-local `gh` 2.96.0 is checksum-verified; direct `api.github.com` authentication is blocked by sandbox policy, so publishing uses the connected GitHub app. No global `gcloud`, `firebase`, or `stripe`; repo-local Firebase CLI is installed but not authenticated |
 
-The hardening and public-launch work is preserved in three verified source
-commits and published for review in draft PR #1. Read
+The hardening and public-launch work is preserved in the merged history. This
+follow-up keeps those safety boundaries while improving the operator-facing
+product. Read
 `PUBLIC_LAUNCH_AUDIT.md` before changing positioning, public signup, billing,
-legal/compliance work, or mobile architecture.
+legal/compliance work, or mobile architecture, and read
+`PRODUCT_STRATEGY_2026.md` before expanding the competitive roadmap.
 
 ## Why this pass exists
 
@@ -231,6 +233,10 @@ Key files:
   is within the same 90-day window.
 - Open/click endpoints are rate-limited per token.
 - Open/click counters are transactional.
+- A first tracked open creates at most one in-app notification per recipient.
+  The stable notification ID is written in the same transaction that first
+  sets `openedAt`; a click that supplies the first engagement signal follows
+  the same rule. Notification copy must retain the image-preloading caveat.
 - Click redirects accept only stored `http:`/`https:` destinations.
 
 Key files:
@@ -348,6 +354,10 @@ New server-only collections/documents:
 - `stripeCustomers/{customerId}`.
 - `rateLimits/{bucketAndFingerprint}` with a Firestore timestamp TTL.
 
+Tracked-open notifications use deterministic documents in the existing
+`users/{uid}/notifications` collection. No client write access or destructive
+migration is required.
+
 New organizations get `organizationSettings/main` with FREE billing state.
 Existing orgs are not rewritten by this branch.
 
@@ -366,6 +376,9 @@ collections because all writes are Admin SDK server-side.
 - Correct external-load-balancer client-hop rate-limit fingerprinting.
 - Paid-seat-limit resolution and durable follow-up/outbox behavior.
 - Stripe subscription quantity precedence after portal changes.
+- Shared campaign performance and reporting-window calculations.
+- Source-level enforcement that application copy does not reintroduce em
+  dashes.
 
 The Firestore emulator suite is not runnable in the current local container:
 the installed Java is 17 and Firebase CLI 15 requires Java 21. CI explicitly
@@ -379,7 +392,7 @@ The final local gate ran from a clean `npm ci` install:
 npm ci                                      # pass
 npm run typecheck                           # pass
 npm run lint                                # pass
-npm test                                    # pass: 36 files, 281 tests
+npm test                                    # pass: 38 files, 288 tests
 npm run build                               # pass: 69 routes generated
 npm audit --omit=dev --audit-level=high     # pass: 0 vulnerabilities
 npm run docs:features                       # pass
@@ -387,27 +400,28 @@ git diff --check                            # pass
 bash -n scripts/setup-cloud.sh              # pass
 ```
 
-`npm run test:emulator` was attempted locally and stopped before the suite
-because this container has OpenJDK 17.0.19 and Firebase Tools 15 requires
-Java 21. Draft PR #1's GitHub quality gate installed Temurin 21 and passed the
-Firestore emulator suite along with every other CI step.
+`npm run test:emulator` remains blocked locally because this container has
+OpenJDK 17.0.19 and Firebase Tools 15 requires Java 21. The GitHub quality
+gate installs Temurin 21 and must pass the Firestore emulator suite before
+this branch is considered merge-ready.
 
-## Production actions authorized but not yet completed
+## Production state and operator-owned follow-up
 
-The user authorized the final scan, merge, and production deployment on
-2026-07-28. Publishing and CI are complete. The release still needs an
-authenticated Alpine Google Cloud/Firebase operator to apply the index and
-deploy the Cloud Run revision:
+The previous hardening release reached `main` and the authenticated operator
+reported a successful Firestore and Cloud Build deployment. That report is
+recorded here as operator evidence, not as an independently verified runtime
+check.
 
-1. Authenticate `gcloud` and Firebase, then confirm project
-   `email-tool-502714`, region `us-central1`, and service `outreach`.
-2. Deploy Firestore rules/indexes before the application, record the current
-   rollback revision, then run the exact Cloud Build command in
-   `DEPLOYMENT.md`.
-3. Apply `scripts/setup-cloud.sh email-tool-502714 us-central1 outreach`
-   without clearing any existing `TEST_MODE` / `FORCE_TEST_MODE` lock.
+This enterprise-workspace branch is authorized only for a branch push, draft
+PR, and CI inspection. Do not merge or deploy it. Before any later production
+release:
+
+1. Confirm the exact reviewed commit and green GitHub quality gate.
+2. Record the current Cloud Run rollback revision and preserve
+   `TEST_MODE` / `FORCE_TEST_MODE`.
+3. Deploy Firestore rules/indexes before the application if either changed.
 4. Verify `/api/health`, signed-out landing/sign-in, authenticated app access,
-   and a test-mode email before changing any sending lock.
+   campaign reporting, and a test-mode email.
 5. Wire Stripe test keys and CLI forwarding; validate Checkout → webhook →
    plan/seat change → portal/cancel before live keys.
 6. Configure `ERROR_WEBHOOK_URL` and an uptime check on `/api/health`.
@@ -431,9 +445,9 @@ not authenticated.
 - OAuth verification/CASA and Stripe end-to-end test/live configuration are
   external workflows.
 - The public landing animation/copy remains sales-forward in places. AI
-  prompts were generalized, but the broader copy/onboarding roadmap should
-  be handled as a separate product/brand review rather than silently
-  rewriting the current design in a security patch.
+  positioning and the outreach-to-reply story remain a focused P1 product/
+  brand project; do not imply guaranteed inbox placement, replies, or
+  revenue.
 - Playwright end-to-end coverage is still planned.
 - Multi-inbox rotation, warmup, enrichment, multichannel, and SOC 2 remain
   roadmap items.
@@ -441,12 +455,12 @@ not authenticated.
 ## Safe continuation rules for the next agent
 
 - Read `AGENTS.md`, this file, `CAMPAIGN_SAFETY.md`, `SECURITY.md`, and
-  `ARCHITECTURE.md` before editing.
+  `ARCHITECTURE.md` before editing. Read `PRODUCT_STRATEGY_2026.md` before
+  adding roadmap scope or public claims.
 - Run `git status --short` first. All uncommitted changes on this branch are
   part of this hardening pass.
-- Merge and production deployment are authorized for this release after the
-  final quality gate; do not broaden that authorization to public signup,
-  live Stripe, or real sending.
+- This branch is authorized for a draft PR and CI inspection only. Do not
+  merge or deploy it without a new explicit instruction.
 - Do not turn on `SIGNUP_MODE=open`.
 - Do not remove the delivery reservation or automatically retry AMBIGUOUS
   work.

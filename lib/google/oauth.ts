@@ -8,13 +8,13 @@ import { parseAllowedDomains } from "@/lib/auth/domains";
  * OAuth client for the Gmail-connect flow (separate from app sign-in).
  *
  * Scope choices (least privilege for current features):
- * - gmail.compose  — create drafts and send them as the connected user.
+ * - gmail.compose: create drafts and send them as the connected user.
  *   Narrower than gmail.modify/mail.google.com; cannot read the mailbox.
- * - gmail.readonly — read thread/message metadata and content for reply
+ * - gmail.readonly: read thread/message metadata and content for reply
  *   and bounce detection. Added now because reply detection is a core
  *   safety feature (stops follow-ups); revisit if labels ship (would need
  *   gmail.modify instead).
- * - postmaster.readonly — read Google Postmaster Tools stats (domain
+ * - postmaster.readonly: read Google Postmaster Tools stats (domain
  *   reputation, spam rate) for the Deliverability page. Read-only; only
  *   returns data for domains the user can see in postmaster.google.com.
  */

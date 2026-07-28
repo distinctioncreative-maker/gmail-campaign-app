@@ -154,9 +154,9 @@ export function AiEmailWriter({
         body: JSON.stringify({ prompt: prompt.trim(), profileId: selectedId }),
       });
       onResult(email);
-      toast("Draft written — tweak it to taste.", "success");
+      toast("Draft written: tweak it to taste.", "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Couldn't write that — try again.", "error");
+      toast(err instanceof Error ? err.message : "Couldn't write that: try again.", "error");
     } finally {
       setBusy(false);
     }
@@ -216,7 +216,7 @@ export function AiEmailWriter({
           {memoryOpen && (
             <div className="mt-2 rounded-xl border border-primary/20 bg-surface p-3">
               <p className="text-xs font-medium text-foreground">
-                Brand memory — the AI weaves the chosen brand into every email, freshly each time
+                Brand memory: the AI weaves the chosen brand into every email, freshly each time
               </p>
               {/* Profile tabs */}
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -254,7 +254,7 @@ export function AiEmailWriter({
                     />
                   )}
                   <p className="mb-1 text-[11px] text-muted">
-                    Offer, key benefits, and tone. Example: “Alpine — working capital $10k–$500k,
+                    Offer, key benefits, and tone. Example: “Alpine: working capital $10k–$500k,
                     funded in 24–48h, no collateral. Confident and friendly, never pushy.”
                   </p>
                   <textarea
@@ -291,7 +291,7 @@ export function AiEmailWriter({
               ) : (
                 <p className="mt-3 text-xs text-muted">
                   {canEditBrand
-                    ? "No brands yet — click “+ Add brand” to create Alpine, Everest, etc."
+                    ? "No brands yet: click “+ Add brand” to create Alpine, Everest, etc."
                     : "No brand memory yet. Ask an admin to add one."}
                 </p>
               )}

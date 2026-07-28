@@ -12,7 +12,7 @@ interface ThreadMessage {
 }
 
 /**
- * In-app reading view for a recipient's Gmail thread — reads it live via
+ * In-app reading view for a recipient's Gmail thread: reads it live via
  * Gmail (not the truncated 280-char snippet cached on the recipient doc),
  * so replies can be read without leaving the app or opening Gmail.
  */

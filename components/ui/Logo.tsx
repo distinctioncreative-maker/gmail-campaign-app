@@ -1,7 +1,7 @@
 /**
- * Cadence brand mark: a soft monoline "pulse" — the rhythm of outreach —
- * paired with the wordmark. No filled square, no initials. Theme-aware
- * (uses currentColor / the brand gradient), scalable.
+ * Cadence brand mark: a soft monoline "pulse" representing the rhythm of
+ * outreach, paired with the wordmark. No filled square, no initials.
+ * Theme-aware (uses currentColor / the brand gradient) and scalable.
  */
 
 export const APP_NAME = "Cadence";
@@ -22,7 +22,7 @@ export function LogoMark({ size = 28, className = "" }: { size?: number; classNa
           <stop offset="1" stopColor="var(--brand-to)" />
         </linearGradient>
       </defs>
-      {/* rounded container ring — hairline, not a filled square */}
+      {/* rounded container ring: hairline, not a filled square */}
       <rect x="1.25" y="1.25" width="29.5" height="29.5" rx="9" stroke="url(#cadence-mark)" strokeWidth="1.6" opacity="0.28" />
       {/* the pulse / cadence wave */}
       <path

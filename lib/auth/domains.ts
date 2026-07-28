@@ -21,8 +21,8 @@ export function allowlistMisconfigured(allowedDomains: string[], isProduction: b
 }
 
 /**
- * An account is allowed when its email domain is on the list, and — when
- * Google supplied an hd claim — that claim is also on the list. The hd
+ * An account is allowed when its email domain is on the list, and: when
+ * Google supplied an hd claim: that claim is also on the list. The hd
  * claim alone is never sufficient; the email domain is always checked.
  * An empty allowlist means no restriction (development only).
  */

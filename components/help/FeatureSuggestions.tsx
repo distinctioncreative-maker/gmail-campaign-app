@@ -44,7 +44,7 @@ export function FeatureSuggestions() {
       setText("");
       toast(res.message ?? "Suggestion sent.", "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Couldn't send that — try again.", "error");
+      toast(err instanceof Error ? err.message : "Couldn't send that: try again.", "error");
     } finally {
       setBusy(false);
     }
@@ -53,7 +53,7 @@ export function FeatureSuggestions() {
   return (
     <div className="card p-5">
       <p className="text-sm text-muted">
-        Have an idea to make the app better? Suggest it — the team can see every idea here.
+        Have an idea to make the app better? Suggest it: the team can see every idea here.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <input
@@ -75,7 +75,7 @@ export function FeatureSuggestions() {
       {items === null ? (
         <p className="mt-4 text-sm text-muted/70">Loading ideas…</p>
       ) : items.length === 0 ? (
-        <p className="mt-4 text-sm text-muted/70">No suggestions yet — be the first.</p>
+        <p className="mt-4 text-sm text-muted/70">No suggestions yet: be the first.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {items.map((s) => (

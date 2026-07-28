@@ -18,7 +18,7 @@ type Params = { params: Promise<{ campaignId: string; recipientId: string }> };
  * Reverse a false-positive unsubscribe: the person replied normally but the
  * detector read it as an opt-out. Reclassifies the recipient as REPLIED,
  * lifts the do-not-email suppression, and fixes the counters. Follow-ups
- * that were cancelled stay cancelled (they replied — sequences stop anyway).
+ * that were cancelled stay cancelled (they replied: sequences stop anyway).
  */
 export const POST = handleApiErrors(async (_req: NextRequest, { params }: Params) => {
   const ctx = await requireUser();
@@ -61,7 +61,7 @@ export const POST = handleApiErrors(async (_req: NextRequest, { params }: Params
 
   await recordEvent(owner, campaignId, {
     type: "REPLY",
-    message: `${recipient.emailSnapshot} was mistakenly marked unsubscribed — corrected to a real reply and removed from the do-not-email list.`,
+    message: `${recipient.emailSnapshot} was mistakenly marked unsubscribed: corrected to a real reply and removed from the do-not-email list.`,
     severity: "INFO",
     recipientEmail: recipient.emailSnapshot,
   });

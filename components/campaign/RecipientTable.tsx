@@ -175,7 +175,7 @@ export function RecipientTable({
     if (r.sentAt) return <span className="text-muted">Sent <LocalTime value={r.sentAt} /></span>;
     if (r.scheduledAt && ["PENDING", "SCHEDULED"].includes(r.status))
       return <span className="text-muted">Planned <LocalTime value={r.scheduledAt} /></span>;
-    return <span className="text-muted/50">—</span>;
+    return <span className="text-muted/50">: </span>;
   }
 
   return (
@@ -229,7 +229,7 @@ export function RecipientTable({
                     <tbody>
                       {group.map((r) => (
                         <tr key={r.recipientId} className="border-t border-border hover:bg-surface-2">
-                          <td className="px-3 py-2 font-medium">{r.fullName || "—"}</td>
+                          <td className="px-3 py-2 font-medium">{r.fullName || "Not available"}</td>
                           <td className="px-3 py-2 text-muted">{r.email}</td>
                           <td className="px-3 py-2 text-xs">{timeCell(r)}</td>
                           <td className="px-3 py-2 text-right">{rowActions(r)}</td>
@@ -267,7 +267,7 @@ export function RecipientTable({
                       key={r.recipientId}
                       className="border-b border-border last:border-0 hover:bg-surface-2/60"
                     >
-                      <td className="px-3 py-2 font-medium">{r.fullName || "—"}</td>
+                      <td className="px-3 py-2 font-medium">{r.fullName || "Not available"}</td>
                       <td className="px-3 py-2 text-muted">{r.email}</td>
                       <td className="px-3 py-2">
                         <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>

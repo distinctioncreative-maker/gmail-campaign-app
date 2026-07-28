@@ -25,7 +25,7 @@ export interface CampaignDiagnosis {
 
 /**
  * Plain-language health check for a campaign: answers "why aren't my emails
- * sending?" using data the app already has. No new tracking — reads the Gmail
+ * sending?" using data the app already has. No new tracking: reads the Gmail
  * connection, sender profile, template, Cloud Tasks config, send window, daily
  * cap, and the campaign's own queue.
  */
@@ -53,7 +53,7 @@ export async function diagnoseCampaign(
   checks.push(
     connection?.status === "CONNECTED"
       ? { label: "Gmail connected", status: "ok", detail: `Sending from ${connection.connectedEmail}.` }
-      : { label: "Gmail connected", status: "fail", detail: "Connect Gmail in Settings — nothing can send without it." }
+      : { label: "Gmail connected", status: "fail", detail: "Connect Gmail in Settings: nothing can send without it." }
   );
 
   // 2. Required sender details (commercial-email compliance)
@@ -63,7 +63,7 @@ export async function diagnoseCampaign(
   checks.push(
     missingProfile.length === 0
       ? { label: "Sender details complete", status: "ok", detail: "Mailing address and opt-out text are set." }
-      : { label: "Sender details complete", status: "fail", detail: `Add your ${missingProfile.join(" and ")} in Settings — required to send.` }
+      : { label: "Sender details complete", status: "fail", detail: `Add your ${missingProfile.join(" and ")} in Settings: required to send.` }
   );
 
   // 3. Email content
@@ -79,7 +79,7 @@ export async function diagnoseCampaign(
   checks.push(
     tasksConfigured()
       ? { label: "Background sending", status: "ok", detail: "The sending service is configured." }
-      : { label: "Background sending", status: "fail", detail: "Cloud Tasks isn't set up yet — an administrator must finish setup before emails send." }
+      : { label: "Background sending", status: "fail", detail: "Cloud Tasks isn't set up yet: an administrator must finish setup before emails send." }
   );
 
   // 5. Campaign status
@@ -88,9 +88,9 @@ export async function diagnoseCampaign(
     campaign.status === "ACTIVE"
       ? { label: "Campaign is running", status: "ok", detail: "The campaign is active and sending." }
       : campaign.status === "PAUSED"
-        ? { label: "Campaign is running", status: "warn", detail: "Paused — resume it to continue sending." }
+        ? { label: "Campaign is running", status: "warn", detail: "Paused: resume it to continue sending." }
         : campaign.status === "DRAFT"
-          ? { label: "Campaign is running", status: "warn", detail: "Still a draft — launch it to start sending." }
+          ? { label: "Campaign is running", status: "warn", detail: "Still a draft: launch it to start sending." }
           : { label: "Campaign is running", status: campaign.status === "COMPLETED" ? "ok" : "warn", detail: `Status: ${statusLabel}.` }
   );
 
@@ -99,7 +99,7 @@ export async function diagnoseCampaign(
   checks.push(
     inWindow
       ? { label: "Inside the send window", status: "ok", detail: `Sending hours are ${campaign.schedule.sendWindowStart}–${campaign.schedule.sendWindowEnd}.` }
-      : { label: "Inside the send window", status: "warn", detail: `Outside sending hours (${campaign.schedule.sendWindowStart}–${campaign.schedule.sendWindowEnd}) — emails resume at the next allowed time.` }
+      : { label: "Inside the send window", status: "warn", detail: `Outside sending hours (${campaign.schedule.sendWindowStart}–${campaign.schedule.sendWindowEnd}): emails resume at the next allowed time.` }
   );
 
   // 7. Daily limit

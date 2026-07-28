@@ -9,7 +9,7 @@ const BodySchema = z.object({
   contactIds: z.array(z.string().min(1)).min(1).max(2000),
 });
 
-/** Bulk lead operations — delete or toggle Do-Not-Email for many at once.
+/** Bulk lead operations: delete or toggle Do-Not-Email for many at once.
  * Scoped to the signed-in user's own contacts by document path. */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();

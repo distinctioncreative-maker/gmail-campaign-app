@@ -52,7 +52,7 @@ export function errorSummary(err: unknown, ctx: ErrorContext = {}): ErrorSummary
  * Record an unexpected error: always a structured console line (picked up by
  * Cloud Run logs), plus a best-effort webhook post when ERROR_WEBHOOK_URL is
  * configured (Slack/Sentry-ingest/etc.). Never throws and never blocks the
- * request — webhook failures are swallowed.
+ * request: webhook failures are swallowed.
  */
 export function reportError(err: unknown, ctx: ErrorContext = {}): void {
   const summary = errorSummary(err, ctx);
@@ -63,7 +63,7 @@ export function reportError(err: unknown, ctx: ErrorContext = {}): void {
   void fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: `⚠️ ${summary.scope}: ${summary.name} — ${summary.message}`, summary }),
+    body: JSON.stringify({ text: `⚠️ ${summary.scope}: ${summary.name}: ${summary.message}`, summary }),
   }).catch(() => {
     /* Alerting is best-effort; never let it affect the request. */
   });

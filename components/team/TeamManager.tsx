@@ -40,7 +40,7 @@ export function TeamManager({
       done?.();
       router.refresh();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "That didn't work — try again.", "error");
+      toast(err instanceof Error ? err.message : "That didn't work: try again.", "error");
     } finally {
       setBusy(false);
     }
@@ -140,13 +140,13 @@ export function TeamManager({
         </button>
       </div>
       <p className="mt-2 text-xs text-muted/70">
-        Team Leads need the Manager role — set roles in Administration.
+        Team Leads need the Manager role: set roles in Administration.
       </p>
     </div>
   );
 }
 
-/** Add/remove reps on one team — shown to that team's lead and admins. */
+/** Add/remove reps on one team: shown to that team's lead and admins. */
 export function RosterActions({
   teamId,
   assignable,
@@ -215,7 +215,7 @@ export function RemoveFromTeamButton({
   async function remove() {
     const ok = await confirm({
       title: "Remove from team?",
-      body: `${email} keeps all their campaigns and data — they just leave this team.`,
+      body: `${email} keeps all their campaigns and data: they just leave this team.`,
       confirmLabel: "Remove",
     });
     if (!ok) return;

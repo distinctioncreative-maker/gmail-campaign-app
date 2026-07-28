@@ -30,7 +30,7 @@ export async function runReplyScan(owner: OwnerRef): Promise<ScanResult> {
   const message =
     parts.length > 0
       ? `Found ${parts.join(" and ")}.`
-      : `Checked ${replies.checked} recipient${replies.checked === 1 ? "" : "s"} — no new replies or bounces yet.`;
+      : `Checked ${replies.checked} recipient${replies.checked === 1 ? "" : "s"}: no new replies or bounces yet.`;
 
   return { ...replies, ...bounces, contactsSynced, message };
 }

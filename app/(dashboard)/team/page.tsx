@@ -124,7 +124,7 @@ function Leaderboard({
                   />
                 </div>
                 <span className="w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-muted">
-                  {s.sent > 0 ? formatPercent(s.replyRate) : "—"}
+                  {s.sent > 0 ? formatPercent(s.replyRate) : "Not available"}
                 </span>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default async function TeamPage() {
         description={
           isAdmin
             ? "Every team's performance, plus team setup. Reps only ever see their own data."
-            : "Your team's performance. Add or remove reps — their data stays their own."
+            : "Your team's performance. Add or remove reps: their data stays their own."
         }
       />
 
@@ -209,7 +209,7 @@ export default async function TeamPage() {
       {visibleTeams.length === 0 ? (
         <div className="card p-8 text-center text-sm text-muted">
           {isAdmin
-            ? "No teams yet — create the first one above."
+            ? "No teams yet: create the first one above."
             : "You're not leading a team yet. Ask your administrator to make you the lead of a team."}
         </div>
       ) : (
@@ -226,7 +226,7 @@ export default async function TeamPage() {
                   <div>
                     <h2 className="text-lg font-semibold">{team.name}</h2>
                     <p className="text-xs text-muted">
-                      Lead: {team.leadUserId ? (emailById.get(team.leadUserId) ?? "—") : "none yet"} ·{" "}
+                      Lead: {team.leadUserId ? (emailById.get(team.leadUserId) ?? "Not available") : "none yet"} ·{" "}
                       {roster.length} rep{roster.length === 1 ? "" : "s"}
                     </p>
                   </div>

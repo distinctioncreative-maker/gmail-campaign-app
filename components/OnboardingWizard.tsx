@@ -97,7 +97,7 @@ export function OnboardingWizard({
           <>
             <h1 className="text-2xl font-semibold">Welcome, {displayName.split(" ")[0]} 👋</h1>
             <ul className="mt-4 space-y-3 text-muted">
-              <li>✉️ Emails send from <strong>your own Gmail</strong> — replies land in your inbox.</li>
+              <li>✉️ Emails send from <strong>your own Gmail</strong>: replies land in your inbox.</li>
               <li>🔒 Your leads and campaigns are <strong>private to you</strong>.</li>
               <li>🛑 When someone replies, follow-ups to them <strong>stop automatically</strong>.</li>
               <li>👀 You&apos;re responsible for reviewing recipients and messages before sending.</li>
@@ -163,7 +163,7 @@ export function OnboardingWizard({
           <>
             <h1 className="text-2xl font-semibold">Sending defaults</h1>
             <p className="mt-1 text-sm text-muted">
-              Safe defaults are pre-filled — most people keep them.
+              Safe defaults are pre-filled: most people keep them.
             </p>
             <div className="mt-4">
               <ProfileForm
@@ -199,7 +199,7 @@ export function OnboardingWizard({
                   disabled={busy}
                   className="mt-4 btn-primary px-5 py-2.5"
                 >
-                  It looked good — finish setup
+                  It looked good: finish setup
                 </button>
               </>
             )}
@@ -210,7 +210,7 @@ export function OnboardingWizard({
           <>
             <h1 className="text-2xl font-semibold">You&apos;re all set 🎉</h1>
             <p className="mt-3 text-muted">
-              Import your leads and build your first email — campaigns are next.
+              Import your leads and build your first email: campaigns are next.
             </p>
             <div className="mt-5 flex gap-3">
               <Link

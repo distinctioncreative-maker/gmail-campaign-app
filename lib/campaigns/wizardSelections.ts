@@ -51,7 +51,7 @@ export interface ListScopedCounts {
 
 /**
  * Contact counts scoped to the chosen list (or every contact, if no list is
- * picked) — not the user's entire contact universe, which used to make
+ * picked), not the user's entire contact universe, which used to make
  * "excluded" reflect suppressions/bounces across every contact they've ever
  * imported instead of just the people relevant to this campaign.
  */

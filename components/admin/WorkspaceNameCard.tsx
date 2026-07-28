@@ -34,8 +34,8 @@ export function WorkspaceNameCard({ initial }: { initial: string }) {
     <div className="card p-6">
       <h2 className="font-medium">Workspace name</h2>
       <p className="mt-1 text-sm text-muted">
-        Your company&apos;s name, shown in the sidebar and on Home for everyone in this workspace —
-        e.g. “Alpine Funding Partners” or “Everest Business Funding”.
+        Your company&apos;s name, shown in the sidebar and on Home for everyone in this workspace.
+        For example, “Alpine Funding Partners” or “Everest Business Funding”.
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <input

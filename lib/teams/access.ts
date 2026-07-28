@@ -1,7 +1,7 @@
 import type { Role } from "@/schemas/common";
 
 /**
- * Pure team-visibility rules — no Firestore access, fully unit-testable.
+ * Pure team-visibility rules: no Firestore access, fully unit-testable.
  *
  * ADMIN      → sees and manages everyone and every team.
  * MANAGER    → sees the members of teams they lead (plus themselves);

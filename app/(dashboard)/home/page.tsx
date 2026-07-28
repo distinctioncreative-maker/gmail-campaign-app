@@ -74,10 +74,10 @@ export default async function HomePage({
     (c) => c.sentCount > 0 || ["ACTIVE", "PAUSED", "COMPLETED", "STOPPED"].includes(c.status)
   );
   const setupSteps = [
-    { done: gmailConnected, label: "Connect your Gmail", desc: "Send from your own inbox — takes a minute.", href: "/settings", cta: "Connect" },
+    { done: gmailConnected, label: "Connect your Gmail", desc: "Send from your own inbox: takes a minute.", href: "/settings", cta: "Connect" },
     { done: totalLeads > 0, label: "Import your leads", desc: "Paste from Salesforce or upload a CSV.", href: "/leads", cta: "Import" },
     { done: templates.length > 0, label: "Create a template", desc: "Write one yourself or let AI draft it.", href: "/templates/new", cta: "Create" },
-    { done: hasLaunched, label: "Launch a test campaign", desc: "A few leads in test mode — safe practice.", href: "/campaigns/new", cta: "Launch" },
+    { done: hasLaunched, label: "Launch a test campaign", desc: "A few leads in test mode: safe practice.", href: "/campaigns/new", cta: "Launch" },
   ];
   const setupDone = setupSteps.filter((s) => s.done).length;
   const nextStepIdx = setupSteps.findIndex((s) => !s.done);
@@ -248,7 +248,7 @@ export default async function HomePage({
               </span>
             </div>
             <p className={`mt-3 text-3xl font-semibold tracking-tight tabular-nums ${o.accent}`}>
-              {o.dash ? "—" : <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />}
+              {o.dash ? "Not available" : <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />}
             </p>
             <span className="mt-1 flex items-center gap-1 text-xs font-medium text-muted/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:text-primary">
               View <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
@@ -286,7 +286,7 @@ export default async function HomePage({
       {setupDone < setupSteps.length ? (
         <div className="card p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-medium">Get set up — {setupDone} of {setupSteps.length} done</h2>
+            <h2 className="font-medium">Get set up: {setupDone} of {setupSteps.length} done</h2>
             <span className="text-xs font-medium text-muted/70">A few minutes to your first send</span>
           </div>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">

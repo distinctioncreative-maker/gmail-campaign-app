@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 // The @google-cloud/tasks client pulls in a heavy gRPC/protobuf stack. Import
 // it lazily and only when Cloud Tasks is actually configured, so routes that
 // merely reference this module (e.g. the campaign launch route) don't load it
-// on every request — which on a small Cloud Run instance can spike memory and
+// on every request: which on a small Cloud Run instance can spike memory and
 // get the container OOM-killed mid-request (surfacing as a bare 500).
 let client: CloudTasksClient | undefined;
 /** Cloud Tasks rejects schedule times more than 30 days ahead. Keep one day
@@ -54,7 +54,7 @@ export function tasksConfigured(): boolean {
 
 /**
  * Schedule an HTTP task hitting our worker route at `scheduleAtMs`.
- * Payload carries only IDs — never lead data or tokens (spec §14).
+ * Payload carries only IDs: never lead data or tokens (spec §14).
  */
 export async function enqueueTask(
   path: WorkerPath,
@@ -101,13 +101,13 @@ export async function enqueueTask(
 }
 
 /** Best-effort delete of a not-yet-dispatched task (cancellation path).
- * Workers still re-check state — this is an optimization, not a guarantee. */
+ * Workers still re-check state: this is an optimization, not a guarantee. */
 export async function deleteTask(cloudTaskName: string): Promise<void> {
   if (!tasksConfigured()) return;
   try {
     const client = await tasks();
     await client.deleteTask({ name: cloudTaskName }, { timeout: 15_000 });
   } catch {
-    // Already dispatched or gone — the worker's re-check handles it.
+    // Already dispatched or gone: the worker's re-check handles it.
   }
 }

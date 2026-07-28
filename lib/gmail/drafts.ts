@@ -69,7 +69,7 @@ function buildReplyMime(input: { to: string; subject: string; htmlBody: string }
 
 /**
  * Create a Gmail draft that lives inside an existing thread. Drafts never
- * send on their own, so this is safe regardless of test/live mode — the rep
+ * send on their own, so this is safe regardless of test/live mode: the rep
  * opens it in Gmail, edits, and sends manually.
  */
 export async function createReplyDraft(

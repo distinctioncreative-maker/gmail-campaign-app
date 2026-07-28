@@ -16,7 +16,7 @@ const EnvSchema = z.object({
   // Optional alerting sink for unexpected server errors (Slack incoming
   // webhook, Sentry ingest, etc.). Unset = structured console logs only.
   ERROR_WEBHOOK_URL: z.string().default(""),
-  // Stripe billing. All optional — when STRIPE_SECRET_KEY is unset, billing
+  // Stripe billing. All optional: when STRIPE_SECRET_KEY is unset, billing
   // is a no-op and the pricing UI stays "coming soon".
   STRIPE_SECRET_KEY: z.string().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().default(""),

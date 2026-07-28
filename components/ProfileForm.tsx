@@ -103,7 +103,7 @@ export function ProfileForm({
         Company mailing address
         <HelpTip text="US anti-spam law (CAN-SPAM) requires a real physical mailing address in marketing emails. A PO box or suite is fine." />
         <span className="block text-xs font-normal text-muted">
-          Shown in the footer of your emails — required for commercial email rules.
+          Shown in the footer of your emails: required for commercial email rules.
         </span>
         <input value={profile.physicalAddress} onChange={(e) => set("physicalAddress", e.target.value)} className={input} />
       </label>
@@ -111,7 +111,7 @@ export function ProfileForm({
       <label className="mt-4 block text-sm font-medium text-foreground">
         Opt-out sentence
         <span className="block text-xs font-normal text-muted">
-          Lets people decline future emails — required for commercial email rules.
+          Lets people decline future emails: required for commercial email rules.
         </span>
         <textarea
           value={profile.unsubscribeText}
@@ -126,9 +126,9 @@ export function ProfileForm({
         <span className="block text-xs font-normal text-muted">
           Paste your own signature (plain text or HTML from Gmail). Drop{" "}
           <code className="rounded bg-surface-2 px-1">{"{{signature}}"}</code> into any template
-          where you want it to appear — then you don&apos;t need to fill in the name/title/phone
+          where you want it to appear: then you don&apos;t need to fill in the name/title/phone
           fields above unless a template uses those placeholders directly.{" "}
-          <strong>Leave this blank to turn the signature off</strong> — handy when your email
+          <strong>Leave this blank to turn the signature off</strong>: handy when your email
           already includes a signature (for example, a Gmail draft you imported). A blank
           signature just removes{" "}
           <code className="rounded bg-surface-2 px-1">{"{{signature}}"}</code> instead of
@@ -156,7 +156,7 @@ export function ProfileForm({
         <>
           <h3 className="mt-6 border-t border-border pt-4 font-medium">Sending defaults</h3>
           <p className="text-xs text-muted">
-            Used as the starting point for new campaigns — you can adjust each campaign
+            Used as the starting point for new campaigns: you can adjust each campaign
             individually.
           </p>
 

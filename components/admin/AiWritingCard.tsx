@@ -11,7 +11,7 @@ interface State {
 /**
  * Admin master switch for all AI writing features (email writer, improve,
  * subject ideas, reply drafts, sequence drafting, per-lead openers). Off by
- * default — when off, none of the AI controls appear anywhere in the app.
+ * default: when off, none of the AI controls appear anywhere in the app.
  */
 export function AiWritingCard() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 "use client";
 
 /* This overlay measures live DOM elements and positions itself from effects,
-   which inherently sets state after layout — the lint rule doesn't apply. */
+   which inherently sets state after layout: the lint rule doesn't apply. */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useState } from "react";
 
@@ -24,7 +24,7 @@ const STEPS: Step[] = [
     selector: '[data-tour="nav-leads"]',
     emoji: "👥",
     title: "1. Leads",
-    body: "Start here. Paste a lead list from Salesforce or upload a CSV — the app checks for duplicates and opt-outs automatically.",
+    body: "Start here. Paste a lead list from Salesforce or upload a CSV: the app checks for duplicates and opt-outs automatically.",
   },
   {
     selector: '[data-tour="nav-templates"]',

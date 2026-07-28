@@ -32,7 +32,7 @@ export function ImportChooser({ listId }: { listId?: string }) {
         <p className="text-2xl">📄</p>
         <p className="mt-2 font-medium">Upload CSV <span className="align-middle text-[10px] font-semibold uppercase tracking-wide text-green-600">Recommended</span></p>
         <p className="mt-1 text-sm text-muted">
-          Export from Salesforce as CSV and drop it here — the most reliable, keeps every column
+          Export from Salesforce as CSV and drop it here: the most reliable, keeps every column
         </p>
       </button>
       <button
@@ -42,14 +42,14 @@ export function ImportChooser({ listId }: { listId?: string }) {
         <p className="text-2xl">📋</p>
         <p className="mt-2 font-medium">Paste leads</p>
         <p className="mt-1 text-sm text-muted">
-          Copy rows straight from a Salesforce list view — we match leads by email automatically
+          Copy rows straight from a Salesforce list view: we match leads by email automatically
         </p>
       </button>
       <div className="rounded-2xl bg-surface p-6 opacity-60 shadow-sm">
         <p className="text-2xl">⚡</p>
         <p className="mt-2 font-medium">Salesforce Lightning sync</p>
         <p className="mt-1 text-sm text-muted">
-          One-click connect to pull leads directly — <span className="font-medium text-primary">coming soon</span>
+          One-click connect to pull leads directly: <span className="font-medium text-primary">coming soon</span>
         </p>
       </div>
       <div className="rounded-2xl bg-surface p-6 opacity-60 shadow-sm">

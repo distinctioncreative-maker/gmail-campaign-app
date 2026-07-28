@@ -22,7 +22,7 @@ export function aiWritingEnabled(settings: { aiEnabled: boolean }): boolean {
   return isAiAvailable(aiKeyConfigured(), settings.aiEnabled);
 }
 
-/** Guard for AI generation routes — throws the friendly not-configured error
+/** Guard for AI generation routes: throws the friendly not-configured error
  * (surfaced as 503) when AI writing is off for this org. */
 export function assertAiWritingEnabled(settings: { aiEnabled: boolean }): void {
   if (!aiWritingEnabled(settings)) {

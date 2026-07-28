@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./landing.module.css";
 
-/** "$8.25M" / "$185K" — MCA deal sizes read as rounded, spoken figures, not
+/** "$8.25M" / "$185K": MCA deal sizes read as rounded, spoken figures, not
  * fake-precise dollar counts. */
 function formatMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
@@ -217,8 +217,8 @@ function TypedDraft() {
 
 /**
  * Hero animation: the one distinctive visual for the whole page. Two lanes
- * of outreach sweep up and out of the inbox on the left — mass mailing as a
- * visible stream, not a single thin thread — a share peels off as a reply
+ * of outreach sweep up and out of the inbox on the left: mass mailing as a
+ * visible stream, not a single thin thread: a share peels off as a reply
  * and slams into a live, self-leveling pipeline stack on the right, and a
  * huge translucent watermark of the running total dominates the scene
  * behind it all. "Send → reply → revenue" as one continuous, unmistakably
@@ -241,11 +241,11 @@ function HeroPipeline() {
 
     const rng = (a: number, b: number) => a + Math.random() * (b - a);
     const ease = (a: number, b: number, f: number) => a + (b - a) * f;
-    // Real MCA deal sizes, not toy numbers — rounded to how funders actually
+    // Real MCA deal sizes, not toy numbers: rounded to how funders actually
     // quote them ("a $185K deal"), not a fake-precise $184,732.
     const dealAmount = () => Math.round(rng(10, 500) / 5) * 5 * 1000;
 
-    // Two converging lanes (upper + lower) instead of one thin thread — the
+    // Two converging lanes (upper + lower) instead of one thin thread: the
     // shape itself reads as "mass mailing," not a single careful email.
     const inboxX = W * 0.065, inboxY = H * 0.5;
     const deliverX = W * 0.76, deliverY = H * 0.5;
@@ -263,12 +263,12 @@ function HeroPipeline() {
     };
 
     const BAR_COUNT = 6;
-    // Kept well clear of the right edge — the deal popup's glow is wide
+    // Kept well clear of the right edge: the deal popup's glow is wide
     // enough that a bar sitting too close to the frame clips its label.
     const barBaseX = W * 0.78, barBaseY = H * 0.86, barMaxH = H * 0.58, barGap = W * 0.024;
     const bars = Array.from({ length: BAR_COUNT }, () => ({ h: rng(10, 40), target: rng(10, 40) }));
 
-    // Slow drifting depth field behind everything — cheap parallax that
+    // Slow drifting depth field behind everything: cheap parallax that
     // keeps the scene from reading as a flat, empty rectangle.
     const STAR_COUNT = 46;
     const stars = Array.from({ length: STAR_COUNT }, () => ({
@@ -326,7 +326,7 @@ function HeroPipeline() {
       const fade = Math.min(1, e.t * 8) * Math.min(1, (1 - e.t) * 8 + 0.15);
       const scale = e.big ? 1.7 : 1;
 
-      // Longer, brighter trail — this is what turns dots into a fast,
+      // Longer, brighter trail: this is what turns dots into a fast,
       // purposeful streak instead of a Pong ball.
       for (let i = 9; i >= 1; i--) {
         const tt = Math.max(0, e.t - i * 0.01);
@@ -404,7 +404,7 @@ function HeroPipeline() {
         ctx.shadowBlur = 16;
         ctx.fill();
         ctx.shadowBlur = 0;
-        // Bright glowing cap on top — makes the bars read as "alive," not static fills.
+        // Bright glowing cap on top: makes the bars read as "alive," not static fills.
         ctx.beginPath();
         ctx.fillStyle = "#eafff2";
         ctx.shadowColor = "#eafff2";
@@ -534,7 +534,7 @@ function HeroPipeline() {
     };
 
     if (reduce) {
-      // Static, representative frame — no motion, no faked "live" numbers.
+      // Static, representative frame: no motion, no faked "live" numbers.
       for (let i = 0; i < BAR_COUNT; i++) bars[i].h = bars[i].target = rng(30, barMaxH * 0.85);
       for (let i = 0; i < 6; i++) envelopes.push({ t: rng(0.15, 0.85), speed: 0, lane: i % 2, reply: i % 2 === 0, big: false });
       draw(0);
@@ -600,8 +600,15 @@ function HeroPipeline() {
               style={{ left: `${d.xPct}%`, top: `${d.yPct}%` }}
             >
               <span className={styles.pipeDealGlow} aria-hidden="true" />
-              <span className={styles.pipeDealEmoji} aria-hidden="true">{d.big ? "🤑" : "💰"}</span>
+              <span className={styles.pipeDealSignal} aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M4 19V5M4 19h16" />
+                  <path d="m7 15 4-4 3 2 5-7" />
+                  <path d="M15.5 6H19v3.5" />
+                </svg>
+              </span>
               <span className={styles.pipeDealAmount}>{d.label}</span>
+              <span className={styles.pipeDealLabel}>Qualified opportunity</span>
             </div>
           ))}
         </div>

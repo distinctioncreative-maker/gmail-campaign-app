@@ -61,8 +61,8 @@ export async function releaseLeads(ctx: AuthContext, campaign: Campaign): Promis
     });
   }
   return freed > 0
-    ? `${freed} leads freed — they can be used in new campaigns again.`
-    : "No leads needed freeing — everyone in this campaign was actually emailed.";
+    ? `${freed} leads freed: they can be used in new campaigns again.`
+    : "No leads needed freeing: everyone in this campaign was actually emailed.";
 }
 
 export async function pauseCampaign(ctx: AuthContext, campaign: Campaign): Promise<string> {
@@ -118,7 +118,7 @@ export async function resumeCampaign(ctx: AuthContext, campaign: Campaign): Prom
 
   await recordEvent(owner, campaign.campaignId, {
     type: "RESUMED",
-    message: `Campaign resumed — ${open.length} remaining emails rescheduled.`,
+    message: `Campaign resumed: ${open.length} remaining emails rescheduled.`,
     severity: "INFO",
     recipientEmail: null,
   });
@@ -191,7 +191,7 @@ export async function updatePace(
 
   await recordEvent(owner, campaign.campaignId, {
     type: "PACE_UPDATED",
-    message: `Sending pace updated — up to ${schedule.dailySendLimit}/day, ${schedule.emailsPerBatch} per batch. ${open.length} remaining emails rescheduled.`,
+    message: `Sending pace updated: up to ${schedule.dailySendLimit}/day, ${schedule.emailsPerBatch} per batch. ${open.length} remaining emails rescheduled.`,
     severity: "INFO",
     recipientEmail: null,
   });
@@ -240,7 +240,7 @@ export async function cancelAndDeleteDrafts(
           });
           deleted++;
         } catch {
-          // Draft already gone — fine.
+          // Draft already gone: fine.
         }
       }
     }
@@ -338,7 +338,7 @@ export async function retryFailed(ctx: AuthContext, campaign: Campaign): Promise
   );
 
   // Re-space with the campaign's real pacing (batches, per-email delay,
-  // inter-batch gap, send window) — not a flat interval — so failed sends
+  // inter-batch gap, and send window), not a flat interval, so failed sends
   // throttle exactly like a fresh launch. Merely unpublished durable work
   // keeps its original future schedule and is never pulled forward.
   const times = computeSendTimestamps(now + 30_000, errors.length, campaign.schedule);
@@ -375,9 +375,9 @@ export async function retryFailed(ctx: AuthContext, campaign: Campaign): Promise
     }
   }
 
-  if (toRetry.length === 0) return "Nothing needs retrying — every email is already scheduled.";
+  if (toRetry.length === 0) return "Nothing needs retrying: every email is already scheduled.";
   if (requeued < toRetry.length) {
-    return `Re-scheduled ${requeued} of ${toRetry.length} emails. The sending service is still not reachable — check Cloud Tasks setup and try again.`;
+    return `Re-scheduled ${requeued} of ${toRetry.length} emails. The sending service is still not reachable: check Cloud Tasks setup and try again.`;
   }
   return `Re-scheduled ${requeued} emails to send.`;
 }

@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/UIProviders";
 
 /**
  * Runs an on-demand reply + bounce scan across the user's mailbox and refreshes
- * the analytics so newly-detected replies show up immediately — for when a real
+ * the analytics so newly-detected replies show up immediately: for when a real
  * reply came in but the periodic sweep hasn't reconciled it yet.
  */
 export function ScanRepliesButton() {

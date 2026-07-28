@@ -35,7 +35,7 @@ const CreateSchema = z.object({
   draftStrategy: DraftStrategySchema.default("SEND"),
   /** When the campaign was started from a saved lead list, its id. */
   sourceListId: z.string().nullable().default(null),
-  /** Optional open/click tracking — off by default, see CampaignSchema. */
+  /** Optional open/click tracking: off by default, see CampaignSchema. */
   trackingEnabled: z.boolean().default(false),
   acceptPaceRisk: z.boolean().default(false),
 });

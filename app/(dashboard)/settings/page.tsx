@@ -79,7 +79,7 @@ export default async function SettingsPage({
         <div className="animate-rise" style={{ animationDelay: "70ms" }}>
           <CollapsibleCard
             title="Sender profile & sending defaults"
-            description="Optional — fills in your signature, footer, and default campaign pacing. Not using it? Collapse it and it stays out of your way."
+            description="Optional: fills in your signature, footer, and default campaign pacing. Not using it? Collapse it and it stays out of your way."
             storageKey="settings.senderProfile"
             defaultOpen={false}
           >

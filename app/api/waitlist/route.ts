@@ -12,7 +12,7 @@ const BodySchema = z.object({
   source: z.string().trim().max(60).optional(),
 });
 
-// At most this many signups per client per hour — enough for honest use, low
+// At most this many signups per client per hour: enough for honest use, low
 // enough to blunt scripted flooding of the collection (and its Firestore cost).
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60 * 60 * 1000;

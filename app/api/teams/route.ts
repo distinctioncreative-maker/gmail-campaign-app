@@ -46,7 +46,7 @@ const CreateSchema = z.object({
   leadUserId: z.string().min(1).nullable().optional(),
 });
 
-/** Create a team. Admin only — admins set up teams and pick each lead. */
+/** Create a team. Admin only: admins set up teams and pick each lead. */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireRole("ADMIN");
   const input = CreateSchema.parse(await req.json());

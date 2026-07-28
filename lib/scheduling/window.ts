@@ -75,7 +75,7 @@ export function currentDayKey(timezone: string): string {
   return localDayKey(Date.now(), timezone);
 }
 
-/** Local calendar day key (YYYY-MM-DD) in the campaign timezone — used for
+/** Local calendar day key (YYYY-MM-DD) in the campaign timezone: used for
  * daily send counters. */
 export function localDayKey(at: number, timezone: string): string {
   const fmt = new Intl.DateTimeFormat("en-CA", {
