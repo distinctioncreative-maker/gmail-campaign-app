@@ -3,6 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./landing.module.css";
 
+/** "$8.25M" / "$185K" — MCA deal sizes read as rounded, spoken figures, not
+ * fake-precise dollar counts. */
+function formatMoney(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `$${Math.round(n / 1000)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
 const CheckIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -217,7 +225,9 @@ function TypedDraft() {
  */
 function HeroPipeline() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [stats, setStats] = useState({ sent: 1284, rep: 96, rev: 41200 });
+  const [stats, setStats] = useState({ sent: 1284, rep: 96, rev: 8250000 });
+  const [deals, setDeals] = useState<Array<{ id: number; label: string; xPct: number; yPct: number }>>([]);
+  const dealIdRef = useRef(0);
 
   useEffect(() => {
     const cv = canvasRef.current;
@@ -229,6 +239,9 @@ function HeroPipeline() {
 
     const rng = (a: number, b: number) => a + Math.random() * (b - a);
     const ease = (a: number, b: number, f: number) => a + (b - a) * f;
+    // Real MCA deal sizes, not toy numbers — rounded to how funders actually
+    // quote them ("a $185K deal"), not a fake-precise $184,732.
+    const dealAmount = () => Math.round(rng(10, 500) / 5) * 5 * 1000;
 
     // Outreach arcs up and over from the inbox on the left, lands at the
     // delivery point, and a share of it peels down into a live pipeline
@@ -250,7 +263,7 @@ function HeroPipeline() {
     const bars = Array.from({ length: BAR_COUNT }, () => ({ h: rng(6, 26), target: rng(6, 26) }));
 
     interface Env { t: number; speed: number; lane: number; reply: boolean; }
-    interface Drop { p: number; from: { x: number; y: number }; to: { x: number; y: number }; bar: number; }
+    interface Drop { p: number; from: { x: number; y: number }; to: { x: number; y: number }; bar: number; amount: number; }
     interface Burst { x: number; y: number; age: number; color: string; }
     const envelopes: Env[] = [];
     const drops: Drop[] = [];
@@ -361,7 +374,15 @@ function HeroPipeline() {
         d.p += dt * 2.1;
         if (d.p >= 1) {
           bursts.push({ x: d.to.x, y: d.to.y, age: 0, color: "#30d158" });
-          bars[d.bar].target = Math.min(barMaxH, bars[d.bar].target + rng(9, 22));
+          // Bigger deals visibly slam the bar chart harder than small ones.
+          const growth = 8 + (d.amount / 500000) * 34;
+          bars[d.bar].target = Math.min(barMaxH, bars[d.bar].target + growth);
+          const id = dealIdRef.current++;
+          setDeals((prev) => [
+            ...prev,
+            { id, label: formatMoney(d.amount), xPct: (d.to.x / W) * 100, yPct: (d.to.y / H) * 100 },
+          ]);
+          setTimeout(() => setDeals((prev) => prev.filter((deal) => deal.id !== id)), 1500);
           drops.splice(i, 1);
           continue;
         }
@@ -415,10 +436,17 @@ function HeroPipeline() {
           sent += 1;
           if (e.reply) {
             rep += 1;
-            rev += Math.round(rng(300, 1800));
+            const amount = dealAmount();
+            rev += amount;
             const shortest = bars.reduce((min, b, idx) => (b.target < bars[min].target ? idx : min), 0);
             const barX = barBaseX + shortest * barGap;
-            drops.push({ p: 0, from: { x: deliverX, y: deliverY }, to: { x: barX, y: barBaseY - bars[shortest].target }, bar: shortest });
+            drops.push({
+              p: 0,
+              from: { x: deliverX, y: deliverY },
+              to: { x: barX, y: barBaseY - bars[shortest].target },
+              bar: shortest,
+              amount,
+            });
           }
           envelopes.splice(i, 1);
           continue;
@@ -490,6 +518,13 @@ function HeroPipeline() {
             </svg>
             Pipeline
           </div>
+          {deals.map((d) => (
+            <div key={d.id} className={styles.pipeDeal} style={{ left: `${d.xPct}%`, top: `${d.yPct}%` }}>
+              <span className={styles.pipeDealGlow} aria-hidden="true" />
+              <span className={styles.pipeDealEmoji} aria-hidden="true">💰</span>
+              <span className={styles.pipeDealAmount}>{d.label}</span>
+            </div>
+          ))}
         </div>
         <div className={styles.pipeStats}>
           <div className={styles.pipeChip}>
@@ -501,7 +536,7 @@ function HeroPipeline() {
             <div className={styles.pipeLab}>Replies earned</div>
           </div>
           <div className={styles.pipeChip}>
-            <div className={styles.pipeVal} style={{ color: "var(--good)" }}>${stats.rev.toLocaleString()}</div>
+            <div className={styles.pipeVal} style={{ color: "var(--good)" }}>{formatMoney(stats.rev)}</div>
             <div className={styles.pipeLab}>Pipeline (simulated)</div>
           </div>
         </div>

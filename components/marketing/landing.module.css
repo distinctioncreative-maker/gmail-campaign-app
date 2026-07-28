@@ -243,6 +243,35 @@
 .pipeEndpointR { color: var(--onDarkMuted); flex-direction: row-reverse; }
 .pipeEndpointR svg { color: var(--good); }
 @media (max-width: 560px) { .pipeEndpoint { display: none; } }
+
+/* A big deal landing — one at a time, gold and unmistakable, not a swarm of
+   emoji. Real MCA deal sizes deserve a moment, not a quiet tick of a number. */
+.pipeDeal {
+  position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column;
+  align-items: center; pointer-events: none; animation: dealPop 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.pipeDealGlow {
+  position: absolute; top: 50%; left: 50%; width: 90px; height: 90px; border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(245, 197, 106, 0.55), rgba(245, 197, 106, 0) 70%);
+  filter: blur(2px);
+}
+.pipeDealEmoji { position: relative; font-size: 34px; line-height: 1; filter: drop-shadow(0 4px 18px rgba(245, 197, 106, 0.65)); }
+.pipeDealAmount {
+  position: relative; margin-top: 2px; font-family: var(--mono); font-weight: 700; font-size: 15px;
+  letter-spacing: 0.02em; background: linear-gradient(120deg, #ffe6ab, #f5c56a 55%, #d89b3c);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 2px 16px rgba(245, 197, 106, 0.4);
+}
+@keyframes dealPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  32% { transform: translate(-50%, -50%) scale(1); }
+  78% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -120%) scale(0.92); }
+}
+@media (prefers-reduced-motion: reduce) { .pipeDeal { animation: none; opacity: 0; } }
+
 .pipeStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
 .pipeChip { background: rgba(0, 0, 0, 0.5); padding: 16px 20px; text-align: left; }
 .pipeVal { font-size: clamp(20px, 3.2vw, 27px); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--onDark); }
