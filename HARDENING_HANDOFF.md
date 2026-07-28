@@ -15,11 +15,11 @@ chat history.
 | Production service | `outreach`, `us-central1`, project `email-tool-502714` |
 | Production owner | Alpine Google Workspace account |
 | Previous release | Hardening PR #1 and registry-fix PR #7 were merged. The operator reported a successful Firestore deployment and corrected Cloud Build deployment of `main` at `703ae2e`; runtime health checks were not independently observed in this workspace |
-| Push/deploy status | Current product branch is local and verified; publish to a draft PR only. Do not merge or deploy this branch |
+| Push/deploy status | The verified implementation tree is published to `codex/enterprise-campaign-workspace` as remote commit `7d3c80f`; draft PR #8 is open with a green quality gate. Do not merge or deploy this branch |
 | Baseline before this branch | Typecheck, lint, 36 test files / 281 unit tests, and production build passed |
-| Last completed gate | Clean install, typecheck, lint, 38 test files / 288 unit tests, 69-route production build, runtime dependency audit, feature-doc generation, diff check, and setup-script syntax check passed |
+| Last completed gate | Clean install, typecheck, lint, 38 test files / 288 unit tests, 69-route production build, runtime dependency audit, feature-doc generation, diff check, and setup-script syntax check passed locally. Draft PR #8 also passed the complete GitHub quality gate, including the Java 21 Firestore emulator suite |
 | Current follow-up | Enterprise campaign intelligence and daily workflow: campaign-scoped reports, campaign command centers, wider template workspace, cleaner leads/help surfaces, first-open notifications, and product strategy |
-| Emulator status | Blocked locally: Java 17 installed; Firebase CLI 15 requires Java 21. GitHub CI installs Temurin 21 and runs it |
+| Emulator status | Blocked locally: Java 17 installed; Firebase CLI 15 requires Java 21. Draft PR #8 passed the suite in GitHub CI with Temurin 21 |
 | CLI status in this terminal | Workspace-local `gh` 2.96.0 is checksum-verified; direct `api.github.com` authentication is blocked by sandbox policy, so publishing uses the connected GitHub app. No global `gcloud`, `firebase`, or `stripe`; repo-local Firebase CLI is installed but not authenticated |
 
 The hardening and public-launch work is preserved in the merged history. This
@@ -401,9 +401,10 @@ bash -n scripts/setup-cloud.sh              # pass
 ```
 
 `npm run test:emulator` remains blocked locally because this container has
-OpenJDK 17.0.19 and Firebase Tools 15 requires Java 21. The GitHub quality
-gate installs Temurin 21 and must pass the Firestore emulator suite before
-this branch is considered merge-ready.
+OpenJDK 17.0.19 and Firebase Tools 15 requires Java 21. Draft PR #8's GitHub
+quality gate installed Temurin 21 and passed the Firestore emulator suite,
+along with install, typecheck, lint, unit tests, production build, and the
+runtime dependency audit.
 
 ## Production state and operator-owned follow-up
 
