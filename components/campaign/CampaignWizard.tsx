@@ -14,6 +14,7 @@ import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import { Icon } from "@/components/ui/Icon";
 import { useConfirm } from "@/components/ui/UIProviders";
 import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
+import { buildLaunchSelections, computeListScopedCounts } from "@/lib/campaigns/wizardSelections";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -232,17 +233,10 @@ export function CampaignWizard() {
     })();
   }, []);
 
-  const counts = useMemo(() => {
-    const list = contacts ?? [];
-    const by = (cls: string[]) => list.filter((c) => cls.includes(c.classification)).length;
-    return {
-      total: list.length,
-      ready: by(["NEW", "EXISTING_NOT_CONTACTED"]),
-      usedBefore: by(["CONTACTED_BEFORE", "REPLIED_BEFORE"]),
-      excluded: by(["EMAIL_OPT_OUT", "UNSUBSCRIBED", "BOUNCED", "SUPPRESSED", "INVALID"]),
-      selected: selected.size,
-    };
-  }, [contacts, selected]);
+  const counts = useMemo(
+    () => ({ ...computeListScopedCounts(contacts ?? [], listFilter), selected: selected.size }),
+    [contacts, selected, listFilter]
+  );
 
   const effectivePace = preset === "custom" ? customPace : PRESETS[preset].schedule;
   const paceRisk = useMemo(() => assessPaceRisk(effectivePace), [effectivePace]);
@@ -307,11 +301,7 @@ export function CampaignWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          selections: (contacts ?? []).map((c) => ({
-            contactId: c.contactId,
-            included: selected.has(c.contactId),
-            overrideReason: null,
-          })),
+          selections: buildLaunchSelections(contacts ?? [], selected),
           startNow,
           personalize,
           confirmText: confirmText || undefined,
@@ -915,8 +905,18 @@ export function CampaignWizard() {
           <>
             <h2 className="text-xl font-semibold">Safety check</h2>
             <ul className="mt-4 space-y-2 text-sm text-foreground">
-              <li>✅ {counts.selected} people will receive this email</li>
-              <li>✅ {counts.excluded} excluded automatically for safety</li>
+              <li>✅ {counts.selected} will receive this email</li>
+              {counts.excluded > 0 && (
+                <li>
+                  ✅ {counts.excluded} skipped for safety
+                  {counts.excludedByReason.length > 0 && (
+                    <span className="text-muted">
+                      {" "}
+                      ({counts.excludedByReason.map((r) => `${r.count} ${r.label.toLowerCase()}`).join(", ")})
+                    </span>
+                  )}
+                </li>
+              )}
               <li>
                 {paceRisk.risky ? "⚠️" : "✅"} Pace:{" "}
                 {preset === "custom"

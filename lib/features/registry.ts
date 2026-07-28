@@ -177,8 +177,13 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "campaign-wizard",
         name: "Campaign wizard",
         status: "shipped",
-        description: "Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline (the same TemplateEditor embedded in place) instead of leaving the wizard and coming back.",
-        keyFiles: ["lib/campaigns/launch.ts", "app/(dashboard)/campaigns/new", "components/campaign/CampaignWizard.tsx"],
+        description: "Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline (the same TemplateEditor embedded in place) instead of leaving the wizard and coming back. Recipient counts and the launch selection are scoped to the chosen list and only the contacts actually selected, so the safety-check step and the resulting campaign never show an inflated \"excluded\" count for people who were simply never picked.",
+        keyFiles: [
+          "lib/campaigns/launch.ts",
+          "app/(dashboard)/campaigns/new",
+          "components/campaign/CampaignWizard.tsx",
+          "lib/campaigns/wizardSelections.ts",
+        ],
       },
       {
         id: "cloud-tasks-sending",
