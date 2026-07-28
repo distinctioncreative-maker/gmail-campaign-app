@@ -14,14 +14,18 @@ chat history.
 | Working branch | `codex/cadence-hardening` |
 | Production service | `outreach`, `us-central1`, project `email-tool-502714` |
 | Production owner | Alpine Google Workspace account |
+| Local commits | `f20ca01` implementation; `3981400` documentation |
 | Push/deploy status | Not pushed and not deployed |
 | Baseline before changes | Typecheck, lint, 264 unit tests, and build passed |
-| Current local status | Clean install, typecheck, lint, 278 unit tests, production build, docs generation, diff check, shell syntax check, and production audit pass |
+| Last completed gate | Clean install, typecheck, lint, 278 unit tests, production build, docs generation, diff check, shell syntax check, and production audit passed before the public-launch follow-up |
+| Current follow-up | Launch-compliance enforcement, truthful pilot positioning, current user guide, and `PUBLIC_LAUNCH_AUDIT.md`; typecheck, lint, 281 unit tests, production build, generated docs, shell syntax, diff check, and production audit pass |
 | Emulator status | Blocked locally: Java 17 installed; Firebase CLI 15 requires Java 21. GitHub CI installs Temurin 21 and runs it |
-| CLI status in this terminal | No global `gcloud`, `firebase`, or `stripe`; repo-local Firebase CLI is installed but not authenticated |
+| CLI status in this terminal | Workspace-local `gh` 2.96.0 is checksum-verified; direct `api.github.com` authentication is blocked by sandbox policy, so publishing uses the connected GitHub app. No global `gcloud`, `firebase`, or `stripe`; repo-local Firebase CLI is installed but not authenticated |
 
-The branch intentionally contains one cohesive hardening pass. Review and
-split it into small commits before publishing.
+The original hardening pass is preserved in two local commits. The
+public-launch follow-up remains uncommitted until its complete quality gate
+passes. Read `PUBLIC_LAUNCH_AUDIT.md` before changing positioning, public
+signup, billing, legal/compliance work, or mobile architecture.
 
 ## Why this pass exists
 
@@ -319,6 +323,10 @@ keys, and token-like fields before console or webhook output.
   own pins. The overrides must remain covered by the full build/test gate.
 - `npm audit --omit=dev --audit-level=high` currently reports zero
   vulnerabilities.
+- The unscoped full `npm audit` reports no-upstream-fix advisories in
+  development-only Firebase CLI and ESLint dependency trees. They are not in
+  the deployed runtime; CI still runs them from the pinned lockfile and
+  Dependabot monitors for fixed versions.
 - `.env.production` intentionally contains only public Firebase browser
   configuration. `NEXT_PUBLIC_*` values are compiled into the browser bundle
   and are not secrets. All server secrets belong in Cloud Run/Secret Manager.
@@ -371,7 +379,7 @@ The final local gate ran from a clean `npm ci` install:
 npm ci                                      # pass
 npm run typecheck                           # pass
 npm run lint                                # pass
-npm test                                    # pass: 35 files, 278 tests
+npm test                                    # pass: 36 files, 281 tests
 npm run build                               # pass: 69 routes generated
 npm audit --omit=dev --audit-level=high     # pass: 0 vulnerabilities
 npm run docs:features                       # pass
@@ -381,9 +389,11 @@ bash -n scripts/setup-cloud.sh              # pass
 
 `npm run test:emulator` was attempted and stopped before the suite because
 the container has OpenJDK 17.0.19 and Firebase Tools 15 refuses Java versions
-before 21. It also reported that Firebase is not authenticated in this
-terminal. Do not treat the emulator suite as passed locally. Require the
-Java-21 GitHub quality gate to pass before merge.
+before 21. A second attempt with Firebase Tools 14 reached the emulator JAR
+download but the sandbox blocked that download. It also reported that
+Firebase is not authenticated in this terminal. Do not treat the emulator
+suite as passed locally. Require the Java-21 GitHub quality gate to pass
+before merge.
 
 ## Production actions not authorized or completed here
 

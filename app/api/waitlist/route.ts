@@ -5,8 +5,8 @@ import { handleApiErrors } from "@/lib/api";
 import { firestore } from "@/lib/firebase/admin";
 import { enforceRateLimit, requestRateLimitKey } from "@/lib/util/rateLimit";
 
-// Public, unauthenticated: the coming-soon landing page captures early-access
-// signups here. No account is created — just an email on a list.
+// Public, unauthenticated: the landing page captures private-pilot requests
+// here. No account is created; only a contact email is recorded.
 const BodySchema = z.object({
   email: z.string().trim().email().max(200),
   source: z.string().trim().max(60).optional(),
@@ -32,7 +32,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   );
   if (!withinLimit) {
     return NextResponse.json(
-      { error: "You've already joined — we'll be in touch. Try again later if this is a mistake." },
+      { error: "Your request is already recorded. Try again later if this is a mistake." },
       { status: 429 }
     );
   }
@@ -56,5 +56,5 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       { merge: true }
     );
 
-  return NextResponse.json({ ok: true, message: "You're on the list." });
+  return NextResponse.json({ ok: true, message: "Your pilot request is in." });
 });

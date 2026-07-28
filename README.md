@@ -130,6 +130,8 @@ var locks an environment into test mode and disables the in-app switch
 - [ARCHITECTURE.md](ARCHITECTURE.md) — structural map: routes, modules, components
 - [HARDENING_HANDOFF.md](HARDENING_HANDOFF.md) — current cross-agent hardening
   invariants, changed flows, validation state, and deployment follow-ups
+- [PUBLIC_LAUNCH_AUDIT.md](PUBLIC_LAUNCH_AUDIT.md) — sell-today pilot scope,
+  public-launch gates, competitor position, and mobile-readiness plan
 - [FEATURES.md](FEATURES.md) — generated, living feature checklist
 - [SETUP.md](SETUP.md) — local development and Google Cloud configuration
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Cloud Run deployment

@@ -5,8 +5,10 @@ Gmail**, with your leads and campaigns kept private to you.
 
 ## Signing in
 
-Open the app link and click **Sign in with Google**. Use your work
-account — personal Gmail addresses are not allowed.
+Open the app link and click **Sign in with Google**. During the private
+pilot, use an account on a domain that an administrator has approved.
+Consumer Gmail accounts remain blocked until public OAuth verification is
+complete and production signup is deliberately switched to open mode.
 
 ## Connecting your Gmail
 
@@ -35,10 +37,55 @@ account settings. You can click **Disconnect Gmail** at any time.
 Don't worry about formatting — extra spaces, tabs, or a missing amount
 are handled for you, and anything unusual shows a note on that row.
 
-## Coming soon
+## Preparing a campaign
 
-Campaigns, templates, follow-up sequences, reports, and the Test Center
-are on the way. The Home page checklist will light up as features arrive.
+1. Create or choose a reusable template.
+2. Include both `{{physical_address}}` and `{{unsubscribe_text}}` in the
+   message body. Cadence blocks launch if the initial or any A/B template
+   omits either field.
+3. Choose a contact list and review exclusions. Opt-outs, unsubscribes,
+   hard bounces, and active suppressions cannot be overridden.
+4. Choose a send window and daily pace. Cadence warns on aggressive
+   settings and rejects anything above the current plan cap.
+5. Review the final recipient count. Campaigns over 100 recipients require
+   typing `SEND` before launch.
 
-*(Screenshot placeholders: sign-in card, Settings Gmail card, Leads
-paste box, preview table — capture after first deployment.)*
+## Test mode and going live
+
+New workspaces start in test mode. In test mode, every campaign destination
+is replaced at the final Gmail boundary with the configured test address.
+An administrator must review setup and deliberately switch the workspace to
+live sending. If the deployment-level test lock is enabled, the in-app
+switch cannot bypass it.
+
+## Replies, follow-ups, and do-not-email
+
+Cadence checks the original Gmail thread for replies and bounces. A reply,
+unsubscribe request, or hard bounce stops follow-ups. Unsubscribes and
+bounces are added to Do Not Email so later campaigns cannot contact the same
+address accidentally. If an unsubscribe was classified incorrectly, an
+authorized user can review and undo it from the campaign recipient view.
+
+## Reports and tracking
+
+Reports include sends, replies, bounces, unsubscribes, and sequence results.
+Open and click tracking is optional and off by default because tracking can
+reduce deliverability and automated security scanners can distort the
+numbers. Reply rate remains the most trustworthy engagement signal.
+
+## Team workspaces
+
+Team plans add roles, invites, shared oversight, member-level reporting, and
+collision checks that help prevent two people in one workspace from
+contacting the same person independently. Only admins can control billing,
+workspace policy, and live sending.
+
+## Before asking for help
+
+Open **Help** for task-based guides and **Test Center** for safe checks of
+sender details, Gmail connectivity, template rendering, import parsing, and
+reply classification. Administrators can use **System health** for worker,
+cron, Gmail connection, and environment readiness.
+
+For a production incident, follow `INCIDENT_RESPONSE.md`. For deployment
+and service setup, follow `SETUP.md` and `DEPLOYMENT.md`.

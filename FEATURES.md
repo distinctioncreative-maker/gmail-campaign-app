@@ -47,7 +47,7 @@
 
 ## Campaigns & Sequences
 
-- [x] **Campaign wizard** (Shipped) — Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline (the same TemplateEditor embedded in place) instead of leaving the wizard and coming back. Recipient counts and the launch selection are scoped to the chosen list and only the contacts actually selected, so the safety-check step and the resulting campaign never show an inflated "excluded" count for people who were simply never picked.
+- [x] **Campaign wizard** (Shipped) — Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline instead of leaving the wizard and coming back. Recipient counts and the launch selection are scoped to the chosen list and only the contacts actually selected. Every initial and A/B rotation template must include the saved physical-address and opt-out placeholders before launch.
   - `lib/campaigns/launch.ts`, `app/(dashboard)/campaigns/new`, `components/campaign/CampaignWizard.tsx`, `lib/campaigns/wizardSelections.ts`
 - [x] **Cloud Tasks sending engine** (Shipped) — Every send is a queued, OIDC-verified Cloud Task. Launch is transactionally claimed, queue IDs are deterministic, and the worker reserves delivery before calling Gmail; failures after that boundary are marked ambiguous for human review instead of retried into a possible duplicate.
   - `lib/tasks/enqueue.ts`, `app/api/tasks/send-message`, `lib/campaigns/launch.ts`, `lib/repositories/campaigns.ts`
@@ -122,7 +122,7 @@
   - `app/(dashboard)/system-health`
 - [x] **Help & Test Center** (Shipped) — Guides and FAQ are grouped into task-first sections (Getting started, Sending & follow-ups, Replies & reporting, Leads & deliverability, Team & admin) with a single search box that filters both live. Each Test Center check states in one line what it verifies, what a pass means, and what to do on failure, before you even run it — a safe self-test suite (send a test email, parse sample data, classify a sample reply/bounce). Plus a feature-suggestion box and a replayable product tour.
   - `components/TestCenter.tsx`, `components/help/HelpGuides.tsx`, `components/help/Faq.tsx`, `app/(dashboard)/help`
-- [x] **Waitlist admin view** (Shipped) — Admin view of public landing-page early-access signups with CSV export.
+- [x] **Pilot-request admin view** (Shipped) — Admin view of public landing-page pilot requests with CSV export.
   - `app/(dashboard)/admin/waitlist`
 - [x] **In-app feature checklist** (Shipped) — This page. Renders lib/features/registry.ts live so admins always see an accurate, current feature map without leaving the app.
   - `app/(dashboard)/admin/features/page.tsx`, `lib/features/registry.ts`
@@ -143,9 +143,9 @@
 
 ## Public Site & Growth
 
-- [x] **Public landing page** (Shipped) — Apple-keynote register: true black, San Francisco system type at real scale (no serif, no gold), Apple's own HIG system colors (blue/green/purple) as the entire palette, and real glass (backdrop-blur, not just a tint) on every card. The hero animation is two converging outreach lanes (mass mailing as a visible stream) sweeping out of an inbox node, peeling off into replies (green), and slamming into a live, self-leveling pipeline bar-stack with glowing caps — behind it all, a huge low-opacity watermark of the running pipeline total dominates the scene, enterprise-BI-dashboard style. Deal sizes are calibrated to real MCA deal sizes ($10K–$500K per deal, not toy numbers): each landing deal pops a large glowing gold emoji with its exact amount (💰 for normal deals, a bigger 🤑 with a wider shockwave ring for $300K+ deals), positioned with clamped coordinates so the popup never clips the frame. Deliverability stat band and FAQ cite tuned, data-backed pacing and tease the anonymized benchmarks feature.
+- [x] **Public landing page** (Shipped) — Public product site for founders, recruiters, agencies, fundraisers, partnerships, and sales teams. It presents the Gmail-native workflow, current private-pilot pricing, shipped safety controls, optional AI, and deliverability guidance without promising inbox placement or advertising unshipped enterprise features.
   - `components/marketing/Landing.tsx`, `components/marketing/landing.module.css`
-- [x] **Waitlist capture** (Shipped) — Public, unauthenticated, rate-limited endpoint that records early-access signups from the landing page.
+- [x] **Private-pilot capture** (Shipped) — Public, unauthenticated, rate-limited endpoint that records private-pilot requests from the landing page.
   - `app/api/waitlist`
 - [ ] **Google OAuth verification + CASA assessment** (Planned) — Required security review before SIGNUP_MODE=open can go live for the general public, not just allowlisted domains.
 - [ ] **ToS / Privacy / DPA pages** (Planned) — Legal pages required for self-serve public launch.

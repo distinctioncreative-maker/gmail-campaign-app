@@ -7,7 +7,6 @@ import { classifyLead } from "@/lib/leads/classify";
 import { getConnection } from "@/lib/repositories/gmailConnections";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { getTemplate } from "@/lib/repositories/templates";
-import { listPlaceholders } from "@/lib/personalization/render";
 import { computeSendTimestamps } from "@/lib/scheduling/window";
 import {
   batchCreateQueueItems,
@@ -24,6 +23,7 @@ import { generateOpener } from "@/lib/ai/generateOpener";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { mapWithConcurrency } from "@/lib/util/pool";
 import { idempotencyKey } from "@/lib/campaigns/idempotency";
+import { missingCommercialEmailPlaceholders } from "@/lib/campaigns/compliance";
 
 /** Safety caps for per-lead AI personalization at launch. */
 const MAX_PERSONALIZED = 150;
@@ -66,13 +66,12 @@ export async function validateForLaunch(
       if (!profile.unsubscribeText.trim()) {
         problems.push("Add an opt-out sentence in Settings — required for commercial email.");
       }
-      const used = new Set([
-        ...listPlaceholders(template.subjectTemplate),
-        ...listPlaceholders(template.htmlTemplate),
-      ]);
-      if (!used.has("unsubscribe_text")) {
-        warnings.push(
-          "The template does not include {{unsubscribe_text}} — recipients won't see an opt-out line."
+      const missing = missingCommercialEmailPlaceholders(template.htmlTemplate);
+      if (missing.length > 0) {
+        problems.push(
+          `The template "${template.name}" must include ${missing
+            .map((placeholder) => `{{${placeholder}}}`)
+            .join(" and ")} in its message body.`
         );
       }
     }
@@ -85,6 +84,23 @@ export async function validateForLaunch(
     );
     if (resolved.some((t) => !t || !t.active)) {
       problems.push("One of the rotation templates no longer exists — re-check your template selection.");
+    }
+    for (const template of resolved) {
+      if (
+        !template ||
+        !template.active ||
+        template.templateId === campaign.initialTemplateId
+      ) {
+        continue;
+      }
+      const missing = missingCommercialEmailPlaceholders(template.htmlTemplate);
+      if (missing.length > 0) {
+        problems.push(
+          `The rotation template "${template.name}" must include ${missing
+            .map((placeholder) => `{{${placeholder}}}`)
+            .join(" and ")} in its message body.`
+        );
+      }
     }
   }
 

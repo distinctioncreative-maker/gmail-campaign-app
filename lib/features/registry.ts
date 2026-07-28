@@ -177,7 +177,7 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "campaign-wizard",
         name: "Campaign wizard",
         status: "shipped",
-        description: "Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline (the same TemplateEditor embedded in place) instead of leaving the wizard and coming back. Recipient counts and the launch selection are scoped to the chosen list and only the contacts actually selected, so the safety-check step and the resulting campaign never show an inflated \"excluded\" count for people who were simply never picked.",
+        description: "Multi-step flow to pick leads, a template, and a pace, then launch, with validation before anything sends. The email step lets you create or edit a template inline instead of leaving the wizard and coming back. Recipient counts and the launch selection are scoped to the chosen list and only the contacts actually selected. Every initial and A/B rotation template must include the saved physical-address and opt-out placeholders before launch.",
         keyFiles: [
           "lib/campaigns/launch.ts",
           "app/(dashboard)/campaigns/new",
@@ -432,9 +432,9 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         id: "waitlist-admin",
-        name: "Waitlist admin view",
+        name: "Pilot-request admin view",
         status: "shipped",
-        description: "Admin view of public landing-page early-access signups with CSV export.",
+        description: "Admin view of public landing-page pilot requests with CSV export.",
         keyFiles: ["app/(dashboard)/admin/waitlist"],
       },
       {
@@ -501,14 +501,14 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "landing-page",
         name: "Public landing page",
         status: "shipped",
-        description: "Apple-keynote register: true black, San Francisco system type at real scale (no serif, no gold), Apple's own HIG system colors (blue/green/purple) as the entire palette, and real glass (backdrop-blur, not just a tint) on every card. The hero animation is two converging outreach lanes (mass mailing as a visible stream) sweeping out of an inbox node, peeling off into replies (green), and slamming into a live, self-leveling pipeline bar-stack with glowing caps — behind it all, a huge low-opacity watermark of the running pipeline total dominates the scene, enterprise-BI-dashboard style. Deal sizes are calibrated to real MCA deal sizes ($10K–$500K per deal, not toy numbers): each landing deal pops a large glowing gold emoji with its exact amount (💰 for normal deals, a bigger 🤑 with a wider shockwave ring for $300K+ deals), positioned with clamped coordinates so the popup never clips the frame. Deliverability stat band and FAQ cite tuned, data-backed pacing and tease the anonymized benchmarks feature.",
+        description: "Public product site for founders, recruiters, agencies, fundraisers, partnerships, and sales teams. It presents the Gmail-native workflow, current private-pilot pricing, shipped safety controls, optional AI, and deliverability guidance without promising inbox placement or advertising unshipped enterprise features.",
         keyFiles: ["components/marketing/Landing.tsx", "components/marketing/landing.module.css"],
       },
       {
         id: "waitlist-capture",
-        name: "Waitlist capture",
+        name: "Private-pilot capture",
         status: "shipped",
-        description: "Public, unauthenticated, rate-limited endpoint that records early-access signups from the landing page.",
+        description: "Public, unauthenticated, rate-limited endpoint that records private-pilot requests from the landing page.",
         keyFiles: ["app/api/waitlist"],
       },
       {

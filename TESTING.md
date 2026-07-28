@@ -3,11 +3,12 @@
 ## Commands
 
 ```bash
-npm test              # vitest unit suite (278 tests at this revision)
+npm test              # vitest unit suite (281 tests at this revision)
 npm run test:emulator # Firestore rules isolation suite (needs Java)
 npm run typecheck     # tsc --noEmit (strict)
 npm run lint          # eslint
 npm run build         # production build (Turbopack)
+npm audit --omit=dev --audit-level=high # deployed dependency audit
 ```
 
 ## Unit coverage (`tests/unit/`)
@@ -41,6 +42,18 @@ npm run build         # production build (Turbopack)
   enforcement, expiring tracking tokens, and plan-aware capability behavior.
 - **Durable follow-up outbox**: deterministic next-step work and Cloud Tasks'
   supported scheduling horizon.
+- **Campaign compliance**: initial and A/B templates cannot launch without
+  physical-address and opt-out placeholders in the message body.
+
+## Dependency audit scope
+
+CI fails on any high-severity vulnerability in deployed dependencies using
+`npm audit --omit=dev --audit-level=high`. Run the full `npm audit` too, but
+interpret it separately: as of 2026-07-28 npm reports high-severity,
+no-upstream-fix advisories in the pinned Firebase CLI and ESLint development
+trees. Those packages are not included in the Cloud Run runtime image.
+Dependabot remains enabled so patched development-tool versions are adopted
+when available.
 
 ## Emulator coverage (`tests/emulator/isolation.test.ts`)
 

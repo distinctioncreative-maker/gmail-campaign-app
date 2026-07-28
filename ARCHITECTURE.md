@@ -112,7 +112,7 @@ Zod schemas.
 | `auth/` | Session/auth-context resolution, sign-in domain policy (`requireUser.ts`, `session.ts`, `domains.ts`). |
 | `tenancy/` | Solo vs. Workspace classification and capability matrix (`accountType.ts`, `capabilities.ts`). |
 | `billing/` | Stripe integration + plan catalog (`stripe.ts`, `plans.ts`); webhook claims/customer pointers live in `repositories/billing.ts`. |
-| `campaigns/` | Core campaign lifecycle — launch, controls, monitoring, repair, diagnose, eligibility, collision, followups, idempotency (largest module). |
+| `campaigns/` | Core campaign lifecycle — launch, commercial-email placeholder enforcement, controls, monitoring, repair, diagnose, eligibility, collision, followups, idempotency (largest module). |
 | `gmail/` | Gmail API wrapper + the send-safety gate (`send.ts`, `safety.ts`, `drafts.ts`, `classifyBounce.ts`, `classifyReply.ts`). |
 | `google/` | Gmail-connect OAuth mechanics, separate from Firebase app sign-in (`oauth.ts`, `oauthState.ts`). |
 | `repositories/` | Firestore data access; every doc validated against a `schemas/*` type. |

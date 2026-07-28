@@ -8,7 +8,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 Cadence is actively maintained with both ChatGPT Codex and Claude Code.
 Before changing this branch, read `HARDENING_HANDOFF.md`,
-`CAMPAIGN_SAFETY.md`, `SECURITY.md`, and `ARCHITECTURE.md`, then run:
+`PUBLIC_LAUNCH_AUDIT.md`, `CAMPAIGN_SAFETY.md`, `SECURITY.md`, and
+`ARCHITECTURE.md`, then run:
 
 ```bash
 git status --short

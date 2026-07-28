@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 /** Plan + subscription management. Shows upgrade paths when Stripe is
- * configured; otherwise a "coming soon" note (matches the public pricing). */
+ * configured; otherwise explains that paid checkout is not active. */
 export function BillingCard() {
   const toast = useToast();
   const [state, setState] = useState<BillingState | null>(null);
@@ -97,7 +97,7 @@ export function BillingCard() {
           <PlanTile
             name="Team"
             price="$24 / seat · mo"
-            blurb="Shared team, roles, leaderboards, highest volume."
+            blurb="Shared team, roles, leaderboards, highest volume. Two-seat minimum."
             featured
             onPick={() => void checkout("TEAM")}
             busy={busy === "TEAM"}

@@ -8,7 +8,7 @@ import { LocalTime } from "@/components/LocalTime";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
-/** Admin-only view of early-access waitlist signups, with CSV export. */
+/** Admin-only view of private-pilot requests, with CSV export. */
 export default async function WaitlistPage() {
   const ctx = await requireUser();
   const settings = await getOrgSettings(ctx.organizationId);
@@ -29,12 +29,12 @@ export default async function WaitlistPage() {
   return (
     <div>
       <PageHeader
-        title="Waitlist"
-        description="Everyone who requested early access from the public landing page."
+        title="Pilot requests"
+        description="Everyone who requested a private Cadence pilot from the public landing page."
         actions={
           entries.length > 0 ? (
             <ExportCsvButton
-              filename="cadence-waitlist.csv"
+              filename="cadence-pilot-requests.csv"
               headers={["Email", "Source", "Joined (UTC)"]}
               rows={rows}
             />
@@ -50,14 +50,14 @@ export default async function WaitlistPage() {
 
       <div className="mt-4">
         <div className="card p-5">
-          <p className="text-sm text-muted">Total signups</p>
+          <p className="text-sm text-muted">Total requests</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{entries.length}</p>
         </div>
       </div>
 
       {entries.length === 0 ? (
         <div className="mt-6 card p-8 text-center text-sm text-muted">
-          No signups yet. They&apos;ll appear here as people join from the landing page.
+          No pilot requests yet. They&apos;ll appear here after someone submits the landing page form.
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto card">
