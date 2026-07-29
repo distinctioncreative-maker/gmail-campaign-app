@@ -24,6 +24,14 @@ and immediately before every send/follow-up. Sources: Salesforce Email Opt Out,
 unsubscribe replies, hard bounces, manual entries, org-level entries,
 invalid emails. Suppressions are never removed automatically.
 
+Every non-test campaign message also includes RFC 8058 `List-Unsubscribe`
+and `List-Unsubscribe-Post` headers backed by a signed, expiring token. A GET
+request only shows a confirmation page because mailbox security scanners may
+follow links automatically. A valid one-click POST atomically updates the
+recipient, campaign counter, daily counter, and deterministic user
+suppression, then cancels remaining queued work. Repeated POST requests are
+idempotent.
+
 ## Launch, quota, and delivery idempotency
 
 Deterministic key per intended message:

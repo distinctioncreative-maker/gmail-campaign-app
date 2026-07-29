@@ -15,6 +15,8 @@ export interface PlanDef {
   priceMonthly: number | null;
   /** Seats included; 0 = per-seat / unlimited-by-arrangement. */
   seatsIncluded: number;
+  /** Minimum quantity for a paid subscription to this plan. */
+  minimumSeats: number;
   /** App-enforced safe daily send ceiling for this plan. */
   maxDailySends: number;
   /** Whether the plan unlocks shared team features. */
@@ -24,10 +26,10 @@ export interface PlanDef {
 }
 
 export const PLANS: Record<PlanId, PlanDef> = {
-  FREE: { id: "FREE", name: "Solo", priceMonthly: 0, seatsIncluded: 1, maxDailySends: 40, teams: false, stripePriceEnv: null },
-  STARTER: { id: "STARTER", name: "Starter", priceMonthly: 29, seatsIncluded: 1, maxDailySends: 150, teams: false, stripePriceEnv: "STRIPE_PRICE_STARTER" },
-  TEAM: { id: "TEAM", name: "Team", priceMonthly: 24, seatsIncluded: 0, maxDailySends: 400, teams: true, stripePriceEnv: "STRIPE_PRICE_TEAM" },
-  ENTERPRISE: { id: "ENTERPRISE", name: "Enterprise", priceMonthly: null, seatsIncluded: 0, maxDailySends: 2000, teams: true, stripePriceEnv: null },
+  FREE: { id: "FREE", name: "Solo", priceMonthly: 0, seatsIncluded: 1, minimumSeats: 1, maxDailySends: 40, teams: false, stripePriceEnv: null },
+  STARTER: { id: "STARTER", name: "Starter", priceMonthly: 29, seatsIncluded: 1, minimumSeats: 1, maxDailySends: 150, teams: false, stripePriceEnv: "STRIPE_PRICE_STARTER" },
+  TEAM: { id: "TEAM", name: "Team", priceMonthly: 24, seatsIncluded: 0, minimumSeats: 2, maxDailySends: 400, teams: true, stripePriceEnv: "STRIPE_PRICE_TEAM" },
+  ENTERPRISE: { id: "ENTERPRISE", name: "Enterprise", priceMonthly: null, seatsIncluded: 0, minimumSeats: 1, maxDailySends: 2000, teams: true, stripePriceEnv: null },
 };
 
 export const PLAN_IDS = Object.keys(PLANS) as PlanId[];

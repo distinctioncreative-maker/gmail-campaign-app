@@ -22,6 +22,8 @@ export interface SendEmailInput {
   /** Server-verified destination for an explicit self-test action. Never pass
    * client or campaign data here. */
   verifiedTestDestination?: string;
+  /** Server-generated RFC 8058 one-click opt-out URL for real outreach. */
+  unsubscribeUrl?: string;
 }
 
 export type GmailDeliveryResult = {
@@ -41,13 +43,14 @@ export function sanitizeHeaderValue(value: string): string {
   return value.replace(/[\r\n]+/g, " ").trim();
 }
 
-function buildMime(input: {
+export function buildMime(input: {
   to: string;
   subject: string;
   htmlBody: string;
   textBody?: string;
   inReplyToMessageId?: string;
   references?: string;
+  unsubscribeUrl?: string;
 }): string {
   const boundary = `b_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
   const safeTo = sanitizeHeaderValue(input.to);
@@ -63,6 +66,15 @@ function buildMime(input: {
     headers.push(
       `References: ${sanitizeHeaderValue(input.references ?? input.inReplyToMessageId)}`
     );
+  }
+  if (input.unsubscribeUrl) {
+    const url = new URL(input.unsubscribeUrl);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      throw new Error("Unsubscribe URL must use HTTP or HTTPS");
+    }
+    const safeUnsubscribeUrl = sanitizeHeaderValue(url.toString());
+    headers.push(`List-Unsubscribe: <${safeUnsubscribeUrl}>`);
+    headers.push("List-Unsubscribe-Post: List-Unsubscribe=One-Click");
   }
   headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
   return [
@@ -113,6 +125,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
           textBody: input.textBody,
           inReplyToMessageId: input.inReplyToMessageId,
           references: input.references,
+          unsubscribeUrl: input.unsubscribeUrl,
         })
       ),
     },
@@ -157,6 +170,7 @@ export async function createEmailDraft(input: SendEmailInput): Promise<GmailDeli
             textBody: input.textBody,
             inReplyToMessageId: input.inReplyToMessageId,
             references: input.references,
+            unsubscribeUrl: input.unsubscribeUrl,
           })
         ),
       },

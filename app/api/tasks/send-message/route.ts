@@ -46,6 +46,7 @@ import { env } from "@/lib/env";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
+import { unsubscribeUrl } from "@/lib/unsubscribe/token";
 
 const PayloadSchema = z.object({
   organizationId: z.string().min(1),
@@ -479,6 +480,15 @@ export async function POST(req: NextRequest) {
       testMode,
       threadId: threaded ? recipient.gmailThreadId ?? undefined : undefined,
       inReplyToMessageId: threaded ? recipient.initialMessageId ?? undefined : undefined,
+      unsubscribeUrl:
+        !testMode
+          ? unsubscribeUrl({
+              ownerUserId,
+              organizationId,
+              campaignId,
+              recipientId: item.recipientId,
+            })
+          : undefined,
     };
     const result = isDraft
       ? await createEmailDraft(deliveryInput)

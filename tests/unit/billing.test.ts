@@ -41,6 +41,8 @@ describe("plan catalog", () => {
     expect(PLANS.TEAM.maxDailySends).toBeGreaterThan(PLANS.STARTER.maxDailySends);
     expect(PLANS.TEAM.teams).toBe(true);
     expect(PLANS.FREE.teams).toBe(false);
+    expect(PLANS.STARTER.minimumSeats).toBe(1);
+    expect(PLANS.TEAM.minimumSeats).toBe(2);
   });
 
   it("enforces purchased seats without constraining grandfathered workspaces", () => {

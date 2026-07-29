@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { env } from "@/lib/env";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cadence",
-  description: "Send personal email campaigns through your own Gmail",
+  metadataBase: new URL(env.APP_BASE_URL),
+  title: {
+    default: "Cadence | AI-assisted Gmail outreach",
+    template: "%s | Cadence",
+  },
+  description:
+    "Write on-brand outreach with AI, pace campaigns through Gmail, and keep replies and campaign reporting in one focused workspace.",
+  applicationName: "Cadence",
+  keywords: [
+    "Gmail outreach",
+    "AI email assistant",
+    "sales engagement",
+    "campaign reporting",
+    "email personalization",
+  ],
+  openGraph: {
+    type: "website",
+    siteName: "Cadence",
+    title: "Cadence | AI-assisted Gmail outreach",
+    description:
+      "A focused workflow for thoughtful outreach, controlled Gmail pacing, and campaign-level reporting.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cadence | AI-assisted Gmail outreach",
+    description:
+      "A focused workflow for thoughtful outreach, controlled Gmail pacing, and campaign-level reporting.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

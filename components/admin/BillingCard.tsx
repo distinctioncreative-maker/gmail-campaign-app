@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { useToast } from "@/components/ui/UIProviders";
+import {
+  publicPriceLabel,
+  publicPriceQualifier,
+} from "@/lib/billing/publicPricing";
 
 interface BillingState {
   configured: boolean;
@@ -89,14 +93,14 @@ export function BillingCard() {
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <PlanTile
             name="Starter"
-            price="$29 / seat · mo"
+            price={`${publicPriceLabel("STARTER")} ${publicPriceQualifier("STARTER")}`}
             blurb="Solo rep, higher daily volume, all the essentials."
             onPick={() => void checkout("STARTER")}
             busy={busy === "STARTER"}
           />
           <PlanTile
             name="Team"
-            price="$24 / seat · mo"
+            price={`${publicPriceLabel("TEAM")} ${publicPriceQualifier("TEAM")}`}
             blurb="Shared team, roles, leaderboards, highest volume. Two-seat minimum."
             featured
             onPick={() => void checkout("TEAM")}

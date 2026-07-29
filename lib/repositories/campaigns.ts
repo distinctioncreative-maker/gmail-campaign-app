@@ -16,6 +16,7 @@ import {
   type Recipient,
 } from "@/schemas/campaign";
 import { setNotificationOnce } from "@/lib/repositories/notifications";
+import { buildUnsubscribeSuppression } from "@/lib/unsubscribe/suppression";
 
 /** Owner identity for worker paths, where there is no session AuthContext.
  * Workers derive this from the task payload and re-verify document paths. */
@@ -333,7 +334,8 @@ export async function commitRecipientOutcome(
   recipientId: string,
   outcome: "REPLY" | "UNSUBSCRIBE" | "BOUNCE",
   patch: Partial<Recipient>,
-  dayKey: string
+  dayKey: string,
+  options: { suppressionSource?: string } = {}
 ): Promise<boolean> {
   const recipient = recipientsRef(owner, campaignId).doc(recipientId);
   const campaign = campaignRef(owner, campaignId);
@@ -342,6 +344,25 @@ export async function commitRecipientOutcome(
     const snap = await tx.get(recipient);
     if (!snap.exists) return false;
     const current = RecipientSchema.parse(snap.data());
+    if (outcome === "UNSUBSCRIBE") {
+      const now = Date.now();
+      const suppression = buildUnsubscribeSuppression({
+        owner,
+        email: current.emailSnapshot,
+        normalizedEmail: current.normalizedEmailSnapshot,
+        campaignId,
+        recipientId,
+        source: options.suppressionSource ?? "RECIPIENT_OUTCOME",
+        now,
+      });
+      tx.set(
+        userRef(owner)
+          .collection("suppressions")
+          .doc(suppression.suppressionId),
+        suppression,
+        { merge: true }
+      );
+    }
     const alreadyApplied =
       outcome === "REPLY"
         ? current.repliedAt !== null

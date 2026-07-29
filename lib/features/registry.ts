@@ -118,8 +118,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "suppressions",
         name: "Suppressions (Do-Not-Email)",
         status: "shipped",
-        description: "Personal and org-scoped suppression lists (opt-out, bounce, complaint, manual) checked before every send.",
-        keyFiles: ["schemas/suppression.ts", "components/SuppressionsManager.tsx"],
+        description: "Personal and org-scoped suppression lists (opt-out, bounce, complaint, manual) are checked before every send. Real campaign messages include a signed RFC 8058 one-click unsubscribe URL; scanner-safe GET requests never mutate state, while confirmed POST requests atomically mark the recipient, update counters, and write a deterministic suppression.",
+        keyFiles: ["schemas/suppression.ts", "components/SuppressionsManager.tsx", "lib/unsubscribe/token.ts", "app/api/u/[token]", "lib/repositories/campaigns.ts"],
       },
       {
         id: "sheets-import",
@@ -137,7 +137,7 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "templates",
         name: "Reusable templates",
         status: "shipped",
-        description: "A wide, responsive email workspace with a full-height visual or HTML composer, desktop and phone preview widths, browser autosave status, word count, spam checks, starter layouts, Gmail draft import, and placeholder personalization in the body and subject line.",
+        description: "A wide, responsive email workspace with a full-height visual or HTML composer, desktop and phone preview widths, browser autosave status, word count, spam checks, starter layouts, Gmail draft import, and placeholder personalization in the body and subject line. Imported, restored, AI-generated, pasted, linked, and image content is sanitized before entering the visual editor and again at the server storage boundary.",
         keyFiles: ["schemas/template.ts", "lib/personalization/render.ts", "components/templates/TemplateEditor.tsx"],
       },
       {
@@ -232,8 +232,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "campaign-command-center",
         name: "Campaign command center",
         status: "shipped",
-        description: "The campaign list combines status segments, progress, reply rates, problems, and summary KPIs. Each campaign detail view adds an anchored command-center layout, initial-send progress, configuration summary, reliable outcome rates, tracked-engagement caveats, controls, recipients, and activity, plus a direct link to its dedicated report.",
-        keyFiles: ["app/(dashboard)/campaigns", "components/campaign/CampaignsTable.tsx"],
+        description: "The campaign list combines status segments, progress, reply rates, problems, and summary KPIs, with purpose-built mobile cards instead of a squeezed desktop table. Each campaign detail view adds an anchored command-center layout, a keyboard-accessible mobile section dialog, initial-send progress, configuration summary, reliable outcome rates, tracked-engagement caveats, controls, recipients, and activity, plus a direct link to its dedicated report.",
+        keyFiles: ["app/(dashboard)/campaigns", "components/campaign/CampaignsTable.tsx", "components/campaign/CampaignSectionNav.tsx"],
       },
       {
         id: "campaign-controls",
@@ -382,8 +382,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "stripe-plans",
         name: "Plan catalog (Free / Starter / Team / Enterprise)",
         status: "shipped",
-        description: "Free Solo tier as the self-serve funnel, Starter and Team as self-checkout plans, Enterprise as contact-us. Each plan carries its own daily send cap.",
-        keyFiles: ["lib/billing/plans.ts"],
+        description: "Free Solo tier as the self-serve funnel, Starter and Team as self-checkout plans, Enterprise as contact-us. Each plan carries its own daily send cap and minimum seat quantity. Public and authenticated pricing copy reads from one shared model so price and quantity claims cannot drift.",
+        keyFiles: ["lib/billing/plans.ts", "lib/billing/publicPricing.ts"],
       },
       {
         id: "stripe-checkout",
@@ -509,8 +509,15 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "landing-page",
         name: "Public landing page",
         status: "shipped",
-        description: "Public product site for founders, recruiters, agencies, fundraisers, partnerships, and sales teams. AI writing, brand memory, reply triage, and campaign workflow are demonstrated directly, while a professional outreach-to-reply-to-pipeline animation avoids playful emoji and labels revenue as simulated. Current private-pilot pricing, safety controls, and deliverability guidance remain explicit without promising inbox placement or advertising unshipped enterprise features.",
+        description: "Conversion-focused, mobile-first public site for founders, focused sales teams, and agencies. A static, explicitly labeled command-center demonstration replaces simulated revenue animation, the full lead-to-reply workflow is explained in product terms, one primary pilot path drives conversion, and shared pricing, consent, tracking, safety, and deliverability limits stay explicit without unsupported performance claims.",
         keyFiles: ["components/marketing/Landing.tsx", "components/marketing/landing.module.css"],
+      },
+      {
+        id: "public-seo-security",
+        name: "Public SEO and browser security baseline",
+        status: "shipped",
+        description: "Structured metadata, a generated social preview, robots and sitemap routes, canonical app metadata, and global browser security headers cover the public and authenticated surfaces. The policy preserves Google sign-in popups and public email tracking while denying framing, unsafe object embeds, and unnecessary browser capabilities.",
+        keyFiles: ["app/layout.tsx", "app/opengraph-image.tsx", "app/robots.ts", "app/sitemap.ts", "next.config.ts"],
       },
       {
         id: "waitlist-capture",
