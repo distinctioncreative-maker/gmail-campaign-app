@@ -22,6 +22,7 @@ import { CountUp } from "@/components/ui/CountUp";
 import { Icon } from "@/components/ui/Icon";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
+import { CampaignSectionNav } from "@/components/campaign/CampaignSectionNav";
 
 export default async function CampaignDetailPage({
   params,
@@ -141,25 +142,7 @@ export default async function CampaignDetailPage({
         </div>
       </div>
 
-      <nav
-        aria-label="Campaign sections"
-        className="mt-5 flex gap-1 overflow-x-auto rounded-xl border border-border bg-surface p-1"
-      >
-        {[
-          ["#overview", "Overview"],
-          ["#controls", "Controls"],
-          ["#recipients", "Recipients"],
-          ["#activity", "Activity"],
-        ].map(([href, label]) => (
-          <a
-            key={href}
-            href={href}
-            className="min-w-max rounded-lg px-3 py-2 text-xs font-medium text-muted hover:bg-surface-2 hover:text-foreground"
-          >
-            {label}
-          </a>
-        ))}
-      </nav>
+      <CampaignSectionNav />
 
       <div id="overview" className="mt-5 grid scroll-mt-24 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="card p-5 sm:p-6">

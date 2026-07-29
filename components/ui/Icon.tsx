@@ -42,7 +42,8 @@ export type IconName =
   | "hourglass"
   | "sun"
   | "moon"
-  | "edit";
+  | "edit"
+  | "more";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M3 10.5 12 3l9 7.5M5.5 9.5V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1V9.5" />,
@@ -202,6 +203,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
       <path d="M14.5 5.5l3 3" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
     </>
   ),
 };
