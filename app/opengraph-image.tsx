@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const alt =
-  "Cadence, AI-assisted Gmail outreach with controlled sending and clear reporting";
+  "Cadence, AI-powered Gmail outreach for qualified conversations";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -41,7 +41,7 @@ export default function OpenGraphImage() {
             marginTop: 30,
           }}
         >
-          AI-assisted outreach that still sounds like you.
+          Turn Gmail outreach into qualified conversations.
         </div>
         <div
           style={{
@@ -52,8 +52,8 @@ export default function OpenGraphImage() {
             marginTop: 28,
           }}
         >
-          Thoughtful Gmail campaigns, controlled pacing, and campaign-level
-          reporting in one focused workspace.
+          Human-reviewed campaigns, visible sending controls, and reply-focused
+          reporting in one Gmail-connected workspace.
         </div>
       </div>
     </div>,

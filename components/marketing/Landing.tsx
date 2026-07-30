@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { LogoMark } from "@/components/ui/Logo";
 import {
@@ -41,6 +49,57 @@ function Arrow() {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+const PILOT_TARGET_ID = "pilot";
+const PILOT_EMAIL_ID = "pilot-email-hero";
+
+function PilotLink({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  function focusPilotRequest(event: MouseEvent<HTMLAnchorElement>) {
+    const target = document.getElementById(PILOT_TARGET_ID);
+    const input = document.getElementById(PILOT_EMAIL_ID);
+    if (!target || !(input instanceof HTMLInputElement)) return;
+
+    event.preventDefault();
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    window.history.replaceState(null, "", `#${PILOT_TARGET_ID}`);
+    target.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "center",
+    });
+
+    if (reduceMotion) {
+      window.requestAnimationFrame(() => input.focus());
+      return;
+    }
+
+    const focusInput = () => {
+      window.removeEventListener("scrollend", focusInput);
+      window.clearTimeout(fallback);
+      input.focus();
+    };
+    window.addEventListener("scrollend", focusInput, { once: true });
+    const fallback = window.setTimeout(focusInput, 600);
+  }
+
+  return (
+    <a
+      className={className}
+      href={`#${PILOT_TARGET_ID}`}
+      aria-controls={PILOT_EMAIL_ID}
+      onClick={focusPilotRequest}
+    >
+      {children}
+    </a>
   );
 }
 
@@ -230,15 +289,99 @@ const WORKFLOW = [
   },
 ] as const;
 
-const DEMO_FLOW = [
-  { label: "Leads", detail: "Verified", icon: "leads" },
-  { label: "AI draft", detail: "Reviewed", icon: "spark" },
-  { label: "Paced send", detail: "Scheduled", icon: "clock" },
-  { label: "Reply", detail: "Surfaced", icon: "reply" },
+const HERO_DEMO_STAGES = [
+  {
+    label: "Import",
+    icon: "leads",
+    title: "Start with a clean, usable audience",
+    copy: "Cadence validates the list, removes duplicate addresses, flags missing context, and excludes suppressed recipients before any campaign is prepared.",
+    status: "List checked",
+    statusTone: "safe",
+    metrics: [
+      ["Prepared", "180", "ready for review"],
+      ["Duplicates", "12", "removed"],
+      ["Suppressed", "3", "excluded"],
+      ["Needs context", "5", "flagged"],
+    ],
+  },
+  {
+    label: "AI draft",
+    icon: "spark",
+    title: "Turn context into a useful first draft",
+    copy: "AI applies an approved brand voice and known lead details to create a focused message. No unverified research is silently presented as fact.",
+    status: "Draft ready",
+    statusTone: "active",
+    metrics: [
+      ["Drafts", "180", "prepared"],
+      ["Brand voice", "1", "approved profile"],
+      ["Variants", "3", "available"],
+      ["Claims flagged", "2", "need review"],
+    ],
+  },
+  {
+    label: "Review",
+    icon: "spark",
+    title: "Keep a person in control",
+    copy: "Preview variables, compare variants, edit the message, and approve the campaign. AI accelerates preparation but never replaces final judgment.",
+    status: "Human review",
+    statusTone: "review",
+    metrics: [
+      ["Reviewed", "180", "previews checked"],
+      ["Edits", "14", "human changes"],
+      ["Variables", "5", "validated"],
+      ["Approved", "180", "ready to schedule"],
+    ],
+  },
+  {
+    label: "Schedule",
+    icon: "clock",
+    title: "Choose when and how outreach moves",
+    copy: "Set business days, sending hours, spacing, and a daily ceiling. Test mode gives the team a rehearsal before a workspace is approved for live delivery.",
+    status: "Test mode",
+    statusTone: "review",
+    metrics: [
+      ["Daily pace", "40", "of 60 ceiling"],
+      ["Send window", "9 to 4", "local hours"],
+      ["Spacing", "6 min", "minimum delay"],
+      ["Next batch", "2:40", "PM today"],
+    ],
+  },
+  {
+    label: "Send",
+    icon: "clock",
+    title: "Deliver through Gmail at the pace you set",
+    copy: "Cadence reserves each delivery, rechecks suppression and plan limits, and quarantines ambiguous provider responses instead of blindly sending again.",
+    status: "Sending steadily",
+    statusTone: "safe",
+    metrics: [
+      ["Sent", "128", "of 180 prepared"],
+      ["Failed", "2", "visible for review"],
+      ["Bounced", "3", "follow-ups stopped"],
+      ["Opt-outs", "2", "suppressed"],
+    ],
+  },
+  {
+    label: "Replies",
+    icon: "reply",
+    title: "Move the right replies toward a next step",
+    copy: "Replies stay connected to the original Gmail thread, interested conversations rise to the top, and resolved recipients stop receiving automatic follow-ups.",
+    status: "4 interested",
+    statusTone: "safe",
+    metrics: [
+      ["Replies", "9", "7.0% of sent"],
+      ["Interested", "4", "44% of replies"],
+      ["Needs reply", "2", "action required"],
+      ["Follow-ups", "7", "stopped"],
+    ],
+  },
 ] as const satisfies ReadonlyArray<{
   label: string;
-  detail: string;
   icon: DemoGlyphKind;
+  title: string;
+  copy: string;
+  status: string;
+  statusTone: "safe" | "active" | "review";
+  metrics: ReadonlyArray<readonly [string, string, string]>;
 }>;
 
 const FEATURES = [
@@ -301,6 +444,649 @@ const FAQ = [
   ],
 ] as const;
 
+function useReducedMotion() {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  return reducedMotion;
+}
+
+function HeroDemo() {
+  const [activeStage, setActiveStage] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [visible, setVisible] = useState(true);
+  const demoRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const stage = HERO_DEMO_STAGES[activeStage];
+
+  useEffect(() => {
+    const node = demoRef.current;
+    if (!node || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0.15 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!playing || !visible || reducedMotion) return;
+    const timer = window.setInterval(() => {
+      setActiveStage((current) => (current + 1) % HERO_DEMO_STAGES.length);
+    }, 3600);
+    return () => window.clearInterval(timer);
+  }, [playing, reducedMotion, visible]);
+
+  function chooseStage(index: number) {
+    setActiveStage(index);
+    setPlaying(false);
+  }
+
+  function moveStageWithKeyboard(
+    event: KeyboardEvent<HTMLButtonElement>,
+    index: number
+  ) {
+    let next = index;
+    if (event.key === "ArrowRight") {
+      next = (index + 1) % HERO_DEMO_STAGES.length;
+    } else if (event.key === "ArrowLeft") {
+      next =
+        (index - 1 + HERO_DEMO_STAGES.length) % HERO_DEMO_STAGES.length;
+    } else if (event.key === "Home") {
+      next = 0;
+    } else if (event.key === "End") {
+      next = HERO_DEMO_STAGES.length - 1;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    chooseStage(next);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`hero-demo-tab-${next}`)?.focus();
+    });
+  }
+
+  function togglePlayback() {
+    if (reducedMotion) {
+      setActiveStage((current) => (current + 1) % HERO_DEMO_STAGES.length);
+      return;
+    }
+    setPlaying((current) => !current);
+  }
+
+  return (
+    <div className={styles.productFrame} ref={demoRef}>
+      <div className={styles.frameTop}>
+        <div className={styles.frameBrand}>
+          <LogoMark size={24} />
+          <span>Guided campaign walkthrough</span>
+        </div>
+        <span className={styles.exampleBadge}>Interactive example</span>
+      </div>
+      <div className={styles.frameBody}>
+        <div className={styles.demoToolbar}>
+          <span>
+            Step {activeStage + 1} of {HERO_DEMO_STAGES.length}
+          </span>
+          <button type="button" onClick={togglePlayback}>
+            {reducedMotion
+              ? "Next step"
+              : playing
+                ? "Pause walkthrough"
+                : "Play walkthrough"}
+          </button>
+        </div>
+
+        <div
+          className={styles.demoStageTabs}
+          role="tablist"
+          aria-label="Campaign workflow example"
+        >
+          {HERO_DEMO_STAGES.map((item, index) => (
+            <button
+              key={item.label}
+              id={`hero-demo-tab-${index}`}
+              type="button"
+              role="tab"
+              aria-selected={activeStage === index}
+              aria-controls="hero-demo-panel"
+              tabIndex={activeStage === index ? 0 : -1}
+              onClick={() => chooseStage(index)}
+              onKeyDown={(event) => moveStageWithKeyboard(event, index)}
+            >
+              <span>
+                <DemoGlyph kind={item.icon} />
+              </span>
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.demoProgress} aria-hidden="true">
+          <span
+            style={{
+              width: `${((activeStage + 1) / HERO_DEMO_STAGES.length) * 100}%`,
+            }}
+          />
+        </div>
+
+        <div
+          key={stage.label}
+          className={styles.demoStagePanel}
+          id="hero-demo-panel"
+          role="tabpanel"
+          aria-labelledby={`hero-demo-tab-${activeStage}`}
+          aria-live="polite"
+        >
+          <div>
+            <span className={styles.kicker}>Campaign command center</span>
+            <h2>{stage.title}</h2>
+            <p>{stage.copy}</p>
+          </div>
+          <span
+            className={`${styles.healthPill} ${
+              stage.statusTone === "review"
+                ? styles.healthReview
+                : stage.statusTone === "active"
+                  ? styles.healthActive
+                  : ""
+            }`}
+          >
+            <span />
+            {stage.status}
+          </span>
+        </div>
+
+        <div className={styles.metricGrid} key={`${stage.label}-metrics`}>
+          {stage.metrics.map(([label, value, detail]) => (
+            <div className={styles.metric} key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+              <small>{detail}</small>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.frameColumns}>
+          <div className={styles.activityPanel}>
+            <div className={styles.panelHeading}>
+              <strong>Priority replies</strong>
+              <span>Example inbox</span>
+            </div>
+            {[
+              ["JR", "Jordan Reyes", "Interested", "Can you send the details?"],
+              ["PN", "Priya Nair", "Needs reply", "How would onboarding work?"],
+              ["MW", "Marcus Webb", "Not now", "Circle back next quarter."],
+            ].map(([initials, name, intent, snippet]) => (
+              <div
+                className={`${styles.replyRow} ${
+                  activeStage === HERO_DEMO_STAGES.length - 1 &&
+                  intent === "Interested"
+                    ? styles.replyFeatured
+                    : ""
+                }`}
+                key={name}
+              >
+                <span className={styles.avatar}>{initials}</span>
+                <span className={styles.replyCopy}>
+                  <strong>{name}</strong>
+                  <small>{snippet}</small>
+                </span>
+                <span
+                  className={`${styles.intent} ${
+                    intent === "Interested" ? styles.intentHot : ""
+                  }`}
+                >
+                  {intent}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className={styles.safetyPanel}>
+            <div className={styles.panelHeading}>
+              <strong>Launch controls</strong>
+              <span>Example</span>
+            </div>
+            {[
+              ["Gmail connected", "Ready"],
+              ["Suppression check", "Passed"],
+              ["Daily pace", "40 of 60"],
+              ["Next batch", "2:40 PM"],
+            ].map(([label, value], index) => (
+              <div className={styles.safetyRow} key={label}>
+                <span className={index < 2 ? styles.checkDot : styles.timeDot}>
+                  {index < 2 ? <Check size={13} /> : ""}
+                </span>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+            <div
+              className={styles.paceLine}
+              aria-label="Two thirds of example daily pace used"
+            >
+              <span />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const VOICE_OPTIONS = [
+  {
+    label: "Clear",
+    descriptor: "Clear, specific, low pressure",
+    beforeCompany: "I noticed",
+    afterCompany:
+      "is expanding its client team. We help growing agencies keep thoughtful follow-up moving without pulling conversations away from Gmail.",
+  },
+  {
+    label: "Warm",
+    descriptor: "Warm, direct, conversational",
+    beforeCompany: "The growth at",
+    afterCompany:
+      "is exciting. As the client team expands, keeping personal follow-up consistent can become a job of its own.",
+  },
+  {
+    label: "Consultative",
+    descriptor: "Insight led, concise, practical",
+    beforeCompany: "As",
+    afterCompany:
+      "grows, the gap between finding the right prospects and following up consistently can widen. Cadence keeps that work organized inside a Gmail-connected workflow.",
+  },
+] as const;
+
+const VARIANT_ENDINGS = [
+  "Would a short walkthrough be useful next week?",
+  "Open to comparing your current process with a more controlled workflow?",
+  "Is consistent follow-up a priority for the team this quarter?",
+] as const;
+
+function MessageDemo() {
+  const [mode, setMode] = useState<"original" | "assisted">("assisted");
+  const [voice, setVoice] = useState(0);
+  const [variant, setVariant] = useState(0);
+  const [preview, setPreview] = useState<"desktop" | "mobile">("desktop");
+  const [approved, setApproved] = useState(false);
+  const selectedVoice = VOICE_OPTIONS[voice];
+
+  return (
+    <div
+      className={`${styles.composeMock} ${
+        preview === "mobile" ? styles.mobileComposeMock : ""
+      }`}
+    >
+      <div className={styles.mockTop}>
+        <span>AI-assisted message workspace</span>
+        <span className={styles.exampleBadge}>Interactive example</span>
+      </div>
+      <div className={styles.messageDemoControls}>
+        <div>
+          <span>Draft</span>
+          <div role="group" aria-label="Draft comparison">
+            {(["original", "assisted"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={mode === item}
+                onClick={() => {
+                  setMode(item);
+                  setApproved(false);
+                }}
+              >
+                {item === "original" ? "Before AI" : "AI-assisted"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span>Preview</span>
+          <div role="group" aria-label="Message preview size">
+            {(["desktop", "mobile"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={preview === item}
+                onClick={() => setPreview(item)}
+              >
+                {item === "desktop" ? "Computer" : "Phone"}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className={styles.voicePicker}>
+        <span>Brand voice</span>
+        <div role="group" aria-label="Example brand voice">
+          {VOICE_OPTIONS.map((item, index) => (
+            <button
+              key={item.label}
+              type="button"
+              aria-pressed={voice === index}
+              onClick={() => {
+                setVoice(index);
+                setMode("assisted");
+                setApproved(false);
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className={styles.mockMeta}>
+        <div>
+          <small>Active voice</small>
+          <strong>
+            {mode === "assisted"
+              ? selectedVoice.descriptor
+              : "No voice profile applied"}
+          </strong>
+        </div>
+        <span className={styles.aiStatus}>
+          <i />
+          {mode === "assisted" ? "AI assist on" : "Original draft"}
+        </span>
+      </div>
+      <div className={styles.subjectLine}>
+        <small>Subject</small>
+        <strong>
+          {mode === "assisted"
+            ? "A quick question about Harbor Studio"
+            : "Checking in"}
+        </strong>
+      </div>
+      <div className={styles.messageBody} aria-live="polite">
+        <p>Hi Maya,</p>
+        {mode === "assisted" ? (
+          <>
+            <p>
+              {selectedVoice.beforeCompany}{" "}
+              <mark className={styles.personalizedField}>Harbor Studio</mark>{" "}
+              {selectedVoice.afterCompany}
+            </p>
+            <p>{VARIANT_ENDINGS[variant]}</p>
+          </>
+        ) : (
+          <>
+            <p>
+              I wanted to reach out and tell you about our email outreach
+              product. It has AI features and can help your team.
+            </p>
+            <p>Do you have time to chat?</p>
+          </>
+        )}
+        <p>Matthew</p>
+      </div>
+      <div className={styles.variantBar}>
+        <div
+          className={styles.variantPicker}
+          role="group"
+          aria-label="Message variant"
+        >
+          {VARIANT_ENDINGS.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              aria-pressed={variant === index}
+              onClick={() => {
+                setVariant(index);
+                setMode("assisted");
+                setApproved(false);
+              }}
+            >
+              {String.fromCharCode(65 + index)}
+            </button>
+          ))}
+        </div>
+        <span className={styles.variantCheck}>
+          <Check size={12} />
+          {approved ? "Approved by reviewer" : "Human review required"}
+        </span>
+        <button
+          type="button"
+          onClick={() => setApproved((current) => !current)}
+        >
+          {approved ? "Return to review" : "Approve draft"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const REPORT_EXAMPLES = {
+  founders: {
+    name: "Northeast founders",
+    metrics: {
+      7: [
+        ["Sent", "36", "of 48 prepared"],
+        ["Replies", "4", "11.1% of sent"],
+        ["Interested", "2", "50% of replies"],
+        ["Opt-outs", "1", "follow-ups stopped"],
+      ],
+      30: [
+        ["Sent", "128", "of 180 prepared"],
+        ["Replies", "9", "7.0% of sent"],
+        ["Interested", "4", "44% of replies"],
+        ["Opt-outs", "2", "follow-ups stopped"],
+      ],
+    },
+  },
+  agencies: {
+    name: "Agency operations",
+    metrics: {
+      7: [
+        ["Sent", "28", "of 35 prepared"],
+        ["Replies", "5", "17.9% of sent"],
+        ["Interested", "2", "40% of replies"],
+        ["Opt-outs", "0", "none recorded"],
+      ],
+      30: [
+        ["Sent", "94", "of 120 prepared"],
+        ["Replies", "11", "11.7% of sent"],
+        ["Interested", "3", "27% of replies"],
+        ["Opt-outs", "1", "follow-ups stopped"],
+      ],
+    },
+  },
+} as const;
+
+function OperationsDemo() {
+  const [view, setView] = useState<"pacing" | "reporting">("pacing");
+  const [pace, setPace] = useState(40);
+  const [testMode, setTestMode] = useState(true);
+  const [campaign, setCampaign] =
+    useState<keyof typeof REPORT_EXAMPLES>("founders");
+  const [windowDays, setWindowDays] = useState<7 | 30>(30);
+  const [replyOpen, setReplyOpen] = useState(false);
+  const report = REPORT_EXAMPLES[campaign];
+  const reportMetrics = report.metrics[windowDays];
+
+  return (
+    <div className={styles.operationsDemo}>
+      <div
+        className={styles.operationsTabs}
+        role="group"
+        aria-label="Product controls demo"
+      >
+        <button
+          type="button"
+          aria-pressed={view === "pacing"}
+          onClick={() => setView("pacing")}
+        >
+          Sending controls
+        </button>
+        <button
+          type="button"
+          aria-pressed={view === "reporting"}
+          onClick={() => setView("reporting")}
+        >
+          Replies and reporting
+        </button>
+      </div>
+
+      {view === "pacing" ? (
+        <div className={styles.pacingDemo}>
+          <div className={styles.demoExplanation}>
+            <span className={styles.exampleBadge}>Interactive example</span>
+            <h3>Choose a deliberate pace before anything sends.</h3>
+            <p>
+              Provider limits are ceilings, not a universal target. Cadence
+              makes the working window, spacing, suppression state, and
+              workspace ceiling visible before launch.
+            </p>
+            <label htmlFor="demo-pace">
+              Example daily pace
+              <output>{pace} messages</output>
+            </label>
+            <input
+              id="demo-pace"
+              type="range"
+              min="15"
+              max="60"
+              step="5"
+              value={pace}
+              aria-valuetext={`${pace} example messages per day`}
+              onChange={(event) => setPace(Number(event.target.value))}
+            />
+            <small>
+              This example control does not send email or change a real
+              account.
+            </small>
+          </div>
+          <div className={styles.controlBoard}>
+            <div className={styles.controlBoardTop}>
+              <div>
+                <small>Launch readiness</small>
+                <strong>
+                  {testMode ? "Rehearsal mode" : "Approval required"}
+                </strong>
+              </div>
+              <button
+                type="button"
+                aria-pressed={testMode}
+                onClick={() => setTestMode((current) => !current)}
+              >
+                <span />
+                Test mode {testMode ? "on" : "off"}
+              </button>
+            </div>
+            {[
+              ["Connected Gmail", "Ready"],
+              ["Suppression check", "Passed"],
+              ["Sending window", "9:00 AM to 4:00 PM"],
+              ["Minimum spacing", "6 minutes"],
+              ["Selected pace", `${pace} of 60`],
+            ].map(([label, value]) => (
+              <div className={styles.controlBoardRow} key={label}>
+                <span>
+                  <Check size={15} />
+                </span>
+                <strong>{label}</strong>
+                <small>{value}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className={styles.reportingDemo}>
+          <div className={styles.reportControls}>
+            <div>
+              <span>Campaign</span>
+              <div role="group" aria-label="Example campaign">
+                {(Object.keys(REPORT_EXAMPLES) as Array<
+                  keyof typeof REPORT_EXAMPLES
+                >).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={campaign === key}
+                    onClick={() => setCampaign(key)}
+                  >
+                    {REPORT_EXAMPLES[key].name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span>Date range</span>
+              <div role="group" aria-label="Example reporting range">
+                {([7, 30] as const).map((days) => (
+                  <button
+                    key={days}
+                    type="button"
+                    aria-pressed={windowDays === days}
+                    onClick={() => setWindowDays(days)}
+                  >
+                    {days} days
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className={styles.reportBody}>
+            <div>
+              <span className={styles.exampleBadge}>
+                Example data, last {windowDays} days
+              </span>
+              <h3>{report.name}</h3>
+              <div className={styles.reportMetricGrid} aria-live="polite">
+                {reportMetrics.map(([label, value, detail]) => (
+                  <div key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                    <small>{detail}</small>
+                  </div>
+                ))}
+              </div>
+              <p className={styles.trackingCaveat}>
+                Open tracking is intentionally secondary because image
+                blocking and privacy preloading can distort the signal.
+              </p>
+            </div>
+            <div className={styles.pipelineCard}>
+              <small>Reply to next step</small>
+              <strong>Jordan Reyes</strong>
+              <p>“Can you send the details and a few times next week?”</p>
+              <div className={styles.pipelineTags}>
+                <span>Interested</span>
+                <span>Follow-up stopped</span>
+              </div>
+              <button
+                type="button"
+                aria-expanded={replyOpen}
+                onClick={() => setReplyOpen((current) => !current)}
+              >
+                {replyOpen ? "Close example reply" : "Open example reply"}
+              </button>
+              {replyOpen && (
+                <div className={styles.replyDraft} aria-live="polite">
+                  <small>Suggested next step</small>
+                  <p>
+                    Reply in the original Gmail thread, answer the onboarding
+                    question, and offer two specific meeting times.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Landing() {
   return (
     <div className={styles.root}>
@@ -316,7 +1102,8 @@ export function Landing() {
           </Link>
           <div className={styles.navLinks}>
             <a href="#workflow">How it works</a>
-            <a href="#features">Product</a>
+            <a href="#features">Why Cadence</a>
+            <a href="#controls">Product demo</a>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
           </div>
@@ -324,9 +1111,9 @@ export function Landing() {
             <a className={styles.login} href="/sign-in">
               Log in
             </a>
-            <a className={styles.navPilot} href="#pilot">
+            <PilotLink className={styles.navPilot}>
               Request a pilot <Arrow />
-            </a>
+            </PilotLink>
           </div>
         </div>
       </nav>
@@ -338,153 +1125,43 @@ export function Landing() {
             <div className={styles.heroCopy}>
               <span className={styles.pill}>
                 <span />
-                Managed private pilots are open
+                AI-powered Gmail outreach with human control
               </span>
-              <h1>AI-assisted outreach that still sounds like you.</h1>
+              <h1>Turn Gmail outreach into qualified conversations.</h1>
               <p className={styles.heroLead}>
-                Build thoughtful Gmail campaigns, personalize without losing
-                your voice, pace sends with visible controls, and keep replies
-                and reporting in one focused workspace.
+                Cadence turns lead lists into human-reviewed campaigns, sends
+                them at a deliberate pace through Gmail, and keeps replies and
+                next steps organized. AI accelerates the work while you stay
+                in control.
               </p>
-              <div id="pilot">
+              <div
+                className={styles.pilotAnchor}
+                id={PILOT_TARGET_ID}
+                data-pilot-request
+              >
                 <WaitField
                   source="hero"
-                  note="No credit card. No open signup. We only use your email to discuss a Cadence pilot."
+                  note="Request a managed pilot. No credit card and no open signup."
                 />
               </div>
               <div className={styles.heroFoot}>
                 <a href="#workflow">
-                  See the workflow <Arrow />
+                  Explore the workflow <Arrow />
                 </a>
                 <span>
-                  Gmail-connected. Test mode first. Human reviewed.
+                  Your Gmail. Your review. Your sending pace.
                 </span>
               </div>
             </div>
 
-            <div className={styles.productFrame}>
-              <div className={styles.frameTop}>
-                <div className={styles.frameBrand}>
-                  <LogoMark size={24} />
-                  <span>Campaign command center</span>
-                </div>
-                <span className={styles.exampleBadge}>Example data</span>
-              </div>
-              <div className={styles.frameBody}>
-                <div className={styles.campaignHeader}>
-                  <div>
-                    <span className={styles.kicker}>Active campaign</span>
-                    <h2>Northeast founder outreach</h2>
-                  </div>
-                  <span className={styles.healthPill}>
-                    <span />
-                    Sending steadily
-                  </span>
-                </div>
-                <div className={styles.demoFlow}>
-                  <span className={styles.srOnly}>
-                    Example campaign flow: leads verified, AI draft reviewed,
-                    send scheduled, and reply surfaced.
-                  </span>
-                  <div className={styles.flowVisual} aria-hidden="true">
-                    <div className={styles.flowTrack}>
-                      <span className={styles.flowProgress} />
-                      <span className={styles.flowCursor} />
-                    </div>
-                    {DEMO_FLOW.map((stage) => (
-                      <div className={styles.flowNode} key={stage.label}>
-                        <span className={styles.flowIcon}>
-                          <DemoGlyph kind={stage.icon} />
-                        </span>
-                        <span className={styles.flowText}>
-                          <strong>{stage.label}</strong>
-                          <small>{stage.detail}</small>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className={styles.metricGrid}>
-                  {[
-                    ["Sent", "128", "of 180 prepared"],
-                    ["Replies", "9", "7.0% of sent"],
-                    ["Interested", "4", "44% of replies"],
-                    ["Opt-outs", "2", "follow-ups stopped"],
-                  ].map(([label, value, detail]) => (
-                    <div className={styles.metric} key={label}>
-                      <span>{label}</span>
-                      <strong>{value}</strong>
-                      <small>{detail}</small>
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.frameColumns}>
-                  <div className={styles.activityPanel}>
-                    <div className={styles.panelHeading}>
-                      <strong>Priority replies</strong>
-                      <span>View all</span>
-                    </div>
-                    {[
-                      ["JR", "Jordan Reyes", "Interested", "Can you send the details?"],
-                      ["PN", "Priya Nair", "Needs reply", "How would onboarding work?"],
-                      ["MW", "Marcus Webb", "Not now", "Circle back next quarter."],
-                    ].map(([initials, name, intent, snippet]) => (
-                      <div
-                        className={`${styles.replyRow} ${
-                          intent === "Interested" ? styles.replyFeatured : ""
-                        }`}
-                        key={name}
-                      >
-                        <span className={styles.avatar}>{initials}</span>
-                        <span className={styles.replyCopy}>
-                          <strong>{name}</strong>
-                          <small>{snippet}</small>
-                        </span>
-                        <span
-                          className={`${styles.intent} ${
-                            intent === "Interested" ? styles.intentHot : ""
-                          }`}
-                        >
-                          {intent}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className={styles.safetyPanel}>
-                    <div className={styles.panelHeading}>
-                      <strong>Launch controls</strong>
-                      <span>Today</span>
-                    </div>
-                    {[
-                      ["Gmail connected", "Ready"],
-                      ["Suppression check", "Passed"],
-                      ["Daily pace", "40 of 60"],
-                      ["Next batch", "2:40 PM"],
-                    ].map(([label, value], index) => (
-                      <div className={styles.safetyRow} key={label}>
-                        <span
-                          className={index < 2 ? styles.checkDot : styles.timeDot}
-                        >
-                          {index < 2 ? <Check size={13} /> : ""}
-                        </span>
-                        <span>{label}</span>
-                        <strong>{value}</strong>
-                      </div>
-                    ))}
-                    <div className={styles.paceLine} aria-hidden="true">
-                      <span />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HeroDemo />
 
             <div className={styles.proofBar}>
               {[
-                ["Gmail-native", "Messages stay connected to your inbox"],
-                ["Test mode first", "Rehearse before a live workflow"],
-                ["Campaign-level", "Metrics keep their real context"],
-                ["Consent-aware", "Opt-outs stop future follow-ups"],
+                ["Gmail-connected", "Keep real conversations in your inbox"],
+                ["Human reviewed", "Approve messages before scheduling"],
+                ["Visible safeguards", "Pacing and suppressions stay in view"],
+                ["Pipeline focused", "See which replies need the next step"],
               ].map(([title, copy]) => (
                 <div key={title}>
                   <Check size={17} />
@@ -501,27 +1178,29 @@ export function Landing() {
         <section className={styles.introSection}>
           <div className={styles.shell}>
             <div className={styles.sectionHeading}>
-              <span className={styles.eyebrow}>Built for focused teams</span>
-              <h2>Less campaign machinery. More clarity at every decision.</h2>
+              <span className={styles.eyebrow}>
+                A better outreach operating system
+              </span>
+              <h2>Consistent follow-up without turning email into noise.</h2>
               <p>
-                Cadence brings the work that usually lives across spreadsheets,
-                drafts, inbox tabs, and disconnected dashboards into one
-                deliberate operating flow.
+                Replace the spreadsheet, scattered drafts, manual send queue,
+                and disconnected reply tracker with one clear path from lead
+                list to qualified conversation.
               </p>
             </div>
             <div className={styles.outcomeGrid}>
               {[
                 [
-                  "Know what is ready",
-                  "Imports, missing fields, duplicates, suppressions, and launch checks are visible before a campaign moves.",
+                  "Prepare campaigns faster",
+                  "Import leads, catch missing context, draft with AI, and review variants without rebuilding the same process for every campaign.",
                 ],
                 [
-                  "Keep the message human",
-                  "AI gives you a strong first pass while your voice, proof, review, and final judgment stay in control.",
+                  "Protect the human touch",
+                  "Use saved brand voice and practical personalization, then keep a person responsible for every final message and claim.",
                 ],
                 [
-                  "See what needs action",
-                  "Campaign health and reply intent are prioritized so the next useful step is easier to find.",
+                  "Focus on the replies that matter",
+                  "Campaign health, reply intent, and stopped follow-ups make the next useful action easier to find.",
                 ],
               ].map(([title, copy], index) => (
                 <article key={title}>
@@ -537,12 +1216,12 @@ export function Landing() {
         <section className={styles.workflowSection} id="workflow">
           <div className={styles.shell}>
             <div className={styles.sectionHeading}>
-              <span className={styles.eyebrow}>One connected workflow</span>
-              <h2>From lead list to real conversation.</h2>
+              <span className={styles.eyebrow}>From list to next step</span>
+              <h2>Do the repetitive work once. Keep the judgment human.</h2>
               <p>
-                Each step explains what Cadence is doing, what still needs your
-                review, and which safety control stands between preparation and
-                delivery.
+                Cadence makes every handoff visible: what AI prepared, what
+                your team approved, what is scheduled, and which replies are
+                ready to move forward.
               </p>
             </div>
             <div className={styles.workflow}>
@@ -557,68 +1236,7 @@ export function Landing() {
                   </article>
                 ))}
               </div>
-              <div className={styles.composeMock}>
-                <div className={styles.mockTop}>
-                  <span>Message workspace</span>
-                  <span className={styles.exampleBadge}>Example</span>
-                </div>
-                <div className={styles.mockMeta}>
-                  <div>
-                    <small>Brand voice</small>
-                    <strong>Clear, specific, low pressure</strong>
-                  </div>
-                  <span className={styles.aiStatus}>
-                    <i />
-                    AI assist on
-                  </span>
-                </div>
-                <div className={styles.subjectLine}>
-                  <small>Subject</small>
-                  <strong>
-                    A quick question about{" "}
-                    <span className={styles.personalizedSubject}>
-                      Harbor Studio
-                    </span>
-                    <span className={styles.typingCaret} aria-hidden="true" />
-                  </strong>
-                </div>
-                <div className={styles.messageBody}>
-                  <p>Hi Maya,</p>
-                  <p>
-                    I noticed{" "}
-                    <mark className={styles.personalizedField}>
-                      Harbor Studio
-                    </mark>{" "}
-                    is expanding its client team. We help growing agencies
-                    keep outbound follow-up organized without moving
-                    conversations away from Gmail.
-                  </p>
-                  <p>
-                    Would a short walkthrough be useful next week?
-                  </p>
-                  <p>Matthew</p>
-                </div>
-                <div className={styles.assistNote} aria-hidden="true">
-                  <span className={styles.assistIcon}>
-                    <DemoGlyph kind="spark" />
-                  </span>
-                  <span>
-                    <strong>Draft refined</strong>
-                    <small>Voice and personalization checked</small>
-                  </span>
-                  <span className={styles.assistCheck}>
-                    <Check size={14} />
-                  </span>
-                </div>
-                <div className={styles.variantBar}>
-                  <span>Variant A</span>
-                  <span className={styles.variantCheck}>
-                    <Check size={12} />
-                    Personalization checked
-                  </span>
-                  <button type="button">Preview</button>
-                </div>
-              </div>
+              <MessageDemo />
             </div>
           </div>
         </section>
@@ -626,11 +1244,12 @@ export function Landing() {
         <section className={styles.featuresSection} id="features">
           <div className={styles.shell}>
             <div className={styles.sectionHeading}>
-              <span className={styles.eyebrow}>The product</span>
-              <h2>Serious outreach controls without enterprise clutter.</h2>
+              <span className={styles.eyebrow}>Why teams choose Cadence</span>
+              <h2>Everything needed to run thoughtful outreach as a system.</h2>
               <p>
-                Enough structure to run a reliable process, with honest labels
-                wherever email data or provider behavior has real limitations.
+                Move faster with AI, stay accountable with visible controls,
+                and measure progress without pretending every email signal is
+                equally reliable.
               </p>
             </div>
             <div className={styles.featureGrid}>
@@ -645,20 +1264,38 @@ export function Landing() {
           </div>
         </section>
 
+        <section className={styles.controlsSection} id="controls">
+          <div className={styles.shell}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Control creates confidence</span>
+              <h2>See the safeguards and outcomes in the same workspace.</h2>
+              <p>
+                Explore how Cadence helps a team choose its pace, verify launch
+                readiness, understand campaign performance, and move a useful
+                reply toward pipeline.
+              </p>
+            </div>
+            <OperationsDemo />
+          </div>
+        </section>
+
         <section className={styles.trustSection} id="trust">
           <div className={styles.shell}>
             <div className={styles.trustLayout}>
               <div className={styles.trustCopy}>
-                <span className={styles.eyebrow}>Trust is a product feature</span>
-                <h2>Designed to protect the relationship behind every send.</h2>
+                <span className={styles.eyebrow}>
+                  Trust is part of the workflow
+                </span>
+                <h2>Grow outreach without hiding the tradeoffs.</h2>
                 <p>
-                  Cadence cannot make outreach risk-free. It can make risk,
-                  consent, access, and campaign state easier to see and harder
-                  to ignore.
+                  No platform can guarantee inbox placement or replies.
+                  Cadence gives your team practical controls for pacing,
+                  consent, access, duplicate-send prevention, and campaign
+                  review so avoidable risk is harder to ignore.
                 </p>
-                <a href="#pilot">
+                <PilotLink>
                   Discuss a managed pilot <Arrow />
-                </a>
+                </PilotLink>
               </div>
               <div className={styles.trustGrid}>
                 {[
@@ -696,10 +1333,11 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.sectionHeading}>
               <span className={styles.eyebrow}>Managed pilot pricing</span>
-              <h2>Clear monthly plans, confirmed before you pay.</h2>
+              <h2>Start with the workflow your team can actually use.</h2>
               <p>
-                These are the current pilot prices. Billing stays off until we
-                confirm fit, limits, onboarding, and payment terms with you.
+                Choose a focused solo workflow or a shared team operating
+                view. We confirm fit, limits, onboarding, and payment terms
+                before billing is activated.
               </p>
             </div>
             <div className={styles.pricingGrid}>
@@ -726,9 +1364,9 @@ export function Landing() {
                       </li>
                     ))}
                   </ul>
-                  <a href="#pilot">
+                  <PilotLink>
                     {tier.cta} <Arrow />
-                  </a>
+                  </PilotLink>
                 </article>
               ))}
             </div>
@@ -746,7 +1384,7 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.sectionHeading}>
               <span className={styles.eyebrow}>Straight answers</span>
-              <h2>What to know before a pilot.</h2>
+              <h2>Know exactly what Cadence does and does not promise.</h2>
             </div>
             <div className={styles.faq}>
               {FAQ.map(([question, answer]) => (
@@ -763,10 +1401,11 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.finalPanel}>
               <span className={styles.eyebrow}>Private pilot</span>
-              <h2>Bring your real outreach workflow.</h2>
+              <h2>Make your next campaign easier to run and act on.</h2>
               <p>
-                We will review fit, explain the safety model, and help you
-                define a responsible first-success milestone.
+                Bring a real audience and goal. We will review fit, explain
+                the safety model, and help your team build a responsible path
+                from first draft to qualified conversation.
               </p>
               <WaitField
                 source="footer"
@@ -784,11 +1423,14 @@ export function Landing() {
               <LogoMark size={25} />
               <span>Cadence</span>
             </Link>
-            <p>Thoughtful Gmail outreach with visible controls.</p>
+            <p>
+              AI-powered Gmail outreach for consistent, human-reviewed growth.
+            </p>
           </div>
           <div className={styles.footerLinks}>
             <a href="#workflow">How it works</a>
-            <a href="#features">Product</a>
+            <a href="#features">Why Cadence</a>
+            <a href="#controls">Product demo</a>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
             <a href="/sign-in">Log in</a>

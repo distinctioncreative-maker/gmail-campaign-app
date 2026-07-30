@@ -509,8 +509,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "landing-page",
         name: "Public landing page",
         status: "shipped",
-        description: "Conversion-focused, mobile-first public site for founders, focused sales teams, and agencies. A restrained, explicitly labeled command-center sequence demonstrates the lead-to-reply workflow with reduced-motion support, the primary pilot call to action stays high contrast, and shared pricing, consent, tracking, safety, and deliverability limits remain explicit without unsupported performance claims.",
-        keyFiles: ["components/marketing/Landing.tsx", "components/marketing/landing.module.css"],
+        description: "Conversion-focused, responsive public site for founders, focused sales teams, and agencies. User-controlled examples demonstrate list checks, AI drafting, human review, Gmail pacing, reporting, and replies with keyboard, touch, reduced-motion, and off-screen pause behavior. Every pilot call to action centers and focuses the request field, and shared pricing, consent, tracking, safety, and deliverability limits remain explicit without unsupported performance claims.",
+        keyFiles: ["components/marketing/Landing.tsx", "components/marketing/landing.module.css", "app/layout.tsx", "app/opengraph-image.tsx"],
       },
       {
         id: "public-seo-security",

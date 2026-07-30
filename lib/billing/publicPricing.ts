@@ -20,7 +20,7 @@ export const PUBLIC_PRICING: readonly PublicPricingTier[] = [
     id: "STARTER",
     name: PLANS.STARTER.name,
     eyebrow: "For one focused sender",
-    description: "Build a repeatable Gmail outreach workflow with AI assistance and campaign reporting.",
+    description: "Build a repeatable Gmail outreach workflow that turns preparation, sending, and replies into one clear process.",
     cta: "Request a Starter pilot",
     featured: false,
     features: [
@@ -34,7 +34,7 @@ export const PUBLIC_PRICING: readonly PublicPricingTier[] = [
     id: "TEAM",
     name: PLANS.TEAM.name,
     eyebrow: "For collaborative outreach",
-    description: "Coordinate campaigns, permissions, reporting, and reusable workflows across a small team.",
+    description: "Give a small team one operating view for campaigns, permissions, reusable messages, reporting, and next steps.",
     cta: "Request a Team pilot",
     featured: true,
     features: [
@@ -48,7 +48,7 @@ export const PUBLIC_PRICING: readonly PublicPricingTier[] = [
     id: "ENTERPRISE",
     name: PLANS.ENTERPRISE.name,
     eyebrow: "For agencies and larger teams",
-    description: "Plan a controlled rollout with tailored limits, support, security review, and onboarding.",
+    description: "Plan a controlled rollout around your team structure, inboxes, usage, security review, and onboarding needs.",
     cta: "Talk through your rollout",
     featured: false,
     features: [

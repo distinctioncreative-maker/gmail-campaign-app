@@ -546,3 +546,56 @@ npm run build                                                # pass: 72 routes g
 This follow-up has not been pushed, merged, or deployed. It does not change
 signup, billing, sending mode, Firestore rules, indexes, or production
 configuration.
+
+## Landing conversion and interactivity follow-up, 2026-07-30
+
+This focused follow-up starts from merged `main`
+`6f04079e68b870d85844bd97d991a549bc3ebd37` on local branch
+`agent/landing-conversion-interactivity`.
+
+Implemented:
+
+- rewrote the public story around qualified conversations, consistent
+  follow-up, visible Gmail controls, and human-reviewed AI assistance;
+- converted the hero command center into a user-controlled six-stage
+  walkthrough with pause/play, arrow-key navigation, reduced-motion behavior,
+  and off-screen autoplay suspension;
+- added deterministic, client-only AI before/after, brand-voice, variant,
+  desktop/phone, approval, pacing, campaign-reporting, and reply interactions;
+- labeled all sample data and kept the demos isolated from production AI and
+  sending APIs;
+- replaced every pilot hash link with shared behavior that centers the hero
+  request form and focuses its email input after scrolling, with a CSS and
+  no-JavaScript hash fallback;
+- strengthened responsive layouts and practical touch targets without adding
+  a motion library or runtime dependency;
+- updated search, social, pricing, feature-registry, strategy, and readiness
+  copy while preserving honest limits and all existing safety controls;
+- expanded source-level regression coverage for CTA readability and focus,
+  keyboard interactions, reduced motion, example labels, outcome claims,
+  deterministic demos, and responsive touch targets.
+
+Verification:
+
+```bash
+npm ci --cache /tmp/cadence-npm-cache --no-audit --no-fund  # pass, 1,148 packages
+npm run docs:features                                        # pass
+git diff --check                                             # pass
+npm run typecheck                                            # pass
+npm run lint                                                 # pass
+npm test                                                     # pass: 43 files, 307 tests
+npm run build                                                # pass: 72 routes generated
+npm audit --omit=dev --audit-level=high                      # pass: 0 runtime vulnerabilities
+```
+
+The full development audit still reports the same 28 transitive
+developer-tool findings with no current upstream fix. Firestore emulator
+testing is locally blocked by Java 17; CI uses Java 21. A production-mode
+local smoke test returned 200 for the landing page, robots, sitemap, and
+social image and confirmed the expected security headers. The 1200 by 630
+social image was visually reviewed. Full responsive screenshots remain
+blocked because this workspace has Playwright but no installed browser binary.
+
+This follow-up has not been pushed, merged, or deployed. It does not change
+signup mode, live billing, real sending, Firestore rules, indexes, or cloud
+configuration.

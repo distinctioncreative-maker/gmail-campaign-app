@@ -145,8 +145,8 @@
 
 ## Public Site & Growth
 
-- [x] **Public landing page** (Shipped) — Conversion-focused, mobile-first public site for founders, focused sales teams, and agencies. A restrained, explicitly labeled command-center sequence demonstrates the lead-to-reply workflow with reduced-motion support, the primary pilot call to action stays high contrast, and shared pricing, consent, tracking, safety, and deliverability limits remain explicit without unsupported performance claims.
-  - `components/marketing/Landing.tsx`, `components/marketing/landing.module.css`
+- [x] **Public landing page** (Shipped) — Conversion-focused, responsive public site for founders, focused sales teams, and agencies. User-controlled examples demonstrate list checks, AI drafting, human review, Gmail pacing, reporting, and replies with keyboard, touch, reduced-motion, and off-screen pause behavior. Every pilot call to action centers and focuses the request field, and shared pricing, consent, tracking, safety, and deliverability limits remain explicit without unsupported performance claims.
+  - `components/marketing/Landing.tsx`, `components/marketing/landing.module.css`, `app/layout.tsx`, `app/opengraph-image.tsx`
 - [x] **Public SEO and browser security baseline** (Shipped) — Structured metadata, a generated social preview, robots and sitemap routes, canonical app metadata, and global browser security headers cover the public and authenticated surfaces. The policy preserves Google sign-in popups and public email tracking while denying framing, unsafe object embeds, and unnecessary browser capabilities.
   - `app/layout.tsx`, `app/opengraph-image.tsx`, `app/robots.ts`, `app/sitemap.ts`, `next.config.ts`
 - [x] **Private-pilot capture** (Shipped) — Public, unauthenticated, rate-limited endpoint that records private-pilot requests from the landing page.

@@ -81,7 +81,7 @@ breakdown, and [DATA_MODEL.md](DATA_MODEL.md) for the Firestore schema.
 | Billing | Stripe Checkout + portal, plan catalog, plan-based send caps (test-mode keys wired; live wiring in progress) |
 | Admin & ops | Admin console, sending-mode go-live gate, system health page, Help/Test Center, waitlist admin, in-app feature checklist |
 | Observability | Structured error reporting + webhook alerts, `/api/health` |
-| Public site | Landing page with animated hero, demos, pricing, waitlist capture |
+| Public site | Outcome-led landing page with interactive product demos, responsive pilot CTAs, pricing, and waitlist capture |
 
 ## Roadmap to public launch
 

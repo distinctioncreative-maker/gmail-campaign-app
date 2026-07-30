@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(env.APP_BASE_URL),
   title: {
-    default: "Cadence | AI-assisted Gmail outreach",
+    default: "Cadence | AI-powered Gmail outreach for qualified conversations",
     template: "%s | Cadence",
   },
   description:
-    "Write on-brand outreach with AI, pace campaigns through Gmail, and keep replies and campaign reporting in one focused workspace.",
+    "Turn lead lists into human-reviewed Gmail campaigns, send at a deliberate pace, and keep replies, reporting, and next steps in one focused workspace.",
   applicationName: "Cadence",
   keywords: [
     "Gmail outreach",
@@ -32,15 +32,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Cadence",
-    title: "Cadence | AI-assisted Gmail outreach",
+    title: "Cadence | Gmail outreach built for qualified conversations",
     description:
-      "A focused workflow for thoughtful outreach, controlled Gmail pacing, and campaign-level reporting.",
+      "AI-assisted campaign preparation, visible sending controls, and reply-focused reporting in one Gmail-connected workflow.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cadence | AI-assisted Gmail outreach",
+    title: "Cadence | Gmail outreach built for qualified conversations",
     description:
-      "A focused workflow for thoughtful outreach, controlled Gmail pacing, and campaign-level reporting.",
+      "AI-assisted campaign preparation, visible sending controls, and reply-focused reporting in one Gmail-connected workflow.",
   },
   robots: {
     index: true,

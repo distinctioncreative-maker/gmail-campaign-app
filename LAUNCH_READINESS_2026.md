@@ -1,8 +1,8 @@
 # Cadence Pilot Launch Readiness
 
-Evidence date: 2026-07-29
-Reviewed base: `6560ce892c6b56130cabe73643021c5390a9253b`
-Release branch: `agent/launch-experience-hardening`
+Evidence updated: 2026-07-30
+Current follow-up base: `6f04079e68b870d85844bd97d991a549bc3ebd37`
+Current release branch: `agent/landing-conversion-interactivity`
 
 ## Executive recommendation
 
@@ -19,8 +19,8 @@ OAuth, payment, monitoring, or operational approval.
 
 ### Public experience and conversion
 
-- Replaces the animated simulated-revenue story with a static, explicitly
-  labeled campaign command-center demonstration.
+- Replaces the old simulated-revenue story with explicitly labeled,
+  user-controlled campaign, writing, pacing, and reporting demonstrations.
 - Rewrites the homepage around one clear value proposition, one primary pilot
   request, a lower-commitment workflow link, concrete product proof, and
   honest trust language.
@@ -31,9 +31,14 @@ OAuth, payment, monitoring, or operational approval.
   landing page and authenticated billing UI.
 - Adds structured metadata, a generated 1200 by 630 social image, robots,
   sitemap, and global browser security headers.
-- Provides purpose-built responsive behavior for 320px phones through wide
-  desktop layouts, including stacked forms, cards, pricing, proof panels, and
-  product demonstrations.
+- Preserves fluid responsive rules for 320px phones through wide desktop
+  layouts, including stacked forms, cards, pricing, proof panels, and product
+  demonstrations. Real-device browser confirmation remains a broader-launch
+  gate.
+- Centers the pilot form and focuses its email field from every pilot call to
+  action so the sticky navigation cannot hide the requested input.
+- Pauses the guided hero sequence after direct interaction, while it is off
+  screen, and whenever reduced motion is requested.
 
 ### Product usability
 
@@ -146,12 +151,13 @@ Commands were run from a clean dependency install in the release workspace.
 | `git diff --check` | Pass |
 | `npm run typecheck` | Pass |
 | `npm run lint` | Pass |
-| `npm test` | Pass, 42 files and 299 tests |
-| Focused consent, MIME, billing, and sanitizer tests | Pass, 6 files and 28 tests |
+| `npm test` | Pass, 43 files and 307 tests |
+| Focused landing, copy-style, and billing tests | Pass, 3 files and 18 tests |
 | `npm run build` | Pass, 72 routes generated |
 | `npm audit --omit=dev --audit-level=high` | Pass, 0 runtime vulnerabilities |
 | `npm audit --audit-level=moderate` | 28 developer-tool findings, 26 high and 2 moderate, with no current upstream fix |
 | Production HTTP smoke check | Landing, security headers, robots, sitemap, and generated social image returned 200 |
+| Landing HTML smoke check | Pass, new outcome headline, interactive-example labels, product-demo navigation, and pilot input rendered |
 | Social-image inspection | Pass, valid 1200 by 630 PNG and visually reviewed |
 | `/api/health` in local standalone runtime | Expected 503 because local Firestore credentials are unavailable |
 | `npm run test:emulator` | Locally blocked: installed Java 17; Firebase CLI 15 requires Java 21 |

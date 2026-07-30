@@ -1,6 +1,6 @@
 # Cadence Product Strategy and Competitive Gap Analysis
 
-Last reviewed: July 28, 2026
+Last reviewed: July 30, 2026
 
 ## Product decision
 
@@ -18,6 +18,20 @@ The product should not compete by promising the largest possible send volume. Th
 - An interface that a small team can operate without a deliverability specialist.
 
 Claims such as “guaranteed higher open rates” or “unlimited sending” would be misleading. Cadence can credibly sell better workflow, safer execution, faster content iteration, and clearer outcome learning.
+
+### Landing conversion decision
+
+Current official competitor homepages consistently lead with pipeline,
+clients, or revenue outcomes, then support those outcomes with automation, AI,
+deliverability, data, or CRM capabilities. Cadence should therefore lead with
+qualified conversations and a repeatable Gmail workflow, then prove that
+position with its real product controls: human review, test mode, deliberate
+pacing, suppression enforcement, campaign-level context, and reply triage.
+
+The public story must remain outcome-led but qualified. It should never promise
+inbox placement, replies, spam avoidance, revenue, or one universal safe
+sending volume. Product demonstrations must use clearly labeled example data
+and must not call real sending or AI APIs.
 
 ## Competitive evidence
 
