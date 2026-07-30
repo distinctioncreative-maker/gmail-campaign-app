@@ -145,7 +145,7 @@
 
 ## Public Site & Growth
 
-- [x] **Public landing page** (Shipped) — Conversion-focused, mobile-first public site for founders, focused sales teams, and agencies. A static, explicitly labeled command-center demonstration replaces simulated revenue animation, the full lead-to-reply workflow is explained in product terms, one primary pilot path drives conversion, and shared pricing, consent, tracking, safety, and deliverability limits stay explicit without unsupported performance claims.
+- [x] **Public landing page** (Shipped) — Conversion-focused, mobile-first public site for founders, focused sales teams, and agencies. A restrained, explicitly labeled command-center sequence demonstrates the lead-to-reply workflow with reduced-motion support, the primary pilot call to action stays high contrast, and shared pricing, consent, tracking, safety, and deliverability limits remain explicit without unsupported performance claims.
   - `components/marketing/Landing.tsx`, `components/marketing/landing.module.css`
 - [x] **Public SEO and browser security baseline** (Shipped) — Structured metadata, a generated social preview, robots and sitemap routes, canonical app metadata, and global browser security headers cover the public and authenticated surfaces. The policy preserves Google sign-in popups and public email tracking while denying framing, unsafe object embeds, and unnecessary browser capabilities.
   - `app/layout.tsx`, `app/opengraph-image.tsx`, `app/robots.ts`, `app/sitemap.ts`, `next.config.ts`

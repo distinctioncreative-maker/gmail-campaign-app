@@ -445,8 +445,8 @@ not authenticated.
   approval. Placeholder legal claims were not invented.
 - OAuth verification/CASA and Stripe end-to-end test/live configuration are
   external workflows.
-- The landing page now uses a static, explicitly labeled command-center
-  demonstration and an honest AI-assisted workflow story. Continue to avoid
+- The landing page uses a restrained, explicitly labeled command-center
+  sequence and an honest AI-assisted workflow story. Continue to avoid
   guaranteed inbox placement, replies, or revenue.
 - Playwright end-to-end coverage is still planned.
 - Multi-inbox rotation, warmup, enrichment, multichannel, and SOC 2 remain
@@ -508,3 +508,41 @@ without local Firestore credentials.
 
 This release remains branch/PR-only. Do not merge, deploy, turn on live
 billing, open signup, or real sending without new explicit approval.
+
+## Landing motion polish follow-up, 2026-07-30
+
+This focused follow-up starts from merged `main`
+`1ea95362fc3e8d4794af061b61bf1e4a58e9d1e3` on local branch
+`agent/landing-motion-polish`.
+
+Implemented:
+
+- fixed the top-right pilot button contrast bug caused by the global anchor
+  selector overriding the button text color;
+- added an arrow, stronger focus treatment, and restrained hover feedback to
+  the navigation call to action;
+- added a looping, labeled lead-to-reply sequence inside the hero command
+  center, synchronized with subtle metric, reply, and pacing signals;
+- added tasteful AI-assist, personalization, and completion motion to the
+  message-workspace demonstration;
+- added small ambient and hover details without adding a motion library or
+  new runtime dependency;
+- disabled decorative animation under `prefers-reduced-motion`;
+- added source-level regression coverage for CTA contrast, the accessible
+  demo description, and reduced-motion behavior.
+
+Verification:
+
+```bash
+npm ci --cache /tmp/cadence-npm-cache --no-audit --no-fund  # pass, 1,148 packages
+npm run docs:features                                        # pass
+git diff --check                                             # pass
+npm run typecheck                                            # pass
+npm run lint                                                 # pass
+npm test                                                     # pass: 43 files, 302 tests
+npm run build                                                # pass: 72 routes generated
+```
+
+This follow-up has not been pushed, merged, or deployed. It does not change
+signup, billing, sending mode, Firestore rules, indexes, or production
+configuration.

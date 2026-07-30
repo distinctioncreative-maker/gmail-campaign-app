@@ -44,6 +44,70 @@ function Arrow() {
   );
 }
 
+type DemoGlyphKind = "leads" | "spark" | "clock" | "reply";
+
+function DemoGlyph({ kind }: { kind: DemoGlyphKind }) {
+  if (kind === "leads") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M8.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7-1a2.5 2.5 0 1 0 0-5m-12 13.5c.6-3 2.3-4.5 5-4.5s4.4 1.5 5 4.5m1.5-5c2.4.2 3.8 1.7 4.2 4"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  if (kind === "spark") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M12 3.5c.7 4.4 3.1 6.8 7.5 7.5-4.4.7-6.8 3.1-7.5 7.5-.7-4.4-3.1-6.8-7.5-7.5 4.4-.7 6.8-3.1 7.5-7.5Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  if (kind === "clock") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <circle cx="12" cy="12" r="7.5" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          d="M12 8v4.4l2.9 1.7"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M5 6.5h14v9H9l-4 3v-12Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 10h6m-6 3h3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function WaitField({
   source,
   note,
@@ -166,6 +230,17 @@ const WORKFLOW = [
   },
 ] as const;
 
+const DEMO_FLOW = [
+  { label: "Leads", detail: "Verified", icon: "leads" },
+  { label: "AI draft", detail: "Reviewed", icon: "spark" },
+  { label: "Paced send", detail: "Scheduled", icon: "clock" },
+  { label: "Reply", detail: "Surfaced", icon: "reply" },
+] as const satisfies ReadonlyArray<{
+  label: string;
+  detail: string;
+  icon: DemoGlyphKind;
+}>;
+
 const FEATURES = [
   {
     eyebrow: "Create",
@@ -250,7 +325,7 @@ export function Landing() {
               Log in
             </a>
             <a className={styles.navPilot} href="#pilot">
-              Request a pilot
+              Request a pilot <Arrow />
             </a>
           </div>
         </div>
@@ -306,6 +381,29 @@ export function Landing() {
                     Sending steadily
                   </span>
                 </div>
+                <div className={styles.demoFlow}>
+                  <span className={styles.srOnly}>
+                    Example campaign flow: leads verified, AI draft reviewed,
+                    send scheduled, and reply surfaced.
+                  </span>
+                  <div className={styles.flowVisual} aria-hidden="true">
+                    <div className={styles.flowTrack}>
+                      <span className={styles.flowProgress} />
+                      <span className={styles.flowCursor} />
+                    </div>
+                    {DEMO_FLOW.map((stage) => (
+                      <div className={styles.flowNode} key={stage.label}>
+                        <span className={styles.flowIcon}>
+                          <DemoGlyph kind={stage.icon} />
+                        </span>
+                        <span className={styles.flowText}>
+                          <strong>{stage.label}</strong>
+                          <small>{stage.detail}</small>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <div className={styles.metricGrid}>
                   {[
                     ["Sent", "128", "of 180 prepared"],
@@ -331,7 +429,12 @@ export function Landing() {
                       ["PN", "Priya Nair", "Needs reply", "How would onboarding work?"],
                       ["MW", "Marcus Webb", "Not now", "Circle back next quarter."],
                     ].map(([initials, name, intent, snippet]) => (
-                      <div className={styles.replyRow} key={name}>
+                      <div
+                        className={`${styles.replyRow} ${
+                          intent === "Interested" ? styles.replyFeatured : ""
+                        }`}
+                        key={name}
+                      >
                         <span className={styles.avatar}>{initials}</span>
                         <span className={styles.replyCopy}>
                           <strong>{name}</strong>
@@ -368,6 +471,9 @@ export function Landing() {
                         <strong>{value}</strong>
                       </div>
                     ))}
+                    <div className={styles.paceLine} aria-hidden="true">
+                      <span />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -461,27 +567,55 @@ export function Landing() {
                     <small>Brand voice</small>
                     <strong>Clear, specific, low pressure</strong>
                   </div>
-                  <span>AI assist on</span>
+                  <span className={styles.aiStatus}>
+                    <i />
+                    AI assist on
+                  </span>
                 </div>
                 <div className={styles.subjectLine}>
                   <small>Subject</small>
-                  <strong>A quick question about Harbor Studio</strong>
+                  <strong>
+                    A quick question about{" "}
+                    <span className={styles.personalizedSubject}>
+                      Harbor Studio
+                    </span>
+                    <span className={styles.typingCaret} aria-hidden="true" />
+                  </strong>
                 </div>
                 <div className={styles.messageBody}>
                   <p>Hi Maya,</p>
                   <p>
-                    I noticed Harbor Studio is expanding its client team. We
-                    help growing agencies keep outbound follow-up organized
-                    without moving conversations away from Gmail.
+                    I noticed{" "}
+                    <mark className={styles.personalizedField}>
+                      Harbor Studio
+                    </mark>{" "}
+                    is expanding its client team. We help growing agencies
+                    keep outbound follow-up organized without moving
+                    conversations away from Gmail.
                   </p>
                   <p>
                     Would a short walkthrough be useful next week?
                   </p>
                   <p>Matthew</p>
                 </div>
+                <div className={styles.assistNote} aria-hidden="true">
+                  <span className={styles.assistIcon}>
+                    <DemoGlyph kind="spark" />
+                  </span>
+                  <span>
+                    <strong>Draft refined</strong>
+                    <small>Voice and personalization checked</small>
+                  </span>
+                  <span className={styles.assistCheck}>
+                    <Check size={14} />
+                  </span>
+                </div>
                 <div className={styles.variantBar}>
                   <span>Variant A</span>
-                  <span>Personalization checked</span>
+                  <span className={styles.variantCheck}>
+                    <Check size={12} />
+                    Personalization checked
+                  </span>
                   <button type="button">Preview</button>
                 </div>
               </div>
