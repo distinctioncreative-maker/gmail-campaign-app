@@ -7,6 +7,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
   type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import Link from "next/link";
@@ -297,6 +298,9 @@ const HERO_DEMO_STAGES = [
     copy: "Cadence validates the list, removes duplicate addresses, flags missing context, and excludes suppressed recipients before any campaign is prepared.",
     status: "List checked",
     statusTone: "safe",
+    signal: ["180 usable leads", "Duplicates and suppressions resolved"],
+    trackPosition: 0,
+    controlIndex: 1,
     metrics: [
       ["Prepared", "180", "ready for review"],
       ["Duplicates", "12", "removed"],
@@ -311,6 +315,9 @@ const HERO_DEMO_STAGES = [
     copy: "AI applies an approved brand voice and known lead details to create a focused message. No unverified research is silently presented as fact.",
     status: "Draft ready",
     statusTone: "active",
+    signal: ["Drafting with context", "Brand voice and known lead fields applied"],
+    trackPosition: 1,
+    controlIndex: 0,
     metrics: [
       ["Drafts", "180", "prepared"],
       ["Brand voice", "1", "approved profile"],
@@ -325,6 +332,9 @@ const HERO_DEMO_STAGES = [
     copy: "Preview variables, compare variants, edit the message, and approve the campaign. AI accelerates preparation but never replaces final judgment.",
     status: "Human review",
     statusTone: "review",
+    signal: ["14 edits captured", "Every message remains under human control"],
+    trackPosition: 2,
+    controlIndex: 0,
     metrics: [
       ["Reviewed", "180", "previews checked"],
       ["Edits", "14", "human changes"],
@@ -339,6 +349,9 @@ const HERO_DEMO_STAGES = [
     copy: "Set business days, sending hours, spacing, and a daily ceiling. Test mode gives the team a rehearsal before a workspace is approved for live delivery.",
     status: "Test mode",
     statusTone: "review",
+    signal: ["Next batch staged", "Working hours, spacing, and ceiling confirmed"],
+    trackPosition: 3,
+    controlIndex: 3,
     metrics: [
       ["Daily pace", "40", "of 60 ceiling"],
       ["Send window", "9 to 4", "local hours"],
@@ -353,6 +366,9 @@ const HERO_DEMO_STAGES = [
     copy: "Cadence reserves each delivery, rechecks suppression and plan limits, and quarantines ambiguous provider responses instead of blindly sending again.",
     status: "Sending steadily",
     statusTone: "safe",
+    signal: ["Delivery reserved", "Final suppression and quota checks passed"],
+    trackPosition: 3,
+    controlIndex: 2,
     metrics: [
       ["Sent", "128", "of 180 prepared"],
       ["Failed", "2", "visible for review"],
@@ -367,6 +383,9 @@ const HERO_DEMO_STAGES = [
     copy: "Replies stay connected to the original Gmail thread, interested conversations rise to the top, and resolved recipients stop receiving automatic follow-ups.",
     status: "4 interested",
     statusTone: "safe",
+    signal: ["Reply moved forward", "Follow-up stopped and next step surfaced"],
+    trackPosition: 4,
+    controlIndex: null,
     metrics: [
       ["Replies", "9", "7.0% of sent"],
       ["Interested", "4", "44% of replies"],
@@ -381,7 +400,23 @@ const HERO_DEMO_STAGES = [
   copy: string;
   status: string;
   statusTone: "safe" | "active" | "review";
+  signal: readonly [string, string];
+  trackPosition: number;
+  controlIndex: number | null;
   metrics: ReadonlyArray<readonly [string, string, string]>;
+}>;
+
+const HERO_STAGE_DURATION_MS = 2300;
+
+const HERO_MOTION_NODES = [
+  { label: "Lead", icon: "leads" },
+  { label: "Draft", icon: "spark" },
+  { label: "Review", icon: "spark" },
+  { label: "Gmail", icon: "clock" },
+  { label: "Reply", icon: "reply" },
+] as const satisfies ReadonlyArray<{
+  label: string;
+  icon: DemoGlyphKind;
 }>;
 
 const FEATURES = [
@@ -462,9 +497,14 @@ function HeroDemo() {
   const [activeStage, setActiveStage] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [visible, setVisible] = useState(true);
+  const [documentVisible, setDocumentVisible] = useState(true);
   const demoRef = useRef<HTMLDivElement>(null);
+  const pointerFrameRef = useRef<number | null>(null);
+  const pointerPositionRef = useRef({ x: 50, y: 28 });
   const reducedMotion = useReducedMotion();
   const stage = HERO_DEMO_STAGES[activeStage];
+  const autoplayActive =
+    playing && visible && documentVisible && !reducedMotion;
 
   useEffect(() => {
     const node = demoRef.current;
@@ -478,12 +518,28 @@ function HeroDemo() {
   }, []);
 
   useEffect(() => {
-    if (!playing || !visible || reducedMotion) return;
-    const timer = window.setInterval(() => {
+    const update = () => setDocumentVisible(document.visibilityState === "visible");
+    update();
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
+
+  useEffect(() => {
+    if (!autoplayActive) return;
+    const timer = window.setTimeout(() => {
       setActiveStage((current) => (current + 1) % HERO_DEMO_STAGES.length);
-    }, 3600);
-    return () => window.clearInterval(timer);
-  }, [playing, reducedMotion, visible]);
+    }, HERO_STAGE_DURATION_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeStage, autoplayActive]);
+
+  useEffect(
+    () => () => {
+      if (pointerFrameRef.current !== null) {
+        window.cancelAnimationFrame(pointerFrameRef.current);
+      }
+    },
+    []
+  );
 
   function chooseStage(index: number) {
     setActiveStage(index);
@@ -523,19 +579,62 @@ function HeroDemo() {
     setPlaying((current) => !current);
   }
 
+  function moveSpotlight(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch" || reducedMotion) return;
+    const node = demoRef.current;
+    if (!node) return;
+    const rect = node.getBoundingClientRect();
+    pointerPositionRef.current = {
+      x: ((event.clientX - rect.left) / rect.width) * 100,
+      y: ((event.clientY - rect.top) / rect.height) * 100,
+    };
+    if (pointerFrameRef.current !== null) return;
+    pointerFrameRef.current = window.requestAnimationFrame(() => {
+      node.style.setProperty(
+        "--spotlight-x",
+        `${pointerPositionRef.current.x.toFixed(2)}%`
+      );
+      node.style.setProperty(
+        "--spotlight-y",
+        `${pointerPositionRef.current.y.toFixed(2)}%`
+      );
+      pointerFrameRef.current = null;
+    });
+  }
+
+  function resetSpotlight() {
+    const node = demoRef.current;
+    if (!node) return;
+    node.style.setProperty("--spotlight-x", "72%");
+    node.style.setProperty("--spotlight-y", "18%");
+  }
+
   return (
-    <div className={styles.productFrame} ref={demoRef}>
+    <div
+      className={styles.productFrame}
+      ref={demoRef}
+      data-playing={autoplayActive ? "true" : "false"}
+      onPointerMove={moveSpotlight}
+      onPointerLeave={resetSpotlight}
+    >
       <div className={styles.frameTop}>
         <div className={styles.frameBrand}>
           <LogoMark size={24} />
-          <span>Guided campaign walkthrough</span>
+          <span>Cadence campaign command center</span>
         </div>
-        <span className={styles.exampleBadge}>Interactive example</span>
+        <span className={styles.exampleBadge}>
+          <i />
+          Interactive example
+        </span>
       </div>
       <div className={styles.frameBody}>
         <div className={styles.demoToolbar}>
-          <span>
-            Step {activeStage + 1} of {HERO_DEMO_STAGES.length}
+          <span className={styles.liveWalkthrough}>
+            <i />
+            {autoplayActive ? "Live walkthrough" : "Walkthrough paused"}
+            <small>
+              Step {activeStage + 1} of {HERO_DEMO_STAGES.length}
+            </small>
           </span>
           <button type="button" onClick={togglePlayback}>
             {reducedMotion
@@ -567,6 +666,13 @@ function HeroDemo() {
                 <DemoGlyph kind={item.icon} />
               </span>
               {item.label}
+              {activeStage === index && (
+                <i
+                  className={styles.stageClock}
+                  key={`${activeStage}-${visible}-${documentVisible}`}
+                  aria-hidden
+                />
+              )}
             </button>
           ))}
         </div>
@@ -579,13 +685,49 @@ function HeroDemo() {
           />
         </div>
 
+        <div className={styles.motionRail} aria-hidden="true">
+          <div className={styles.motionTrack}>
+            <span
+              style={{
+                width: `${
+                  (stage.trackPosition / (HERO_MOTION_NODES.length - 1)) * 100
+                }%`,
+              }}
+            />
+            <i
+              style={{
+                left: `${
+                  (stage.trackPosition / (HERO_MOTION_NODES.length - 1)) * 100
+                }%`,
+              }}
+            />
+          </div>
+          <div className={styles.motionNodes}>
+            {HERO_MOTION_NODES.map((node, index) => (
+              <span
+                key={node.label}
+                className={`${styles.motionNode} ${
+                  index <= stage.trackPosition ? styles.motionNodeComplete : ""
+                } ${
+                  index === stage.trackPosition ? styles.motionNodeActive : ""
+                }`}
+              >
+                <i>
+                  <DemoGlyph kind={node.icon} />
+                </i>
+                <small>{node.label}</small>
+              </span>
+            ))}
+          </div>
+        </div>
+
         <div
           key={stage.label}
           className={styles.demoStagePanel}
           id="hero-demo-panel"
           role="tabpanel"
           aria-labelledby={`hero-demo-tab-${activeStage}`}
-          aria-live="polite"
+          aria-live={autoplayActive ? "off" : "polite"}
         >
           <div>
             <span className={styles.kicker}>Campaign command center</span>
@@ -604,6 +746,18 @@ function HeroDemo() {
             <span />
             {stage.status}
           </span>
+        </div>
+
+        <div className={styles.stageSignal} key={`${stage.label}-signal`}>
+          <span className={styles.stageSignalIcon}>
+            <DemoGlyph kind={stage.icon} />
+          </span>
+          <span>
+            <small>Live action</small>
+            <strong>{stage.signal[0]}</strong>
+          </span>
+          <p>{stage.signal[1]}</p>
+          <i aria-hidden />
         </div>
 
         <div className={styles.metricGrid} key={`${stage.label}-metrics`}>
@@ -662,7 +816,12 @@ function HeroDemo() {
               ["Daily pace", "40 of 60"],
               ["Next batch", "2:40 PM"],
             ].map(([label, value], index) => (
-              <div className={styles.safetyRow} key={label}>
+              <div
+                className={`${styles.safetyRow} ${
+                  stage.controlIndex === index ? styles.safetyRowActive : ""
+                }`}
+                key={label}
+              >
                 <span className={index < 2 ? styles.checkDot : styles.timeDot}>
                   {index < 2 ? <Check size={13} /> : ""}
                 </span>
@@ -801,13 +960,23 @@ function MessageDemo() {
       </div>
       <div className={styles.subjectLine}>
         <small>Subject</small>
-        <strong>
+        <strong
+          key={`${mode}-${voice}-subject`}
+          className={mode === "assisted" ? styles.personalizedSubject : ""}
+        >
           {mode === "assisted"
             ? "A quick question about Harbor Studio"
             : "Checking in"}
+          {mode === "assisted" && (
+            <span className={styles.typingCaret} aria-hidden />
+          )}
         </strong>
       </div>
-      <div className={styles.messageBody} aria-live="polite">
+      <div
+        className={styles.messageBody}
+        key={`${mode}-${voice}-${variant}`}
+        aria-live="polite"
+      >
         <p>Hi Maya,</p>
         {mode === "assisted" ? (
           <>
@@ -829,6 +998,20 @@ function MessageDemo() {
         )}
         <p>Matthew</p>
       </div>
+      {mode === "assisted" && (
+        <div className={styles.assistNote} aria-hidden>
+          <span className={styles.assistIcon}>
+            <DemoGlyph kind="spark" />
+          </span>
+          <span>
+            <strong>Brand voice applied</strong>
+            <small>Context checked and variant ready for review</small>
+          </span>
+          <span className={styles.assistCheck}>
+            <Check size={14} />
+          </span>
+        </div>
+      )}
       <div className={styles.variantBar}>
         <div
           className={styles.variantPicker}
@@ -997,6 +1180,12 @@ function OperationsDemo() {
                 <small>{value}</small>
               </div>
             ))}
+            <div className={styles.launchSequence} aria-hidden>
+              {["Review", "Reserve", "Deliver"].map((label) => (
+                <span key={label}>{label}</span>
+              ))}
+              <i />
+            </div>
           </div>
         </div>
       ) : (
@@ -1041,7 +1230,11 @@ function OperationsDemo() {
                 Example data, last {windowDays} days
               </span>
               <h3>{report.name}</h3>
-              <div className={styles.reportMetricGrid} aria-live="polite">
+              <div
+                className={styles.reportMetricGrid}
+                key={`${campaign}-${windowDays}`}
+                aria-live="polite"
+              >
                 {reportMetrics.map(([label, value, detail]) => (
                   <div key={label}>
                     <span>{label}</span>
@@ -1177,7 +1370,7 @@ export function Landing() {
 
         <section className={styles.introSection}>
           <div className={styles.shell}>
-            <div className={styles.sectionHeading}>
+            <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>
                 A better outreach operating system
               </span>
@@ -1188,7 +1381,7 @@ export function Landing() {
                 list to qualified conversation.
               </p>
             </div>
-            <div className={styles.outcomeGrid}>
+            <div className={styles.outcomeGrid} data-reveal>
               {[
                 [
                   "Prepare campaigns faster",
@@ -1215,7 +1408,7 @@ export function Landing() {
 
         <section className={styles.workflowSection} id="workflow">
           <div className={styles.shell}>
-            <div className={styles.sectionHeading}>
+            <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>From list to next step</span>
               <h2>Do the repetitive work once. Keep the judgment human.</h2>
               <p>
@@ -1224,7 +1417,7 @@ export function Landing() {
                 ready to move forward.
               </p>
             </div>
-            <div className={styles.workflow}>
+            <div className={styles.workflow} data-reveal>
               <div className={styles.workflowSteps}>
                 {WORKFLOW.map((step) => (
                   <article key={step.number}>
@@ -1243,7 +1436,7 @@ export function Landing() {
 
         <section className={styles.featuresSection} id="features">
           <div className={styles.shell}>
-            <div className={styles.sectionHeading}>
+            <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>Why teams choose Cadence</span>
               <h2>Everything needed to run thoughtful outreach as a system.</h2>
               <p>
@@ -1252,7 +1445,7 @@ export function Landing() {
                 equally reliable.
               </p>
             </div>
-            <div className={styles.featureGrid}>
+            <div className={styles.featureGrid} data-reveal>
               {FEATURES.map((feature) => (
                 <article key={feature.title}>
                   <span>{feature.eyebrow}</span>
@@ -1266,7 +1459,7 @@ export function Landing() {
 
         <section className={styles.controlsSection} id="controls">
           <div className={styles.shell}>
-            <div className={styles.sectionHeading}>
+            <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>Control creates confidence</span>
               <h2>See the safeguards and outcomes in the same workspace.</h2>
               <p>
@@ -1275,13 +1468,15 @@ export function Landing() {
                 reply toward pipeline.
               </p>
             </div>
-            <OperationsDemo />
+            <div data-reveal>
+              <OperationsDemo />
+            </div>
           </div>
         </section>
 
         <section className={styles.trustSection} id="trust">
           <div className={styles.shell}>
-            <div className={styles.trustLayout}>
+            <div className={styles.trustLayout} data-reveal>
               <div className={styles.trustCopy}>
                 <span className={styles.eyebrow}>
                   Trust is part of the workflow
@@ -1331,7 +1526,7 @@ export function Landing() {
 
         <section className={styles.pricingSection} id="pricing">
           <div className={styles.shell}>
-            <div className={styles.sectionHeading}>
+            <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>Managed pilot pricing</span>
               <h2>Start with the workflow your team can actually use.</h2>
               <p>
@@ -1340,7 +1535,7 @@ export function Landing() {
                 before billing is activated.
               </p>
             </div>
-            <div className={styles.pricingGrid}>
+            <div className={styles.pricingGrid} data-reveal>
               {PUBLIC_PRICING.map((tier) => (
                 <article
                   className={tier.featured ? styles.featuredPrice : ""}
@@ -1382,11 +1577,11 @@ export function Landing() {
 
         <section className={styles.faqSection}>
           <div className={styles.shell}>
-            <div className={styles.sectionHeading}>
+            <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>Straight answers</span>
               <h2>Know exactly what Cadence does and does not promise.</h2>
             </div>
-            <div className={styles.faq}>
+            <div className={styles.faq} data-reveal>
               {FAQ.map(([question, answer]) => (
                 <details key={question}>
                   <summary>{question}</summary>
@@ -1399,7 +1594,7 @@ export function Landing() {
 
         <section className={styles.finalCta}>
           <div className={styles.shell}>
-            <div className={styles.finalPanel}>
+            <div className={styles.finalPanel} data-reveal>
               <span className={styles.eyebrow}>Private pilot</span>
               <h2>Make your next campaign easier to run and act on.</h2>
               <p>

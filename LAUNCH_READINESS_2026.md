@@ -1,8 +1,9 @@
 # Cadence Pilot Launch Readiness
 
 Evidence updated: 2026-07-30
-Current follow-up base: `6f04079e68b870d85844bd97d991a549bc3ebd37`
-Current release branch: `agent/landing-conversion-interactivity`
+Current follow-up base: remote `main`
+`ec4b56a1f6840a832d77e77e840dfff4feb08ff0`
+Current release branch: `agent/premium-motion-system`
 
 ## Executive recommendation
 
@@ -39,6 +40,17 @@ OAuth, payment, monitoring, or operational approval.
   action so the sticky navigation cannot hide the requested input.
 - Pauses the guided hero sequence after direct interaction, while it is off
   screen, and whenever reduced motion is requested.
+- Makes the product story visibly active within the first second through a
+  2.3-second stage cadence, active stage clock, lead-to-reply motion rail,
+  live-action feedback, and synchronized controls instead of waiting for a
+  subtle delayed state change.
+- Extends the same premium motion language to AI assistance, message review,
+  launch controls, reporting, section entrances, cards, and calls to action
+  using CSS-first transform and opacity effects, with no new runtime
+  dependency.
+- Pauses autoplay when the browser tab is hidden and bounds pointer-responsive
+  lighting updates to animation frames. Obsolete unrendered animation CSS was
+  removed before measuring the final asset cost.
 
 ### Product usability
 
@@ -151,13 +163,14 @@ Commands were run from a clean dependency install in the release workspace.
 | `git diff --check` | Pass |
 | `npm run typecheck` | Pass |
 | `npm run lint` | Pass |
-| `npm test` | Pass, 43 files and 307 tests |
-| Focused landing, copy-style, and billing tests | Pass, 3 files and 18 tests |
+| `npm test` | Pass, 43 files and 308 tests |
+| Focused landing experience tests | Pass, 9 tests |
 | `npm run build` | Pass, 72 routes generated |
 | `npm audit --omit=dev --audit-level=high` | Pass, 0 runtime vulnerabilities |
 | `npm audit --audit-level=moderate` | 28 developer-tool findings, 26 high and 2 moderate, with no current upstream fix |
 | Production HTTP smoke check | Landing, security headers, robots, sitemap, and generated social image returned 200 |
-| Landing HTML smoke check | Pass, new outcome headline, interactive-example labels, product-demo navigation, and pilot input rendered |
+| Landing HTML smoke check | Pass, HTTP 200 with security headers; new live walkthrough, lead signal, command center, outcome headline, and pilot request rendered |
+| Landing motion asset review | Pass, no added dependency; final landing CSS adds about 1.4 KB gzip after obsolete animation rules were removed |
 | Social-image inspection | Pass, valid 1200 by 630 PNG and visually reviewed |
 | `/api/health` in local standalone runtime | Expected 503 because local Firestore credentials are unavailable |
 | `npm run test:emulator` | Locally blocked: installed Java 17; Firebase CLI 15 requires Java 21 |

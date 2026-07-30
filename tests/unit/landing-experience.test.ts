@@ -72,6 +72,22 @@ describe("landing-page experience", () => {
     expect(landingSource).toContain("Interactive example");
   });
 
+  it("makes premium hero motion obvious immediately and pauses it responsibly", () => {
+    expect(landingSource).toContain("HERO_STAGE_DURATION_MS = 2300");
+    expect(landingSource).toContain("Live walkthrough");
+    expect(landingSource).toContain("HERO_MOTION_NODES");
+    expect(landingSource).toContain("Live action");
+    expect(landingSource).toContain('document.visibilityState === "visible"');
+    expect(landingSource).toContain(
+      'aria-live={autoplayActive ? "off" : "polite"}'
+    );
+    expect(landingSource).toContain("pointerFrameRef");
+    expect(landingStyles).toContain("@keyframes activeStageClock");
+    expect(landingStyles).toContain("@keyframes signalSweep");
+    expect(landingStyles).toContain("animation-timeline: view()");
+    expect(landingStyles).toContain("contain: paint");
+  });
+
   it("keeps demo interactions deterministic and away from production APIs", () => {
     const fetches = landingSource.match(/fetch\(/g) ?? [];
     expect(fetches).toHaveLength(1);

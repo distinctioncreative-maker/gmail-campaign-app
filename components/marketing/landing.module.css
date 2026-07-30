@@ -11,6 +11,10 @@
   --landing-blue-soft: #eaf2ff;
   --landing-green: #137a50;
   --landing-green-soft: #e8f7f0;
+  --landing-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --landing-stage-duration: 2300ms;
+  --landing-shadow-premium: 0 32px 90px -42px rgb(20 47 88 / 46%);
   min-width: 0;
   overflow: clip;
   background: var(--landing-paper);
@@ -331,10 +335,16 @@
   color: #0b1930;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    background 180ms ease,
+    box-shadow 180ms var(--landing-ease),
+    transform 180ms var(--landing-ease);
 }
 
 .waitForm button:hover {
   background: #ffffff;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 16%);
+  transform: translateY(-1px);
 }
 
 .waitForm button:disabled {
@@ -413,7 +423,21 @@
   font-weight: 650;
 }
 
+.heroFoot a svg,
+.trustCopy > a svg,
+.pricingGrid article > a svg {
+  transition: transform 180ms var(--landing-ease);
+}
+
+.heroFoot a:hover svg,
+.trustCopy > a:hover svg,
+.pricingGrid article > a:hover svg {
+  transform: translateX(3px);
+}
+
 .productFrame {
+  --spotlight-x: 72%;
+  --spotlight-y: 18%;
   position: relative;
   isolation: isolate;
   width: min(1080px, 100%);
@@ -426,6 +450,22 @@
   box-shadow: 0 42px 100px rgb(0 0 0 / 38%);
   text-align: left;
   animation: frameReveal 900ms 340ms ease-out both;
+  contain: paint;
+}
+
+.productFrame::before {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: radial-gradient(
+    circle 260px at var(--spotlight-x) var(--spotlight-y),
+    rgb(107 166 255 / 13%),
+    transparent 72%
+  );
+  content: "";
+  opacity: 0.72;
+  pointer-events: none;
+  transition: opacity 260ms var(--landing-ease);
 }
 
 .productFrame::after {
@@ -485,6 +525,19 @@
   text-transform: uppercase;
 }
 
+.exampleBadge {
+  gap: 6px;
+}
+
+.exampleBadge > i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2ca873;
+  box-shadow: 0 0 0 4px rgb(44 168 115 / 10%);
+  animation: liveDot 1.8s ease-out infinite;
+}
+
 .frameBody {
   position: relative;
   padding: 25px;
@@ -493,7 +546,6 @@
     #f8fafc;
 }
 
-.campaignHeader,
 .panelHeading,
 .mockMeta,
 .variantBar {
@@ -511,14 +563,6 @@
   font-weight: 720;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.campaignHeader h2 {
-  margin: 5px 0 0;
-  color: #17243a;
-  font-size: 23px;
-  font-weight: 710;
-  letter-spacing: -0.03em;
 }
 
 .healthPill {
@@ -576,6 +620,27 @@
   text-transform: uppercase;
 }
 
+.demoToolbar .liveWalkthrough {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.liveWalkthrough > i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2ca873;
+  box-shadow: 0 0 0 4px rgb(44 168 115 / 10%);
+  animation: liveDot 1.8s ease-out infinite;
+}
+
+.liveWalkthrough > small {
+  color: #9aa7b8;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
 .demoToolbar button {
   min-height: 44px;
   border: 1px solid #d5deea;
@@ -601,6 +666,7 @@
 }
 
 .demoStageTabs button {
+  position: relative;
   display: flex;
   min-width: 0;
   min-height: 52px;
@@ -615,11 +681,25 @@
   font-size: 10px;
   font-weight: 700;
   cursor: pointer;
+  overflow: hidden;
   transition:
     border-color 160ms ease,
     background 160ms ease,
     color 160ms ease,
     transform 160ms ease;
+}
+
+.stageClock {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, #2777e9, #47a6ff, #31aa79);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: activeStageClock var(--landing-stage-duration) linear forwards;
 }
 
 .demoStageTabs button > span {
@@ -637,6 +717,10 @@
   background: var(--landing-blue-soft);
   color: var(--landing-blue-deep);
   box-shadow: 0 8px 20px rgb(44 108 199 / 10%);
+}
+
+.productFrame[data-playing="false"] .stageClock {
+  animation-play-state: paused;
 }
 
 .demoStageTabs button[aria-selected="true"] > span {
@@ -672,7 +756,125 @@
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--landing-blue), #36a978);
-  transition: width 320ms ease;
+  transition: width 380ms var(--landing-ease);
+}
+
+.motionRail {
+  position: relative;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #dbe5f0;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 0, rgb(54 130 237 / 8%), transparent 15rem),
+    #f4f7fb;
+  padding: 16px 20px 11px;
+}
+
+.motionTrack {
+  position: absolute;
+  top: 30px;
+  right: 10%;
+  left: 10%;
+  height: 2px;
+  border-radius: 999px;
+  background: #d7e0eb;
+}
+
+.motionTrack > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2777e9, #5a80e9, #31aa79);
+  box-shadow: 0 0 14px rgb(39 119 233 / 20%);
+  transition: width 480ms var(--landing-ease);
+}
+
+.motionTrack > i {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #2777e9;
+  box-shadow:
+    0 0 0 5px rgb(39 119 233 / 10%),
+    0 0 20px rgb(39 119 233 / 42%);
+  transform: translate(-50%, -50%);
+  transition:
+    left 480ms var(--landing-ease),
+    background 220ms ease;
+}
+
+.productFrame[data-playing="true"] .motionTrack > i {
+  animation: railSignal 1.15s ease-in-out infinite;
+}
+
+.motionNodes {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.motionNode {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  gap: 7px;
+  color: #8090a5;
+  text-align: center;
+}
+
+.motionNode > i {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #d6e0ec;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgb(28 62 108 / 6%);
+  transition:
+    border-color 280ms var(--landing-ease),
+    background 280ms var(--landing-ease),
+    color 280ms var(--landing-ease),
+    transform 280ms var(--landing-ease);
+}
+
+.motionNode > small {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 9px;
+  font-weight: 690;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.motionNodeComplete {
+  color: #4d6380;
+}
+
+.motionNodeComplete > i {
+  border-color: #a9c9f4;
+  background: #eff6ff;
+  color: var(--landing-blue);
+}
+
+.motionNodeActive > i {
+  border-color: #74a8ef;
+  background: #ffffff;
+  color: var(--landing-blue);
+  box-shadow:
+    0 0 0 5px rgb(39 119 233 / 9%),
+    0 10px 22px rgb(31 96 190 / 13%);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.productFrame[data-playing="true"] .motionNodeActive > i {
+  animation: activeNodeBreath 1.25s ease-in-out infinite;
 }
 
 .demoStagePanel {
@@ -715,6 +917,72 @@
   flex: 0 0 auto;
 }
 
+.stageSignal {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 0.7fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid #d9e6f5;
+  border-radius: 12px;
+  background: linear-gradient(105deg, #eef5ff, #f8fbff 62%, #eef8f4);
+  padding: 11px 13px;
+  animation: signalArrive 360ms var(--landing-ease) both;
+}
+
+.stageSignalIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--landing-blue);
+  box-shadow: 0 8px 20px rgb(33 94 180 / 10%);
+}
+
+.stageSignal small,
+.stageSignal strong {
+  display: block;
+}
+
+.stageSignal small {
+  color: #778aa4;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stageSignal strong {
+  margin-top: 3px;
+  color: #22334b;
+  font-size: 11px;
+}
+
+.stageSignal p {
+  margin: 0;
+  color: #65768d;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.stageSignal > i {
+  position: absolute;
+  inset: 0 auto 0 -24%;
+  width: 20%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 72%),
+    transparent
+  );
+  transform: skewX(-18deg);
+  animation: signalSweep 1.25s 120ms var(--landing-ease) both;
+}
+
 .productFrame .metric,
 .productFrame .metric::after,
 .productFrame .replyFeatured,
@@ -731,136 +999,6 @@
 .productFrame .replyFeatured::before {
   opacity: 1;
   transform: scaleY(1);
-}
-
-.demoFlow {
-  margin-top: 19px;
-}
-
-.flowVisual {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  min-height: 80px;
-  overflow: hidden;
-  border: 1px solid #dbe4f0;
-  border-radius: 14px;
-  background:
-    linear-gradient(90deg, rgb(235 243 255 / 72%), rgb(255 255 255 / 72%)),
-    #ffffff;
-  padding: 12px 8px 10px;
-}
-
-.flowVisual::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    110deg,
-    transparent 10%,
-    rgb(70 139 239 / 5%) 44%,
-    transparent 67%
-  );
-  content: "";
-  pointer-events: none;
-  transform: translateX(-100%);
-  animation: flowWash 9.6s ease-in-out infinite;
-}
-
-.flowTrack {
-  position: absolute;
-  z-index: 0;
-  top: 28px;
-  right: 12.5%;
-  left: 12.5%;
-  height: 2px;
-  border-radius: 999px;
-  background: #d9e2ee;
-}
-
-.flowProgress {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #4e91ef, #5b7be7, #35aa7b);
-  box-shadow: 0 0 12px rgb(49 117 220 / 24%);
-  transform: scaleX(0);
-  transform-origin: left center;
-  animation: flowProgress 9.6s ease-in-out infinite;
-}
-
-.flowCursor {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 9px;
-  height: 9px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  background: #3182e9;
-  box-shadow:
-    0 0 0 4px rgb(49 130 233 / 12%),
-    0 0 17px rgb(49 130 233 / 42%);
-  transform: translate(-50%, -50%);
-  animation: flowTravel 9.6s ease-in-out infinite;
-}
-
-.flowNode {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  min-width: 0;
-  justify-items: center;
-  gap: 7px;
-  text-align: center;
-}
-
-.flowIcon {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border: 1px solid #d8e3f0;
-  border-radius: 10px;
-  background: #ffffff;
-  color: #6d7f98;
-  box-shadow: 0 4px 12px rgb(32 62 105 / 6%);
-  animation: flowNodePulse 9.6s ease-out infinite;
-}
-
-.flowNode:nth-child(3) .flowIcon {
-  animation-delay: 2.2s;
-}
-
-.flowNode:nth-child(4) .flowIcon {
-  animation-delay: 4.4s;
-}
-
-.flowNode:nth-child(5) .flowIcon {
-  animation-delay: 6.6s;
-}
-
-.flowText {
-  min-width: 0;
-}
-
-.flowText strong,
-.flowText small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.flowText strong {
-  color: #2b3a51;
-  font-size: 10px;
-  font-weight: 720;
-}
-
-.flowText small {
-  margin-top: 2px;
-  color: #7a899d;
-  font-size: 8px;
 }
 
 .metricGrid {
@@ -1050,6 +1188,7 @@
 }
 
 .safetyRow {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -1058,11 +1197,33 @@
   padding: 0 14px;
   color: #5e6d83;
   font-size: 10px;
+  transition:
+    background 240ms var(--landing-ease),
+    color 240ms var(--landing-ease),
+    transform 240ms var(--landing-ease);
 }
 
 .safetyRow strong {
   color: #2d3a50;
   font-size: 10px;
+}
+
+.safetyRowActive {
+  background: linear-gradient(90deg, #eff6ff, #f9fcff);
+  color: #3d587a;
+  transform: translateX(2px);
+}
+
+.safetyRowActive::after {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
+  background: var(--landing-blue);
+  content: "";
+  animation: rowSignal 620ms var(--landing-ease) both;
 }
 
 .checkDot,
@@ -1163,17 +1324,20 @@
 .featuresSection,
 .pricingSection,
 .faqSection {
+  position: relative;
   padding-block: 112px;
   background: var(--landing-paper);
 }
 
 .workflowSection,
 .trustSection {
+  position: relative;
   padding-block: 112px;
   background: var(--landing-surface);
 }
 
 .sectionHeading {
+  position: relative;
   max-width: 720px;
 }
 
@@ -1308,6 +1472,20 @@
     transform 260ms ease;
 }
 
+.composeMock::after {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: -34%;
+  width: 28%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #5e9df3, transparent);
+  content: "";
+  opacity: 0.8;
+  animation: composeSignal 5.2s 600ms var(--landing-ease-soft) infinite;
+  pointer-events: none;
+}
+
 .mockTop {
   color: #2a384e;
   font-size: 13px;
@@ -1438,6 +1616,7 @@
   color: #3a485e;
   font-size: 13px;
   line-height: 1.7;
+  animation: messageRefresh 340ms var(--landing-ease) both;
 }
 
 .messageBody p {
@@ -1451,7 +1630,7 @@
       no-repeat;
   background-size: 100% 100%;
   padding-inline: 2px;
-  animation: personalizedSweep 8s 1s ease-in-out infinite;
+  animation: personalizedSweep 5.2s 420ms ease-in-out infinite;
 }
 
 .typingCaret {
@@ -1469,7 +1648,7 @@
   background: transparent;
   color: inherit;
   box-shadow: inset 0 -0.42em rgb(68 139 238 / 14%);
-  animation: fieldHighlight 8s 1.4s ease-in-out infinite;
+  animation: fieldHighlight 5.2s 720ms ease-in-out infinite;
 }
 
 .assistNote {
@@ -1489,7 +1668,7 @@
   box-shadow: 0 18px 42px rgb(31 62 105 / 14%);
   opacity: 0;
   transform: translateY(10px) scale(0.98);
-  animation: assistAppear 8s 1.8s ease-in-out infinite;
+  animation: assistAppear 5.2s 900ms ease-in-out infinite;
   backdrop-filter: blur(12px);
 }
 
@@ -1626,6 +1805,7 @@
 }
 
 .controlsSection {
+  position: relative;
   padding-block: 112px;
   background:
     radial-gradient(circle at 82% 8%, rgb(53 126 232 / 8%), transparent 28rem),
@@ -1633,12 +1813,27 @@
 }
 
 .operationsDemo {
+  position: relative;
+  isolation: isolate;
   margin-top: 52px;
   overflow: hidden;
   border: 1px solid #d7e0eb;
   border-radius: 20px;
   background: #ffffff;
   box-shadow: 0 30px 80px -48px rgb(22 58 109 / 48%);
+}
+
+.operationsDemo::after {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: -30%;
+  width: 24%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #4d91ef, transparent);
+  content: "";
+  animation: operationsSignal 6.2s 800ms var(--landing-ease-soft) infinite;
+  pointer-events: none;
 }
 
 .operationsTabs {
@@ -1828,6 +2023,53 @@
   text-align: right;
 }
 
+.launchSequence {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border-top: 1px solid #e4eaf1;
+  background: #f3f7fc;
+  padding: 11px 16px;
+}
+
+.launchSequence::before {
+  position: absolute;
+  top: 50%;
+  right: 16.666%;
+  left: 16.666%;
+  height: 1px;
+  background: #ccd8e7;
+  content: "";
+}
+
+.launchSequence span {
+  position: relative;
+  z-index: 1;
+  justify-self: center;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 4px 8px;
+  color: #617188;
+  font-size: 8px;
+  font-weight: 720;
+}
+
+.launchSequence > i {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 16.666%;
+  width: 7px;
+  height: 7px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: var(--landing-blue);
+  box-shadow: 0 0 0 4px rgb(23 105 232 / 10%);
+  transform: translate(-50%, -50%);
+  animation: launchTravel 3.6s var(--landing-ease-soft) infinite;
+}
+
 .reportingDemo {
   padding: 30px;
   animation: stageReveal 260ms ease-out both;
@@ -1866,6 +2108,19 @@
   border-radius: 12px;
   background: #fbfcfe;
   padding: 13px;
+  animation: reportMetricArrive 380ms var(--landing-ease) both;
+}
+
+.reportMetricGrid > div:nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.reportMetricGrid > div:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.reportMetricGrid > div:nth-child(4) {
+  animation-delay: 135ms;
 }
 
 .reportMetricGrid span,
@@ -1891,6 +2146,8 @@
 }
 
 .pipelineCard {
+  position: relative;
+  overflow: hidden;
   border: 1px solid #d8e2ed;
   border-radius: 15px;
   background:
@@ -1898,6 +2155,20 @@
     #ffffff;
   padding: 21px;
   box-shadow: 0 18px 44px -34px rgb(26 74 125 / 46%);
+}
+
+.pipelineCard::after {
+  position: absolute;
+  top: -72px;
+  right: -72px;
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgb(44 168 115 / 12%);
+  border-radius: 50%;
+  box-shadow: 0 0 45px rgb(44 168 115 / 8%);
+  content: "";
+  animation: pipelineOrbit 5.8s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .pipelineCard > small {
@@ -2052,6 +2323,11 @@
   border-radius: 19px;
   background: var(--landing-surface);
   padding: 28px;
+  box-shadow: 0 18px 44px -38px rgb(22 58 109 / 42%);
+  transition:
+    border-color 240ms var(--landing-ease),
+    box-shadow 240ms var(--landing-ease),
+    transform 240ms var(--landing-ease);
 }
 
 .pricingGrid .featuredPrice {
@@ -2137,6 +2413,11 @@
   color: #213047;
   font-size: 12px;
   font-weight: 700;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms var(--landing-ease),
+    transform 180ms var(--landing-ease);
 }
 
 .featuredPrice > a {
@@ -2170,6 +2451,10 @@
   border-radius: 14px;
   background: var(--landing-surface);
   padding: 0 20px;
+  transition:
+    border-color 220ms var(--landing-ease),
+    box-shadow 220ms var(--landing-ease),
+    transform 220ms var(--landing-ease);
 }
 
 .faq summary {
@@ -2298,6 +2583,36 @@
     box-shadow: 0 36px 86px -42px rgb(25 68 132 / 50%);
     transform: translateY(-2px);
   }
+
+  .productFrame:hover::before {
+    opacity: 1;
+  }
+
+  .pricingGrid article:hover {
+    border-color: #bfd3ed;
+    box-shadow: 0 28px 66px -38px rgb(25 73 145 / 42%);
+    transform: translateY(-4px);
+  }
+
+  .pricingGrid article > a:hover {
+    border-color: #98b9e4;
+    box-shadow: 0 10px 22px rgb(25 73 145 / 12%);
+    transform: translateY(-1px);
+  }
+
+  .faq details:hover {
+    border-color: #c7d7eb;
+    box-shadow: 0 18px 42px -34px rgb(25 73 145 / 34%);
+    transform: translateY(-2px);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .root [data-reveal] {
+    animation: sectionReveal 1ms var(--landing-ease) both;
+    animation-range: entry 5% cover 28%;
+    animation-timeline: view();
+  }
 }
 
 @keyframes gridDrift {
@@ -2360,6 +2675,213 @@
   }
 }
 
+@keyframes sectionReveal {
+  from {
+    opacity: 0.22;
+    transform: translateY(34px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes activeStageClock {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes liveDot {
+  0% {
+    opacity: 0.72;
+    box-shadow: 0 0 0 0 rgb(44 168 115 / 22%);
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.72;
+    box-shadow: 0 0 0 7px rgb(44 168 115 / 0%);
+  }
+}
+
+@keyframes railSignal {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px rgb(39 119 233 / 9%),
+      0 0 13px rgb(39 119 233 / 30%);
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 7px rgb(39 119 233 / 5%),
+      0 0 24px rgb(39 119 233 / 48%);
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes activeNodeBreath {
+  0%,
+  100% {
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  50% {
+    transform: translateY(-3px) scale(1.07);
+  }
+}
+
+@keyframes signalArrive {
+  from {
+    opacity: 0;
+    transform: translateX(-9px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes signalSweep {
+  from {
+    opacity: 0;
+    transform: translateX(0) skewX(-18deg);
+  }
+
+  28% {
+    opacity: 0.8;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(720%) skewX(-18deg);
+  }
+}
+
+@keyframes rowSignal {
+  from {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes messageRefresh {
+  from {
+    opacity: 0.35;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes composeSignal {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  20% {
+    opacity: 0.9;
+  }
+
+  48%,
+  100% {
+    opacity: 0;
+    transform: translateX(590%);
+  }
+}
+
+@keyframes operationsSignal {
+  0%,
+  14% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  22% {
+    opacity: 0.9;
+  }
+
+  52%,
+  100% {
+    opacity: 0;
+    transform: translateX(650%);
+  }
+}
+
+@keyframes launchTravel {
+  0%,
+  10% {
+    left: 16.666%;
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  50% {
+    left: 50%;
+    opacity: 1;
+  }
+
+  82% {
+    left: 83.333%;
+    opacity: 1;
+  }
+
+  92%,
+  100% {
+    left: 83.333%;
+    opacity: 0;
+  }
+}
+
+@keyframes reportMetricArrive {
+  from {
+    opacity: 0.3;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pipelineOrbit {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translate3d(0, 0, 0) scale(0.94);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: translate3d(-12px, 12px, 0) scale(1.05);
+  }
+}
+
 @keyframes frameReveal {
   from {
     opacity: 0;
@@ -2402,94 +2924,6 @@
   70%,
   100% {
     box-shadow: 0 0 0 6px rgb(39 168 115 / 0%);
-  }
-}
-
-@keyframes flowWash {
-  0%,
-  8% {
-    opacity: 0;
-    transform: translateX(-100%);
-  }
-
-  52% {
-    opacity: 1;
-  }
-
-  82%,
-  100% {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-}
-
-@keyframes flowProgress {
-  0%,
-  8% {
-    opacity: 1;
-    transform: scaleX(0);
-  }
-
-  72%,
-  91% {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-}
-
-@keyframes flowTravel {
-  0%,
-  8% {
-    left: 0;
-    opacity: 1;
-  }
-
-  27% {
-    left: 33.333%;
-    opacity: 1;
-  }
-
-  49% {
-    left: 66.666%;
-    opacity: 1;
-  }
-
-  72%,
-  91% {
-    left: 100%;
-    opacity: 1;
-  }
-
-  100% {
-    left: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes flowNodePulse {
-  0%,
-  12% {
-    border-color: #82afea;
-    background: #f2f7ff;
-    color: #1769e8;
-    box-shadow:
-      0 0 0 5px rgb(46 125 235 / 10%),
-      0 8px 18px rgb(32 95 186 / 12%);
-    transform: translateY(-2px) scale(1.04);
-  }
-
-  20%,
-  100% {
-    border-color: #d8e3f0;
-    background: #ffffff;
-    color: #6d7f98;
-    box-shadow: 0 4px 12px rgb(32 62 105 / 6%);
-    transform: translateY(0) scale(1);
   }
 }
 
@@ -2763,30 +3197,8 @@
     padding: 17px;
   }
 
-  .campaignHeader {
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .campaignHeader h2 {
-    font-size: 19px;
-  }
-
   .metricGrid {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .flowVisual {
-    min-height: 76px;
-    padding-inline: 5px;
-  }
-
-  .flowText strong {
-    font-size: 9px;
-  }
-
-  .flowText small {
-    font-size: 7.5px;
   }
 
   .frameColumns {
@@ -2824,6 +3236,14 @@
     min-height: 0;
     flex-direction: column;
     gap: 14px;
+  }
+
+  .stageSignal {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .stageSignal p {
+    grid-column: 2;
   }
 
   .demoStagePanel > .healthPill {
@@ -2919,6 +3339,14 @@
     gap: 4px;
   }
 
+  .motionRail {
+    padding-inline: 10px;
+  }
+
+  .motionNode > small {
+    font-size: 8px;
+  }
+
   .demoStagePanel {
     padding: 15px;
   }
@@ -2933,10 +3361,6 @@
 
   .frameBrand span {
     display: none;
-  }
-
-  .campaignHeader {
-    display: block;
   }
 
   .healthPill {
@@ -3059,12 +3483,6 @@
     transition-duration: 0.01ms !important;
   }
 
-  .flowProgress {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-
-  .flowCursor,
   .productFrame::after {
     display: none;
   }
@@ -3072,5 +3490,15 @@
   .assistNote {
     opacity: 1;
     transform: none;
+  }
+
+  .stageClock {
+    transform: scaleX(1);
+  }
+
+  .stageSignal > i,
+  .composeMock::after,
+  .operationsDemo::after {
+    display: none;
   }
 }

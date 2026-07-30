@@ -599,3 +599,56 @@ blocked because this workspace has Playwright but no installed browser binary.
 This follow-up has not been pushed, merged, or deployed. It does not change
 signup mode, live billing, real sending, Firestore rules, indexes, or cloud
 configuration.
+
+## Premium landing motion refinement, 2026-07-30
+
+This focused refinement starts from the exact landing-experience tree
+published to `main` as commit
+`ec4b56a1f6840a832d77e77e840dfff4feb08ff0`.
+
+Implemented:
+
+- reduced the hero walkthrough cadence from 3.6 seconds to 2.3 seconds and
+  added an immediately moving stage clock so the demonstration reads as
+  active without waiting for the first content change;
+- added a synchronized lead-to-draft-to-review-to-Gmail-to-reply rail, a
+  stage-specific live-action signal, active launch-control feedback, and
+  coordinated metric transitions;
+- added requestAnimationFrame-bounded pointer lighting on fine pointers,
+  while preserving touch behavior and avoiding layout-transform effects that
+  could blur product text;
+- paused the walkthrough when it leaves the viewport, the browser tab is
+  hidden, the visitor pauses it, or reduced motion is requested;
+- added clearer AI-assist feedback, subject and personalization motion,
+  launch-sequence motion, reporting transitions, progressive section reveals,
+  and consistent premium easing, shadows, hover states, and CTA feedback;
+- removed obsolete flow-demo selectors and keyframes that no rendered
+  component used;
+- kept motion CSS-first and added no package or runtime dependency. The
+  landing CSS source increased by about 1.4 KB gzip after the obsolete rules
+  were removed;
+- preserved the approved visual identity, conversion copy, managed-pilot
+  path, responsive breakpoints, keyboard controls, honest example labels, and
+  all safety and deliverability qualifications.
+
+Verification:
+
+```bash
+npm run docs:features                       # pass
+git diff --check                            # pass
+npm run typecheck                           # pass
+npm run lint                                # pass
+npm test                                    # pass: 43 files, 308 tests
+npm run build                               # pass: 72 routes generated
+npm audit --omit=dev --audit-level=high     # pass: 0 vulnerabilities
+```
+
+A production-mode local smoke check returned HTTP 200 for the landing page,
+confirmed the security headers, and verified the new live-walkthrough,
+lead-signal, command-center, headline, and pilot-request content in the
+server-rendered HTML. This workspace still has no browser binary, so
+frame-by-frame screenshot and real-device confirmation remain external
+review steps. This refinement remains only on the local
+`agent/premium-motion-system` branch; it has not been pushed or deployed and
+does not change signup, billing, sending, Firestore, OAuth, secrets, or cloud
+configuration.
