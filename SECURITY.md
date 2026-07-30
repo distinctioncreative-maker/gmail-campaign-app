@@ -66,10 +66,29 @@ lock. Explicit self-tests may use only the server-verified signed-in email.
 - Public tracking tokens are signed and expire after 90 days. Tracking
   endpoints are rate-limited, counters are transactional, and click
   redirects accept only stored HTTP(S) destinations.
+- Real campaign messages carry a domain-separated, signed RFC 8058
+  one-click unsubscribe URL. GET renders a confirmation page without
+  changing state so automated email scanners cannot opt someone out. A
+  confirmed form POST is rate-limited and atomically marks the recipient,
+  increments campaign/daily counters, and writes a deterministic
+  do-not-email suppression before queued follow-ups are canceled.
 - Auth, waitlist, tracking, and interactive AI endpoints have bounded,
   fail-closed rate limits.
 - Errors returned to clients are friendly strings. Structured log and alert
   payloads redact emails, bearer values, API keys, and token-like fields.
+
+## Browser security baseline
+
+- A global Content Security Policy restricts scripts, styles, connections,
+  frames, forms, object embeds, and framing origins. Explicit Google and
+  Firebase origins remain available for sign-in and token exchange.
+- Production adds HSTS. All environments send nosniff, frame denial,
+  strict-origin referrer behavior, a limited permissions policy, and
+  popup-compatible cross-origin opener isolation.
+- Cross-Origin-Resource-Policy is intentionally not set globally because a
+  recipient email client may load an optional tracking pixel from a different
+  site. That endpoint remains signed, expiring, rate-limited, and off by
+  default at the campaign level.
 
 ## Billing integrity
 

@@ -46,7 +46,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       : 1;
   const quantity =
     plan === "TEAM"
-      ? Math.max(2, activeMembers, seats ?? activeMembers)
+      ? Math.max(PLANS.TEAM.minimumSeats, activeMembers, seats ?? activeMembers)
       : 1;
 
   const base = env.APP_BASE_URL.replace(/\/$/, "");

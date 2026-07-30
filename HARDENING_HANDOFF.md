@@ -445,10 +445,9 @@ not authenticated.
   approval. Placeholder legal claims were not invented.
 - OAuth verification/CASA and Stripe end-to-end test/live configuration are
   external workflows.
-- The public landing animation/copy remains sales-forward in places. AI
-  positioning and the outreach-to-reply story remain a focused P1 product/
-  brand project; do not imply guaranteed inbox placement, replies, or
-  revenue.
+- The landing page now uses a static, explicitly labeled command-center
+  demonstration and an honest AI-assisted workflow story. Continue to avoid
+  guaranteed inbox placement, replies, or revenue.
 - Playwright end-to-end coverage is still planned.
 - Multi-inbox rotation, warmup, enrichment, multichannel, and SOC 2 remain
   roadmap items.
@@ -469,3 +468,43 @@ not authenticated.
 - Do not add a client-selected test email destination.
 - Update `lib/features/registry.ts`, then run `npm run docs:features` for
   any feature behavior change.
+
+## Recreated launch-experience release, 2026-07-29
+
+The previously local-only launch-experience commits were unavailable and were
+recreated from the verified `main` base
+`6560ce892c6b56130cabe73643021c5390a9253b`.
+
+Implemented in this release:
+
+- conversion-focused, static, mobile-first public landing experience;
+- shared and honest public/in-product pilot pricing;
+- structured metadata, social preview, robots, sitemap, and browser headers;
+- visual template-editor sanitization before DOM insertion;
+- signed RFC 8058 one-click unsubscribe with scanner-safe GET and atomic
+  suppression/counter updates;
+- purpose-built mobile campaign cards and accessible campaign-section dialog;
+- `LAUNCH_READINESS_2026.md` with exact evidence and remaining blockers.
+
+Local verification:
+
+```bash
+npm run docs:features                       # pass
+git diff --check                            # pass
+npm run typecheck                           # pass
+npm run lint                                # pass
+npm test                                    # pass: 42 files, 299 tests
+npm run build                               # pass: 72 routes generated
+npm audit --omit=dev --audit-level=high     # pass: 0 vulnerabilities
+```
+
+The full development audit still reports 28 transitive developer-tool
+findings (26 high, 2 moderate) with no current upstream fix. Runtime
+dependencies are clean. Firestore emulation remains locally blocked by Java
+17; GitHub CI installs Java 21. The local standalone smoke check confirmed
+200 responses for the landing page, security headers, robots, sitemap, and
+the 1200 by 630 social image. `/api/health` correctly remained unavailable
+without local Firestore credentials.
+
+This release remains branch/PR-only. Do not merge, deploy, turn on live
+billing, open signup, or real sending without new explicit approval.

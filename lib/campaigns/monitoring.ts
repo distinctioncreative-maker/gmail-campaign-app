@@ -40,7 +40,7 @@ const MONITOR_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 const OPEN = ["PENDING", "SCHEDULED", "RETRY_SCHEDULED"] as const;
 
 /** Cancel all pending/scheduled follow-up work for one recipient. */
-async function cancelRecipientQueue(owner: OwnerRef, campaignId: string, recipientId: string): Promise<void> {
+export async function cancelRecipientQueue(owner: OwnerRef, campaignId: string, recipientId: string): Promise<void> {
   const open = await listQueueItems(owner, campaignId, [...OPEN]);
   for (const item of open.filter((i) => i.recipientId === recipientId)) {
     await updateQueueItem(owner, campaignId, item.queueItemId, { status: "CANCELLED" });
@@ -130,19 +130,11 @@ async function actOnInbound(
         status: "UNSUBSCRIBED",
         unsubscribedAt: now,
       },
-      localDayKey(now, campaign.schedule.timezone)
+      localDayKey(now, campaign.schedule.timezone),
+      { suppressionSource: "REPLY_MONITOR" }
     );
     if (!applied) return false;
     await cancelRecipientQueue(owner, campaign.campaignId, r.recipientId);
-    await addSuppression(owner, {
-      email: r.emailSnapshot,
-      normalizedEmail: r.normalizedEmailSnapshot,
-      reason: "UNSUBSCRIBED",
-      scope: "USER",
-      source: "REPLY_MONITOR",
-      campaignId: campaign.campaignId,
-      recipientId: r.recipientId,
-    });
     await recordEngagementByEmail(owner, r.normalizedEmailSnapshot, "UNSUBSCRIBED", now);
     await recordEvent(owner, campaign.campaignId, {
       type: "UNSUBSCRIBE",

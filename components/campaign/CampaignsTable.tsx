@@ -169,7 +169,139 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
           Showing {sorted.length} of {campaigns.length} campaigns
         </p>
       </div>
-      <div className="overflow-x-auto">
+      <div className="divide-y divide-border md:hidden">
+        {sorted.map((c) => (
+          <article key={c.campaignId} className="p-4">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Link
+                  href={`/campaigns/${c.campaignId}`}
+                  className="block truncate font-semibold text-foreground"
+                >
+                  {c.name}
+                </Link>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className={`badge ${c.statusClass}`}>
+                    {c.statusLabel}
+                  </span>
+                  <span className="text-xs text-muted">
+                    Updated{" "}
+                    <LocalTime
+                      value={c.updatedAt}
+                      options={{ dateStyle: "medium" }}
+                    />
+                  </span>
+                </div>
+              </div>
+              <Link
+                href={`/campaigns/${c.campaignId}`}
+                aria-label={`Open ${c.name}`}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border text-muted hover:bg-surface-2 hover:text-foreground"
+              >
+                <Icon name="chevronRight" size={18} />
+              </Link>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium text-foreground">Progress</span>
+                <span className="tabular-nums text-muted">
+                  {c.progressRate.toFixed(0)}%
+                </span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
+                <div
+                  className="h-full rounded-full brand-gradient"
+                  style={{ width: `${c.progressRate}%` }}
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-muted">
+                {Math.min(c.recipients, c.initialSent)} of {c.recipients} leads
+                contacted
+              </p>
+            </div>
+
+            <dl className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-surface-2 p-3">
+              <div>
+                <dt className="text-[10px] uppercase tracking-wide text-muted">
+                  Sent
+                </dt>
+                <dd className="mt-1 text-sm font-semibold tabular-nums">
+                  {c.sent.toLocaleString()}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] uppercase tracking-wide text-muted">
+                  Replies
+                </dt>
+                <dd className="mt-1 text-sm font-semibold tabular-nums">
+                  {c.replies.toLocaleString()}{" "}
+                  <span className="text-[10px] font-normal text-muted">
+                    {c.replyRate.toFixed(1)}%
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] uppercase tracking-wide text-muted">
+                  Problems
+                </dt>
+                <dd
+                  className={`mt-1 text-sm font-semibold tabular-nums ${
+                    c.errors + c.bounces > 0 ? "text-amber-700" : ""
+                  }`}
+                >
+                  {(c.errors + c.bounces).toLocaleString()}
+                </dd>
+              </div>
+            </dl>
+
+            {(TERMINAL.includes(c.status) || c.archived) && (
+              <div className="mt-3 flex flex-wrap justify-end gap-2 border-t border-border pt-3">
+                {c.archived ? (
+                  <button
+                    onClick={() => void setArchived(c, false)}
+                    disabled={busyId === c.campaignId}
+                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-primary hover:bg-primary-soft disabled:opacity-40"
+                  >
+                    Restore
+                  </button>
+                ) : (
+                  c.status !== "DRAFT" && (
+                    <button
+                      onClick={() => void setArchived(c, true)}
+                      disabled={busyId === c.campaignId}
+                      className="min-h-11 rounded-xl px-3 text-xs font-medium text-muted hover:bg-surface-2 disabled:opacity-40"
+                    >
+                      Archive
+                    </button>
+                  )
+                )}
+                {TERMINAL.includes(c.status) && (
+                  <button
+                    onClick={() => void removeCampaign(c)}
+                    disabled={busyId === c.campaignId}
+                    className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-xs font-medium text-danger hover:bg-red-50 disabled:opacity-40"
+                  >
+                    <Icon name="trash" size={16} />
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </article>
+        ))}
+        {sorted.length === 0 && (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm font-medium text-foreground">
+              No campaigns match this view
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              Clear the search or choose another status filter.
+            </p>
+          </div>
+        )}
+      </div>
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="border-b border-border text-xs uppercase text-muted">
             <tr>

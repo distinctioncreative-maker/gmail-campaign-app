@@ -10,6 +10,7 @@ import { AiEmailWriter } from "./AiEmailWriter";
 import { AiEmailTools } from "./AiEmailTools";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -93,13 +94,21 @@ export function TemplateEditor({
 
   // Keep the visual editor's DOM in sync when html changes from outside it.
   useEffect(() => {
-    if (mode === "visual" && editorRef.current && editorRef.current.innerHTML !== html) {
-      editorRef.current.innerHTML = html;
+    if (mode === "visual" && editorRef.current) {
+      const safeHtml = sanitizeEmailHtml(html);
+      if (editorRef.current.innerHTML !== safeHtml) {
+        editorRef.current.innerHTML = safeHtml;
+      }
     }
   }, [mode, html]);
 
   function syncFromEditor() {
-    if (editorRef.current) setHtml(editorRef.current.innerHTML);
+    if (!editorRef.current) return;
+    const safeHtml = sanitizeEmailHtml(editorRef.current.innerHTML);
+    if (editorRef.current.innerHTML !== safeHtml) {
+      editorRef.current.innerHTML = safeHtml;
+    }
+    setHtml(safeHtml);
   }
 
   function exec(command: string, value?: string) {
@@ -110,8 +119,17 @@ export function TemplateEditor({
 
   function insertHtmlAtCursor(snippet: string) {
     editorRef.current?.focus();
-    document.execCommand("insertHTML", false, snippet);
+    document.execCommand("insertHTML", false, sanitizeEmailHtml(snippet));
     syncFromEditor();
+  }
+
+  function safeWebUrl(value: string): string | null {
+    try {
+      const url = new URL(value);
+      return ["http:", "https:"].includes(url.protocol) ? url.toString() : null;
+    } catch {
+      return null;
+    }
   }
 
   function insertPlaceholder(token: string) {
@@ -162,7 +180,7 @@ export function TemplateEditor({
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Could not import that draft.");
       setSubject(body.draft.subject);
-      setHtml(body.draft.htmlBody);
+      setHtml(sanitizeEmailHtml(body.draft.htmlBody));
       if (!name) setName(body.draft.subject);
       setMode("visual");
       setNotice(
@@ -184,7 +202,10 @@ export function TemplateEditor({
       const res = await fetch("/api/templates/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subjectTemplate: subject || "(no subject)", htmlTemplate: html }),
+        body: JSON.stringify({
+          subjectTemplate: subject || "(no subject)",
+          htmlTemplate: sanitizeEmailHtml(html),
+        }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Preview failed.");
@@ -207,7 +228,10 @@ export function TemplateEditor({
       const res = await fetch("/api/templates/test-send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subjectTemplate: subject, htmlTemplate: html }),
+        body: JSON.stringify({
+          subjectTemplate: subject,
+          htmlTemplate: sanitizeEmailHtml(html),
+        }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Test send failed.");
@@ -230,7 +254,7 @@ export function TemplateEditor({
       const input = {
         name: name || subject || "Untitled template",
         subjectTemplate: subject,
-        htmlTemplate: html,
+        htmlTemplate: sanitizeEmailHtml(html),
         type: mode === "html" ? "PASTED_HTML" : mode === "gmail" ? "GMAIL_DRAFT" : "VISUAL",
         description: "",
         category: "",
@@ -271,7 +295,7 @@ export function TemplateEditor({
           onRestore={() => {
             setName(restored.name);
             setSubject(restored.subject);
-            setHtml(restored.html);
+            setHtml(sanitizeEmailHtml(restored.html));
             setMode(restored.mode);
             dismissRestored();
           }}
@@ -307,7 +331,7 @@ export function TemplateEditor({
         <AiEmailWriter
           onResult={({ subject: s, html: h }) => {
             setSubject(s);
-            setHtml(h);
+            setHtml(sanitizeEmailHtml(h));
             setMode("visual");
             if (!name) setName("AI draft");
           }}
@@ -356,7 +380,12 @@ export function TemplateEditor({
           </p>
         </div>
 
-        <AiEmailTools subject={subject} html={html} onSubject={setSubject} onHtml={setHtml} />
+        <AiEmailTools
+          subject={subject}
+          html={html}
+          onSubject={setSubject}
+          onHtml={(nextHtml) => setHtml(sanitizeEmailHtml(nextHtml))}
+        />
 
         <div className="mt-5 overflow-x-auto border-b border-border">
           <div className="flex min-w-max gap-1 text-sm">
@@ -371,6 +400,7 @@ export function TemplateEditor({
               <button
                 key={m}
                 onClick={() => {
+                  if (m === "visual") setHtml(sanitizeEmailHtml(html));
                   setMode(m);
                   if (m === "gmail" && drafts === null) void loadDrafts();
                 }}
@@ -395,7 +425,9 @@ export function TemplateEditor({
               <button
                 onClick={() => {
                   const url = prompt("Link address (https://…):");
-                  if (url) exec("createLink", url);
+                  const safeUrl = url ? safeWebUrl(url) : null;
+                  if (safeUrl) exec("createLink", safeUrl);
+                  else if (url) setError("Links must start with http:// or https://.");
                 }}
                 className="rounded px-2 py-1 text-primary hover:bg-border"
               >
@@ -415,7 +447,17 @@ export function TemplateEditor({
               <button
                 onClick={() => {
                   const url = prompt("Image address (https://…):");
-                  if (url) insertHtmlAtCursor(`<img src="${url}" alt="" style="max-width:100%">`);
+                  const safeUrl = url ? safeWebUrl(url) : null;
+                  if (safeUrl) {
+                    const escapedUrl = safeUrl
+                      .replaceAll("&", "&amp;")
+                      .replaceAll('"', "&quot;");
+                    insertHtmlAtCursor(
+                      `<img src="${escapedUrl}" alt="" style="max-width:100%">`
+                    );
+                  } else if (url) {
+                    setError("Images must use an http:// or https:// address.");
+                  }
                 }}
                 className="rounded px-2 py-1 hover:bg-border"
               >
@@ -441,6 +483,20 @@ export function TemplateEditor({
               contentEditable
               suppressContentEditableWarning
               onInput={syncFromEditor}
+              onBlur={syncFromEditor}
+              onPaste={(event) => {
+                event.preventDefault();
+                const clipboard = event.clipboardData;
+                const pasted =
+                  clipboard.getData("text/html") ||
+                  clipboard
+                    .getData("text/plain")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll("\n", "<br>");
+                insertHtmlAtCursor(pasted);
+              }}
               role="textbox"
               aria-multiline="true"
               aria-label="Email body"
@@ -456,7 +512,7 @@ export function TemplateEditor({
                 key={layout.id}
                 onClick={() => {
                   setSubject(layout.subject);
-                  setHtml(layout.html);
+                  setHtml(sanitizeEmailHtml(layout.html));
                   if (!name) setName(layout.name);
                   setMode("visual");
                 }}

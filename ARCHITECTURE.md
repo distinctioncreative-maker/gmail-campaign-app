@@ -95,6 +95,7 @@ Zod schemas.
 | `templates/*` | CRUD + AI generate/improve/preview/subjects/test-send. |
 | `replies/*` | AI draft creation, on-demand mailbox scan. |
 | `suppressions` | List/add/deactivate do-not-email entries. |
+| `u/[token]` | Public signed one-click unsubscribe confirmation and RFC 8058 POST. GET never mutates recipient state. |
 | `teams/*` | Team CRUD + membership. |
 | `invites` | List/create/revoke invites; can promote Solo → Workspace. |
 | `me`, `settings/profile`, `onboarding`, `notifications` | Self-service user state. Tracked campaigns write one transactional notification for the first detected open per recipient; the notification explicitly warns that email clients may preload images. |
@@ -111,7 +112,7 @@ Zod schemas.
 |---|---|
 | `auth/` | Session/auth-context resolution, sign-in domain policy (`requireUser.ts`, `session.ts`, `domains.ts`). |
 | `tenancy/` | Solo vs. Workspace classification and capability matrix (`accountType.ts`, `capabilities.ts`). |
-| `billing/` | Stripe integration + plan catalog (`stripe.ts`, `plans.ts`); webhook claims/customer pointers live in `repositories/billing.ts`. |
+| `billing/` | Stripe integration + plan catalog (`stripe.ts`, `plans.ts`) plus shared public pricing copy (`publicPricing.ts`); webhook claims/customer pointers live in `repositories/billing.ts`. |
 | `campaigns/` | Core campaign lifecycle — launch, commercial-email placeholder enforcement, controls, monitoring, repair, diagnose, eligibility, collision, followups, idempotency (largest module). |
 | `gmail/` | Gmail API wrapper + the send-safety gate (`send.ts`, `safety.ts`, `drafts.ts`, `classifyBounce.ts`, `classifyReply.ts`). |
 | `google/` | Gmail-connect OAuth mechanics, separate from Firebase app sign-in (`oauth.ts`, `oauthState.ts`). |
@@ -125,6 +126,7 @@ Zod schemas.
 | `personalization/` | Template placeholder rendering. |
 | `sanitize/` | HTML sanitization for user-authored email bodies. |
 | `tracking/` | Expiring signed tokens plus open/click HTML injection. |
+| `unsubscribe/` | Domain-separated signed tokens and public one-click unsubscribe URLs. |
 | `benchmarks/` | K-anonymous deliverability aggregation and reads. |
 | `scheduling/` | Send-window/day logic. |
 | `sending/` | Org-wide TEST/LIVE mode resolution. |

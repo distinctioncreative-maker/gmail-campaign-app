@@ -1,1040 +1,668 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import Link from "next/link";
+import { LogoMark } from "@/components/ui/Logo";
+import {
+  PUBLIC_PRICING,
+  publicPriceLabel,
+  publicPriceQualifier,
+} from "@/lib/billing/publicPricing";
 import styles from "./landing.module.css";
 
-/** "$8.25M" / "$185K": MCA deal sizes read as rounded, spoken figures, not
- * fake-precise dollar counts. */
-function formatMoney(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `$${Math.round(n / 1000)}K`;
-  return `$${n.toLocaleString()}`;
-}
-
-const CheckIcon = ({ size = 18 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const XIcon = ({ size = 17 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" />
-  </svg>
-);
-
-/** One distinct line-icon per feature, so the grid reads as crafted, not stamped. */
-function FeatureIcon({ name }: { name: string }) {
-  const map: Record<string, React.ReactNode> = {
-    "AI email writer": (<><path d="M4 20l.9-3.8L15.7 5.4a2 2 0 0 1 2.9 2.9L7.8 19.1 4 20Z" /><path d="M13.4 7.7l2.9 2.9" /></>),
-    "Smart campaigns": (<><path d="M22 2 2 9.5l7.2 2.8L12 19.5 22 2Z" /><path d="M22 2 9.2 12.3" /></>),
-    "Reply intelligence": (<><path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10Z" /><path d="M8 9h8M8 12.5h5" /></>),
-    "Deliverability guard": (<><path d="M12 21s7-3.5 7-9V6l-7-3-7 3v6c0 5.5 7 9 7 9Z" /><path d="M9 11.5l2 2 4-4" /></>),
-    "Lead command center": (<><path d="M12 3 3 7.5l9 4.5 9-4.5L12 3Z" /><path d="M3 12l9 4.5L21 12" /><path d="M3 16.5 12 21l9-4.5" /></>),
-    "Team & reporting": (<><path d="M4 4v16h16" /><path d="M8 16v-3M12 16V8M16 16v-6" /></>),
-  };
+function Check({ size = 18 }: { size?: number }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {map[name]}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="m5 12.5 4.2 4.2L19.5 6.5"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-/** Count-up number that animates when it scrolls into view. */
-function StatNum({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce || !("IntersectionObserver" in window)) {
-      const t = setTimeout(() => setN(value), 0);
-      return () => clearTimeout(t);
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (!e.isIntersecting) return;
-          io.disconnect();
-          const start = performance.now();
-          const dur = 1400;
-          const tick = (t: number) => {
-            const p = Math.min(1, (t - start) / dur);
-            setN(Math.round(value * (1 - Math.pow(1 - p, 3))));
-            if (p < 1) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-        });
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [value]);
+function Arrow() {
   return (
-    <span ref={ref}>
-      {prefix}
-      {n.toLocaleString()}
-      {suffix}
-    </span>
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M5 12h14m-5-5 5 5-5 5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
-/** Reusable email-capture field that posts to the public /api/waitlist. */
-function WaitField({ source, cta, note }: { source: string; cta: string; note: React.ReactNode }) {
+function WaitField({
+  source,
+  note,
+}: {
+  source: string;
+  note: ReactNode;
+}) {
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "busy" | "done" | "error"
+  >("idle");
+  const [message, setMessage] = useState("");
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setState("error");
+      setStatus("error");
+      setMessage("Enter a valid work email.");
       return;
     }
-    setState("busy");
+    setStatus("busy");
+    setMessage("");
     try {
-      const res = await fetch("/api/waitlist", {
+      const response = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), source }),
       });
-      setState(res.ok ? "done" : "error");
-    } catch {
-      setState("error");
+      const body = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        message?: string;
+      };
+      if (!response.ok) {
+        throw new Error(body.error ?? "We could not record your request.");
+      }
+      setStatus("done");
+      setMessage(body.message ?? "Your pilot request is in.");
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "We could not record your request."
+      );
     }
   }
 
-  if (state === "done") {
+  if (status === "done") {
     return (
-      <div className={styles.waitlist}>
-        <div className={styles.wlSuccess} role="status">
-          <CheckIcon />
-          Your pilot request is in. We&apos;ll email you with next steps.
-        </div>
+      <div className={styles.waitSuccess} role="status">
+        <span className={styles.successIcon}>
+          <Check />
+        </span>
+        <span>
+          <strong>{message}</strong>
+          <small>We will follow up with fit and onboarding details.</small>
+        </span>
       </div>
     );
   }
 
   return (
-    <div className={styles.waitlist}>
-      <form className={styles.wlForm} onSubmit={submit} noValidate>
+    <div className={styles.waitField}>
+      <form className={styles.waitForm} onSubmit={submit} noValidate>
+        <label className={styles.srOnly} htmlFor={`pilot-email-${source}`}>
+          Work email
+        </label>
         <input
+          id={`pilot-email-${source}`}
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(event) => setEmail(event.target.value)}
           placeholder="you@company.com"
-          aria-label="Work email"
           autoComplete="email"
+          inputMode="email"
+          aria-describedby={`pilot-note-${source}`}
           required
         />
-        <button className={`${styles.btn} ${styles.btnPrimary}`} type="submit" disabled={state === "busy"}>
-          {state === "busy" ? "Joining…" : cta}
+        <button type="submit" disabled={status === "busy"}>
+          {status === "busy" ? "Sending request..." : "Request a pilot"}
+          {status !== "busy" && <Arrow />}
         </button>
       </form>
-      {state === "error" ? (
-        <p className={styles.wlError}>Please enter a valid email address and try again.</p>
-      ) : (
-        <p className={styles.wlNote}>{note}</p>
-      )}
+      <p
+        id={`pilot-note-${source}`}
+        className={status === "error" ? styles.formError : styles.formNote}
+        role={status === "error" ? "alert" : undefined}
+      >
+        {status === "error" ? message : note}
+      </p>
     </div>
   );
 }
+
+const WORKFLOW = [
+  {
+    number: "01",
+    title: "Bring in the right leads",
+    copy: "Upload a CSV, paste email addresses, or choose a saved list. Cadence validates fields, finds duplicates, and checks suppressions before a campaign is prepared.",
+  },
+  {
+    number: "02",
+    title: "Write with context",
+    copy: "Start with your message or ask AI for a draft. Reuse a saved brand voice, add verified personalization, and rotate variants without losing control of the final copy.",
+  },
+  {
+    number: "03",
+    title: "Set a responsible pace",
+    copy: "Choose sending days, hours, delays, and daily limits. Test mode gives you a safe rehearsal before a workspace is approved for live sending.",
+  },
+  {
+    number: "04",
+    title: "Read the campaign clearly",
+    copy: "See sends, failures, bounces, engagement signals, replies, and opt-outs at campaign level, with the limitations of open tracking explained in context.",
+  },
+  {
+    number: "05",
+    title: "Turn replies into next steps",
+    copy: "Triage reply intent, keep the original Gmail thread, and draft a thoughtful response while automatic follow-ups stop for resolved recipients.",
+  },
+] as const;
 
 const FEATURES = [
-  { t: "AI email writer", d: "Describe the email in a sentence. Cadence writes a ready-to-send draft in your brand's voice, fresh every time, never a canned template.", tag: "Brand memory" },
-  { t: "Smart campaigns", d: "Pick your contacts, choose a pace, and launch. Sends spread naturally across the day to protect the inbox reputation you already built.", tag: "Human-paced sending" },
-  { t: "Reply intelligence", d: "Every reply is tagged Interested, Needs reply, or Not now, and one click drafts an on-brand response right in the thread.", tag: "Triage plus AI drafts" },
-  { t: "Deliverability guard", d: "Check SPF, DKIM, DMARC, and optional Google Postmaster reputation before scaling a campaign. No tool can guarantee inbox placement.", tag: "Domain health" },
-  { t: "Lead command center", d: "Paste from Salesforce or upload a CSV. Cadence deduplicates the mess and files every contact into clean, reusable lists.", tag: "Import and lists" },
-  { t: "Team & reporting", d: "Shared dashboards, member-level results, and honest reporting on sends, replies, bounces, opt-outs, opens, and clicks.", tag: "Roles and reporting" },
-];
+  {
+    eyebrow: "Create",
+    title: "AI that supports your judgment",
+    copy: "Draft, rewrite, shorten, generate subjects, and create variants. You review every message and can keep a reusable voice without pretending AI knows facts it cannot verify.",
+  },
+  {
+    eyebrow: "Send",
+    title: "Controlled Gmail pacing",
+    copy: "Schedule deliberate batches through your connected Gmail. Provider ceilings are not presented as universal safe targets, and plan caps remain hard limits.",
+  },
+  {
+    eyebrow: "Measure",
+    title: "Campaign-level reporting",
+    copy: "Compare campaigns and date ranges with clear metric definitions. Replies and clicks carry more weight than privacy-sensitive open signals.",
+  },
+  {
+    eyebrow: "Protect",
+    title: "Consent built into the path",
+    copy: "Suppression checks run before delivery. Signed one-click unsubscribe requests stop queued follow-ups and update the do-not-email list.",
+  },
+  {
+    eyebrow: "Collaborate",
+    title: "A shared operating view",
+    copy: "Give team members role-appropriate access to campaigns, templates, leads, and reporting while keeping every data path scoped to its owner and workspace.",
+  },
+  {
+    eyebrow: "Improve",
+    title: "Deliverability context, not promises",
+    copy: "Review SPF, DKIM, DMARC, pacing, failures, and available provider signals. Cadence helps reduce avoidable risk but never guarantees inbox placement.",
+  },
+] as const;
 
-// The payoff, framed as a switch: same job, minus the friction.
-const OLD_WAY = [
-  "20 minutes writing every email from a blank page",
-  "Hot replies buried in a noisy, crowded inbox",
-  "No clear view of authentication or sender health",
-  "Another login, and a whole new sending service to learn",
-];
-const NEW_WAY = [
-  "On-brand drafts in seconds, personalized to each lead",
-  "Every reply tagged, sorted, and drafted for you",
-  "Authentication checks and paced sending that reduce avoidable risk",
-  "Connect your own Gmail and start, nothing new to learn",
-];
-
-const SECURITY = [
-  { t: "Tenant-scoped data", d: "Solo accounts stay private, while company workspaces share only the team data their roles allow." },
-  { t: "Encrypted Gmail tokens", d: "We connect to Gmail with a narrow scope and store your token encrypted with a managed key, never in plain text." },
-  { t: "Test-mode safety gate", d: "Until you flip an org to live, every email is redirected to your own address. No send path skips the gate." },
-  { t: "Deny-by-default database", d: "Direct data access is blocked at the database itself. The server is the only path in, and it checks every request." },
-  { t: "Verified background jobs", d: "Every automated send is cryptographically verified as coming from our own service, so no one else can trigger it." },
-  { t: "Optional AI", d: "AI writing stays off unless a workspace admin enables it. Your contact data and email content are never sold." },
-];
-
-const DEMO_BODY = `Hi Jordan,
-
-Congrats on the new location. Momentum like that runs on cash flow, and Alpine gets working capital to businesses like yours in days, not weeks, with payback that flexes to your revenue.
-
-Open to a quick 10-minute call Thursday?`;
-
-/** Isolated so the ~30ms/char state updates re-render only this node, not the
- * whole landing page (which caused scroll jank). */
-function TypedDraft() {
-  const [typed, setTyped] = useState("");
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let timer: ReturnType<typeof setTimeout>;
-    if (reduce) {
-      timer = setTimeout(() => setTyped(DEMO_BODY), 0);
-      return () => clearTimeout(timer);
-    }
-    let i = 0;
-    const step = () => {
-      i += 1;
-      setTyped(DEMO_BODY.slice(0, i));
-      if (i < DEMO_BODY.length) {
-        timer = setTimeout(step, 20 + Math.random() * 34);
-      } else {
-        timer = setTimeout(() => {
-          i = 0;
-          setTyped("");
-          timer = setTimeout(step, 500);
-        }, 4000);
-      }
-    };
-    timer = setTimeout(step, 700);
-    return () => clearTimeout(timer);
-  }, []);
-  return (
-    <div className={styles.mailBody}>
-      {typed}
-      <span className={styles.caret} />
-    </div>
-  );
-}
-
-/**
- * Hero animation: the one distinctive visual for the whole page. Two lanes
- * of outreach sweep up and out of the inbox on the left: mass mailing as a
- * visible stream, not a single thin thread: a share peels off as a reply
- * and slams into a live, self-leveling pipeline stack on the right, and a
- * huge translucent watermark of the running total dominates the scene
- * behind it all. "Send → reply → revenue" as one continuous, unmistakably
- * large shape instead of three quiet stats. Isolated (own state) and
- * paused when scrolled off-screen, so it never taxes the rest of the page.
- */
-function HeroPipeline() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [stats, setStats] = useState({ sent: 1284, rep: 96, rev: 8250000 });
-  const [deals, setDeals] = useState<Array<{ id: number; label: string; xPct: number; yPct: number; big: boolean }>>([]);
-  const dealIdRef = useRef(0);
-
-  useEffect(() => {
-    const cv = canvasRef.current;
-    if (!cv) return;
-    const ctx = cv.getContext("2d");
-    if (!ctx) return;
-    const W = cv.width, H = cv.height;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const rng = (a: number, b: number) => a + Math.random() * (b - a);
-    const ease = (a: number, b: number, f: number) => a + (b - a) * f;
-    // Real MCA deal sizes, not toy numbers: rounded to how funders actually
-    // quote them ("a $185K deal"), not a fake-precise $184,732.
-    const dealAmount = () => Math.round(rng(10, 500) / 5) * 5 * 1000;
-
-    // Two converging lanes (upper + lower) instead of one thin thread: the
-    // shape itself reads as "mass mailing," not a single careful email.
-    const inboxX = W * 0.065, inboxY = H * 0.5;
-    const deliverX = W * 0.76, deliverY = H * 0.5;
-    const lanes = [
-      { ctrlX: W * 0.4, ctrlY: H * 0.06 },
-      { ctrlX: W * 0.4, ctrlY: H * 0.9 },
-    ];
-    const bezier = (t: number, lane: number) => {
-      const { ctrlX, ctrlY } = lanes[lane];
-      const u = 1 - t;
-      return {
-        x: u * u * inboxX + 2 * u * t * ctrlX + t * t * deliverX,
-        y: u * u * inboxY + 2 * u * t * ctrlY + t * t * deliverY,
-      };
-    };
-
-    const BAR_COUNT = 6;
-    // Kept well clear of the right edge: the deal popup's glow is wide
-    // enough that a bar sitting too close to the frame clips its label.
-    const barBaseX = W * 0.78, barBaseY = H * 0.86, barMaxH = H * 0.58, barGap = W * 0.024;
-    const bars = Array.from({ length: BAR_COUNT }, () => ({ h: rng(10, 40), target: rng(10, 40) }));
-
-    // Slow drifting depth field behind everything: cheap parallax that
-    // keeps the scene from reading as a flat, empty rectangle.
-    const STAR_COUNT = 46;
-    const stars = Array.from({ length: STAR_COUNT }, () => ({
-      x: rng(0, W), y: rng(0, H), r: rng(0.6, 1.8), phase: rng(0, Math.PI * 2), speed: rng(0.15, 0.4),
-    }));
-
-    interface Env { t: number; speed: number; lane: number; reply: boolean; big: boolean; }
-    interface Drop { p: number; from: { x: number; y: number }; to: { x: number; y: number }; bar: number; amount: number; }
-    interface Burst { x: number; y: number; age: number; big: boolean; }
-    const envelopes: Env[] = [];
-    const drops: Drop[] = [];
-    const bursts: Burst[] = [];
-
-    let sent = stats.sent, rep = stats.rep, rev = stats.rev;
-    let spawnClock = 0;
-    let lastTime = 0;
-
-    const spawnEnvelope = (lane: number) => {
-      const reply = Math.random() < 0.32;
-      envelopes.push({ t: 0, speed: rng(0.3, 0.4), lane, reply, big: reply && Math.random() < 0.3 });
-    };
-
-    const drawStars = (time: number) => {
-      for (const s of stars) {
-        const tw = 0.35 + 0.25 * Math.sin(time / 900 + s.phase);
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(255,255,255,${tw * 0.4})`;
-        const x = (s.x + time * 0.006 * s.speed) % W;
-        ctx.arc(x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    };
-
-    const drawLanes = () => {
-      for (let lane = 0; lane < lanes.length; lane++) {
-        ctx.beginPath();
-        ctx.strokeStyle = "rgba(255,255,255,0.07)";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([1, 9]);
-        for (let i = 0; i <= 60; i++) {
-          const t = i / 60;
-          const { x, y } = bezier(t, lane);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    };
-
-    const pointAt = (e: Env, t: number) => bezier(t, e.lane);
-
-    const drawEnvelope = (e: Env) => {
-      const color = e.reply ? "#30d158" : "#5eb3ff";
-      const fade = Math.min(1, e.t * 8) * Math.min(1, (1 - e.t) * 8 + 0.15);
-      const scale = e.big ? 1.7 : 1;
-
-      // Longer, brighter trail: this is what turns dots into a fast,
-      // purposeful streak instead of a Pong ball.
-      for (let i = 9; i >= 1; i--) {
-        const tt = Math.max(0, e.t - i * 0.01);
-        const { x, y } = pointAt(e, tt);
-        ctx.beginPath();
-        ctx.fillStyle = color;
-        ctx.globalAlpha = fade * (1 - i / 10) * 0.4;
-        ctx.arc(x, y, (e.reply ? 5 : 3.6) * scale * (1 - i / 11), 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      const { x, y } = pointAt(e, e.t);
-      const angle = Math.atan2(
-        pointAt(e, Math.min(1, e.t + 0.01)).y - y,
-        pointAt(e, Math.min(1, e.t + 0.01)).x - x
-      );
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = (e.reply ? 26 : 18) * scale;
-      ctx.globalAlpha = fade;
-      // Small envelope silhouette, not a plain dot.
-      const w = (e.reply ? 12 : 9) * scale, h = w * 0.68;
-      ctx.beginPath();
-      ctx.moveTo(-w / 2, -h / 2);
-      ctx.lineTo(w / 2, -h / 2);
-      ctx.lineTo(w / 2, h / 2);
-      ctx.lineTo(-w / 2, h / 2);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    };
-
-    const drawInboxNode = (time: number) => {
-      const pulse = 9 + Math.sin(time / 300) * 2.2;
-      ctx.beginPath();
-      ctx.fillStyle = "#0a84ff";
-      ctx.shadowColor = "#0a84ff";
-      ctx.shadowBlur = 30;
-      ctx.arc(inboxX, inboxY, pulse, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(10,132,255,0.35)";
-      ctx.lineWidth = 1.5;
-      ctx.arc(inboxX, inboxY, pulse + 8 + Math.sin(time / 300) * 3, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    };
-
-    const drawBars = () => {
-      for (let i = 0; i < BAR_COUNT; i++) {
-        const b = bars[i];
-        b.h = ease(b.h, b.target, 0.1);
-        const x = barBaseX + i * barGap;
-        const h = Math.min(barMaxH, b.h);
-        const bw = 14;
-        const grad = ctx.createLinearGradient(0, barBaseY, 0, barBaseY - h);
-        grad.addColorStop(0, "rgba(48,209,88,0.5)");
-        grad.addColorStop(0.7, "rgba(120,240,170,0.9)");
-        grad.addColorStop(1, "rgba(220,255,235,1)");
-        ctx.beginPath();
-        const r = 4;
-        ctx.moveTo(x - bw / 2, barBaseY);
-        ctx.lineTo(x - bw / 2, barBaseY - h + r);
-        ctx.arcTo(x - bw / 2, barBaseY - h, x - bw / 2 + r, barBaseY - h, r);
-        ctx.lineTo(x + bw / 2 - r, barBaseY - h);
-        ctx.arcTo(x + bw / 2, barBaseY - h, x + bw / 2, barBaseY - h + r, r);
-        ctx.lineTo(x + bw / 2, barBaseY);
-        ctx.closePath();
-        ctx.fillStyle = grad;
-        ctx.shadowColor = "rgba(48,209,88,0.5)";
-        ctx.shadowBlur = 16;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        // Bright glowing cap on top: makes the bars read as "alive," not static fills.
-        ctx.beginPath();
-        ctx.fillStyle = "#eafff2";
-        ctx.shadowColor = "#eafff2";
-        ctx.shadowBlur = 14;
-        ctx.arc(x, barBaseY - h, bw / 2.6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(255,255,255,0.12)";
-      ctx.lineWidth = 1;
-      ctx.moveTo(barBaseX - 24, barBaseY + 0.5);
-      ctx.lineTo(barBaseX + (BAR_COUNT - 1) * barGap + 24, barBaseY + 0.5);
-      ctx.stroke();
-    };
-
-    const drawDrops = (dt: number) => {
-      for (let i = drops.length - 1; i >= 0; i--) {
-        const d = drops[i];
-        d.p += dt * 1.9;
-        const big = d.amount >= 300000;
-        if (d.p >= 1) {
-          bursts.push({ x: d.to.x, y: d.to.y, age: 0, big });
-          // Bigger deals visibly slam the bar chart harder than small ones.
-          const growth = 10 + (d.amount / 500000) * 46;
-          bars[d.bar].target = Math.min(barMaxH, bars[d.bar].target + growth);
-          const id = dealIdRef.current++;
-          // Clamped so a wide "big deal" glow never clips against the frame,
-          // even for a bar sitting near the edge.
-          const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
-          setDeals((prev) => [
-            ...prev,
-            {
-              id,
-              label: formatMoney(d.amount),
-              xPct: clamp((d.to.x / W) * 100, 12, 78),
-              yPct: clamp((d.to.y / H) * 100, 16, 78),
-              big,
-            },
-          ]);
-          setTimeout(() => setDeals((prev) => prev.filter((deal) => deal.id !== id)), big ? 2200 : 1600);
-          drops.splice(i, 1);
-          continue;
-        }
-        const p = d.p;
-        const x = ease(d.from.x, d.to.x, p);
-        const y = ease(d.from.y, d.to.y, p) - Math.sin(p * Math.PI) * (big ? 60 : 40); // gentle hop, then drop
-        const r = big ? 5.5 : 4;
-        ctx.beginPath();
-        ctx.fillStyle = "#30d158";
-        ctx.shadowColor = "#30d158";
-        ctx.shadowBlur = big ? 22 : 15;
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    };
-
-    const drawBursts = () => {
-      for (let i = bursts.length - 1; i >= 0; i--) {
-        const b = bursts[i];
-        b.age += 1;
-        const life = b.big ? 44 : 28;
-        const p = b.age / life;
-        if (p >= 1) {
-          bursts.splice(i, 1);
-          continue;
-        }
-        const maxR = b.big ? 80 : 44;
-        ctx.beginPath();
-        ctx.strokeStyle = `rgba(48,209,88,${(1 - p) * 0.65})`;
-        ctx.lineWidth = b.big ? 3 : 2;
-        ctx.arc(b.x, b.y, 6 + p * maxR, 0, Math.PI * 2);
-        ctx.stroke();
-        if (b.big) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(245,197,106,${(1 - p) * 0.5})`;
-          ctx.lineWidth = 2;
-          ctx.arc(b.x, b.y, 4 + p * maxR * 0.6, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-    };
-
-    const draw = (time: number) => {
-      const dt = lastTime ? Math.min(0.05, (time - lastTime) / 1000) : 0.016;
-      lastTime = time;
-      ctx.clearRect(0, 0, W, H);
-
-      drawStars(time);
-      drawLanes();
-      drawBars();
-
-      spawnClock += dt;
-      if (spawnClock > 0.3) {
-        spawnClock = 0;
-        spawnEnvelope(Math.random() < 0.5 ? 0 : 1);
-      }
-
-      for (let i = envelopes.length - 1; i >= 0; i--) {
-        const e = envelopes[i];
-        e.t += dt * e.speed;
-        if (e.t >= 1) {
-          sent += 1;
-          if (e.reply) {
-            rep += 1;
-            const amount = e.big ? Math.round(rng(300, 500) / 5) * 5 * 1000 : dealAmount();
-            rev += amount;
-            const shortest = bars.reduce((min, b, idx) => (b.target < bars[min].target ? idx : min), 0);
-            const barX = barBaseX + shortest * barGap;
-            drops.push({
-              p: 0,
-              from: { x: deliverX, y: deliverY },
-              to: { x: barX, y: barBaseY - bars[shortest].target },
-              bar: shortest,
-              amount,
-            });
-          }
-          envelopes.splice(i, 1);
-          continue;
-        }
-        drawEnvelope(e);
-      }
-
-      drawDrops(dt);
-      drawInboxNode(time);
-      drawBursts();
-    };
-
-    if (reduce) {
-      // Static, representative frame: no motion, no faked "live" numbers.
-      for (let i = 0; i < BAR_COUNT; i++) bars[i].h = bars[i].target = rng(30, barMaxH * 0.85);
-      for (let i = 0; i < 6; i++) envelopes.push({ t: rng(0.15, 0.85), speed: 0, lane: i % 2, reply: i % 2 === 0, big: false });
-      draw(0);
-      return;
-    }
-
-    let raf = 0, running = false;
-    const loop = (time: number) => {
-      draw(time);
-      raf = requestAnimationFrame(loop);
-    };
-    const start = () => {
-      if (!running) {
-        running = true;
-        lastTime = 0;
-        raf = requestAnimationFrame(loop);
-      }
-    };
-    const stop = () => { running = false; cancelAnimationFrame(raf); };
-    // Only animate while the canvas is actually on screen.
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => (e.isIntersecting ? start() : stop())),
-      { threshold: 0.05 }
-    );
-    io.observe(cv);
-    const id = setInterval(() => setStats({ sent, rep, rev }), 200);
-    return () => {
-      io.disconnect();
-      stop();
-      clearInterval(id);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <div className={`${styles.pipeStage} ${styles.reveal}`}>
-      <div className={styles.pipeGlass}>
-        <div className={styles.pipeTop}>
-          <span className={styles.pipeTag}>Live outreach</span>
-          <span className={styles.pipeTagR}>Every send compounds into pipeline</span>
-        </div>
-        <div className={styles.pipeCanvasWrap}>
-          <div className={styles.pipeWatermark} aria-hidden="true">{formatMoney(stats.rev)}</div>
-          <canvas ref={canvasRef} width={1920} height={640} aria-hidden="true" />
-          <div className={styles.pipeEndpoint} style={{ left: "5%" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M22 2 2 9.5l7.2 2.8L12 19.5 22 2Z" />
-              <path d="M22 2 9.2 12.3" />
-            </svg>
-            Outreach
-          </div>
-          <div className={`${styles.pipeEndpoint} ${styles.pipeEndpointR}`} style={{ right: "3%" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 4v16h16" />
-              <path d="M8 16v-3M12 16V8M16 16v-6" />
-            </svg>
-            Pipeline
-          </div>
-          {deals.map((d) => (
-            <div
-              key={d.id}
-              className={`${styles.pipeDeal} ${d.big ? styles.pipeDealBig : ""}`}
-              style={{ left: `${d.xPct}%`, top: `${d.yPct}%` }}
-            >
-              <span className={styles.pipeDealGlow} aria-hidden="true" />
-              <span className={styles.pipeDealSignal} aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M4 19V5M4 19h16" />
-                  <path d="m7 15 4-4 3 2 5-7" />
-                  <path d="M15.5 6H19v3.5" />
-                </svg>
-              </span>
-              <span className={styles.pipeDealAmount}>{d.label}</span>
-              <span className={styles.pipeDealLabel}>Qualified opportunity</span>
-            </div>
-          ))}
-        </div>
-        <div className={styles.pipeStats}>
-          <div className={styles.pipeChip}>
-            <div className={styles.pipeVal}>{stats.sent.toLocaleString()}</div>
-            <div className={styles.pipeLab}>Emails sent</div>
-          </div>
-          <div className={styles.pipeChip}>
-            <div className={styles.pipeVal} style={{ color: "var(--accent)" }}>{stats.rep.toLocaleString()}</div>
-            <div className={styles.pipeLab}>Replies earned</div>
-          </div>
-          <div className={styles.pipeChip}>
-            <div className={styles.pipeVal} style={{ color: "var(--good)" }}>{formatMoney(stats.rev)}</div>
-            <div className={styles.pipeLab}>Pipeline (simulated)</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const FAQ = [
+  [
+    "Who is the private pilot for?",
+    "Cadence is currently best suited to founders, focused sales teams, and agencies that use Gmail or Google Workspace and want a more controlled outreach workflow. We confirm fit before onboarding.",
+  ],
+  [
+    "Does Cadence guarantee replies or inbox placement?",
+    "No. Results depend on your audience, offer, message quality, sender history, provider behavior, and consent practices. Cadence provides controls and visibility that help reduce preventable risk.",
+  ],
+  [
+    "What Gmail access does Cadence need?",
+    "Cadence uses Google authorization for the product features you approve. Access is revocable, tokens are encrypted at rest, and pilot onboarding explains the requested scopes before connection.",
+  ],
+  [
+    "How many emails should I send each day?",
+    "There is no single safe number. Gmail limits are technical ceilings, not outreach recommendations. Cadence supports account-specific pacing, gradual increases, working-hour windows, and hard plan limits.",
+  ],
+  [
+    "Are opens exact?",
+    "No. Image blocking and privacy preloading can create missing or inflated open signals. Cadence labels opens accordingly and treats replies and intentional clicks as stronger evidence.",
+  ],
+  [
+    "When am I charged?",
+    "In-app billing is not active during the managed pilot. We confirm the plan, limits, support, and payment terms with you before any charge. The displayed prices are the current monthly pilot model.",
+  ],
+] as const;
 
 export function Landing() {
-  const rootRef = useRef<HTMLDivElement | null>(null);
-
-  // Scroll reveal
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const els = rootRef.current?.querySelectorAll(`.${styles.reveal}`);
-    if (!els) return;
-    if (reduce || !("IntersectionObserver" in window)) {
-      els.forEach((el) => el.classList.add(styles.in));
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) {
-            en.target.classList.add(styles.in);
-            io.unobserve(en.target);
-          }
-        });
-      },
-      { threshold: 0.12 }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
   return (
-    <div className={styles.root} ref={rootRef}>
-      {/* Nav */}
-      <nav className={styles.nav}>
-        <div className={`${styles.wrap} ${styles.navIn}`}>
-          <div className={styles.brand}>
-            <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <rect x="1.5" y="1.5" width="29" height="29" rx="9" stroke="#2e8bff" strokeWidth="1.6" opacity="0.35" />
-              <path d="M5 17.5h4.2l2.4-7.4a1 1 0 0 1 1.9.03l3.3 11.2 2.2-5.1a1 1 0 0 1 .9-.6H27" stroke="#2e8bff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Cadence
-          </div>
+    <div className={styles.root}>
+      <a className={styles.skipLink} href="#main">
+        Skip to main content
+      </a>
+
+      <nav className={styles.nav} aria-label="Primary navigation">
+        <div className={styles.navInner}>
+          <Link className={styles.brand} href="/" aria-label="Cadence home">
+            <LogoMark size={29} />
+            <span>Cadence</span>
+          </Link>
           <div className={styles.navLinks}>
-            <a href="#features">Features</a>
-            <a href="#demos">Demos</a>
+            <a href="#workflow">How it works</a>
+            <a href="#features">Product</a>
             <a href="#pricing">Pricing</a>
-            <a href="#security">Security</a>
+            <a href="#trust">Trust</a>
           </div>
-          <div className={styles.navCta}>
-            <a href="/sign-in" className={styles.login}>Log in</a>
-            <a href="#waitlist" className={`${styles.btn} ${styles.btnPrimary}`}>Request a pilot</a>
+          <div className={styles.navActions}>
+            <a className={styles.login} href="/sign-in">
+              Log in
+            </a>
+            <a className={styles.navPilot} href="#pilot">
+              Request a pilot
+            </a>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <header className={styles.hero}>
-        <div className={styles.heroGrid} aria-hidden="true" />
-        <div className={styles.wrap}>
-          <span className={styles.heroBadge}>Private pilot · <b>Now accepting teams</b></span>
-          <h1>
-            Personal outreach. <span className={styles.grad}>At scale.</span> From your inbox.
-          </h1>
-          <p className={styles.sub}>
-            Import contacts, write personalized campaigns, send from your own Gmail, and handle
-            replies in real threads. Cadence keeps the pace deliberate and the safety controls
-            visible for founders, recruiters, agencies, fundraisers, partnerships, and sales teams.
-          </p>
-          <div id="waitlist">
-            <WaitField
-              source="hero"
-              cta="Request a pilot"
-              note={<>Sends from <b>your own Gmail</b>. No credit card. We&apos;ll only contact you about a Cadence pilot.</>}
-            />
-            <p className={styles.heroLogin}>Already have access? <a href="/sign-in">Log in →</a></p>
-          </div>
-
-          {/* Live pipeline animation (isolated component, paused off-screen) */}
-          <HeroPipeline />
-        </div>
-      </header>
-
-      {/* Stats band */}
-      <section className={styles.statsBand}>
-        <div className={styles.wrap}>
-          <div className={`${styles.stats} ${styles.reveal}`}>
-            <div className={styles.stat}>
-              <div className={styles.statVal}><StatNum value={100} suffix="/day" /></div>
-              <div className={styles.statLab}>Tuned pacing, not a race to Gmail&apos;s limit</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statVal}><StatNum value={100} suffix="%" /></div>
-              <div className={styles.statLab}>Sent from your own Gmail, nothing spoofed</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statVal}><StatNum value={3} /></div>
-              <div className={styles.statLab}>Domain authentication checks in one view</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statVal}><StatNum value={60} prefix="<" suffix="s" /></div>
-              <div className={styles.statLab}>To an on-brand draft with AI</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className={`${styles.bandLight} ${styles.pad}`} id="features">
-        <div className={styles.wrap}>
-          <div className={`${styles.head} ${styles.reveal}`}>
-            <span className={styles.eyebrow}>The platform</span>
-            <h2>The complete Gmail outreach workflow in one focused workspace.</h2>
-            <p>From the first import to the final reply, Cadence handles repetitive campaign work so your team can focus on real conversations.</p>
-          </div>
-          <div className={styles.features}>
-            {FEATURES.map((f) => (
-              <div className={`${styles.feat} ${styles.reveal}`} key={f.t}>
-                <div className={styles.ic}>
-                  <FeatureIcon name={f.t} />
-                </div>
-                <h3>{f.t}</h3>
-                <p>{f.d}</p>
-                <span className={styles.tag}>{f.tag}</span>
+      <main id="main">
+        <header className={styles.hero}>
+          <div className={styles.heroGlow} aria-hidden />
+          <div className={styles.shell}>
+            <div className={styles.heroCopy}>
+              <span className={styles.pill}>
+                <span />
+                Managed private pilots are open
+              </span>
+              <h1>AI-assisted outreach that still sounds like you.</h1>
+              <p className={styles.heroLead}>
+                Build thoughtful Gmail campaigns, personalize without losing
+                your voice, pace sends with visible controls, and keep replies
+                and reporting in one focused workspace.
+              </p>
+              <div id="pilot">
+                <WaitField
+                  source="hero"
+                  note="No credit card. No open signup. We only use your email to discuss a Cadence pilot."
+                />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Demos */}
-      <section className={`${styles.bandInk2} ${styles.pad}`} id="demos">
-        <div className={styles.wrap}>
-          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
-            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>See it in motion</span>
-            <h2>A closer look at Cadence.</h2>
-            <p>From a one-line prompt to a real reply. Here&apos;s the everyday flow.</p>
-          </div>
-
-          {/* Demo 1: AI writer */}
-          <div className={`${styles.demo} ${styles.reveal}`}>
-            <div className={styles.demoCopy}>
-              <span className={styles.eyebrow}>AI email writer</span>
-              <h3>Describe it once. Get an on-brand draft.</h3>
-              <p>Cadence remembers your offer and tone, then writes a fresh, personalized email every time. No templates to wrestle with.</p>
-              <ul>
-                <li><CheckIcon size={17} />Brand memory keeps every message true to your pitch.</li>
-                <li><CheckIcon size={17} />Personalized per lead, never copy-paste.</li>
-                <li><CheckIcon size={17} />Improve, shorten, or spin subject lines in a click.</li>
-              </ul>
-            </div>
-            <div className={styles.frame}>
-              <div className={styles.frameBar}><i /><i /><i /><span>compose · cadence</span></div>
-              <div className={styles.frameBody}>
-                <div className={styles.aiwTop}>
-                  <span className={styles.aiwChip}>✦ Writing with AI</span>
-                  <span className={styles.aiwBrand}>Brand: <b>Alpine</b></span>
-                </div>
-                <div className={styles.aiwMail}>
-                  <div className={styles.subj}>Subject · Working capital for your next move</div>
-                  <TypedDraft />
-                </div>
-                <div className={styles.aiwTools}>
-                  <span>Improve</span><span>Shorten</span><span>Subject lines</span><span>Regenerate</span>
-                </div>
+              <div className={styles.heroFoot}>
+                <a href="#workflow">
+                  See the workflow <Arrow />
+                </a>
+                <span>
+                  Gmail-connected. Test mode first. Human reviewed.
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Demo 2: Reply inbox */}
-          <div className={`${styles.demo} ${styles.demoRev} ${styles.demoGap} ${styles.reveal}`}>
-            <div className={styles.frame}>
-              <div className={styles.frameBar}><i /><i /><i /><span>replies · triaged</span></div>
+            <div className={styles.productFrame}>
+              <div className={styles.frameTop}>
+                <div className={styles.frameBrand}>
+                  <LogoMark size={24} />
+                  <span>Campaign command center</span>
+                </div>
+                <span className={styles.exampleBadge}>Example data</span>
+              </div>
               <div className={styles.frameBody}>
-                <div className={styles.inbox}>
+                <div className={styles.campaignHeader}>
+                  <div>
+                    <span className={styles.kicker}>Active campaign</span>
+                    <h2>Northeast founder outreach</h2>
+                  </div>
+                  <span className={styles.healthPill}>
+                    <span />
+                    Sending steadily
+                  </span>
+                </div>
+                <div className={styles.metricGrid}>
                   {[
-                    { who: "Jordan Reyes", snip: "“This is timely, can you send details?”", chip: "Interested", cls: styles.hot, action: <span className={styles.draft}>AI draft ready →</span> },
-                    { who: "Priya Nair", snip: "“Who handles this on your side?”", chip: "Needs reply", cls: styles.warm, action: <span className={styles.draft}>AI draft ready →</span> },
-                    { who: "Marcus Webb", snip: "“Not right now, maybe next quarter.”", chip: "Not now", cls: styles.cold, action: <span className={styles.openG}>Snoozed</span> },
-                  ].map((r) => (
-                    <div className={styles.reply} key={r.who}>
-                      <div>
-                        <div className={styles.who}>{r.who}</div>
-                        <div className={styles.snip}>{r.snip}</div>
-                      </div>
-                      <span className={`${styles.chip} ${r.cls}`}>{r.chip}</span>
-                      {r.action}
+                    ["Sent", "128", "of 180 prepared"],
+                    ["Replies", "9", "7.0% of sent"],
+                    ["Interested", "4", "44% of replies"],
+                    ["Opt-outs", "2", "follow-ups stopped"],
+                  ].map(([label, value, detail]) => (
+                    <div className={styles.metric} key={label}>
+                      <span>{label}</span>
+                      <strong>{value}</strong>
+                      <small>{detail}</small>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-            <div className={styles.demoCopy}>
-              <span className={styles.eyebrow}>Reply intelligence</span>
-              <h3>Every reply, sorted and ready to answer.</h3>
-              <p>Cadence reads each response, tags the intent, and floats the hot ones first, then drafts an on-brand reply right in the Gmail thread.</p>
-              <ul>
-                <li><CheckIcon size={17} />Interested, Needs reply, Not now, tagged automatically.</li>
-                <li><CheckIcon size={17} />One click drafts a reply in the real thread.</li>
-                <li><CheckIcon size={17} />Hot leads rise to the top so nothing slips.</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Demo 3: Deliverability */}
-          <div className={`${styles.demo} ${styles.demoGap} ${styles.reveal}`}>
-            <div className={styles.demoCopy}>
-              <span className={styles.eyebrow}>Deliverability guard</span>
-              <h3>See preventable risks before you scale.</h3>
-              <p>Check SPF, DKIM, and DMARC with no setup. Connect Google Postmaster Tools when available, then use deliberate pacing to protect your sender reputation.</p>
-              <ul>
-                <li><CheckIcon size={17} />Domain auth checked automatically.</li>
-                <li><CheckIcon size={17} />Sends spread across the day, never in bursts.</li>
-                <li><CheckIcon size={17} />Reputation monitored so issues surface early.</li>
-                <li><CheckIcon size={17} />Pacing backed by real, anonymized data from every Cadence sender, not a guess.</li>
-              </ul>
-            </div>
-            <div className={styles.frame}>
-              <div className={styles.frameBar}><i /><i /><i /><span>deliverability · health</span></div>
-              <div className={styles.frameBody}>
-                <div className={styles.deliv}>
-                  <div className={styles.gauge}>
-                    <div className={styles.gaugeInner}>
-                      <div>
-                        <div className={styles.score}>94</div>
-                        <div className={styles.gaugeLab}>Inbox score</div>
-                      </div>
+                <div className={styles.frameColumns}>
+                  <div className={styles.activityPanel}>
+                    <div className={styles.panelHeading}>
+                      <strong>Priority replies</strong>
+                      <span>View all</span>
                     </div>
+                    {[
+                      ["JR", "Jordan Reyes", "Interested", "Can you send the details?"],
+                      ["PN", "Priya Nair", "Needs reply", "How would onboarding work?"],
+                      ["MW", "Marcus Webb", "Not now", "Circle back next quarter."],
+                    ].map(([initials, name, intent, snippet]) => (
+                      <div className={styles.replyRow} key={name}>
+                        <span className={styles.avatar}>{initials}</span>
+                        <span className={styles.replyCopy}>
+                          <strong>{name}</strong>
+                          <small>{snippet}</small>
+                        </span>
+                        <span
+                          className={`${styles.intent} ${
+                            intent === "Interested" ? styles.intentHot : ""
+                          }`}
+                        >
+                          {intent}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className={styles.checks}>
-                    {[["SPF", "Pass"], ["DKIM", "Pass"], ["DMARC", "Pass"], ["Postmaster", "Good"]].map(([k, v]) => (
-                      <div className={styles.checkrow} key={k}>
-                        <b>{k}</b><span className={styles.pass}>✓ {v}</span>
+                  <div className={styles.safetyPanel}>
+                    <div className={styles.panelHeading}>
+                      <strong>Launch controls</strong>
+                      <span>Today</span>
+                    </div>
+                    {[
+                      ["Gmail connected", "Ready"],
+                      ["Suppression check", "Passed"],
+                      ["Daily pace", "40 of 60"],
+                      ["Next batch", "2:40 PM"],
+                    ].map(([label, value], index) => (
+                      <div className={styles.safetyRow} key={label}>
+                        <span
+                          className={index < 2 ? styles.checkDot : styles.timeDot}
+                        >
+                          {index < 2 ? <Check size={13} /> : ""}
+                        </span>
+                        <span>{label}</span>
+                        <strong>{value}</strong>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Value / what you save */}
-      <section className={`${styles.bandLight} ${styles.pad}`} id="value">
-        <div className={styles.wrap}>
-          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
-            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Why teams switch</span>
-            <h2>Trade repetitive campaign work for real conversations.</h2>
-            <p>The same personal outreach you already do, with the manual sorting, scheduling, and follow-up work handled.</p>
-          </div>
-          <div className={`${styles.compare} ${styles.reveal}`}>
-            <div className={`${styles.col} ${styles.colBad}`}>
-              <div className={styles.colHead}><XIcon size={15} /> The old way</div>
-              <ul className={styles.cmp}>
-                {OLD_WAY.map((x) => (
-                  <li key={x}><XIcon size={17} />{x}</li>
-                ))}
-              </ul>
-            </div>
-            <div className={`${styles.col} ${styles.colGood}`}>
-              <div className={styles.colHead}><CheckIcon size={15} /> With Cadence</div>
-              <ul className={styles.cmp}>
-                {NEW_WAY.map((x) => (
-                  <li key={x}><CheckIcon size={17} />{x}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Security */}
-      <section className={`${styles.bandInk2} ${styles.pad}`} id="security">
-        <div className={styles.wrap}>
-          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
-            <span className={styles.eyebrow}>Data safety</span>
-            <h2>Your leads, your inbox, your data, locked down.</h2>
-            <p>Cadence uses layered controls: tenant-scoped access, encrypted Gmail tokens, verified workers, and a test-mode safety gate.</p>
-          </div>
-          <div className={styles.secGrid}>
-            {SECURITY.map((s) => (
-              <div className={`${styles.sec} ${styles.reveal}`} key={s.t}>
-                <div className={styles.lk}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.8" />
-                  </svg>
+            <div className={styles.proofBar}>
+              {[
+                ["Gmail-native", "Messages stay connected to your inbox"],
+                ["Test mode first", "Rehearse before a live workflow"],
+                ["Campaign-level", "Metrics keep their real context"],
+                ["Consent-aware", "Opt-outs stop future follow-ups"],
+              ].map(([title, copy]) => (
+                <div key={title}>
+                  <Check size={17} />
+                  <span>
+                    <strong>{title}</strong>
+                    <small>{copy}</small>
+                  </span>
                 </div>
-                <h3>{s.t}</h3>
-                <p>{s.d}</p>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        <section className={styles.introSection}>
+          <div className={styles.shell}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Built for focused teams</span>
+              <h2>Less campaign machinery. More clarity at every decision.</h2>
+              <p>
+                Cadence brings the work that usually lives across spreadsheets,
+                drafts, inbox tabs, and disconnected dashboards into one
+                deliberate operating flow.
+              </p>
+            </div>
+            <div className={styles.outcomeGrid}>
+              {[
+                [
+                  "Know what is ready",
+                  "Imports, missing fields, duplicates, suppressions, and launch checks are visible before a campaign moves.",
+                ],
+                [
+                  "Keep the message human",
+                  "AI gives you a strong first pass while your voice, proof, review, and final judgment stay in control.",
+                ],
+                [
+                  "See what needs action",
+                  "Campaign health and reply intent are prioritized so the next useful step is easier to find.",
+                ],
+              ].map(([title, copy], index) => (
+                <article key={title}>
+                  <span>0{index + 1}</span>
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.workflowSection} id="workflow">
+          <div className={styles.shell}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>One connected workflow</span>
+              <h2>From lead list to real conversation.</h2>
+              <p>
+                Each step explains what Cadence is doing, what still needs your
+                review, and which safety control stands between preparation and
+                delivery.
+              </p>
+            </div>
+            <div className={styles.workflow}>
+              <div className={styles.workflowSteps}>
+                {WORKFLOW.map((step) => (
+                  <article key={step.number}>
+                    <span>{step.number}</span>
+                    <div>
+                      <h3>{step.title}</h3>
+                      <p>{step.copy}</p>
+                    </div>
+                  </article>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className={`${styles.bandLight} ${styles.pad}`} id="pricing">
-        <div className={styles.wrap}>
-          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
-            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Pricing</span>
-            <h2>Simple pilot pricing.</h2>
-            <p>Request access and we&apos;ll confirm fit, onboarding, and the exact plan before anything is charged.</p>
-          </div>
-          <div className={styles.prices}>
-            {/* Starter */}
-            <div className={`${styles.price} ${styles.reveal}`}>
-              <div className={styles.plan}>Starter</div>
-              <div className={styles.amt}>$29 <small>/ seat · mo</small></div>
-              <span className={styles.soon}>Private pilot</span>
-              <p className={styles.who2}>For one person running thoughtful outreach from Gmail.</p>
-              <ul>
-                <li><CheckIcon size={16} />AI email writer with brand memory</li>
-                <li><CheckIcon size={16} />Human-paced campaigns from your Gmail</li>
-                <li><CheckIcon size={16} />Reply triage and AI drafts</li>
-                <li><CheckIcon size={16} />Deliverability checks</li>
-              </ul>
-              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Request a pilot</a>
-            </div>
-            {/* Team: featured */}
-            <div className={`${styles.price} ${styles.featPlan} ${styles.reveal}`}>
-              <span className={styles.badgeTop}>Most popular</span>
-              <div className={styles.plan}>Team</div>
-              <div className={styles.amt}>$24 <small>/ seat · mo</small></div>
-              <span className={styles.soon}>Private pilot</span>
-              <p className={styles.who2}>For teams coordinating outreach with shared visibility. Two-seat minimum.</p>
-              <ul>
-                <li><CheckIcon size={16} />Everything in Starter</li>
-                <li><CheckIcon size={16} />Roles, assignment, and team dashboards</li>
-                <li><CheckIcon size={16} />Per-rep leaderboards and reporting</li>
-                <li><CheckIcon size={16} />Shared brand memory profiles</li>
-              </ul>
-              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight} ${styles.btnLightPri}`}>Request a team pilot</a>
-            </div>
-            {/* Enterprise */}
-            <div className={`${styles.price} ${styles.reveal}`}>
-              <div className={styles.plan}>Custom</div>
-              <div className={styles.amt}>Custom</div>
-              <span className={styles.soon}>Talk to us</span>
-              <p className={styles.who2}>For organizations that need a reviewed rollout and tailored limits.</p>
-              <ul>
-                <li><CheckIcon size={16} />Everything in Team</li>
-                <li><CheckIcon size={16} />Deployment and policy review</li>
-                <li><CheckIcon size={16} />Custom limits and guided onboarding</li>
-                <li><CheckIcon size={16} />Migration and launch support</li>
-              </ul>
-              <a href="#waitlist" className={`${styles.btn} ${styles.btnLight}`}>Contact us</a>
+              <div className={styles.composeMock}>
+                <div className={styles.mockTop}>
+                  <span>Message workspace</span>
+                  <span className={styles.exampleBadge}>Example</span>
+                </div>
+                <div className={styles.mockMeta}>
+                  <div>
+                    <small>Brand voice</small>
+                    <strong>Clear, specific, low pressure</strong>
+                  </div>
+                  <span>AI assist on</span>
+                </div>
+                <div className={styles.subjectLine}>
+                  <small>Subject</small>
+                  <strong>A quick question about Harbor Studio</strong>
+                </div>
+                <div className={styles.messageBody}>
+                  <p>Hi Maya,</p>
+                  <p>
+                    I noticed Harbor Studio is expanding its client team. We
+                    help growing agencies keep outbound follow-up organized
+                    without moving conversations away from Gmail.
+                  </p>
+                  <p>
+                    Would a short walkthrough be useful next week?
+                  </p>
+                  <p>Matthew</p>
+                </div>
+                <div className={styles.variantBar}>
+                  <span>Variant A</span>
+                  <span>Personalization checked</span>
+                  <button type="button">Preview</button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ */}
-      <section className={`${styles.bandInk2} ${styles.pad}`} id="faq">
-        <div className={styles.wrap}>
-          <div className={`${styles.head} ${styles.center} ${styles.reveal}`}>
-            <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Questions</span>
-            <h2>Everything you might be wondering.</h2>
+        <section className={styles.featuresSection} id="features">
+          <div className={styles.shell}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>The product</span>
+              <h2>Serious outreach controls without enterprise clutter.</h2>
+              <p>
+                Enough structure to run a reliable process, with honest labels
+                wherever email data or provider behavior has real limitations.
+              </p>
+            </div>
+            <div className={styles.featureGrid}>
+              {FEATURES.map((feature) => (
+                <article key={feature.title}>
+                  <span>{feature.eyebrow}</span>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.copy}</p>
+                </article>
+              ))}
+            </div>
           </div>
-          <div className={`${styles.faq} ${styles.reveal}`}>
-            {[
-              ["Can I use Cadence now?", "We're accepting a small number of private pilots. Request access and we'll confirm whether your Gmail setup and outreach workflow are a fit."],
-              ["Do I need a new email service?", "No. Cadence sends from your own Gmail with a narrow, revocable permission. Your identity, your inbox, real threads. Nothing is spoofed or relayed."],
-              ["How is my data protected?", "Cadence scopes data by user and workspace, encrypts Gmail tokens with a managed key, blocks direct database access by default, and verifies background workers. AI writing is optional and controlled by a workspace admin."],
-              ["Does Cadence guarantee inbox placement?", "No platform can guarantee placement. Cadence helps reduce preventable risk with SPF, DKIM, and DMARC checks, optional Google Postmaster data, deliberate pacing, suppressions, and clear warnings before launch."],
-              ["How much will it cost?", "Final pricing is set at launch. Waitlist members get founding-member rates, so join now to lock in the best pricing."],
-              ["Can my whole team use it?", "Yes. Cadence has roles, lead assignment, per-rep leaderboards, and team-lead dashboards built in from day one."],
-            ].map(([q, a]) => (
-              <details key={q}>
-                <summary>{q}</summary>
-                <p>{a}</p>
-              </details>
-            ))}
+        </section>
+
+        <section className={styles.trustSection} id="trust">
+          <div className={styles.shell}>
+            <div className={styles.trustLayout}>
+              <div className={styles.trustCopy}>
+                <span className={styles.eyebrow}>Trust is a product feature</span>
+                <h2>Designed to protect the relationship behind every send.</h2>
+                <p>
+                  Cadence cannot make outreach risk-free. It can make risk,
+                  consent, access, and campaign state easier to see and harder
+                  to ignore.
+                </p>
+                <a href="#pilot">
+                  Discuss a managed pilot <Arrow />
+                </a>
+              </div>
+              <div className={styles.trustGrid}>
+                {[
+                  [
+                    "Scoped workspace access",
+                    "Server-side authorization keeps user and organization paths explicit.",
+                  ],
+                  [
+                    "Encrypted Gmail credentials",
+                    "Connection tokens are encrypted at rest and access can be revoked.",
+                  ],
+                  [
+                    "Duplicate-send defenses",
+                    "Idempotency and ambiguous-delivery quarantine favor safety over blind retries.",
+                  ],
+                  [
+                    "Suppression enforcement",
+                    "Imports, launches, and final delivery checks respect opt-outs and do-not-email records.",
+                  ],
+                ].map(([title, copy]) => (
+                  <article key={title}>
+                    <span>
+                      <Check size={16} />
+                    </span>
+                    <h3>{title}</h3>
+                    <p>{copy}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Final CTA */}
-      <section className={`${styles.bandInk2} ${styles.pad} ${styles.final}`}>
-        <div className={styles.aurora} aria-hidden="true" />
-        <div className={`${styles.wrap} ${styles.finalInner}`}>
-          <span className={styles.eyebrow} style={{ justifyContent: "center" }}>Private pilot</span>
-          <h2>See if Cadence fits your outreach workflow.</h2>
-          <p className={styles.sub} style={{ margin: "16px auto 0" }}>
-            Tell us where to reach you and we&apos;ll follow up about pilot availability.
-          </p>
-          <WaitField source="footer-cta" cta="Request a pilot" note={<>No mailing list. We&apos;ll only contact you about Cadence access.</>} />
-        </div>
-      </section>
+        <section className={styles.pricingSection} id="pricing">
+          <div className={styles.shell}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Managed pilot pricing</span>
+              <h2>Clear monthly plans, confirmed before you pay.</h2>
+              <p>
+                These are the current pilot prices. Billing stays off until we
+                confirm fit, limits, onboarding, and payment terms with you.
+              </p>
+            </div>
+            <div className={styles.pricingGrid}>
+              {PUBLIC_PRICING.map((tier) => (
+                <article
+                  className={tier.featured ? styles.featuredPrice : ""}
+                  key={tier.id}
+                >
+                  {tier.featured && (
+                    <span className={styles.recommended}>Recommended</span>
+                  )}
+                  <span className={styles.planEyebrow}>{tier.eyebrow}</span>
+                  <h3>{tier.name}</h3>
+                  <div className={styles.priceLine}>
+                    <strong>{publicPriceLabel(tier.id)}</strong>
+                    <span>{publicPriceQualifier(tier.id)}</span>
+                  </div>
+                  <p>{tier.description}</p>
+                  <ul>
+                    {tier.features.map((feature) => (
+                      <li key={feature}>
+                        <Check size={16} />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <a href="#pilot">
+                    {tier.cta} <Arrow />
+                  </a>
+                </article>
+              ))}
+            </div>
+            <p className={styles.pricingNote}>
+              Daily limits are product ceilings, not a promise that every
+              inbox should use the maximum. Recommended pacing depends on
+              provider rules, sender history, audience quality, and campaign
+              behavior. Annual billing and overages are not active in the
+              private pilot.
+            </p>
+          </div>
+        </section>
 
-      {/* Footer */}
+        <section className={styles.faqSection}>
+          <div className={styles.shell}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Straight answers</span>
+              <h2>What to know before a pilot.</h2>
+            </div>
+            <div className={styles.faq}>
+              {FAQ.map(([question, answer]) => (
+                <details key={question}>
+                  <summary>{question}</summary>
+                  <p>{answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.finalCta}>
+          <div className={styles.shell}>
+            <div className={styles.finalPanel}>
+              <span className={styles.eyebrow}>Private pilot</span>
+              <h2>Bring your real outreach workflow.</h2>
+              <p>
+                We will review fit, explain the safety model, and help you
+                define a responsible first-success milestone.
+              </p>
+              <WaitField
+                source="footer"
+                note="No mailing list. We only use your email to discuss a Cadence pilot."
+              />
+            </div>
+          </div>
+        </section>
+      </main>
+
       <footer className={styles.footer}>
-        <div className={`${styles.wrap} ${styles.foot}`}>
-          <div className={styles.brand} style={{ fontSize: 17 }}>
-            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path d="M5 17.5h4.2l2.4-7.4a1 1 0 0 1 1.9.03l3.3 11.2 2.2-5.1a1 1 0 0 1 .9-.6H27" stroke="#2e8bff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Cadence
+        <div className={styles.footerInner}>
+          <div>
+            <Link className={styles.brand} href="/">
+              <LogoMark size={25} />
+              <span>Cadence</span>
+            </Link>
+            <p>Thoughtful Gmail outreach with visible controls.</p>
           </div>
-          <div className={styles.cols}>
-            <a href="#features">Features</a>
-            <a href="#demos">Demos</a>
+          <div className={styles.footerLinks}>
+            <a href="#workflow">How it works</a>
+            <a href="#features">Product</a>
             <a href="#pricing">Pricing</a>
-            <a href="#security">Security</a>
-            <a href="#faq">FAQ</a>
+            <a href="#trust">Trust</a>
+            <a href="/sign-in">Log in</a>
           </div>
-          <div className={styles.fine}>© 2026 Cadence · Private pilot</div>
+          <p className={styles.copyright}>
+            © 2026 Cadence. Private pilot. Legal terms and privacy details are
+            provided before onboarding.
+          </p>
         </div>
       </footer>
     </div>
