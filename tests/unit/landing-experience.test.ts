@@ -46,10 +46,13 @@ describe("landing-page experience", () => {
   });
 
   it("keeps the top-right pilot action readable above the global link rule", () => {
+    // The colour now comes from the shared brand token rather than a literal,
+    // so this asserts the intent (dark ink on the light pill) and checks the
+    // resolved --foreground value for contrast.
     expect(landingStyles).toMatch(
-      /\.root \.navPilot \{[\s\S]*?color: #07111f;/
+      /\.root \.navPilot \{[\s\S]*?color: var\(--landing-copy\);/
     );
-    expect(contrastRatio("#07111f", "#eaf2ff")).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio("#1d1b18", "#f3f7fc")).toBeGreaterThanOrEqual(4.5);
     expect(landingSource).toContain("Request a pilot <Arrow />");
   });
 

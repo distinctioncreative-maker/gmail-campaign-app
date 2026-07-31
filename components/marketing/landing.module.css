@@ -1,25 +1,30 @@
 .root {
-  --landing-ink: #07111f;
-  --landing-ink-soft: #101a29;
-  --landing-paper: #f4f5f3;
-  --landing-surface: #fcfcfb;
-  --landing-copy: #172132;
-  --landing-muted: #5e6979;
-  --landing-line: #dde1e2;
-  --landing-blue: #1a63d7;
-  --landing-blue-deep: #124fae;
-  --landing-blue-soft: #e9f1fd;
-  --landing-green: #137a50;
-  --landing-green-soft: #e8f7f0;
-  --landing-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The marketing page used to carry its own cold navy palette, so the site
+     and the product looked like two different companies. These now derive
+     from the brand tokens in globals.css (see BRAND.md). The variable names
+     are kept, so the rest of this stylesheet needs no changes. */
+  --landing-ink: #0f0d0c;
+  --landing-ink-soft: #1a1613;
+  --landing-paper: var(--background);
+  --landing-surface: var(--surface);
+  --landing-copy: var(--foreground);
+  --landing-muted: var(--muted);
+  --landing-line: var(--border);
+  --landing-blue: var(--primary);
+  --landing-blue-deep: var(--primary-hover);
+  --landing-blue-soft: var(--primary-soft);
+  --landing-green: var(--success);
+  --landing-green-soft: #e7f6ef;
+  --landing-gold: var(--revenue);
+  --landing-ease: var(--ease-out);
   --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --landing-stage-duration: 2300ms;
-  --landing-shadow-premium: 0 34px 90px -46px rgb(13 34 65 / 42%);
+  --landing-shadow-premium: 0 34px 90px -46px rgb(40 32 24 / 42%);
   min-width: 0;
   overflow: clip;
   background: var(--landing-paper);
   color: var(--landing-copy);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-sans-base), system-ui, sans-serif;
 }
 
 .root *,
@@ -132,7 +137,7 @@
   border-radius: 9px;
   background: #f3f7fc;
   padding: 0 16px;
-  color: #07111f;
+  color: var(--landing-copy);
   font-weight: 700;
   box-shadow:
     0 1px 0 rgb(255 255 255 / 75%) inset,
@@ -145,7 +150,7 @@
 
 .root .navPilot:hover {
   background: #ffffff;
-  color: #07111f;
+  color: var(--landing-copy);
   box-shadow:
     0 1px 0 rgb(255 255 255 / 90%) inset,
     0 12px 30px rgb(0 0 0 / 28%);
@@ -153,7 +158,7 @@
 }
 
 .root .navPilot:visited {
-  color: #07111f;
+  color: var(--landing-copy);
 }
 
 .navPilot svg {
