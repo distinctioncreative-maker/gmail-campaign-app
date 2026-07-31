@@ -109,9 +109,10 @@ export default async function CampaignsPage({
       {campaigns.length === 0 ? (
         <EmptyState
           icon="rocket"
-          title="No campaigns yet."
-          description="A guided wizard walks you through leads, email, schedule, and a safety review."
+          title="Your first campaign is four steps away"
+          description="Pick your leads, write one email, set the pace, and Cadence sends it from your own Gmail. A safety review runs before anything leaves your account."
           action={{ href: "/campaigns/new", label: "Create your first campaign" }}
+          secondaryAction={{ href: "/help", label: "See how it works" }}
         />
       ) : (
         <CampaignsTable

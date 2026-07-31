@@ -30,8 +30,8 @@ export default async function SequencesPage() {
       {sequences.length === 0 ? (
         <EmptyState
           icon="repeat"
-          title="No sequences yet."
-          description="Build a timeline of follow-ups once, then reuse it in any campaign."
+          title="Most replies come from the follow-up"
+          description="Build a timeline of follow-ups once, then reuse it in any campaign. Anyone who replies is dropped from the sequence automatically."
           action={{ href: "/sequences/new", label: "Create your first sequence" }}
         />
       ) : (

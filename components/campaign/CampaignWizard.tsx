@@ -313,7 +313,9 @@ export function CampaignWizard() {
       });
 
       clear();
-      router.push(`/campaigns/${campaignId}`);
+      // ?launched=1 turns the landing into the launch moment; the banner
+      // strips the flag itself so a refresh does not re-celebrate.
+      router.push(`/campaigns/${campaignId}?launched=1`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setBusy(false);

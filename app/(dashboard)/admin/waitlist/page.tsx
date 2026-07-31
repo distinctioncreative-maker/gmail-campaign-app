@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
 import { StatTile } from "@/components/ui/StatTile";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
 /** Admin-only view of private-pilot requests, with CSV export. */
@@ -59,8 +60,13 @@ export default async function WaitlistPage() {
       </div>
 
       {entries.length === 0 ? (
-        <div className="mt-6 card p-8 text-center text-sm text-muted">
-          No pilot requests yet. They&apos;ll appear here after someone submits the landing page form.
+        <div className="mt-6">
+          <EmptyState
+            variant="inline"
+            icon="users"
+            title="No pilot requests yet"
+            description="Requests appear here as soon as someone submits the form on the public landing page."
+          />
         </div>
       ) : (
         <div className="mt-6 overflow-x-auto card">

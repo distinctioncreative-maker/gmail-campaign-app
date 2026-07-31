@@ -6,24 +6,78 @@ interface EmptyStateProps {
   title: string;
   description?: string;
   action?: { href: string; label: string };
+  /** Optional lower-emphasis second path, usually "learn how this works". */
+  secondaryAction?: { href: string; label: string };
+  /**
+   * "page" is the full branded moment for a surface a customer has not used
+   * yet. "inline" is the quiet one-liner for a sub-panel inside a page that
+   * already has content of its own.
+   */
+  variant?: "page" | "inline";
   className?: string;
 }
 
-/** Shared "nothing here yet" panel: icon, plain-language title/description,
- * and an optional primary CTA. Used for a page's first-ever empty state, not
- * small in-page sub-panels (those stay a plain muted line). */
-export function EmptyState({ icon, title, description, action, className = "" }: EmptyStateProps) {
+/**
+ * The first thing a new customer sees on most surfaces, which makes it a
+ * brand moment rather than a fallback. The medallion sits in a soft halo so
+ * the panel has a focal point, and the title uses the display face so an
+ * empty page still looks like the same product as a full one.
+ */
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  secondaryAction,
+  variant = "page",
+  className = "",
+}: EmptyStateProps) {
+  if (variant === "inline") {
+    return (
+      <div className={`card flex flex-col items-center gap-2 px-6 py-8 text-center ${className}`}>
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2 text-muted">
+          <Icon name={icon} size={17} />
+        </span>
+        <p className="text-sm font-medium">{title}</p>
+        {description && <p className="max-w-sm text-sm leading-6 text-muted">{description}</p>}
+        {action && (
+          <Link href={action.href} className="mt-1 text-sm font-medium text-primary hover:underline">
+            {action.label}
+          </Link>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className={`card animate-rise px-6 py-12 text-center sm:px-10 ${className}`}>
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-primary/10 bg-primary-soft text-primary">
-        <Icon name={icon} size={22} />
+    <div
+      className={`card animate-rise relative overflow-hidden px-6 py-14 text-center sm:px-10 ${className}`}
+    >
+      {/* Soft brand halo behind the medallion, so the panel has a centre of gravity. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-0 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
+      />
+      <span className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary ring-1 ring-primary/15">
+        <Icon name={icon} size={24} />
       </span>
-      <p className="mt-4 font-medium">{title}</p>
-      {description && <p className="mx-auto mt-1.5 max-w-md text-sm leading-6 text-muted">{description}</p>}
-      {action && (
-        <Link href={action.href} className="btn-primary mt-5 px-5 py-2.5 text-sm">
-          {action.label}
-        </Link>
+      <p className="relative mt-5 font-display text-lg font-bold tracking-[-0.02em]">{title}</p>
+      {description && (
+        <p className="relative mx-auto mt-2 max-w-md text-sm leading-6 text-muted">{description}</p>
+      )}
+      {(action || secondaryAction) && (
+        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">
+          {action && (
+            <Link href={action.href} className="btn-primary px-5 py-2.5 text-sm">
+              {action.label}
+            </Link>
+          )}
+          {secondaryAction && (
+            <Link href={secondaryAction.href} className="btn-ghost px-5 py-2.5 text-sm">
+              {secondaryAction.label}
+            </Link>
+          )}
+        </div>
       )}
     </div>
   );

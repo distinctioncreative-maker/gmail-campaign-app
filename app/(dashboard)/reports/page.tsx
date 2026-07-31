@@ -20,6 +20,7 @@ import {
 } from "@/components/analytics/ReportFilters";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import {
   timeToReply,
@@ -356,25 +357,24 @@ export default async function ReportsPage({
         </p>
       ) : null}
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <section className="card p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <h2 className="font-semibold">Outreach trend</h2>
-              <p className="mt-1 text-xs text-muted">
-                Initial sends and replies from the selected cohort over the
-                last {rangeDays} days.
-              </p>
-            </div>
-            <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">
-              Green shows replies
-            </span>
+      {/* Hero chart: effort in, conversations out, on one canvas. */}
+      <section className="card mt-6 p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h2 className="font-semibold">Outreach trend</h2>
+            <p className="mt-1 text-xs text-muted">
+              Initial sends and replies from the selected cohort over the last{" "}
+              {rangeDays} days. Replies use their own scale so a strong day still
+              stands out against send volume.
+            </p>
           </div>
-          <div className="mt-5">
-            <TrendChart rows={trend} />
-          </div>
-        </section>
+        </div>
+        <div className="mt-5">
+          <TrendChart rows={trend} />
+        </div>
+      </section>
 
+      <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <section className="card p-5 sm:p-6">
           <h2 className="font-semibold">Campaign funnel</h2>
           <p className="mt-1 text-xs text-muted">
@@ -389,7 +389,7 @@ export default async function ReportsPage({
                     <p className="text-sm font-medium">{step.label}</p>
                     <p className="text-xs text-muted">{step.detail}</p>
                   </div>
-                  <p className="text-xl font-semibold tabular-nums">
+                  <p className="font-display text-xl font-bold tabular-nums tracking-[-0.03em]">
                     {step.value.toLocaleString()}
                   </p>
                 </div>
@@ -408,9 +408,7 @@ export default async function ReportsPage({
             ))}
           </div>
         </section>
-      </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="card p-5 sm:p-6">
           <h2 className="font-semibold">When replies arrive</h2>
           <p className="mb-4 mt-1 text-xs text-muted">
@@ -555,10 +553,12 @@ export default async function ReportsPage({
         </div>
 
         {leaderboard.length === 0 ? (
-          <div className="card p-8 text-center text-sm text-muted">
-            No sends yet. Campaign results will appear here after the first
-            message is processed.
-          </div>
+          <EmptyState
+            variant="inline"
+            icon="chart"
+            title="No sends yet"
+            description="Campaign results land here the moment your first message goes out."
+          />
         ) : (
           <div className="card overflow-x-auto">
             <table className="w-full min-w-[840px] text-left text-sm">

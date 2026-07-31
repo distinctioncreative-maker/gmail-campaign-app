@@ -6,6 +6,7 @@ import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
 import { LeadListHeaderActions } from "@/components/leads/LeadListHeaderActions";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function LeadListDetailPage({
   params,
@@ -57,9 +58,12 @@ export default async function LeadListDetailPage({
       <div className="mt-10">
         <h2 className="mb-3 font-medium">Leads in this list ({rows.length})</h2>
         {rows.length === 0 ? (
-          <div className="card p-8 text-center text-sm text-muted">
-            This list is empty. Paste some leads above to start building it.
-          </div>
+          <EmptyState
+            variant="inline"
+            icon="users"
+            title="This list is empty"
+            description="Paste or upload leads above to start building it. Duplicates are skipped automatically."
+          />
         ) : (
           <ContactsTable contacts={rows} />
         )}

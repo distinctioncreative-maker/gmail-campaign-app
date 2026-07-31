@@ -24,14 +24,19 @@ import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
 import { CampaignSectionNav } from "@/components/campaign/CampaignSectionNav";
+import { LaunchCelebration } from "@/components/campaign/LaunchCelebration";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function CampaignDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ campaignId: string }>;
+  searchParams: Promise<{ launched?: string }>;
 }) {
   const ctx = await requireUser();
   const { campaignId } = await params;
+  const { launched } = await searchParams;
   const owner = ownerFromCtx(ctx);
   const campaign = await getCampaign(owner, campaignId);
   if (!campaign) notFound();
@@ -128,27 +133,34 @@ export default async function CampaignDetailPage({
 
   return (
     <div className="animate-rise">
-      <Link href="/campaigns" className="text-sm text-muted hover:underline">
-        ← All campaigns
-      </Link>
+      {launched === "1" && (
+        <LaunchCelebration
+          recipientCount={campaign.eligibleRecipients}
+          startedNow={campaign.status !== "READY" && campaign.status !== "DRAFT"}
+        />
+      )}
 
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{campaign.name}</h1>
-          {campaign.description && <p className="mt-0.5 text-sm text-muted">{campaign.description}</p>}
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {campaign.status === "ACTIVE" && <LiveRefresh intervalMs={12000} />}
-          <Link
-            href={`/reports?campaign=${campaign.campaignId}&range=30`}
-            className="btn-ghost px-3 py-2 text-xs"
-          >
-            <Icon name="chart" size={15} />
-            View report
-          </Link>
-          <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>{badge.label}</span>
-        </div>
-      </div>
+      <PageHeader
+        title={campaign.name}
+        description={campaign.description || undefined}
+        backHref="/campaigns"
+        backLabel="All campaigns"
+        actions={
+          <>
+            {campaign.status === "ACTIVE" && <LiveRefresh intervalMs={12000} />}
+            <Link
+              href={`/reports?campaign=${campaign.campaignId}&range=30`}
+              className="btn-ghost px-3 py-2 text-xs"
+            >
+              <Icon name="chart" size={15} />
+              View report
+            </Link>
+            <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>
+              {badge.label}
+            </span>
+          </>
+        }
+      />
 
       <CampaignSectionNav />
 

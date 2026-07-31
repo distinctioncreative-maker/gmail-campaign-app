@@ -152,9 +152,9 @@ export default async function RepliesPage() {
         {rows.length === 0 ? (
           <EmptyState
             icon="reply"
-            title="No replies yet"
+            title="This is where your pipeline shows up"
             description={
-              'When someone replies to a campaign email it shows up here. If you\'re expecting one, hit "Scan for replies" above: replies are also picked up automatically in the background.'
+              'Every reply to a campaign lands here, ranked so the interested ones are on top. Replies are picked up automatically in the background. If you are expecting one now, hit "Scan for replies" above.'
             }
           />
         ) : (

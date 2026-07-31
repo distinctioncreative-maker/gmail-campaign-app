@@ -27,8 +27,8 @@ export default async function TemplatesPage() {
       {active.length === 0 ? (
         <EmptyState
           icon="mail"
-          title="No templates yet."
-          description="Start from a ready-made layout, paste your own HTML, or import a Gmail draft."
+          title="Write it once, send it to everyone"
+          description="A template is the email your campaign personalizes for each lead. Start from a ready-made layout, paste your own HTML, or import a Gmail draft you already like."
           action={{ href: "/templates/new", label: "Create your first template" }}
         />
       ) : (

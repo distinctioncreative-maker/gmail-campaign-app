@@ -12,6 +12,7 @@ import { LocalTime } from "@/components/LocalTime";
 import { type IconName } from "@/components/ui/Icon";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { TeamManager, RosterActions, RemoveFromTeamButton } from "@/components/team/TeamManager";
 import type { Member, Team } from "@/schemas/user";
 import { formatPercent } from "@/lib/analytics/metrics";
@@ -75,7 +76,14 @@ function Leaderboard({
   const topRate = Math.max(1, ...sorted.map((r) => r.stats.replyRate));
 
   if (sorted.length === 0) {
-    return <div className="card p-8 text-center text-sm text-muted">No reps on this team yet.</div>;
+    return (
+      <EmptyState
+        variant="inline"
+        icon="users"
+        title="No reps on this team yet"
+        description="Assign someone to this team and their sends, replies, and reply rate show up right here."
+      />
+    );
   }
 
   return (
@@ -204,11 +212,15 @@ export default async function TeamPage() {
       )}
 
       {visibleTeams.length === 0 ? (
-        <div className="card p-8 text-center text-sm text-muted">
-          {isAdmin
-            ? "No teams yet: create the first one above."
-            : "You're not leading a team yet. Ask your administrator to make you the lead of a team."}
-        </div>
+        <EmptyState
+          icon="team"
+          title={isAdmin ? "No teams yet" : "You are not leading a team yet"}
+          description={
+            isAdmin
+              ? "Create your first team above, then assign reps to it. Team leads see their reps' numbers side by side."
+              : "Ask your administrator to make you the lead of a team, and your reps' numbers will show up here."
+          }
+        />
       ) : (
         <div className="space-y-10">
           {visibleTeams.map((team) => {

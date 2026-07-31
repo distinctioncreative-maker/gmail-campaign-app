@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { listCampaigns } from "@/lib/repositories/campaigns";
@@ -91,7 +92,12 @@ export default async function RepDetailPage({
 
       <h2 className="mt-8 mb-3 font-medium">Campaigns</h2>
       {campaigns.length === 0 ? (
-        <div className="card p-8 text-center text-sm text-muted">No campaigns yet.</div>
+        <EmptyState
+          variant="inline"
+          icon="rocket"
+          title="No campaigns yet"
+          description={`${repName} has not launched a campaign. Their results will appear here once they do.`}
+        />
       ) : (
         <div className="overflow-x-auto card">
           <table className="w-full text-left text-sm">
