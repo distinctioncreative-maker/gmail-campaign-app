@@ -247,7 +247,7 @@ export default async function DeliverabilityPage() {
           <li>{dailyLimitTip(surfacedDimensions)}</li>
           <li>Run the spam checker on your template (Templates → your template) and cut risky wording.</li>
           <li>Personalize the first line: identical bodies to hundreds of people is the pattern filters hunt for.</li>
-          <li>Expect replies on days 2–5, not day 1. A 1–5% reply rate is normal for cold outreach.</li>
+          <li>Replies often arrive after the first day. Compare qualified-reply trends within your own audience and offer instead of treating one broad benchmark as a promise.</li>
         </ol>
       </div>
     </div>
@@ -260,7 +260,7 @@ function dailyLimitTip(dimensions: DimensionAggregate[]): string {
   const dim = dimensions.find((d) => d.dimension === "dailySendLimit");
   const best = dim?.buckets[0];
   if (!best) {
-    return "Keep volume boring: 50–100 emails per rep per day, spread out. Big one-day spikes look like spam.";
+    return "Keep volume steady and account-specific. Start conservatively, spread sends through the working window, and avoid sudden one-day spikes.";
   }
   return `Keep volume boring: across ${best.campaigns} anonymized campaigns, ${best.bucket}/day gets the best reply rate (${formatPercent(best.avgReplyRate)}). Big one-day spikes look like spam.`;
 }

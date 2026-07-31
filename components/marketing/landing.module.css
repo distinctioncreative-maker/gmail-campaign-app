@@ -1,20 +1,20 @@
 .root {
   --landing-ink: #07111f;
-  --landing-ink-soft: #0d1a2c;
-  --landing-paper: #f6f8fb;
-  --landing-surface: #ffffff;
-  --landing-copy: #17233a;
-  --landing-muted: #60708a;
-  --landing-line: #dfe5ed;
-  --landing-blue: #1769e8;
-  --landing-blue-deep: #0f52ba;
-  --landing-blue-soft: #eaf2ff;
+  --landing-ink-soft: #101a29;
+  --landing-paper: #f4f5f3;
+  --landing-surface: #fcfcfb;
+  --landing-copy: #172132;
+  --landing-muted: #5e6979;
+  --landing-line: #dde1e2;
+  --landing-blue: #1a63d7;
+  --landing-blue-deep: #124fae;
+  --landing-blue-soft: #e9f1fd;
   --landing-green: #137a50;
   --landing-green-soft: #e8f7f0;
   --landing-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --landing-stage-duration: 2300ms;
-  --landing-shadow-premium: 0 32px 90px -42px rgb(20 47 88 / 46%);
+  --landing-shadow-premium: 0 34px 90px -46px rgb(13 34 65 / 42%);
   min-width: 0;
   overflow: clip;
   background: var(--landing-paper);
@@ -58,7 +58,7 @@
 .shell,
 .navInner,
 .footerInner {
-  width: min(1180px, calc(100% - 40px));
+  width: min(1220px, calc(100% - 48px));
   margin-inline: auto;
 }
 
@@ -66,17 +66,17 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  border-bottom: 1px solid rgb(255 255 255 / 9%);
-  background: rgb(7 17 31 / 88%);
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  background: rgb(7 14 25 / 86%);
   color: #eff5ff;
-  backdrop-filter: blur(18px);
+  backdrop-filter: saturate(1.2) blur(20px);
 }
 
 .navInner {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  min-height: 70px;
+  min-height: 64px;
   gap: 24px;
 }
 
@@ -84,10 +84,9 @@
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  gap: 10px;
   font-size: 18px;
-  font-weight: 720;
-  letter-spacing: -0.03em;
+  font-weight: 680;
+  letter-spacing: -0.035em;
 }
 
 .navLinks,
@@ -98,9 +97,9 @@
 }
 
 .navLinks {
-  gap: 28px;
-  color: #b8c4d6;
-  font-size: 14px;
+  gap: 24px;
+  color: #b6c0cf;
+  font-size: 13px;
 }
 
 .navLinks a,
@@ -115,8 +114,8 @@
 
 .navActions {
   justify-content: flex-end;
-  gap: 18px;
-  font-size: 14px;
+  gap: 16px;
+  font-size: 13px;
 }
 
 .login {
@@ -130,14 +129,14 @@
   min-height: 42px;
   gap: 7px;
   border: 1px solid rgb(255 255 255 / 18%);
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ffffff, #eaf2ff);
+  border-radius: 9px;
+  background: #f3f7fc;
   padding: 0 16px;
   color: #07111f;
-  font-weight: 680;
+  font-weight: 700;
   box-shadow:
     0 1px 0 rgb(255 255 255 / 75%) inset,
-    0 8px 24px rgb(0 0 0 / 20%);
+    0 8px 22px rgb(0 0 0 / 18%);
   transition:
     background 180ms ease,
     box-shadow 180ms ease,
@@ -180,8 +179,8 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 70% 12%, rgb(40 112 224 / 24%), transparent 34rem),
-    linear-gradient(180deg, var(--landing-ink), #091628 72%, #0b192b);
+    radial-gradient(circle at 72% 10%, rgb(43 112 215 / 22%), transparent 36rem),
+    linear-gradient(180deg, #07101d, #0a1626 72%, #0b192a);
   color: #f5f8fd;
 }
 
@@ -191,7 +190,7 @@
   background-image:
     linear-gradient(rgb(255 255 255 / 3%) 1px, transparent 1px),
     linear-gradient(90deg, rgb(255 255 255 / 3%) 1px, transparent 1px);
-  background-size: 64px 64px;
+  background-size: 72px 72px;
   mask-image: linear-gradient(to bottom, black, transparent 72%);
   pointer-events: none;
   animation: gridDrift 18s ease-in-out infinite alternate;
@@ -229,7 +228,7 @@
 
 .hero .shell {
   position: relative;
-  padding-block: 108px 58px;
+  padding-block: 116px 64px;
 }
 
 .heroCopy {
@@ -243,12 +242,14 @@
   align-items: center;
   gap: 9px;
   border: 1px solid rgb(126 179 255 / 28%);
-  border-radius: 999px;
-  background: rgb(59 113 190 / 14%);
-  padding: 7px 12px;
+  border-radius: 8px;
+  background: rgb(59 113 190 / 12%);
+  padding: 8px 11px;
   color: #c9dcfa;
-  font-size: 13px;
-  font-weight: 620;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   animation: heroReveal 650ms ease-out both;
 }
 
@@ -263,18 +264,18 @@
 .hero h1 {
   max-width: 860px;
   margin: 28px auto 0;
-  font-size: clamp(48px, 7vw, 82px);
-  font-weight: 720;
-  letter-spacing: -0.065em;
-  line-height: 0.98;
+  font-size: clamp(50px, 7vw, 84px);
+  font-weight: 660;
+  letter-spacing: -0.06em;
+  line-height: 0.99;
   text-wrap: balance;
   animation: heroReveal 780ms 80ms ease-out both;
 }
 
 .heroLead {
-  max-width: 720px;
+  max-width: 750px;
   margin: 28px auto 0;
-  color: #b8c6da;
+  color: #bbc6d6;
   font-size: clamp(17px, 2vw, 20px);
   line-height: 1.6;
   text-wrap: balance;
@@ -282,7 +283,7 @@
 }
 
 .waitField {
-  width: min(620px, 100%);
+  width: min(640px, 100%);
   margin: 34px auto 0;
   animation: heroReveal 780ms 220ms ease-out both;
 }
@@ -296,8 +297,8 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 9px;
   border: 1px solid rgb(255 255 255 / 13%);
-  border-radius: 14px;
-  background: rgb(255 255 255 / 7%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 6%);
   padding: 7px;
   box-shadow: 0 18px 55px rgb(0 0 0 / 22%);
 }
@@ -444,10 +445,10 @@
   margin: 74px auto 0;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 22px;
-  background: #f8fafc;
+  border-radius: 18px;
+  background: #f8f9fa;
   color: var(--landing-copy);
-  box-shadow: 0 42px 100px rgb(0 0 0 / 38%);
+  box-shadow: 0 44px 110px rgb(0 0 0 / 40%);
   text-align: left;
   animation: frameReveal 900ms 340ms ease-out both;
   contain: paint;
@@ -1325,28 +1326,28 @@
 .pricingSection,
 .faqSection {
   position: relative;
-  padding-block: 112px;
+  padding-block: 120px;
   background: var(--landing-paper);
 }
 
 .workflowSection,
 .trustSection {
   position: relative;
-  padding-block: 112px;
+  padding-block: 120px;
   background: var(--landing-surface);
 }
 
 .sectionHeading {
   position: relative;
-  max-width: 720px;
+  max-width: 760px;
 }
 
 .eyebrow {
   display: inline-flex;
   color: var(--landing-blue-deep);
-  font-size: 12px;
-  font-weight: 760;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -1355,10 +1356,10 @@
 .finalPanel h2 {
   margin: 16px 0 0;
   color: #101d32;
-  font-size: clamp(36px, 5vw, 58px);
-  font-weight: 720;
-  letter-spacing: -0.055em;
-  line-height: 1.04;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 660;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
   text-wrap: balance;
 }
 
@@ -1368,28 +1369,32 @@
   margin: 19px 0 0;
   color: var(--landing-muted);
   font-size: 17px;
-  line-height: 1.7;
+  line-height: 1.72;
 }
 
 .outcomeGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 48px;
+  gap: 36px;
+  margin-top: 56px;
 }
 
-.outcomeGrid article,
 .featureGrid article,
 .trustGrid article {
   border: 1px solid var(--landing-line);
-  border-radius: 17px;
+  border-radius: 14px;
   background: var(--landing-surface);
-  padding: 25px;
-  box-shadow: 0 16px 40px -34px rgb(25 46 82 / 45%);
+  padding: 26px;
+  box-shadow: 0 16px 38px -34px rgb(20 39 70 / 38%);
   transition:
     border-color 220ms ease,
     box-shadow 220ms ease,
     transform 220ms ease;
+}
+
+.outcomeGrid article {
+  border-top: 1px solid #cbd1d5;
+  padding: 25px 8px 6px 0;
 }
 
 .outcomeGrid article > span {
@@ -1401,9 +1406,9 @@
 .outcomeGrid h3,
 .featureGrid h3,
 .trustGrid h3 {
-  margin: 27px 0 0;
+  margin: 30px 0 0;
   color: #17243a;
-  font-size: 20px;
+  font-size: 19px;
   letter-spacing: -0.025em;
 }
 
@@ -1420,8 +1425,8 @@
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
   align-items: center;
-  gap: 70px;
-  margin-top: 58px;
+  gap: 78px;
+  margin-top: 64px;
 }
 
 .workflowSteps article {
@@ -1461,7 +1466,7 @@
   isolation: isolate;
   overflow: hidden;
   border: 1px solid var(--landing-line);
-  border-radius: 20px;
+  border-radius: 16px;
   background:
     radial-gradient(circle at 86% 18%, rgb(45 116 220 / 7%), transparent 15rem),
     #f9fbfd;
@@ -1782,12 +1787,12 @@
 .featureGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 52px;
+  gap: 16px;
+  margin-top: 56px;
 }
 
 .featureGrid article {
-  min-height: 250px;
+  min-height: 236px;
 }
 
 .featureGrid article > span,
@@ -1800,16 +1805,16 @@
 }
 
 .featureGrid h3 {
-  margin-top: 44px;
-  font-size: 22px;
+  margin-top: 40px;
+  font-size: 21px;
 }
 
 .controlsSection {
   position: relative;
-  padding-block: 112px;
+  padding-block: 120px;
   background:
-    radial-gradient(circle at 82% 8%, rgb(53 126 232 / 8%), transparent 28rem),
-    #eef3f9;
+    radial-gradient(circle at 82% 8%, rgb(53 126 232 / 7%), transparent 30rem),
+    #eef1f3;
 }
 
 .operationsDemo {
@@ -1818,7 +1823,7 @@
   margin-top: 52px;
   overflow: hidden;
   border: 1px solid #d7e0eb;
-  border-radius: 20px;
+  border-radius: 16px;
   background: #ffffff;
   box-shadow: 0 30px 80px -48px rgb(22 58 109 / 48%);
 }
@@ -2258,7 +2263,7 @@
   display: grid;
   grid-template-columns: 0.8fr 1.2fr;
   align-items: center;
-  gap: 80px;
+  gap: 88px;
 }
 
 .trustCopy h2 {
@@ -2290,7 +2295,7 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 10px;
+  border-radius: 9px;
   background: rgb(90 148 232 / 15%);
   color: #83b7ff;
 }
@@ -2310,8 +2315,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: stretch;
-  gap: 14px;
-  margin-top: 52px;
+  gap: 16px;
+  margin-top: 56px;
 }
 
 .pricingGrid article {
@@ -2320,9 +2325,9 @@
   min-width: 0;
   flex-direction: column;
   border: 1px solid var(--landing-line);
-  border-radius: 19px;
+  border-radius: 14px;
   background: var(--landing-surface);
-  padding: 28px;
+  padding: 30px;
   box-shadow: 0 18px 44px -38px rgb(22 58 109 / 42%);
   transition:
     border-color 240ms var(--landing-ease),
@@ -2442,13 +2447,13 @@
 .faq {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 48px;
+  gap: 14px;
+  margin-top: 52px;
 }
 
 .faq details {
   border: 1px solid var(--landing-line);
-  border-radius: 14px;
+  border-radius: 10px;
   background: var(--landing-surface);
   padding: 0 20px;
   transition:
@@ -2493,17 +2498,17 @@
 }
 
 .finalCta {
-  padding-block: 34px 90px;
+  padding-block: 42px 96px;
   background: var(--landing-paper);
 }
 
 .finalPanel {
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 18px;
   background:
     radial-gradient(circle at 76% 15%, rgb(48 116 218 / 34%), transparent 25rem),
     var(--landing-ink);
-  padding: 74px 40px;
+  padding: 80px 40px;
   color: #ffffff;
   text-align: center;
 }
@@ -2528,7 +2533,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 34px;
-  padding-block: 42px;
+  padding-block: 48px;
 }
 
 .footerInner > div:first-child > p {
@@ -2565,7 +2570,6 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .outcomeGrid article:hover,
   .featureGrid article:hover {
     border-color: #c7d7eb;
     box-shadow: 0 24px 54px -34px rgb(25 73 145 / 36%);
@@ -3171,13 +3175,13 @@
   }
 
   .root .navPilot {
-    min-height: 40px;
+    min-height: 44px;
     padding-inline: 12px;
     font-size: 12px;
   }
 
   .hero .shell {
-    padding-block: 76px 40px;
+    padding-block: 80px 42px;
   }
 
   .hero h1 {
@@ -3225,7 +3229,7 @@
   .workflowSection,
   .trustSection,
   .controlsSection {
-    padding-block: 80px;
+    padding-block: 84px;
   }
 
   .demoStageTabs {
@@ -3307,6 +3311,10 @@
 @media (max-width: 520px) {
   .brand {
     font-size: 16px;
+  }
+
+  .brand > span > span:last-child {
+    display: none;
   }
 
   .waitForm {

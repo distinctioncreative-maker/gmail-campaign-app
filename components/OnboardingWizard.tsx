@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProfileForm } from "./ProfileForm";
 import type { SenderProfile } from "@/schemas/userSettings";
+import { Icon } from "@/components/ui/Icon";
 
 const STEPS = ["Welcome", "Connect Gmail", "Your details", "Sending defaults", "Test", "Ready"];
 
@@ -90,17 +91,18 @@ export function OnboardingWizard({
         ))}
       </ol>
 
-      <div className="mt-6 card p-8">
+      <div className="mt-6 card p-6 sm:p-8">
         {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
         {step === 0 && (
           <>
-            <h1 className="text-2xl font-semibold">Welcome, {displayName.split(" ")[0]} 👋</h1>
-            <ul className="mt-4 space-y-3 text-muted">
-              <li>✉️ Emails send from <strong>your own Gmail</strong>: replies land in your inbox.</li>
-              <li>🔒 Your leads and campaigns are <strong>private to you</strong>.</li>
-              <li>🛑 When someone replies, follow-ups to them <strong>stop automatically</strong>.</li>
-              <li>👀 You&apos;re responsible for reviewing recipients and messages before sending.</li>
+            <h1 className="text-2xl font-semibold">Welcome, {displayName.split(" ")[0]}</h1>
+            <p className="mt-2 text-sm leading-6 text-muted">Set up a safe, repeatable path from first draft to qualified reply.</p>
+            <ul className="mt-5 space-y-4 text-sm text-muted">
+              <li className="flex gap-3"><Icon name="mail" size={18} className="mt-0.5 shrink-0 text-primary" /><span>Emails send from <strong className="text-foreground">your own Gmail</strong>, so replies land in your inbox.</span></li>
+              <li className="flex gap-3"><Icon name="shield" size={18} className="mt-0.5 shrink-0 text-primary" /><span>Your leads and campaigns stay <strong className="text-foreground">private to your workspace</strong>.</span></li>
+              <li className="flex gap-3"><Icon name="stop" size={18} className="mt-0.5 shrink-0 text-primary" /><span>When someone replies, their follow-ups <strong className="text-foreground">stop automatically</strong>.</span></li>
+              <li className="flex gap-3"><Icon name="check" size={18} className="mt-0.5 shrink-0 text-primary" /><span>You review recipients and messages before anything is scheduled.</span></li>
             </ul>
             <button
               onClick={() => setStep(1)}
@@ -208,7 +210,8 @@ export function OnboardingWizard({
 
         {step === 5 && (
           <>
-            <h1 className="text-2xl font-semibold">You&apos;re all set 🎉</h1>
+            <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-green-100 text-green-700" aria-hidden><Icon name="check" size={22} /></span>
+            <h1 className="text-2xl font-semibold">Your workspace is ready</h1>
             <p className="mt-3 text-muted">
               Import your leads and build your first email: campaigns are next.
             </p>

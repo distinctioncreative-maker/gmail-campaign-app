@@ -652,3 +652,63 @@ review steps. This refinement remains only on the local
 `agent/premium-motion-system` branch; it has not been pushed or deployed and
 does not change signup, billing, sending, Firestore, OAuth, secrets, or cloud
 configuration.
+
+## Premium universal design pass, 2026-07-31
+
+This cohesive frontend pass starts from verified `main` commit
+`4d40072d41718f7ce61f1db55bb6bcda81271af7` and is implemented on
+`agent/premium-universal-design`. Direct publication to `main` was explicitly
+authorized, but deployment remains out of scope.
+
+Implemented:
+
+- replaced the decorative mark in public and authenticated navigation chrome
+  with a quiet typographic Cadence wordmark while retaining the pulse mark in
+  product demonstrations and other purposeful identity moments;
+- refined the public color system, typography, spacing, radii, shadows,
+  editorial outcome layout, navigation density, section hierarchy, pricing,
+  FAQ, and final conversion panel without changing the managed-pilot flow;
+- sharpened landing copy around a clear lead-to-conversation operating system,
+  human-reviewed AI, deliberate Gmail pacing, visible consent, and actionable
+  replies while retaining the explicit deliverability and outcome caveats;
+- refined the shared authenticated-app tokens, sidebar, mobile top and bottom
+  navigation, page headers, cards, empty states, focus rings, and form/button
+  geometry so public and product surfaces read as one system;
+- raised mobile application and landing call-to-action controls to practical
+  44-pixel touch targets and preserved keyboard, reduced-motion, responsive,
+  and safe-area behavior;
+- replaced decorative emoji with the existing enterprise line-icon system in
+  onboarding, product tour, imports, campaign creation and pacing warnings,
+  AI writing, replies, home insights, test center, and admin health surfaces;
+- removed unsafe universal sending-volume copy and broad reply-rate promises
+  from settings, campaign guidance, help, and deliverability education;
+- added source-level regression coverage for typography-first navigation,
+  44-pixel touch targets, and icon consistency in core journeys.
+
+Verification:
+
+```bash
+NPM_CONFIG_CACHE=/tmp/cadence-npm-cache npm ci  # pass: 1,148 packages
+npm run docs:features                           # pass
+git diff --check                                # pass
+npm run typecheck                               # pass
+npm run lint                                    # pass
+npm test                                        # pass: 44 files, 312 tests
+npm run build                                   # pass: 72 routes
+npm audit --omit=dev --audit-level=high         # pass: 0 vulnerabilities
+```
+
+The Firestore emulator gate could not start locally because the sandbox
+blocked the external emulator download; GitHub CI on Java 21 remains the
+authoritative emulator gate. A production standalone smoke check returned HTTP
+200 for `/`, confirmed CSP and the other security headers, and found the new
+wordmark, hero, conversion copy, and pilot CTA in rendered HTML. `/api/health`
+returned the expected local 503 because this isolated workspace has no
+production Firestore credentials. The cloud visual browser was unavailable,
+so real-device screenshot review remains a post-CI observation, not a hidden
+release claim.
+
+This pass does not change authentication, authorization, tenant isolation,
+signup mode, billing activation, email delivery, campaign safety, Firestore
+rules or indexes, OAuth, secrets, or cloud configuration. It must not be
+deployed by an agent.

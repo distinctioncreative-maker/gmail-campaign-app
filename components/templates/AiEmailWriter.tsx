@@ -3,38 +3,39 @@
 import { useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { useToast } from "@/components/ui/UIProviders";
+import { Icon } from "@/components/ui/Icon";
 
 /** One-click starting points. Each fills the prompt box; the user can edit
  * before generating. Occasion presets pair with brand memory to keep emails
  * on-message but seasonally fresh. */
 const PRESETS: Array<{ label: string; prompt: string }> = [
   {
-    label: "🎉 New Year, New You",
+    label: "New Year, New You",
     prompt:
       "A warm “New Year, New You” seasonal email inviting the business owner to start the year strong with fresh working capital. Upbeat and encouraging.",
   },
   {
-    label: "📅 Mid-month check-in",
+    label: "Mid-month check-in",
     prompt:
       "A short mid-month check-in to a business owner who hasn't replied yet. Friendly, no pressure, gently re-offer funding and ask if now's a better time.",
   },
   {
-    label: "🔁 Re-engage a past client",
+    label: "Re-engage a past client",
     prompt:
       "A friendly note to a business we've funded before. Reference the past relationship warmly and offer funding again for their next move or busy season.",
   },
   {
-    label: "☀️ Seasonal offer",
+    label: "Seasonal offer",
     prompt:
       "A seasonal email tied to the current time of year, positioning fast funding as the way to seize a timely opportunity or prep for a busy stretch.",
   },
   {
-    label: "👋 Warm first touch",
+    label: "Warm first touch",
     prompt:
       "A warm first-touch intro offering fast, flexible working capital to a busy small-business owner. Human and confident, one clear ask.",
   },
   {
-    label: "🚚 Nudge a busy owner",
+    label: "Nudge a busy owner",
     prompt:
       "A short follow-up nudge for a busy contractor or trucking owner who hasn't replied. Respect their time, restate the offer in one line.",
   },
@@ -167,7 +168,7 @@ export function AiEmailWriter({
   if (status?.enabled !== true) return null;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-primary-soft/40">
+    <div className="mb-4 overflow-hidden rounded-xl border border-primary/20 bg-primary-soft/40">
       {!open ? (
         <button
           onClick={() => {
@@ -176,14 +177,14 @@ export function AiEmailWriter({
           }}
           className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-primary transition hover:bg-primary-soft disabled:opacity-60"
         >
-          <span aria-hidden className="text-base">✨</span>
+          <Icon name="sparkles" size={16} aria-hidden />
           Write this email with AI
         </button>
       ) : (
         <div className="p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              <span aria-hidden className="text-base">✨</span> Describe the email you want
+              <Icon name="sparkles" size={16} aria-hidden /> Describe the email you want
             </div>
             <div className="flex items-center gap-1.5">
               {profiles.length > 0 && (
@@ -196,7 +197,7 @@ export function AiEmailWriter({
                   >
                     {profiles.map((p) => (
                       <option key={p.id} value={p.id}>
-                        🧠 {p.name}
+                        {p.name}
                       </option>
                     ))}
                   </select>
@@ -207,7 +208,7 @@ export function AiEmailWriter({
                   onClick={() => void openMemory()}
                   className="rounded-full border border-primary/20 bg-surface px-2.5 py-1 text-xs font-medium text-primary hover:border-primary"
                 >
-                  {profiles.length === 0 ? "🧠 Add brand memory" : canEditBrand ? "Edit" : "View"}
+                  {profiles.length === 0 ? "Add brand memory" : canEditBrand ? "Edit" : "View"}
                 </button>
               )}
             </div>
@@ -254,8 +255,8 @@ export function AiEmailWriter({
                     />
                   )}
                   <p className="mb-1 text-[11px] text-muted">
-                    Offer, key benefits, and tone. Example: “Alpine: working capital $10k–$500k,
-                    funded in 24–48h, no collateral. Confident and friendly, never pushy.”
+                    Offer, key benefits, and tone. Example: “Alpine: working capital $10k to $500k,
+                    funded in 24 to 48 hours, no collateral. Confident and friendly, never pushy.”
                   </p>
                   <textarea
                     value={selected.content}

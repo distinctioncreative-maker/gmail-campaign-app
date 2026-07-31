@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { useToast } from "@/components/ui/UIProviders";
+import { Icon } from "@/components/ui/Icon";
 
 const IMPROVE_ACTIONS: Array<{ label: string; instruction: string }> = [
   { label: "Shorter", instruction: "Make it noticeably shorter and punchier without losing the offer." },
@@ -78,7 +79,7 @@ export function AiEmailTools({
 
   return (
     <div className="mt-3 rounded-xl border border-border bg-surface-2 p-3">
-      <p className="text-xs font-medium text-muted">✨ AI tools: improve what you&apos;ve written</p>
+      <p className="flex items-center gap-1.5 text-xs font-medium text-muted"><Icon name="sparkles" size={14} aria-hidden /> AI tools: improve what you&apos;ve written</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {IMPROVE_ACTIONS.map((a) => (
           <button

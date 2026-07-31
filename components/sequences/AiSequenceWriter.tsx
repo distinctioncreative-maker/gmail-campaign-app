@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { useToast } from "@/components/ui/UIProviders";
+import { Icon } from "@/components/ui/Icon";
 
 export interface GeneratedStep {
   waitDays: number;
@@ -55,20 +56,20 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
   if (enabled === false) return null;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-primary-soft/40">
+    <div className="mb-4 overflow-hidden rounded-xl border border-primary/20 bg-primary-soft/40">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
           disabled={enabled === null}
           className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-primary transition hover:bg-primary-soft disabled:opacity-60"
         >
-          <span aria-hidden className="text-base">✨</span>
+          <Icon name="sparkles" size={16} aria-hidden />
           Draft the whole sequence with AI
         </button>
       ) : (
         <div className="p-3">
           <div className="flex items-center gap-2 text-sm font-medium text-primary">
-            <span aria-hidden className="text-base">✨</span> Describe the follow-up sequence
+            <Icon name="sparkles" size={16} aria-hidden /> Describe the follow-up sequence
           </div>
           <textarea
             value={prompt}

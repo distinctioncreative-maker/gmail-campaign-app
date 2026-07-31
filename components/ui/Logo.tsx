@@ -6,6 +6,31 @@
 
 export const APP_NAME = "Cadence";
 
+/**
+ * A quiet, typography-first wordmark for navigation chrome. The pulse mark is
+ * still available for product illustrations and compact identity moments, but
+ * primary navigation stays calmer without a decorative badge competing with
+ * the page content.
+ */
+export function Wordmark({
+  className = "",
+  descriptor,
+}: {
+  className?: string;
+  descriptor?: string;
+}) {
+  return (
+    <span className={`inline-flex min-w-0 items-baseline gap-2 ${className}`}>
+      <span className="text-lg font-semibold tracking-[-0.035em]">{APP_NAME}</span>
+      {descriptor && (
+        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] opacity-55">
+          {descriptor}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export function LogoMark({ size = 28, className = "" }: { size?: number; className?: string }) {
   return (
     <svg

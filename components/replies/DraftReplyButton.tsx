@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { useToast } from "@/components/ui/UIProviders";
+import { Icon } from "@/components/ui/Icon";
 
 /**
  * "Draft reply with AI": generates an on-brand reply to a prospect and drops
@@ -45,7 +46,7 @@ export function DraftReplyButton({
     }
   }
 
-  const label = busy ? "Drafting…" : done ? "✓ Draft ready" : "✨ Draft reply";
+  const label = busy ? "Drafting…" : done ? "Draft ready" : "Draft reply";
   return (
     <button
       onClick={() => void draft()}
@@ -56,7 +57,10 @@ export function DraftReplyButton({
           : "rounded-lg border border-primary/30 bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary transition hover:bg-primary/10 disabled:opacity-50"
       }
     >
-      {label}
+      <span className="inline-flex items-center gap-1.5">
+        <Icon name={busy ? "hourglass" : done ? "check" : "sparkles"} size={13} aria-hidden />
+        {label}
+      </span>
     </button>
   );
 }

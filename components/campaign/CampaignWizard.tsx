@@ -51,17 +51,17 @@ interface WizardSequence {
 const PRESETS = {
   conservative: {
     label: "Conservative",
-    detail: "3 per batch · 10–20s apart · 5 min between batches · 50/day",
+    detail: "3 per batch · 10 to 20s apart · 5 min between batches · 50/day",
     schedule: { emailsPerBatch: 3, minDelaySeconds: 10, maxDelaySeconds: 20, interBatchDelayMinutes: 5, dailySendLimit: 50 },
   },
   balanced: {
     label: "Balanced",
-    detail: "5 per batch · 5–10s apart · 2 min between batches · 100/day",
+    detail: "5 per batch · 5 to 10s apart · 2 min between batches · 100/day",
     schedule: { emailsPerBatch: 5, minDelaySeconds: 5, maxDelaySeconds: 10, interBatchDelayMinutes: 2, dailySendLimit: 100 },
   },
   faster: {
     label: "Faster",
-    detail: "10 per batch · 3–6s apart · 1 min between batches · 200/day",
+    detail: "10 per batch · 3 to 6s apart · 1 min between batches · 200/day",
     schedule: { emailsPerBatch: 10, minDelaySeconds: 3, maxDelaySeconds: 6, interBatchDelayMinutes: 1, dailySendLimit: 200 },
   },
 } as const;
@@ -810,7 +810,7 @@ export function CampaignWizard() {
 
             {paceRisk.risky && (
               <div className="alert-warning mt-4 rounded-xl border p-4">
-                <p className="text-sm font-semibold text-warning">⚠️ This pace risks your deliverability</p>
+                <p className="flex items-center gap-2 text-sm font-semibold text-warning"><Icon name="alert" size={16} aria-hidden /> This pace risks your deliverability</p>
                 <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-warning">
                   {paceRisk.reasons.map((r) => (
                     <li key={r}>{r}</li>
@@ -824,7 +824,7 @@ export function CampaignWizard() {
             )}
 
             <p className="mt-3 text-xs text-muted">
-              Sending happens 9:00 AM–8:00 PM on weekdays in your timezone (change defaults in
+              Sending happens 9:00 AM to 8:00 PM on weekdays in your timezone (change defaults in
               Settings). Unsent emails automatically roll to the next allowed time.
             </p>
             <div className="mt-6 border-t border-border pt-5">
@@ -893,7 +893,7 @@ export function CampaignWizard() {
                     className="mt-0.5"
                   />
                   <span>
-                    ✨ Add an AI-personalized opening line to each email
+                    <span className="inline-flex items-center gap-1.5"><Icon name="sparkles" size={15} className="text-primary" aria-hidden /> Add an AI-personalized opening line to each email</span>
                     <span className="mt-0.5 block text-xs text-muted">
                       Writes one tailored sentence per lead based on their business, added to the top
                       of the first email. Best for focused lists: capped at the first 150 recipients
@@ -911,29 +911,35 @@ export function CampaignWizard() {
           <>
             <h2 className="text-xl font-semibold">Safety check</h2>
             <ul className="mt-4 space-y-2 text-sm text-foreground">
-              <li>✅ {counts.selected} will receive this email</li>
+              <li className="flex items-start gap-2"><Icon name="check" size={17} className="mt-0.5 shrink-0 text-success" aria-hidden /><span>{counts.selected} will receive this email</span></li>
               {counts.excluded > 0 && (
-                <li>
-                  ✅ {counts.excluded} skipped for safety
+                <li className="flex items-start gap-2">
+                  <Icon name="shield" size={17} className="mt-0.5 shrink-0 text-success" aria-hidden />
+                  <span>{counts.excluded} skipped for safety
                   {counts.excludedByReason.length > 0 && (
                     <span className="text-muted">
                       {" "}
                       ({counts.excludedByReason.map((r) => `${r.count} ${r.label.toLowerCase()}`).join(", ")})
                     </span>
                   )}
+                  </span>
                 </li>
               )}
-              <li>
-                {paceRisk.risky ? "⚠️" : "✅"} Pace:{" "}
+              <li className="flex items-start gap-2">
+                <Icon name={paceRisk.risky ? "alert" : "check"} size={17} className={`mt-0.5 shrink-0 ${paceRisk.risky ? "text-warning" : "text-success"}`} aria-hidden />
+                <span>Pace:{" "}
                 {preset === "custom"
-                  ? `${customPace.emailsPerBatch} per batch · ${customPace.minDelaySeconds}–${customPace.maxDelaySeconds}s apart · ${customPace.interBatchDelayMinutes} min between batches · ${customPace.dailySendLimit}/day`
+                  ? `${customPace.emailsPerBatch} per batch · ${customPace.minDelaySeconds} to ${customPace.maxDelaySeconds}s apart · ${customPace.interBatchDelayMinutes} min between batches · ${customPace.dailySendLimit}/day`
                   : PRESETS[preset].detail}
                 {paceRisk.risky && <span className="ml-1 font-medium text-amber-700">: risky, see above</span>}
+                </span>
               </li>
-              <li>✅ Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</li>
-              <li>
-                {trackingEnabled ? "⚠️" : "✅"} Open/click tracking:{" "}
+              <li className="flex items-start gap-2"><Icon name="check" size={17} className="mt-0.5 shrink-0 text-success" aria-hidden /><span>Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</span></li>
+              <li className="flex items-start gap-2">
+                <Icon name={trackingEnabled ? "alert" : "check"} size={17} className={`mt-0.5 shrink-0 ${trackingEnabled ? "text-warning" : "text-success"}`} aria-hidden />
+                <span>Open/click tracking:{" "}
                 {trackingEnabled ? "On (adds some deliverability risk)" : "Off"}
+                </span>
               </li>
             </ul>
 
@@ -976,10 +982,11 @@ export function CampaignWizard() {
               at the pace you chose.
             </p>
             {testMode === true && (
-              <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-warning">
-                🛡️ You&apos;re in test mode: these emails go only to your test address, not real
-                recipients. Perfect for a practice run.
-              </p>
+              <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-warning">
+                <Icon name="shield" size={17} className="mt-0.5 shrink-0" aria-hidden />
+                <p>You&apos;re in test mode: these emails go only to your test address, not real
+                recipients. Perfect for a practice run.</p>
+              </div>
             )}
             {testMode === false && (
               <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-success">

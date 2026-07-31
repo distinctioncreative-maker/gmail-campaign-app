@@ -194,7 +194,7 @@ export function ProfileForm({
             </label>
             <label className="text-sm font-medium text-foreground">
               Daily limit
-              <HelpTip text="The most emails a campaign will send per day. Gmail limits how many you can send, and lower numbers look more personal. 50–150 is a safe range." />
+              <HelpTip text="The most emails a campaign will send per day. Provider limits are ceilings, not a universal safe target. Start conservatively and adjust using account history, audience quality, and campaign health." />
               <input
                 type="number" min={1} max={2000}
                 value={profile.sendingDefaults.dailySendLimit}

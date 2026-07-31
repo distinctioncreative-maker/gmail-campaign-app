@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
-import { LogoMark } from "@/components/ui/Logo";
+import { LogoMark, Wordmark } from "@/components/ui/Logo";
 import {
   PUBLIC_PRICING,
   publicPriceLabel,
@@ -1290,13 +1290,12 @@ export function Landing() {
       <nav className={styles.nav} aria-label="Primary navigation">
         <div className={styles.navInner}>
           <Link className={styles.brand} href="/" aria-label="Cadence home">
-            <LogoMark size={29} />
-            <span>Cadence</span>
+            <Wordmark descriptor="Outreach OS" />
           </Link>
           <div className={styles.navLinks}>
-            <a href="#workflow">How it works</a>
-            <a href="#features">Why Cadence</a>
-            <a href="#controls">Product demo</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#features">Product</a>
+            <a href="#controls">Live demo</a>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
           </div>
@@ -1318,14 +1317,14 @@ export function Landing() {
             <div className={styles.heroCopy}>
               <span className={styles.pill}>
                 <span />
-                AI-powered Gmail outreach with human control
+                Gmail outreach, intelligently operated
               </span>
               <h1>Turn Gmail outreach into qualified conversations.</h1>
               <p className={styles.heroLead}>
-                Cadence turns lead lists into human-reviewed campaigns, sends
-                them at a deliberate pace through Gmail, and keeps replies and
-                next steps organized. AI accelerates the work while you stay
-                in control.
+                Build thoughtful campaigns, automate consistent follow-up,
+                and keep every reply moving from one calm workspace. Cadence
+                adds AI where it saves time while pacing, consent, and final
+                approval remain visible.
               </p>
               <div
                 className={styles.pilotAnchor}
@@ -1342,7 +1341,7 @@ export function Landing() {
                   Explore the workflow <Arrow />
                 </a>
                 <span>
-                  Your Gmail. Your review. Your sending pace.
+                  Human-reviewed by design. Gmail-connected. Built for the next step.
                 </span>
               </div>
             </div>
@@ -1372,13 +1371,13 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>
-                A better outreach operating system
+                One operating rhythm
               </span>
-              <h2>Consistent follow-up without turning email into noise.</h2>
+              <h2>One clear system from lead list to next step.</h2>
               <p>
-                Replace the spreadsheet, scattered drafts, manual send queue,
-                and disconnected reply tracker with one clear path from lead
-                list to qualified conversation.
+                Replace scattered drafts, fragile spreadsheets, manual send
+                queues, and disconnected reply tracking with a workflow your
+                team can understand at a glance.
               </p>
             </div>
             <div className={styles.outcomeGrid} data-reveal>
@@ -1409,8 +1408,8 @@ export function Landing() {
         <section className={styles.workflowSection} id="workflow">
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
-              <span className={styles.eyebrow}>From list to next step</span>
-              <h2>Do the repetitive work once. Keep the judgment human.</h2>
+              <span className={styles.eyebrow}>From list to conversation</span>
+              <h2>Automate the repetition. Keep the judgment human.</h2>
               <p>
                 Cadence makes every handoff visible: what AI prepared, what
                 your team approved, what is scheduled, and which replies are
@@ -1438,7 +1437,7 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>Why teams choose Cadence</span>
-              <h2>Everything needed to run thoughtful outreach as a system.</h2>
+              <h2>Everything important, without the operational clutter.</h2>
               <p>
                 Move faster with AI, stay accountable with visible controls,
                 and measure progress without pretending every email signal is
@@ -1461,7 +1460,7 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>Control creates confidence</span>
-              <h2>See the safeguards and outcomes in the same workspace.</h2>
+              <h2>Move faster without losing sight of what matters.</h2>
               <p>
                 Explore how Cadence helps a team choose its pace, verify launch
                 readiness, understand campaign performance, and move a useful
@@ -1481,7 +1480,7 @@ export function Landing() {
                 <span className={styles.eyebrow}>
                   Trust is part of the workflow
                 </span>
-                <h2>Grow outreach without hiding the tradeoffs.</h2>
+                <h2>Scale the process without hiding the risk.</h2>
                 <p>
                   No platform can guarantee inbox placement or replies.
                   Cadence gives your team practical controls for pacing,
@@ -1528,7 +1527,7 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>Managed pilot pricing</span>
-              <h2>Start with the workflow your team can actually use.</h2>
+              <h2>A focused pilot, priced for real use.</h2>
               <p>
                 Choose a focused solo workflow or a shared team operating
                 view. We confirm fit, limits, onboarding, and payment terms
@@ -1596,7 +1595,7 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.finalPanel} data-reveal>
               <span className={styles.eyebrow}>Private pilot</span>
-              <h2>Make your next campaign easier to run and act on.</h2>
+              <h2>Give your next campaign a clearer path to conversation.</h2>
               <p>
                 Bring a real audience and goal. We will review fit, explain
                 the safety model, and help your team build a responsible path
@@ -1615,17 +1614,17 @@ export function Landing() {
         <div className={styles.footerInner}>
           <div>
             <Link className={styles.brand} href="/">
-              <LogoMark size={25} />
-              <span>Cadence</span>
+              <Wordmark descriptor="Outreach OS" />
             </Link>
             <p>
-              AI-powered Gmail outreach for consistent, human-reviewed growth.
+              AI-powered Gmail outreach with human review, deliberate pacing,
+              and a clear next step.
             </p>
           </div>
           <div className={styles.footerLinks}>
-            <a href="#workflow">How it works</a>
-            <a href="#features">Why Cadence</a>
-            <a href="#controls">Product demo</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#features">Product</a>
+            <a href="#controls">Live demo</a>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
             <a href="/sign-in">Log in</a>

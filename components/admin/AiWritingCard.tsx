@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/ui/Icon";
 
 interface State {
   enabled: boolean;
@@ -77,11 +78,12 @@ export function AiWritingCard() {
       {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       {!state.keyConfigured && (
-        <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
-          ⚠️ No AI key is configured on the server yet, so turning this on won&apos;t enable AI
+        <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+          <Icon name="alert" size={16} className="mt-0.5 shrink-0" aria-hidden />
+          <p>No AI key is configured on the server yet, so turning this on won&apos;t enable AI
           until a <code className="rounded bg-surface px-1">GEMINI_API_KEY</code> is set on the
-          deployment.
-        </p>
+          deployment.</p>
+        </div>
       )}
 
       <div className="mt-5">

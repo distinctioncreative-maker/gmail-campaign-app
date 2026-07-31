@@ -10,6 +10,7 @@ import { resolveSendingState } from "@/lib/sending/mode";
 import { env } from "@/lib/env";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
+import { Icon } from "@/components/ui/Icon";
 
 /** A sweep is healthy if it ran within the last 6 hours. */
 function sweepFresh(at: number | null): boolean {
@@ -107,7 +108,9 @@ export default async function SystemHealthPage() {
                   <td className="px-4 py-3 font-medium">{label}</td>
                   <td className="px-4 py-3 text-muted">{value}</td>
                   <td className="px-4 py-3 text-right">
-                    <span aria-hidden>{ok ? "✅" : "⚠️"}</span>
+                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${ok ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`} title={ok ? "Healthy" : "Needs attention"}>
+                      <Icon name={ok ? "check" : "alert"} size={14} aria-hidden />
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -132,7 +135,9 @@ export default async function SystemHealthPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span aria-hidden>{sweepFresh(at) ? "✅" : "⚠️"}</span>
+                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${sweepFresh(at) ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`} title={sweepFresh(at) ? "Healthy" : "Needs attention"}>
+                      <Icon name={sweepFresh(at) ? "check" : "alert"} size={14} aria-hidden />
+                    </span>
                   </td>
                 </tr>
               ))}

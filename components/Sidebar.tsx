@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AccountMenu } from "@/components/AccountMenu";
-import { Logo } from "@/components/ui/Logo";
+import { Wordmark } from "@/components/ui/Logo";
 import { MobileNav } from "@/components/MobileNav";
 
 export interface NavItem {
@@ -35,9 +35,9 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
             onClick={onNavigate}
             data-tour={`nav-${item.href.replace("/", "")}`}
             aria-current={active ? "page" : undefined}
-            className={`group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
+            className={`group relative flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
               active
-                ? "bg-primary-soft text-primary shadow-sm"
+                ? "bg-primary-soft text-primary"
                 : "text-muted hover:bg-surface hover:text-foreground"
             }`}
           >
@@ -64,9 +64,9 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
 function Brand({ workspaceName }: { workspaceName?: string }) {
   return (
     <div className="px-2">
-      <Logo size={26} />
+      <Wordmark descriptor="Outreach OS" />
       {workspaceName && (
-        <p className="mt-1.5 truncate text-[11px] font-medium uppercase tracking-widest text-muted/70">
+        <p className="mt-2 truncate text-[11px] font-medium text-muted/70">
           {workspaceName}
         </p>
       )}
@@ -91,7 +91,7 @@ export function Sidebar({
     <>
       {/* Desktop sidebar */}
       <aside className="glass sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border p-4 sm:flex">
-        <div className="mb-7 mt-1">
+        <div className="mb-8 mt-1 border-b border-border/70 pb-5">
           <Brand workspaceName={workspaceName} />
         </div>
         <NavLinks items={items} />

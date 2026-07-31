@@ -39,6 +39,12 @@ function contrastRatio(foreground: string, background: string): number {
 }
 
 describe("landing-page experience", () => {
+  it("uses a calm typographic wordmark in the public navigation", () => {
+    const navigation = landingSource.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
+    expect(navigation).toContain('<Wordmark descriptor="Outreach OS" />');
+    expect(navigation).not.toContain("<LogoMark");
+  });
+
   it("keeps the top-right pilot action readable above the global link rule", () => {
     expect(landingStyles).toMatch(
       /\.root \.navPilot \{[\s\S]*?color: #07111f;/
@@ -136,6 +142,9 @@ describe("landing-page experience", () => {
     );
     expect(landingStyles).toMatch(
       /\.operationsTabs button \{[\s\S]*?min-height: 44px;/
+    );
+    expect(landingStyles).toMatch(
+      /@media \(max-width: 720px\) \{[\s\S]*?\.root \.navPilot \{[\s\S]*?min-height: 44px;/
     );
   });
 });

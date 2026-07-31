@@ -24,7 +24,7 @@ export const RECIPIENT_STATUS_LABELS: Record<string, { label: string; className:
   SCHEDULED: { label: "Scheduled", className: "bg-blue-100 text-blue-700" },
   DRAFTED: { label: "Draft created", className: "bg-blue-100 text-blue-700" },
   SENT: { label: "Sent", className: "bg-green-100 text-green-700" },
-  REPLIED: { label: "Replied 🎉", className: "bg-green-100 text-green-700" },
+  REPLIED: { label: "Replied", className: "bg-green-100 text-green-700" },
   BOUNCED: { label: "Bounced", className: "bg-amber-100 text-amber-700" },
   UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-amber-100 text-amber-700" },
   SKIPPED: { label: "Removed", className: "bg-border text-muted" },

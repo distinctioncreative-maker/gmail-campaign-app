@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 interface Check {
   id: string;
@@ -67,6 +68,13 @@ const CHECKS: Check[] = [
 
 type Status = "idle" | "running" | "pass" | "fail";
 
+const STATUS_PRESENTATION: Record<Status, { label: string; icon: IconName; className: string }> = {
+  idle: { label: "Not run", icon: "pause", className: "bg-surface-2 text-muted" },
+  running: { label: "Running", icon: "hourglass", className: "bg-primary-soft text-primary" },
+  pass: { label: "Passed", icon: "check", className: "bg-green-100 text-green-700" },
+  fail: { label: "Failed", icon: "alert", className: "bg-red-100 text-red-700" },
+};
+
 export function TestCenter() {
   const [status, setStatus] = useState<Record<string, Status>>({});
   const [detail, setDetail] = useState<Record<string, string>>({});
@@ -101,12 +109,14 @@ export function TestCenter() {
       <div className="grid gap-3 sm:grid-cols-2">
         {CHECKS.map((c) => {
           const st = status[c.id] ?? "idle";
+          const presentation = STATUS_PRESENTATION[st];
           return (
             <div key={c.id} className="card p-5">
               <div className="flex items-start justify-between gap-3">
                 <p className="font-medium">{c.label}</p>
-                <span aria-hidden className="shrink-0 text-xl">
-                  {st === "pass" ? "✅" : st === "fail" ? "❌" : st === "running" ? "⏳" : "⚪"}
+                <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-semibold ${presentation.className}`}>
+                  <Icon name={presentation.icon} size={13} aria-hidden />
+                  {presentation.label}
                 </span>
               </div>
               <dl className="mt-2 space-y-1 text-xs text-muted">

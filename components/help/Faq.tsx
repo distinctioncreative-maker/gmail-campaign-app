@@ -17,7 +17,7 @@ const SECTIONS: Array<{ heading: string; items: QA[] }> = [
       },
       {
         q: "The campaign is “Active” but nothing is going out.",
-        a: "Usually it's outside your sending window (default 9am–8pm weekdays) or the daily cap is hit: the Diagnose panel will say which. If neither, check that Gmail is still connected in Settings; if your Google session expired, reconnect it and resume the campaign.",
+        a: "Usually it's outside your sending window (default 9 AM to 8 PM on weekdays) or the daily cap is hit: the Diagnose panel will say which. If neither, check that Gmail is still connected in Settings; if your Google session expired, reconnect it and resume the campaign.",
       },
       {
         q: "Some emails show “Needs attention” / errors.",

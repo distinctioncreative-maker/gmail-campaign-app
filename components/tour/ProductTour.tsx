@@ -4,55 +4,56 @@
    which inherently sets state after layout: the lint rule doesn't apply. */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useState } from "react";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 interface Step {
   selector?: string; // CSS selector to spotlight; omitted = centered card
   title: string;
   body: string;
-  emoji: string;
+  icon: IconName;
 }
 
 const STORAGE_KEY = "outreach.tourSeen.v1";
 
 const STEPS: Step[] = [
   {
-    emoji: "👋",
+    icon: "sparkles",
     title: "Welcome to Cadence",
     body: "A quick 60-second tour of where everything lives. You can skip any time, and replay this from the Help page.",
   },
   {
     selector: '[data-tour="nav-leads"]',
-    emoji: "👥",
+    icon: "users",
     title: "1. Leads",
     body: "Start here. Paste a lead list from Salesforce or upload a CSV: the app checks for duplicates and opt-outs automatically.",
   },
   {
     selector: '[data-tour="nav-templates"]',
-    emoji: "✉️",
+    icon: "mail",
     title: "2. Templates",
     body: "Write a reusable email. Drop in placeholders like {{first_name}} and your {{signature}}, and each recipient gets a personalized copy.",
   },
   {
     selector: '[data-tour="nav-sequences"]',
-    emoji: "🔁",
+    icon: "repeat",
     title: "3. Follow-Ups",
     body: "Optional: build a sequence of automatic follow-ups. They stop the moment someone replies.",
   },
   {
     selector: '[data-tour="nav-campaigns"]',
-    emoji: "🚀",
+    icon: "rocket",
     title: "4. Campaigns",
     body: "Put it all together. A guided wizard walks you through leads, email, schedule, and a safety review before anything sends.",
   },
   {
     selector: '[data-tour="notif-bell"]',
-    emoji: "🔔",
+    icon: "bell",
     title: "Replies & alerts",
     body: "When someone replies, unsubscribes, or an email bounces, you'll see it here.",
   },
   {
     selector: '[data-tour="nav-help"]',
-    emoji: "💬",
+    icon: "help",
     title: "Need help?",
     body: "The Help page has guides, a Test Center to check everything works, and a button to replay this tour. You're all set!",
   },
@@ -175,11 +176,13 @@ export function ProductTour() {
       )}
 
       <div
-        className="absolute w-80 max-w-[calc(100vw-24px)] rounded-2xl bg-surface p-5 shadow-2xl"
+        className="absolute w-80 max-w-[calc(100vw-24px)] rounded-xl border border-border bg-surface p-5 shadow-2xl"
         style={tooltipStyle}
       >
         <div className="flex items-start gap-3">
-          <span aria-hidden className="text-2xl">{step.emoji}</span>
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-primary-soft text-primary" aria-hidden>
+            <Icon name={step.icon} size={20} />
+          </span>
           <div>
             <p className="font-semibold text-foreground">{step.title}</p>
             <p className="mt-1 text-sm text-muted">{step.body}</p>

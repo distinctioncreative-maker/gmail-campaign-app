@@ -230,8 +230,9 @@ export default async function HomePage({
           href={`/campaigns/${best.c.campaignId}`}
           className="card card-hover flex items-center justify-between gap-3 bg-primary-soft/50 p-4"
         >
-          <span className="text-sm text-primary">
-            🏆 Top campaign: <strong>{best.c.name}</strong> at {best.rate.toFixed(1)}% reply rate
+          <span className="flex items-center gap-2 text-sm text-primary">
+            <Icon name="chart" size={16} className="shrink-0" aria-hidden />
+            <span>Top campaign: <strong>{best.c.name}</strong> at {best.rate.toFixed(1)}% reply rate</span>
           </span>
           <span aria-hidden className="text-primary">→</span>
         </Link>

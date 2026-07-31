@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { PasteLeads } from "./PasteLeads";
 import { CsvUpload } from "./CsvUpload";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 type Mode = "paste" | "csv" | null;
+
+function ImportIcon({ name }: { name: IconName }) {
+  return <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name={name} size={20} /></span>;
+}
 
 export function ImportChooser({ listId }: { listId?: string }) {
   const [mode, setMode] = useState<Mode>(null);
@@ -27,9 +32,9 @@ export function ImportChooser({ listId }: { listId?: string }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <button
         onClick={() => setMode("csv")}
-        className="rounded-2xl bg-surface p-6 text-left shadow-sm transition hover:shadow-md"
+        className="card card-hover p-6 text-left"
       >
-        <p className="text-2xl">📄</p>
+        <ImportIcon name="download" />
         <p className="mt-2 font-medium">Upload CSV <span className="align-middle text-[10px] font-semibold uppercase tracking-wide text-green-600">Recommended</span></p>
         <p className="mt-1 text-sm text-muted">
           Export from Salesforce as CSV and drop it here: the most reliable, keeps every column
@@ -37,23 +42,23 @@ export function ImportChooser({ listId }: { listId?: string }) {
       </button>
       <button
         onClick={() => setMode("paste")}
-        className="rounded-2xl bg-surface p-6 text-left shadow-sm transition hover:shadow-md"
+        className="card card-hover p-6 text-left"
       >
-        <p className="text-2xl">📋</p>
+        <ImportIcon name="copy" />
         <p className="mt-2 font-medium">Paste leads</p>
         <p className="mt-1 text-sm text-muted">
           Copy rows straight from a Salesforce list view: we match leads by email automatically
         </p>
       </button>
-      <div className="rounded-2xl bg-surface p-6 opacity-60 shadow-sm">
-        <p className="text-2xl">⚡</p>
+      <div className="card p-6 opacity-60">
+        <ImportIcon name="external" />
         <p className="mt-2 font-medium">Salesforce Lightning sync</p>
         <p className="mt-1 text-sm text-muted">
           One-click connect to pull leads directly: <span className="font-medium text-primary">coming soon</span>
         </p>
       </div>
-      <div className="rounded-2xl bg-surface p-6 opacity-60 shadow-sm">
-        <p className="text-2xl">📊</p>
+      <div className="card p-6 opacity-60">
+        <ImportIcon name="chart" />
         <p className="mt-2 font-medium">Import Google Sheet</p>
         <p className="mt-1 text-sm text-muted">Coming soon</p>
       </div>

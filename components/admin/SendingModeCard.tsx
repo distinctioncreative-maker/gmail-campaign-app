@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/ui/Icon";
 
 interface State {
   testMode: boolean;
@@ -84,10 +85,11 @@ export function SendingModeCard() {
       {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       {state.lockedByEnv && (
-        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
-          🔒 Sending is locked to test mode by the server configuration. The switch is
-          disabled until that lock is cleared on the deployment.
-        </p>
+        <div className="mt-4 flex items-start gap-2 rounded-lg bg-surface-2 p-3 text-sm text-muted">
+          <Icon name="shield" size={16} className="mt-0.5 shrink-0" aria-hidden />
+          <p>Sending is locked to test mode by the server configuration. The switch is
+          disabled until that lock is cleared on the deployment.</p>
+        </div>
       )}
 
       {!live ? (
@@ -95,8 +97,8 @@ export function SendingModeCard() {
           <p className="text-sm font-medium text-foreground">Before going live:</p>
           <ul className="mt-2 space-y-1.5 text-sm">
             {checklist.map((c) => (
-              <li key={c.label} className={c.ok ? "text-foreground" : "text-amber-700"}>
-                {c.ok ? "✅" : "⚠️"} {c.label}
+              <li key={c.label} className={`flex items-start gap-2 ${c.ok ? "text-foreground" : "text-amber-700"}`}>
+                <Icon name={c.ok ? "check" : "alert"} size={16} className="mt-0.5 shrink-0" aria-hidden /> {c.label}
               </li>
             ))}
           </ul>

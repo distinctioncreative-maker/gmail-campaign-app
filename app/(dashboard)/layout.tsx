@@ -9,7 +9,7 @@ import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ProductTour } from "@/components/tour/ProductTour";
 import { UIProviders } from "@/components/ui/UIProviders";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Logo } from "@/components/ui/Logo";
+import { Wordmark } from "@/components/ui/Logo";
 import { Icon } from "@/components/ui/Icon";
 
 const BASE_NAV: NavItem[] = [
@@ -92,10 +92,10 @@ export default async function DashboardLayout({
             Lives inside the content column (not the flex row) so it never
             steals horizontal space from the page. */}
         <header className="glass sticky top-0 z-20 flex items-center justify-between border-b border-border px-4 py-3 sm:hidden">
-          <div className="flex items-center gap-2">
-            <Logo size={24} />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <Wordmark />
             {workspaceName && (
-              <span className="max-w-[9rem] truncate text-[11px] font-medium uppercase tracking-widest text-muted/70">
+              <span className="max-w-[8rem] truncate border-l border-border pl-2.5 text-[11px] font-medium text-muted/70">
                 {workspaceName}
               </span>
             )}

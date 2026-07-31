@@ -70,7 +70,7 @@ export function MobileNav({
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium"
+              className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium"
             >
               {active && (
                 <span aria-hidden className="brand-gradient absolute top-0 h-0.5 w-8 rounded-full" />
@@ -88,7 +88,7 @@ export function MobileNav({
           onClick={() => setMoreOpen(true)}
           aria-label="More"
           aria-expanded={moreOpen}
-          className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium"
+          className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium"
         >
           {(moreOpen || moreActive) && (
             <span aria-hidden className="brand-gradient absolute top-0 h-0.5 w-8 rounded-full" />
@@ -118,7 +118,7 @@ export function MobileNav({
             aria-hidden
           />
           <div
-            className="absolute inset-x-0 bottom-0 max-h-[82vh] overflow-y-auto rounded-t-3xl border-t border-border bg-surface p-5 shadow-2xl"
+            className="absolute inset-x-0 bottom-0 max-h-[82vh] overflow-y-auto rounded-t-[1.25rem] border-t border-border bg-surface p-5 shadow-2xl"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)", animation: "rise 0.26s cubic-bezier(0.22,1,0.36,1)" }}
           >
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-border" aria-hidden />
@@ -127,7 +127,7 @@ export function MobileNav({
               <button
                 onClick={() => setMoreOpen(false)}
                 aria-label="Close"
-                className="rounded-lg p-1.5 text-muted/70 hover:bg-surface-2"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-muted/70 hover:bg-surface-2"
               >
                 <Icon name="x" size={18} />
               </button>
@@ -141,7 +141,7 @@ export function MobileNav({
                     key={item.href}
                     href={item.href}
                     onClick={() => setMoreOpen(false)}
-                    className={`flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-center text-xs font-medium transition ${
+                    className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center text-xs font-medium transition ${
                       active
                         ? "border-primary/30 bg-primary-soft text-primary"
                         : "border-border text-muted hover:bg-surface-2"
@@ -154,7 +154,7 @@ export function MobileNav({
               })}
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-border p-2 pl-4">
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-border p-2 pl-4">
               <span className="text-sm text-muted">Appearance</span>
               <ThemeToggle />
             </div>

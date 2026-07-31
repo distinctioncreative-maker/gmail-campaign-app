@@ -39,7 +39,7 @@ interface ReplyRow {
 
 /** How the triage chip reads and ranks. Interested floats to the top. */
 const INTENT_META: Record<ReplyIntent, { label: string; className: string; rank: number }> = {
-  INTERESTED: { label: "🔥 Interested", className: "bg-emerald-100 text-emerald-700", rank: 0 },
+  INTERESTED: { label: "Interested", className: "bg-emerald-100 text-emerald-700", rank: 0 },
   REPLIED: { label: "Needs reply", className: "bg-blue-100 text-blue-700", rank: 1 },
   NOT_INTERESTED: { label: "Not interested", className: "bg-surface-2 text-muted", rank: 2 },
 };
@@ -94,7 +94,7 @@ export default async function RepliesPage() {
   const aiEnabled = aiWritingEnabled(await getOrgSettings(ctx.organizationId));
   const interested = rows.filter((r) => r.intent === "INTERESTED").length;
   const kpis = [
-    { label: "🔥 Interested", value: String(interested) },
+    { label: "Interested", value: String(interested) },
     { label: "Total replies", value: String(rows.length) },
     { label: "This week", value: String(thisWeek) },
     { label: "Median time to reply", value: formatDuration(median) },

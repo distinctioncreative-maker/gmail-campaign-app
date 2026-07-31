@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { AiSequenceWriter, type GeneratedStep } from "@/components/sequences/AiSequenceWriter";
+import { Icon } from "@/components/ui/Icon";
 
 interface Step {
   delayValue: number;
@@ -157,8 +158,9 @@ export function SequenceBuilder({
       </div>
 
       <div className="mt-4 card p-6">
-        <div className="mb-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
-          📧 Initial email is sent first. Then:
+        <div className="mb-4 flex items-center gap-2 rounded-lg bg-surface-2 p-3 text-sm text-muted">
+          <Icon name="mail" size={17} className="shrink-0 text-primary" aria-hidden />
+          Initial email is sent first. Then:
         </div>
         {steps.map((step, i) => (
           <div key={i} className="mb-4 rounded-xl border border-border p-4">
