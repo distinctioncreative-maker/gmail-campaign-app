@@ -4,31 +4,57 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* Calm, editorial neutrals with one deliberate action color. */
-  --background: #f4f5f5;
+  /* ── Brand foundation (see BRAND.md) ──────────────────────────
+     Warm paper neutrals rather than cold grey, so long working sessions
+     feel considered instead of clinical. One confident action colour,
+     plus a rationed revenue accent used only where money is the subject. */
+
+  /* Warm neutral ramp */
+  --background: #f7f5f2;
   --surface: #ffffff;
-  --surface-2: #f8f9f9;
-  --foreground: #191b1f;
-  --muted: #666b73;
-  --border: #e1e3e6;
+  --surface-2: #faf8f5;
+  --foreground: #1d1b18;
+  --muted: #6b655e;
+  --border: #e8e3dc;
 
-  /* Single accent: a refined Apple-style blue. Brand gradient (logomark only)
-     is a subtle blue → indigo. */
-  --primary: #1264ce;
-  --primary-hover: #0e55b1;
-  --primary-soft: #eaf1fb;
-  --brand-from: #1671df;
-  --brand-to: #4f5fd3;
-  --accent: #1264ce;
+  /* Action colour: indigo-violet. Premium, modern, and the recognised
+     colour language of serious go-to-market software. */
+  --primary: #5b47e0;
+  --primary-hover: #4a37cc;
+  --primary-soft: #f0edfd;
+  --brand-from: #6c55ea;
+  --brand-to: #9b5cd6;
+  --accent: #5b47e0;
 
-  --success: #1a9e5f;
-  --warning: #e07b00;
-  --danger: #e5484d;
-  --ring: rgba(18, 100, 206, 0.4);
+  /* Revenue accent. Deliberately rationed: pipeline, replies, money. */
+  --revenue: #b07d2e;
+  --revenue-soft: #fdf5e7;
 
-  --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.035);
-  --shadow-md: 0 8px 22px -14px rgba(17, 24, 39, 0.14), 0 2px 5px -3px rgba(17, 24, 39, 0.06);
-  --shadow-lg: 0 28px 58px -30px rgba(17, 24, 39, 0.25), 0 9px 22px -15px rgba(17, 24, 39, 0.12);
+  --success: #0e9f6e;
+  --warning: #cc7a00;
+  --danger: #d94452;
+  --ring: rgba(91, 71, 224, 0.38);
+
+  /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-full: 999px;
+
+  /* Elevation ladder, warm-tinted so shadows sit in the same world as the
+     surfaces they lift off. */
+  --shadow-sm: 0 1px 2px rgba(40, 32, 24, 0.045);
+  --shadow-md: 0 8px 22px -14px rgba(40, 32, 24, 0.16), 0 2px 5px -3px rgba(40, 32, 24, 0.07);
+  --shadow-lg: 0 28px 58px -30px rgba(40, 32, 24, 0.26), 0 9px 22px -15px rgba(40, 32, 24, 0.13);
+  --shadow-brand: 0 18px 40px -20px rgba(91, 71, 224, 0.45);
+
+  /* Motion tokens, so every transition shares one curve and tempo. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
 }
 
 /* ── Dark theme ──────────────────────────────────────────────
@@ -36,18 +62,23 @@
    handful of literal Tailwind color utilities the app uses so every
    surface adapts without editing each component. */
 :root[data-theme="dark"] {
-  --background: #0a0a0c;
-  --surface: #161618;
-  --surface-2: #1d1d20;
-  --foreground: #f5f5f7;
-  --muted: #98989d;
-  --border: #2a2a2e;
-  --primary: #0a84ff;
-  --primary-hover: #3a9bff;
-  --primary-soft: #16253c;
-  --ring: rgba(10, 132, 255, 0.4);
+  /* Warm-toned dark: charcoals carry a trace of brown so the dark theme
+     reads as the same brand, not a different product. */
+  --background: #0e0d0c;
+  --surface: #191716;
+  --surface-2: #201e1c;
+  --foreground: #f6f4f1;
+  --muted: #a29a91;
+  --border: #302c29;
+  --primary: #8b78ff;
+  --primary-hover: #a394ff;
+  --primary-soft: #241f3d;
+  --revenue: #e0aa5c;
+  --revenue-soft: #2b2216;
+  --ring: rgba(139, 120, 255, 0.42);
   --shadow-md: 0 6px 16px -8px rgba(0, 0, 0, 0.6), 0 2px 6px -3px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 24px 50px -24px rgba(0, 0, 0, 0.75), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
+  --shadow-brand: 0 18px 40px -20px rgba(139, 120, 255, 0.4);
 }
 
 :root[data-theme="dark"] .bg-white { background-color: var(--surface); }
@@ -107,8 +138,15 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-revenue: var(--revenue);
+  --color-revenue-soft: var(--revenue-soft);
+  --font-sans: var(--font-sans-base);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono-base);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 }
 
 * {
@@ -116,23 +154,28 @@
 }
 
 body {
-  /* Whisper-subtle single bloom over a calm neutral base. */
+  /* Whisper-subtle brand bloom over the warm paper base. */
   background:
-    radial-gradient(1100px 620px at 88% -12%, rgba(10, 132, 255, 0.05), transparent 60%),
+    radial-gradient(1100px 620px at 88% -12%, rgba(91, 71, 224, 0.055), transparent 60%),
     var(--background);
   background-attachment: fixed;
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, "SF Pro Text", sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: var(--font-sans-base), system-ui, -apple-system, "SF Pro Text", sans-serif;
+  transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.011em;
 }
 
-h1, h2, h3 {
-  letter-spacing: -0.022em;
+/* Headings carry the brand voice: display face, tighter tracking, more
+   weight. This is the single biggest signal that the product is designed
+   rather than scaffolded. */
+h1, h2, h3, h4 {
+  font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
+  letter-spacing: -0.028em;
+  font-weight: 700;
 }
-h1 { font-weight: 600; }
+h1 { font-weight: 800; letter-spacing: -0.034em; }
 
 :focus-visible {
   outline: 3px solid var(--ring);
@@ -142,11 +185,11 @@ h1 { font-weight: 600; }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd3e1 transparent;
+  scrollbar-color: var(--border) transparent;
 }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb {
-  background: #cbd3e1;
+  background: var(--border);
   border-radius: 9999px;
   border: 3px solid transparent;
   background-clip: content-box;
