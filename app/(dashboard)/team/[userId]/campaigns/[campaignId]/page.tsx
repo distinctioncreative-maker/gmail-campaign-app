@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { getCampaign, listRecipients } from "@/lib/repositories/campaigns";
@@ -48,18 +48,20 @@ export default async function RepCampaignPage({
 
   return (
     <div>
-      <Link href={`/team/${userId}`} className="text-sm text-muted hover:underline">
-        ← {rep?.email ?? "Rep"}
-      </Link>
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">{campaign.name}</h1>
-        <span className={`badge ${badge.className}`}>{badge.label}</span>
-        <span className="badge bg-surface-2 text-muted">Read-only</span>
-      </div>
-      <p className="mt-1 text-sm text-muted">
-        {sent} sent · {campaign.replyCount} repl{campaign.replyCount === 1 ? "y" : "ies"} ·{" "}
-        {campaign.bounceCount} bounce{campaign.bounceCount === 1 ? "" : "s"}
-      </p>
+      <PageHeader
+        title={campaign.name}
+        description={`${sent} sent · ${campaign.replyCount} repl${
+          campaign.replyCount === 1 ? "y" : "ies"
+        } · ${campaign.bounceCount} bounce${campaign.bounceCount === 1 ? "" : "s"}`}
+        backHref={`/team/${userId}`}
+        backLabel={rep?.email ?? "Rep"}
+        actions={
+          <>
+            <span className={`badge ${badge.className}`}>{badge.label}</span>
+            <span className="badge bg-surface-2 text-muted">Read-only</span>
+          </>
+        }
+      />
 
       <div className="mt-6 overflow-x-auto card">
         <table className="w-full text-left text-sm">

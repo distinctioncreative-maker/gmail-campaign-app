@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { listCampaigns } from "@/lib/repositories/campaigns";
@@ -59,17 +60,19 @@ export default async function RepDetailPage({
 
   return (
     <div>
-      <Link href="/team" className="text-sm text-muted hover:underline">
-        ← Team
-      </Link>
-      <div className="mt-2">
-        <h1 className="text-2xl font-semibold">{repName}</h1>
-        <p className="mt-1 text-sm text-muted">
-          {repName !== rep.email && <>{rep.email} · </>}
-          {team ? `Team ${team.name}` : "Not on a team"} · {rep.role === "ADMIN" ? "Administrator" : rep.role === "MANAGER" ? "Team Lead" : "Sales Rep"}
-          {!rep.active && " · account disabled"}
-        </p>
-      </div>
+      <PageHeader
+        title={repName}
+        description={[
+          repName !== rep.email ? rep.email : null,
+          team ? `Team ${team.name}` : "Not on a team",
+          rep.role === "ADMIN" ? "Administrator" : rep.role === "MANAGER" ? "Team Lead" : "Sales Rep",
+          !rep.active ? "account disabled" : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        backHref="/team"
+        backLabel="Team"
+      />
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {tiles.map(([label, value]) => (
