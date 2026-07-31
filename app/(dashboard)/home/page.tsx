@@ -17,6 +17,7 @@ import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PulseChart } from "@/components/home/PulseChart";
 import { CountUp } from "@/components/ui/CountUp";
+import { StatTile, type StatTone } from "@/components/ui/StatTile";
 import { RangeTabs, type HomeRange } from "@/components/home/RangeTabs";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { buildBriefing } from "@/lib/home/briefing";
@@ -130,16 +131,16 @@ export default async function HomePage({
     suffix?: string;
     dash?: boolean;
     icon: IconName;
-    accent: string;
+    tone: StatTone;
     href: string;
   }> = [
-    { label: `Emails sent · ${rangeStats.label}`, value: rangeStats.sent, icon: "mail", accent: "text-foreground", href: "/reports" },
-    { label: `Replies · ${rangeStats.label}`, value: rangeStats.replies, icon: "reply", accent: "text-green-600", href: "/replies" },
-    { label: `Reply rate · ${rangeStats.label}`, value: rangeReplyRate, decimals: 1, suffix: "%", dash: rangeStats.sent === 0, icon: "chart", accent: "text-indigo-500", href: "/reports" },
-    { label: "Sending now", value: active.length, icon: "rocket", accent: "text-primary", href: "/campaigns" },
-    { label: "Total leads", value: totalLeads, icon: "users", accent: "text-foreground", href: "/leads" },
-    { label: "Bounce rate", value: bounceRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "alert", accent: bounceRate > 3 ? "text-red-600" : "text-foreground", href: "/deliverability" },
-    { label: "Unsubscribes", value: totalUnsub, icon: "ban", accent: "text-foreground", href: "/suppressions" },
+    { label: `Emails sent · ${rangeStats.label}`, value: rangeStats.sent, icon: "mail", tone: "default", href: "/reports" },
+    { label: `Replies · ${rangeStats.label}`, value: rangeStats.replies, icon: "reply", tone: rangeStats.replies > 0 ? "revenue" : "default", href: "/replies" },
+    { label: `Reply rate · ${rangeStats.label}`, value: rangeReplyRate, decimals: 1, suffix: "%", dash: rangeStats.sent === 0, icon: "chart", tone: "success", href: "/reports" },
+    { label: "Sending now", value: active.length, icon: "rocket", tone: "primary", href: "/campaigns" },
+    { label: "Total leads", value: totalLeads, icon: "users", tone: "default", href: "/leads" },
+    { label: "Bounce rate", value: bounceRate, decimals: 1, suffix: "%", dash: totalSentAll === 0, icon: "alert", tone: bounceRate > 3 ? "danger" : "default", href: "/deliverability" },
+    { label: "Unsubscribes", value: totalUnsub, icon: "ban", tone: "default", href: "/suppressions" },
   ];
 
   return (
@@ -241,20 +242,20 @@ export default async function HomePage({
       {/* ── Stat orbs + daily allowance ring ──────────────────── */}
       <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {orbs.map((o) => (
-          <Link key={o.label} href={o.href} className="card card-hover group p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted">{o.label}</p>
-              <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary-soft text-primary transition-transform duration-300 group-hover:scale-110">
-                <Icon name={o.icon} size={16} />
-              </span>
-            </div>
-            <p className={`mt-3 text-3xl font-semibold tracking-tight tabular-nums ${o.accent}`}>
-              {o.dash ? "Not available" : <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />}
-            </p>
-            <span className="mt-1 flex items-center gap-1 text-xs font-medium text-muted/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:text-primary">
-              View <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
-            </span>
-          </Link>
+          <StatTile
+            key={o.label}
+            label={o.label}
+            href={o.href}
+            icon={o.icon}
+            tone={o.dash ? "default" : o.tone}
+            value={
+              o.dash ? (
+                <span className="text-xl text-muted">Not available</span>
+              ) : (
+                <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />
+              )
+            }
+          />
         ))}
 
         {/* Daily allowance ring */}

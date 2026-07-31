@@ -7,6 +7,7 @@ import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
 import { LeadListsBar } from "@/components/leads/LeadListsBar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CountUp } from "@/components/ui/CountUp";
+import { StatTile, StatGrid } from "@/components/ui/StatTile";
 
 const PAGE_SIZE = 500;
 const MAX_LIMIT = 5000;
@@ -65,43 +66,51 @@ export default async function LeadsPage({
       />
 
       {contacts.length > 0 ? (
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              label: "Ready",
-              value: readyCount,
-              detail: "Never contacted and safe to email",
-              tone: "text-green-600",
-            },
-            {
-              label: "Contacted",
-              value: contactedCount,
-              detail: "Used in at least one campaign",
-              tone: "text-primary",
-            },
-            {
-              label: "Replied",
-              value: repliedCount,
-              detail: "Detected conversations",
-              tone: "text-indigo-600",
-            },
-            {
-              label: "Excluded",
-              value: excludedCount,
-              detail: "Suppressed or opted out",
-              tone: excludedCount > 0 ? "text-amber-600" : "text-muted",
-            },
-          ].map((item) => (
-            <div key={item.label} className="card p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                {item.label}
-              </p>
-              <p className={`mt-1 text-2xl font-semibold tabular-nums ${item.tone}`}>
-                <CountUp value={item.value} />
-              </p>
-              <p className="mt-1 text-xs text-muted/70">{item.detail}</p>
-            </div>
-          ))}
+        <div className="mb-6">
+          <StatGrid columns={4}>
+            {(
+              [
+                {
+                  label: "Ready",
+                  value: readyCount,
+                  hint: "Never contacted and safe to email",
+                  icon: "check",
+                  tone: "success",
+                },
+                {
+                  label: "Contacted",
+                  value: contactedCount,
+                  hint: "Used in at least one campaign",
+                  icon: "mail",
+                  tone: "primary",
+                },
+                {
+                  label: "Replied",
+                  value: repliedCount,
+                  hint: "Live conversations you can work",
+                  icon: "reply",
+                  tone: repliedCount > 0 ? "revenue" : "default",
+                },
+                {
+                  label: "Excluded",
+                  value: excludedCount,
+                  hint: "Suppressed or opted out",
+                  icon: "ban",
+                  tone: excludedCount > 0 ? "warning" : "default",
+                },
+              ] as const
+            ).map((item) => (
+              <StatTile
+                key={item.label}
+                label={item.label}
+                icon={item.icon}
+                tone={item.tone}
+                size="sm"
+                hint={item.hint}
+                value={<CountUp value={item.value} />}
+              />
+            ))}
+          </StatGrid>
         </div>
       ) : null}
 

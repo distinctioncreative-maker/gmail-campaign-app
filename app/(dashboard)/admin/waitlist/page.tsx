@@ -6,6 +6,7 @@ import { listWaitlist } from "@/lib/repositories/waitlist";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
+import { StatTile } from "@/components/ui/StatTile";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
 /** Admin-only view of private-pilot requests, with CSV export. */
@@ -48,11 +49,13 @@ export default async function WaitlistPage() {
         </Link>
       </p>
 
-      <div className="mt-4">
-        <div className="card p-5">
-          <p className="text-sm text-muted">Total requests</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{entries.length}</p>
-        </div>
+      <div className="mt-4 max-w-xs">
+        <StatTile
+          label="Total requests"
+          value={entries.length.toLocaleString()}
+          icon="users"
+          hint="Submitted from the public landing page"
+        />
       </div>
 
       {entries.length === 0 ? (

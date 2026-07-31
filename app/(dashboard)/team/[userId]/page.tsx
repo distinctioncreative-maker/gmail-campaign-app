@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { listCampaigns } from "@/lib/repositories/campaigns";
@@ -74,13 +75,18 @@ export default async function RepDetailPage({
         backLabel="Team"
       />
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {tiles.map(([label, value]) => (
-          <div key={label} className="card p-4">
-            <p className="text-xs text-muted">{label}</p>
-            <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
-          </div>
-        ))}
+      <div className="mt-6">
+        <StatGrid columns={5}>
+          {tiles.map(([label, value]) => (
+            <StatTile
+              key={label}
+              label={label}
+              value={value}
+              size="sm"
+              tone={label === "Replies" && replies > 0 ? "revenue" : "default"}
+            />
+          ))}
+        </StatGrid>
       </div>
 
       <h2 className="mt-8 mb-3 font-medium">Campaigns</h2>

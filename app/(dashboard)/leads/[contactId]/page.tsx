@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { getContact } from "@/lib/repositories/contacts";
 import { isSuppressed } from "@/lib/repositories/suppressions";
 import { LocalTime } from "@/components/LocalTime";
@@ -66,13 +67,17 @@ export default async function ContactDetailPage({
       />
 
       {/* Engagement at a glance */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {engagement.map((k) => (
-          <div key={k.label} className="card p-5">
-            <p className="text-sm text-muted">{k.label}</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">{k.value}</p>
-          </div>
-        ))}
+      <div className="mt-6">
+        <StatGrid columns={4}>
+          {engagement.map((k) => (
+            <StatTile
+              key={k.label}
+              label={k.label}
+              value={k.value}
+              tone={k.label === "Times they replied" && contact.replyCount > 0 ? "revenue" : "default"}
+            />
+          ))}
+        </StatGrid>
       </div>
 
       <div className="mt-4">

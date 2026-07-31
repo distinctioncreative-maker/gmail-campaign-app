@@ -31,8 +31,11 @@
   --revenue-soft: #fdf5e7;
 
   --success: #0e9f6e;
+  --success-soft: #e7f6f0;
   --warning: #cc7a00;
+  --warning-soft: #fdf3e3;
   --danger: #d94452;
+  --danger-soft: #fdedee;
   --ring: rgba(91, 71, 224, 0.38);
 
   /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
@@ -75,6 +78,12 @@
   --primary-soft: #241f3d;
   --revenue: #e0aa5c;
   --revenue-soft: #2b2216;
+  --success: #35c491;
+  --success-soft: #14261f;
+  --warning: #e8a13c;
+  --warning-soft: #2a2116;
+  --danger: #f0707a;
+  --danger-soft: #2c1a1c;
   --ring: rgba(139, 120, 255, 0.42);
   --shadow-md: 0 6px 16px -8px rgba(0, 0, 0, 0.6), 0 2px 6px -3px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 24px 50px -24px rgba(0, 0, 0, 0.75), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
@@ -136,8 +145,11 @@
   --color-primary-soft: var(--primary-soft);
   --color-accent: var(--accent);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-revenue: var(--revenue);
   --color-revenue-soft: var(--revenue-soft);
   --font-sans: var(--font-sans-base);

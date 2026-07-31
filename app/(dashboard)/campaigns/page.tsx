@@ -6,6 +6,7 @@ import { CampaignsTable } from "@/components/campaign/CampaignsTable";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CountUp } from "@/components/ui/CountUp";
+import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { campaignPerformance } from "@/lib/analytics/metrics";
 
 export default async function CampaignsPage({
@@ -59,44 +60,50 @@ export default async function CampaignsPage({
       )}
 
       {campaigns.length > 0 ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              label: showArchived ? "Archived" : "In progress",
-              value: showArchived ? campaigns.length : activeCount,
-              detail: showArchived ? "Kept for reporting" : "Ready, sending, or paused",
-              tone: "text-primary",
-            },
-            {
-              label: "Drafts",
-              value: draftCount,
-              detail: "Not launched",
-              tone: "text-foreground",
-            },
-            {
-              label: "Replies",
-              value: totalReplies,
-              detail: "Across this campaign view",
-              tone: "text-green-600",
-            },
-            {
-              label: "Needs attention",
-              value: attentionCount,
-              detail: attentionCount > 0 ? "Review errors or blocked sends" : "No active issues",
-              tone: attentionCount > 0 ? "text-red-600" : "text-muted",
-            },
-          ].map((item) => (
-            <div key={item.label} className="card p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                {item.label}
-              </p>
-              <p className={`mt-1 text-2xl font-semibold tabular-nums ${item.tone}`}>
-                <CountUp value={item.value} />
-              </p>
-              <p className="mt-1 text-xs text-muted/70">{item.detail}</p>
-            </div>
+        <StatGrid columns={4}>
+          {(
+            [
+              {
+                label: showArchived ? "Archived" : "In progress",
+                value: showArchived ? campaigns.length : activeCount,
+                hint: showArchived ? "Kept for reporting" : "Ready, sending, or paused",
+                icon: "rocket",
+                tone: "primary",
+              },
+              {
+                label: "Drafts",
+                value: draftCount,
+                hint: "Not launched",
+                icon: "edit",
+                tone: "default",
+              },
+              {
+                label: "Replies",
+                value: totalReplies,
+                hint: "Conversations this view has started",
+                icon: "reply",
+                tone: totalReplies > 0 ? "revenue" : "default",
+              },
+              {
+                label: "Needs attention",
+                value: attentionCount,
+                hint: attentionCount > 0 ? "Review errors or blocked sends" : "No active issues",
+                icon: "alert",
+                tone: attentionCount > 0 ? "danger" : "default",
+              },
+            ] as const
+          ).map((item) => (
+            <StatTile
+              key={item.label}
+              label={item.label}
+              icon={item.icon}
+              tone={item.tone}
+              size="sm"
+              hint={item.hint}
+              value={<CountUp value={item.value} />}
+            />
           ))}
-        </div>
+        </StatGrid>
       ) : null}
 
       {campaigns.length === 0 ? (

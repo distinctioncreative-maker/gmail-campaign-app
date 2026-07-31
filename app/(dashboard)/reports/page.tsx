@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import {
@@ -20,6 +19,7 @@ import {
   type ReportCampaignOption,
 } from "@/components/analytics/ReportFilters";
 import { CountUp } from "@/components/ui/CountUp";
+import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { Icon } from "@/components/ui/Icon";
 import {
   timeToReply,
@@ -43,35 +43,6 @@ const RANGE_OPTIONS = new Set([30, 90, 365]);
 
 function stringParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
-}
-
-function KpiCard({
-  label,
-  value,
-  detail,
-  tone = "text-foreground",
-  delay,
-}: {
-  label: string;
-  value: ReactNode;
-  detail: string;
-  tone?: string;
-  delay: number;
-}) {
-  return (
-    <div
-      className="card card-hover animate-rise p-5"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">
-        {label}
-      </p>
-      <p className={`mt-2 text-2xl font-semibold tabular-nums ${tone}`}>
-        {value}
-      </p>
-      <p className="mt-1 text-xs text-muted/70">{detail}</p>
-    </div>
-  );
 }
 
 export default async function ReportsPage({
@@ -290,65 +261,70 @@ export default async function ReportsPage({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <KpiCard
+      <StatGrid columns={6}>
+        <StatTile
           label="Total sends"
           value={<CountUp value={totalSentAll} />}
-          detail={`${initialSentAll.toLocaleString()} initial, ${followupsAll.toLocaleString()} follow-ups`}
-          delay={0}
+          hint={`${initialSentAll.toLocaleString()} initial, ${followupsAll.toLocaleString()} follow-ups`}
+          icon="mail"
+          size="sm"
         />
-        <KpiCard
+        <StatTile
           label="Replies"
           value={<CountUp value={repliesAll} />}
-          detail="Unique detected replies"
-          tone="text-indigo-600"
-          delay={40}
+          hint="Conversations your list has started"
+          icon="reply"
+          tone={repliesAll > 0 ? "revenue" : "default"}
+          size="sm"
         />
-        <KpiCard
+        <StatTile
           label="Reply rate"
           value={
             totalSentAll > 0 ? (
               <CountUp value={rate(repliesAll)} decimals={1} suffix="%" />
             ) : (
-              "Not available"
+              <span className="text-xl text-muted">Not available</span>
             )
           }
-          detail="Replies divided by total sends"
-          tone="text-green-600"
-          delay={80}
+          hint="Replies divided by total sends"
+          icon="chart"
+          tone="success"
+          size="sm"
         />
-        <KpiCard
+        <StatTile
           label="Bounce rate"
           value={
             totalSentAll > 0 ? (
               <CountUp value={rate(bouncesAll)} decimals={1} suffix="%" />
             ) : (
-              "Not available"
+              <span className="text-xl text-muted">Not available</span>
             )
           }
-          detail={`${bouncesAll.toLocaleString()} detected bounces`}
-          tone={rate(bouncesAll) > 3 ? "text-red-600" : "text-foreground"}
-          delay={120}
+          hint={`${bouncesAll.toLocaleString()} detected bounces`}
+          icon="alert"
+          tone={rate(bouncesAll) > 3 ? "danger" : "default"}
+          size="sm"
         />
-        <KpiCard
+        <StatTile
           label="Unsubscribes"
           value={<CountUp value={unsubscribesAll} />}
-          detail={
+          hint={
             totalSentAll > 0
               ? `${formatPercent(rate(unsubscribesAll))} of sends`
               : "No sends yet"
           }
-          tone="text-amber-600"
-          delay={160}
+          icon="ban"
+          tone={unsubscribesAll > 0 ? "warning" : "default"}
+          size="sm"
         />
-        <KpiCard
+        <StatTile
           label="Median reply time"
           value={formatDuration(ttr.medianMs)}
-          detail={`Leads first sent in the last ${rangeDays} days`}
-          tone="text-indigo-600"
-          delay={200}
+          hint={`Leads first sent in the last ${rangeDays} days`}
+          icon="hourglass"
+          size="sm"
         />
-      </div>
+      </StatGrid>
 
       {bestCampaign ? (
         <div className="mt-4 flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary-soft p-4 text-sm text-primary">
@@ -513,10 +489,10 @@ export default async function ReportsPage({
               </p>
               <div className="mt-5 grid grid-cols-2 gap-4">
                 <div className="rounded-xl bg-surface-2 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  <p className="text-[0.8125rem] font-medium leading-tight text-muted">
                     Open detected
                   </p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-sky-600">
+                  <p className="mt-2.5 font-display text-2xl font-bold leading-none tabular-nums tracking-[-0.03em] text-primary">
                     {tracking.sent > 0 ? (
                       <CountUp
                         value={tracking.openRate}
@@ -524,18 +500,18 @@ export default async function ReportsPage({
                         suffix="%"
                       />
                     ) : (
-                      "Not available"
+                      <span className="text-xl text-muted">Not available</span>
                     )}
                   </p>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-2 text-xs text-muted">
                     {tracking.opened.toLocaleString()} pixel loads
                   </p>
                 </div>
                 <div className="rounded-xl bg-surface-2 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  <p className="text-[0.8125rem] font-medium leading-tight text-muted">
                     Click rate
                   </p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-purple-600">
+                  <p className="mt-2.5 font-display text-2xl font-bold leading-none tabular-nums tracking-[-0.03em] text-revenue">
                     {tracking.sent > 0 ? (
                       <CountUp
                         value={tracking.clickRate}
@@ -543,10 +519,10 @@ export default async function ReportsPage({
                         suffix="%"
                       />
                     ) : (
-                      "Not available"
+                      <span className="text-xl text-muted">Not available</span>
                     )}
                   </p>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-2 text-xs text-muted">
                     {tracking.clicked.toLocaleString()} unique clickers
                   </p>
                 </div>

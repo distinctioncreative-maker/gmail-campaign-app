@@ -10,6 +10,8 @@ import { formatDuration } from "@/lib/analytics/metrics";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
+import type { IconName } from "@/components/ui/Icon";
 
 // Cap the recipient-level scan so the page stays fast even with many campaigns.
 const MAX_CAMPAIGNS_SCANNED = 60;
@@ -93,11 +95,35 @@ export default async function RepliesPage() {
 
   const aiEnabled = aiWritingEnabled(await getOrgSettings(ctx.organizationId));
   const interested = rows.filter((r) => r.intent === "INTERESTED").length;
-  const kpis = [
-    { label: "Interested", value: String(interested) },
-    { label: "Total replies", value: String(rows.length) },
-    { label: "This week", value: String(thisWeek) },
-    { label: "Median time to reply", value: formatDuration(median) },
+  const kpis: Array<{ label: string; value: string; icon: IconName; tone: StatTone; hint: string }> = [
+    {
+      label: "Interested",
+      value: String(interested),
+      icon: "sparkles",
+      tone: interested > 0 ? "revenue" : "default",
+      hint: "Work these first",
+    },
+    {
+      label: "Total replies",
+      value: String(rows.length),
+      icon: "reply",
+      tone: "default",
+      hint: "Across every campaign",
+    },
+    {
+      label: "This week",
+      value: String(thisWeek),
+      icon: "clock",
+      tone: thisWeek > 0 ? "success" : "default",
+      hint: "Landed in the last 7 days",
+    },
+    {
+      label: "Median time to reply",
+      value: formatDuration(median),
+      icon: "hourglass",
+      tone: "default",
+      hint: "How fast your list responds",
+    },
   ];
 
   return (
@@ -108,14 +134,19 @@ export default async function RepliesPage() {
         actions={<ScanRepliesButton />}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatGrid columns={4}>
         {kpis.map((k) => (
-          <div key={k.label} className="card p-5">
-            <p className="text-sm text-muted">{k.label}</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">{k.value}</p>
-          </div>
+          <StatTile
+            key={k.label}
+            label={k.label}
+            value={k.value}
+            icon={k.icon}
+            tone={k.tone}
+            hint={k.hint}
+            size="sm"
+          />
         ))}
-      </div>
+      </StatGrid>
 
       <div className="mt-6">
         {rows.length === 0 ? (

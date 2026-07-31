@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { FEATURE_CATEGORIES, countByStatus, type FeatureStatus } from "@/lib/features/registry";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
@@ -41,19 +42,12 @@ export default async function FeaturesPage() {
         </Link>
       </p>
 
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        <div className="card p-4 text-center">
-          <p className="text-2xl font-semibold tabular-nums text-foreground">{counts.shipped}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-muted">Shipped</p>
-        </div>
-        <div className="card p-4 text-center">
-          <p className="text-2xl font-semibold tabular-nums text-foreground">{counts.beta}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-muted">Beta</p>
-        </div>
-        <div className="card p-4 text-center">
-          <p className="text-2xl font-semibold tabular-nums text-foreground">{counts.planned}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-muted">Planned</p>
-        </div>
+      <div className="mt-4">
+        <StatGrid columns={3}>
+          <StatTile label="Shipped" value={counts.shipped} icon="check" tone="success" size="sm" />
+          <StatTile label="Beta" value={counts.beta} icon="sparkles" tone="warning" size="sm" />
+          <StatTile label="Planned" value={counts.planned} icon="clock" size="sm" />
+        </StatGrid>
       </div>
 
       <div className="mt-6 flex flex-col gap-6">

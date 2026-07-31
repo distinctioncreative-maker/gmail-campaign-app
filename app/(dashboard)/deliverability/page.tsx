@@ -2,12 +2,12 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { checkDomainAuth } from "@/lib/deliverability/dnsLookup";
 import { getPostmasterStats } from "@/lib/deliverability/postmaster";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Icon } from "@/components/ui/Icon";
 import { formatPercent } from "@/lib/analytics/metrics";
 import { getBenchmarksSnapshot } from "@/lib/benchmarks/read";
 import { bucketBatchSize, bucketDailyLimit, type DimensionAggregate } from "@/lib/benchmarks/buckets";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { CountUp } from "@/components/ui/CountUp";
+import { StatTile, StatGrid } from "@/components/ui/StatTile";
 
 /** Which bucket the signed-in user's OWN current default falls into, for
  * dimensions we can compare against a live setting (pacing only: content
@@ -83,41 +83,45 @@ export default async function DeliverabilityPage() {
       <h2 className="mt-10 mb-3 font-medium">Google Postmaster Tools</h2>
       {postmaster.state === "OK" ? (
         <>
-          <div className="mb-4 grid gap-4 sm:grid-cols-3">
-            <div className="card card-hover animate-rise p-5">
-              <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
-                <Icon name="shield" size={20} />
-              </span>
-              <p className="mt-3 text-sm text-muted">Domain reputation</p>
-              <p className="mt-1">
-                <span className={`badge text-sm ${REPUTATION_PILL[postmaster.latestReputation ?? ""] ?? "bg-surface-2 text-muted"}`}>
-                  {postmaster.latestReputation ?? "Unknown"}
-                </span>
-              </p>
-            </div>
-            <div className="card card-hover animate-rise p-5" style={{ animationDelay: "35ms" }}>
-              <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
-                <Icon name="alert" size={20} />
-              </span>
-              <p className="mt-3 text-sm text-muted">Latest spam rate</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">
-                {postmaster.days[0]?.spamRatio != null ? (
-                  <CountUp value={postmaster.days[0].spamRatio * 100} decimals={1} suffix="%" />
-                ) : (
-                  "Not available"
-                )}
-              </p>
-              <p className="mt-1 text-xs text-muted/70">Keep under 0.1%. 0.3%+ is the danger zone.</p>
-            </div>
-            <div className="card card-hover animate-rise p-5" style={{ animationDelay: "70ms" }}>
-              <span aria-hidden className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md">
-                <Icon name="chart" size={20} />
-              </span>
-              <p className="mt-3 text-sm text-muted">Days with data (30d)</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">
-                <CountUp value={postmaster.days.length} />
-              </p>
-            </div>
+          <div className="mb-4">
+            <StatGrid columns={3}>
+              <StatTile
+                label="Domain reputation"
+                icon="shield"
+                tone={postmaster.latestReputation === "HIGH" ? "success" : "default"}
+                value={
+                  <span className={`badge text-sm ${REPUTATION_PILL[postmaster.latestReputation ?? ""] ?? "bg-surface-2 text-muted"}`}>
+                    {postmaster.latestReputation ?? "Unknown"}
+                  </span>
+                }
+                hint="How Gmail rates mail from your domain"
+              />
+              <StatTile
+                label="Latest spam rate"
+                icon="alert"
+                size="sm"
+                tone={
+                  postmaster.days[0]?.spamRatio != null && postmaster.days[0].spamRatio >= 0.003
+                    ? "danger"
+                    : "default"
+                }
+                value={
+                  postmaster.days[0]?.spamRatio != null ? (
+                    <CountUp value={postmaster.days[0].spamRatio * 100} decimals={1} suffix="%" />
+                  ) : (
+                    <span className="text-xl text-muted">Not available</span>
+                  )
+                }
+                hint="Keep under 0.1%. 0.3% and above is the danger zone."
+              />
+              <StatTile
+                label="Days with data (30d)"
+                icon="chart"
+                size="sm"
+                value={<CountUp value={postmaster.days.length} />}
+                hint="Postmaster only reports days with enough volume"
+              />
+            </StatGrid>
           </div>
           <div className="overflow-x-auto card">
             <table className="w-full text-left text-sm">

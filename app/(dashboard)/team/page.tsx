@@ -9,8 +9,9 @@ import { statsForReps, type RepStats } from "@/lib/teams/stats";
 import { ledTeamIds } from "@/lib/teams/access";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
-import { Icon, type IconName } from "@/components/ui/Icon";
+import { type IconName } from "@/components/ui/Icon";
 import { CountUp } from "@/components/ui/CountUp";
+import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import { TeamManager, RosterActions, RemoveFromTeamButton } from "@/components/team/TeamManager";
 import type { Member, Team } from "@/schemas/user";
 import { formatPercent } from "@/lib/analytics/metrics";
@@ -36,32 +37,28 @@ function KpiTiles({ stats }: { stats: RepStats[] }) {
     decimals?: number;
     suffix?: string;
     icon: IconName;
-    ring: string;
-    accent: string;
+    tone: StatTone;
   }> = [
-    { label: "Emails sent", value: sent, icon: "mail", ring: "bg-primary-soft text-primary", accent: "text-foreground" },
-    { label: "Replies", value: replies, icon: "reply", ring: "bg-green-100 text-green-600", accent: "text-green-600" },
-    { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", icon: "chart", ring: "bg-indigo-100 text-indigo-600", accent: "text-indigo-600" },
-    { label: "Reps sending now", value: active, icon: "rocket", ring: "bg-primary-soft text-primary", accent: "text-primary" },
-    { label: "Bounces", value: bounces, icon: "alert", ring: "bg-amber-100 text-amber-600", accent: bounces > 0 ? "text-amber-600" : "text-foreground" },
+    { label: "Emails sent", value: sent, icon: "mail", tone: "default" },
+    { label: "Replies", value: replies, icon: "reply", tone: replies > 0 ? "revenue" : "default" },
+    { label: "Reply rate", value: replyRate, decimals: 1, suffix: "%", icon: "chart", tone: "success" },
+    { label: "Reps sending now", value: active, icon: "rocket", tone: "primary" },
+    { label: "Bounces", value: bounces, icon: "alert", tone: bounces > 0 ? "warning" : "default" },
   ];
 
   return (
-    <div className="stagger grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <StatGrid columns={5}>
       {tiles.map((t) => (
-        <div key={t.label} className="card p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-muted">{t.label}</p>
-            <span aria-hidden className={`flex h-7 w-7 items-center justify-center rounded-lg ${t.ring}`}>
-              <Icon name={t.icon} size={15} />
-            </span>
-          </div>
-          <p className={`mt-2 text-2xl font-semibold tabular-nums ${t.accent}`}>
-            <CountUp value={t.value} decimals={t.decimals} suffix={t.suffix} />
-          </p>
-        </div>
+        <StatTile
+          key={t.label}
+          label={t.label}
+          icon={t.icon}
+          tone={t.tone}
+          size="sm"
+          value={<CountUp value={t.value} decimals={t.decimals} suffix={t.suffix} />}
+        />
       ))}
-    </div>
+    </StatGrid>
   );
 }
 

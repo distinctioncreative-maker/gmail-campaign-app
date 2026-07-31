@@ -19,7 +19,8 @@ import {
   formatPercent,
 } from "@/lib/analytics/metrics";
 import { CountUp } from "@/components/ui/CountUp";
-import { Icon } from "@/components/ui/Icon";
+import { Icon, type IconName } from "@/components/ui/Icon";
+import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
 import { CampaignSectionNav } from "@/components/campaign/CampaignSectionNav";
@@ -78,43 +79,50 @@ export default async function CampaignDetailPage({
     label: string;
     value: number;
     detail: string;
-    tone: string;
+    icon: IconName;
+    tone: StatTone;
   }> = [
     {
       label: "Eligible leads",
       value: campaign.eligibleRecipients,
       detail: `${campaign.excludedRecipients} excluded`,
-      tone: "text-foreground",
+      icon: "users",
+      tone: "default",
     },
     {
       label: "Total sends",
       value: performance.sent,
       detail: `${campaign.sentCount} initial, ${campaign.followupSentCount} follow-ups`,
-      tone: "text-green-600",
+      icon: "mail",
+      tone: "primary",
     },
     {
       label: "Replies",
       value: campaign.replyCount,
       detail: `${formatPercent(performance.replyRate)} reply rate`,
-      tone: "text-indigo-600",
+      icon: "reply",
+      tone: campaign.replyCount > 0 ? "revenue" : "default",
     },
     {
       label: "Bounces",
       value: campaign.bounceCount,
       detail: `${formatPercent(performance.bounceRate)} bounce rate`,
-      tone: campaign.bounceCount > 0 ? "text-amber-600" : "text-muted",
+      icon: "alert",
+      tone: campaign.bounceCount > 0 ? "warning" : "default",
     },
     {
       label: "Unsubscribes",
       value: campaign.unsubscribeCount,
       detail: `${formatPercent(performance.unsubscribeRate)} of sends`,
-      tone: campaign.unsubscribeCount > 0 ? "text-amber-600" : "text-muted",
+      icon: "ban",
+      tone: campaign.unsubscribeCount > 0 ? "warning" : "default",
     },
     {
       label: "Problems",
       value: campaign.errorCount,
       detail: campaign.errorCount > 0 ? "Review diagnostics below" : "No active errors",
-      tone: campaign.errorCount > 0 ? "text-red-600" : "text-muted",
+      icon: "shield",
+      tone: campaign.errorCount > 0 ? "danger" : "default",
     },
   ];
 
@@ -214,20 +222,20 @@ export default async function CampaignDetailPage({
         </section>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {stats.map((s, i) => (
-          <div
-            key={s.label}
-            className="card card-hover animate-rise p-4 text-center"
-            style={{ animationDelay: `${i * 35}ms` }}
-          >
-            <p className={`text-2xl font-semibold tabular-nums ${s.tone}`}>
-              <CountUp value={s.value} />
-            </p>
-            <p className="mt-1 text-xs font-medium text-muted">{s.label}</p>
-            <p className="mt-1 text-[11px] leading-tight text-muted/70">{s.detail}</p>
-          </div>
-        ))}
+      <div className="mt-4">
+        <StatGrid columns={6}>
+          {stats.map((s) => (
+            <StatTile
+              key={s.label}
+              label={s.label}
+              icon={s.icon}
+              tone={s.tone}
+              size="sm"
+              hint={s.detail}
+              value={<CountUp value={s.value} />}
+            />
+          ))}
+        </StatGrid>
       </div>
 
       {campaign.trackingEnabled ? (
