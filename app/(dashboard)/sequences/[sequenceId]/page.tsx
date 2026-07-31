@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { getSequence } from "@/lib/repositories/sequences";
 import { listTemplates } from "@/lib/repositories/templates";
 import { SequenceBuilder } from "@/components/sequences/SequenceBuilder";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function EditSequencePage({
   params,
@@ -17,11 +17,13 @@ export default async function EditSequencePage({
 
   return (
     <div>
-      <Link href="/sequences" className="text-sm text-muted hover:underline">
-        ← All sequences
-      </Link>
-      <h1 className="mt-2 text-2xl font-semibold">Edit sequence</h1>
-      <div className="mt-6">
+      <PageHeader
+        title={sequence.name}
+        description="Edit the follow-up steps, timing, and stop rules for this sequence."
+        backHref="/sequences"
+        backLabel="All follow-ups"
+      />
+      <div>
         <SequenceBuilder
           sequenceId={sequence.sequenceId}
           initial={{

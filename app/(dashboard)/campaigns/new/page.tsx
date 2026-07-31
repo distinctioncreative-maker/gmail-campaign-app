@@ -1,15 +1,16 @@
-import Link from "next/link";
 import { CampaignWizard } from "@/components/campaign/CampaignWizard";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function NewCampaignPage() {
   return (
     <div>
-      <Link href="/campaigns" className="text-sm text-muted hover:underline">
-        ← All campaigns
-      </Link>
-      <div className="mt-4">
-        <CampaignWizard />
-      </div>
+      <PageHeader
+        title="New campaign"
+        description="Pick who it goes to, what it says, and how fast it sends."
+        backHref="/campaigns"
+        backLabel="All campaigns"
+      />
+      <CampaignWizard />
     </div>
   );
 }

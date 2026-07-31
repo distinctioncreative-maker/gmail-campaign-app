@@ -1,16 +1,16 @@
-import Link from "next/link";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function NewTemplatePage() {
   return (
     <div>
-      <Link href="/templates" className="text-sm text-muted hover:underline">
-        ← All templates
-      </Link>
-      <h1 className="mt-2 text-2xl font-semibold">New template</h1>
-      <div className="mt-6">
-        <TemplateEditor templateId={null} initial={null} />
-      </div>
+      <PageHeader
+        title="New template"
+        description="Write the email once, then reuse it across campaigns."
+        backHref="/templates"
+        backLabel="All templates"
+      />
+      <TemplateEditor templateId={null} initial={null} />
     </div>
   );
 }

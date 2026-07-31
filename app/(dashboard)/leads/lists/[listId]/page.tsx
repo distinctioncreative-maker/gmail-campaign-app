@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { getLeadList } from "@/lib/repositories/leadLists";
@@ -6,6 +5,7 @@ import { listContactsInList } from "@/lib/repositories/contacts";
 import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
 import { LeadListHeaderActions } from "@/components/leads/LeadListHeaderActions";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function LeadListDetailPage({
   params,
@@ -36,18 +36,13 @@ export default async function LeadListDetailPage({
 
   return (
     <div>
-      <Link href="/leads" className="text-sm text-muted hover:underline">
-        ← All leads
-      </Link>
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{list.name}</h1>
-          <p className="mt-1 text-sm text-muted">
-            {rows.length.toLocaleString()} lead{rows.length === 1 ? "" : "s"} in this list
-          </p>
-        </div>
-        <LeadListHeaderActions listId={list.listId} name={list.name} />
-      </div>
+      <PageHeader
+        title={list.name}
+        description={`${rows.length.toLocaleString()} lead${rows.length === 1 ? "" : "s"} in this list`}
+        backHref="/leads"
+        backLabel="All leads"
+        actions={<LeadListHeaderActions listId={list.listId} name={list.name} />}
+      />
 
       {/* Add leads to this list: duplicates already in the list are skipped */}
       <div className="mt-6">

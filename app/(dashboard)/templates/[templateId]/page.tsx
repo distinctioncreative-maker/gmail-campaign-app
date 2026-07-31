@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { getTemplate } from "@/lib/repositories/templates";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function EditTemplatePage({
   params,
@@ -16,11 +16,13 @@ export default async function EditTemplatePage({
 
   return (
     <div>
-      <Link href="/templates" className="text-sm text-muted hover:underline">
-        ← All templates
-      </Link>
-      <h1 className="mt-2 text-2xl font-semibold">Edit template</h1>
-      <div className="mt-6">
+      <PageHeader
+        title={template.name}
+        description="Edit this template. Changes apply to campaigns that use it from now on."
+        backHref="/templates"
+        backLabel="All templates"
+      />
+      <div>
         <TemplateEditor
           templateId={template.templateId}
           initial={{

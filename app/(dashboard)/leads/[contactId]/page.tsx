@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getContact } from "@/lib/repositories/contacts";
 import { isSuppressed } from "@/lib/repositories/suppressions";
 import { LocalTime } from "@/components/LocalTime";
@@ -41,30 +41,29 @@ export default async function ContactDetailPage({
 
   return (
     <div>
-      <Link href="/leads" className="text-sm text-muted hover:underline">
-        ← All leads
-      </Link>
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">{contact.fullName || contact.email}</h1>
-          <p className="text-muted">{contact.businessName}</p>
-        </div>
-        {suppression || contact.emailOptOut ? (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700">
-            Excluded for safety
-          </span>
-        ) : contact.repliedAt ? (
-          <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
-            Replied {contact.replyCount > 1 ? `${contact.replyCount}×` : ""}
-          </span>
-        ) : contact.campaignCount > 0 ? (
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700">
-            Contacted before
-          </span>
-        ) : (
-          <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">Ready</span>
-        )}
-      </div>
+      <PageHeader
+        title={contact.fullName || contact.email}
+        description={contact.businessName || undefined}
+        backHref="/leads"
+        backLabel="All leads"
+        actions={
+          suppression || contact.emailOptOut ? (
+            <span className="rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700">
+              Excluded for safety
+            </span>
+          ) : contact.repliedAt ? (
+            <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
+              Replied {contact.replyCount > 1 ? `${contact.replyCount}×` : ""}
+            </span>
+          ) : contact.campaignCount > 0 ? (
+            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700">
+              Contacted before
+            </span>
+          ) : (
+            <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">Ready</span>
+          )
+        }
+      />
 
       {/* Engagement at a glance */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
