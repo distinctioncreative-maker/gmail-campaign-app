@@ -265,28 +265,28 @@ function WaitField({
 const WORKFLOW = [
   {
     number: "01",
-    title: "Bring in the right leads",
-    copy: "Upload a CSV, paste email addresses, or choose a saved list. Cadence validates fields, finds duplicates, and checks suppressions before a campaign is prepared.",
+    title: "Start with a list that will not burn you",
+    copy: "Bring a CSV, a paste, or a saved list. We strip duplicates and hold back anyone who already opted out, so bad data never touches your domain.",
   },
   {
     number: "02",
-    title: "Write with context",
-    copy: "Start with your message or ask AI for a draft. Reuse a saved brand voice, add verified personalization, and rotate variants without losing control of the final copy.",
+    title: "Write once, sound personal every time",
+    copy: "Describe the offer and AI drafts it in your brand voice. Every email goes out personalized to that recipient, not blasted from a template.",
   },
   {
     number: "03",
-    title: "Set a responsible pace",
-    copy: "Choose sending days, hours, delays, and daily limits. Test mode gives you a safe rehearsal before a workspace is approved for live sending.",
+    title: "Send at a pace inboxes actually trust",
+    copy: "Set your hours, your daily cap, your spacing. Cadence drips sends the way a person would, which is why they land in the inbox instead of Promotions.",
   },
   {
     number: "04",
-    title: "Read the campaign clearly",
-    copy: "See sends, failures, bounces, engagement signals, replies, and opt-outs at campaign level, with the limitations of open tracking explained in context.",
+    title: "See exactly what is producing",
+    copy: "Sends, bounces, opens, clicks, and replies in one view. You always know which campaign is generating pipeline and which is wasting good leads.",
   },
   {
     number: "05",
-    title: "Turn replies into next steps",
-    copy: "Triage reply intent, keep the original Gmail thread, and draft a thoughtful response while automatic follow-ups stop for resolved recipients.",
+    title: "Turn replies into booked revenue",
+    copy: "Every reply is sorted by intent, so your team works the hot ones first inside the real Gmail thread. Follow-ups stop the moment someone answers.",
   },
 ] as const;
 
@@ -421,34 +421,34 @@ const HERO_MOTION_NODES = [
 
 const FEATURES = [
   {
-    eyebrow: "Create",
-    title: "AI that supports your judgment",
-    copy: "Draft, rewrite, shorten, generate subjects, and create variants. You review every message and can keep a reusable voice without pretending AI knows facts it cannot verify.",
+    eyebrow: "Write",
+    title: "A rep's email, in seconds",
+    copy: "Describe the offer. AI writes it in your brand voice, personalized per lead, with subject variants to test. You approve every message before it sends.",
   },
   {
     eyebrow: "Send",
-    title: "Controlled Gmail pacing",
-    copy: "Schedule deliberate batches through your connected Gmail. Provider ceilings are not presented as universal safe targets, and plan caps remain hard limits.",
+    title: "Volume without the spam folder",
+    copy: "Cadence spreads sends across your day at a human rhythm and holds a hard cap. Speed that burns your domain is the expensive kind.",
   },
   {
     eyebrow: "Measure",
-    title: "Campaign-level reporting",
-    copy: "Compare campaigns and date ranges with clear metric definitions. Replies and clicks carry more weight than privacy-sensitive open signals.",
+    title: "Know which campaign pays",
+    copy: "Compare campaigns side by side on the metrics that predict revenue. Replies and clicks lead, because opens are the least honest number in email.",
   },
   {
     eyebrow: "Protect",
-    title: "Consent built into the path",
-    copy: "Suppression checks run before delivery. Signed one-click unsubscribe requests stop queued follow-ups and update the do-not-email list.",
+    title: "Compliance you cannot forget",
+    copy: "Opt-outs are checked before every send and honored instantly with one click. Follow-ups stop themselves. Your list stays clean and your name stays good.",
   },
   {
-    eyebrow: "Collaborate",
-    title: "A shared operating view",
-    copy: "Give team members role-appropriate access to campaigns, templates, leads, and reporting while keeping every data path scoped to its owner and workspace.",
+    eyebrow: "Scale",
+    title: "Built for a team, not a seat",
+    copy: "Roles, per-rep leaderboards, and shared brand voice. Managers see the whole board while each rep's leads stay strictly their own.",
   },
   {
-    eyebrow: "Improve",
-    title: "Deliverability context, not promises",
-    copy: "Review SPF, DKIM, DMARC, pacing, failures, and available provider signals. Cadence helps reduce avoidable risk but never guarantees inbox placement.",
+    eyebrow: "Land",
+    title: "Deliverability, checked before you send",
+    copy: "SPF, DKIM, DMARC, and sender reputation verified up front, so you find out on the dashboard rather than from a silent campaign.",
   },
 ] as const;
 
@@ -1317,14 +1317,15 @@ export function Landing() {
             <div className={styles.heroCopy}>
               <span className={styles.pill}>
                 <span />
-                Gmail outreach, intelligently operated
+                Outreach that lands in the inbox
               </span>
-              <h1>Turn Gmail outreach into qualified conversations.</h1>
+              <h1>
+                Your list is worth more than you are getting from it.
+              </h1>
               <p className={styles.heroLead}>
-                Build thoughtful campaigns, automate consistent follow-up,
-                and keep every reply moving from one calm workspace. Cadence
-                adds AI where it saves time while pacing, consent, and final
-                approval remain visible.
+                Cadence sends personalized campaigns from your own Gmail,
+                keeps them out of spam, and turns every reply into pipeline
+                your team can actually work.
               </p>
               <div
                 className={styles.pilotAnchor}
@@ -1350,10 +1351,10 @@ export function Landing() {
 
             <div className={styles.proofBar}>
               {[
-                ["Gmail-connected", "Keep real conversations in your inbox"],
-                ["Human reviewed", "Approve messages before scheduling"],
-                ["Visible safeguards", "Pacing and suppressions stay in view"],
-                ["Pipeline focused", "See which replies need the next step"],
+                ["Your real Gmail", "Not a relay. Replies land in your thread."],
+                ["Inbox, not Promotions", "Paced sending and domain checks built in."],
+                ["Personal at scale", "Every email written for that one recipient."],
+                ["Replies ranked", "Your team works the hot ones first."],
               ].map(([title, copy]) => (
                 <div key={title}>
                   <Check size={17} />
@@ -1371,28 +1372,27 @@ export function Landing() {
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
               <span className={styles.eyebrow}>
-                One operating rhythm
+                Why teams switch
               </span>
-              <h2>One clear system from lead list to next step.</h2>
+              <h2>More replies from the same list.</h2>
               <p>
-                Replace scattered drafts, fragile spreadsheets, manual send
-                queues, and disconnected reply tracking with a workflow your
-                team can understand at a glance.
+                Most outreach fails for three reasons. Cadence is built to
+                remove all three.
               </p>
             </div>
             <div className={styles.outcomeGrid} data-reveal>
               {[
                 [
-                  "Prepare campaigns faster",
-                  "Import leads, catch missing context, draft with AI, and review variants without rebuilding the same process for every campaign.",
+                  "It never reached them",
+                  "Blasted email lands in spam. We send from your real Gmail at a human pace and check your domain before you hit go, so your message shows up where people read.",
                 ],
                 [
-                  "Protect the human touch",
-                  "Use saved brand voice and practical personalization, then keep a person responsible for every final message and claim.",
+                  "It read like a template",
+                  "Generic mail gets deleted. AI writes every email in your brand voice for that specific person, so it reads like a rep wrote it, because effectively one did.",
                 ],
                 [
-                  "Focus on the replies that matter",
-                  "Campaign health, reply intent, and stopped follow-ups make the next useful action easier to find.",
+                  "The reply went cold",
+                  "Interest dies in a crowded inbox. Every reply is ranked by intent and answered in the original thread, so the hot ones get worked while they are still hot.",
                 ],
               ].map(([title, copy], index) => (
                 <article key={title}>
@@ -1408,12 +1408,11 @@ export function Landing() {
         <section className={styles.workflowSection} id="workflow">
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
-              <span className={styles.eyebrow}>From list to conversation</span>
-              <h2>Automate the repetition. Keep the judgment human.</h2>
+              <span className={styles.eyebrow}>How it works</span>
+              <h2>From cold list to booked call.</h2>
               <p>
-                Cadence makes every handoff visible: what AI prepared, what
-                your team approved, what is scheduled, and which replies are
-                ready to move forward.
+                Five steps. Your team stays in control of every message that
+                goes out.
               </p>
             </div>
             <div className={styles.workflow} data-reveal>
@@ -1436,12 +1435,11 @@ export function Landing() {
         <section className={styles.featuresSection} id="features">
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
-              <span className={styles.eyebrow}>Why teams choose Cadence</span>
-              <h2>Everything important, without the operational clutter.</h2>
+              <span className={styles.eyebrow}>What you get</span>
+              <h2>Built to produce pipeline, not busywork.</h2>
               <p>
-                Move faster with AI, stay accountable with visible controls,
-                and measure progress without pretending every email signal is
-                equally reliable.
+                Everything a revenue team needs to run outreach at volume, and
+                nothing that gets in the way.
               </p>
             </div>
             <div className={styles.featureGrid} data-reveal>
@@ -1459,12 +1457,11 @@ export function Landing() {
         <section className={styles.controlsSection} id="controls">
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
-              <span className={styles.eyebrow}>Control creates confidence</span>
-              <h2>Move faster without losing sight of what matters.</h2>
+              <span className={styles.eyebrow}>See it work</span>
+              <h2>Set the pace. Watch the pipeline build.</h2>
               <p>
-                Explore how Cadence helps a team choose its pace, verify launch
-                readiness, understand campaign performance, and move a useful
-                reply toward pipeline.
+                Every control that protects your domain, and every number that
+                tells you it is working.
               </p>
             </div>
             <div data-reveal>

@@ -114,7 +114,7 @@ describe("landing-page experience", () => {
 
   it("leads with a strong but qualified business outcome", () => {
     expect(landingSource).toContain(
-      "Turn Gmail outreach into qualified conversations."
+      "Your list is worth more than you are getting from it."
     );
     expect(landingSource).toContain(
       "No platform can guarantee inbox placement or replies."
