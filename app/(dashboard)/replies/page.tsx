@@ -42,7 +42,7 @@ interface ReplyRow {
 /** How the triage chip reads and ranks. Interested floats to the top. */
 const INTENT_META: Record<ReplyIntent, { label: string; className: string; rank: number }> = {
   INTERESTED: { label: "Interested", className: "bg-emerald-100 text-emerald-700", rank: 0 },
-  REPLIED: { label: "Needs reply", className: "bg-blue-100 text-blue-700", rank: 1 },
+  REPLIED: { label: "Needs reply", className: "bg-info-soft text-info", rank: 1 },
   NOT_INTERESTED: { label: "Not interested", className: "bg-surface-2 text-muted", rank: 2 },
 };
 

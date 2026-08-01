@@ -98,7 +98,7 @@ export function CsvUpload({ listId }: { listId?: string }) {
               if (file) void handleFile(file);
             }}
             className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition ${
-              dragOver ? "border-primary bg-blue-50" : "border-border"
+              dragOver ? "border-info bg-info-soft" : "border-border"
             }`}
           >
             <p className="font-medium text-foreground">

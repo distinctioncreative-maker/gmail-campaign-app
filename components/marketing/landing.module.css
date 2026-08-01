@@ -16,11 +16,17 @@
   --landing-on-ink: var(--marketing-on-ink);
   --landing-on-ink-muted: var(--marketing-on-ink-muted);
   --landing-on-ink-subtle: var(--marketing-on-ink-subtle);
-  --landing-blue: var(--primary);
-  --landing-blue-deep: var(--primary-hover);
-  --landing-blue-soft: var(--primary-soft);
+  /* Historical internal name, now the theme-invariant plum action lane. */
+  --landing-blue: var(--marketing-primary);
+  --landing-blue-deep: var(--marketing-primary-hover);
+  --landing-blue-soft: var(--marketing-primary-soft);
+  --landing-blue-contrast: var(--marketing-primary-contrast);
   --landing-blue-border: color-mix(in srgb, var(--landing-blue) 34%, var(--landing-line));
   --landing-blue-on-ink: color-mix(in srgb, var(--landing-on-ink) 64%, var(--landing-blue));
+  --landing-info: var(--marketing-info);
+  --landing-info-soft: var(--marketing-info-soft);
+  --landing-info-border: color-mix(in srgb, var(--landing-info) 34%, var(--landing-line));
+  --landing-info-on-ink: color-mix(in srgb, var(--landing-on-ink) 62%, var(--landing-info));
   --landing-green: var(--success);
   --landing-green-strong: color-mix(in srgb, var(--landing-green) 70%, var(--landing-copy));
   --landing-green-soft: var(--success-soft);
@@ -199,7 +205,8 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 72% 10%, rgb(43 112 215 / 22%), transparent 36rem),
+    radial-gradient(circle at 72% 10%, color-mix(in srgb, var(--landing-info) 32%, transparent), transparent 36rem),
+    radial-gradient(circle at 22% 6%, color-mix(in srgb, var(--landing-blue) 22%, transparent), transparent 30rem),
     linear-gradient(180deg, var(--landing-ink), var(--landing-ink-soft) 72%, var(--landing-ink));
   color: var(--landing-on-ink);
 }
@@ -229,10 +236,10 @@
   right: 8%;
   width: 280px;
   height: 280px;
-  border: 1px solid rgb(112 165 245 / 13%);
+  border: 1px solid color-mix(in srgb, var(--landing-info-on-ink) 18%, transparent);
   box-shadow:
-    0 0 100px rgb(39 115 232 / 11%),
-    inset 0 0 80px rgb(47 128 248 / 7%);
+    0 0 100px color-mix(in srgb, var(--landing-info) 16%, transparent),
+    inset 0 0 80px color-mix(in srgb, var(--landing-blue) 10%, transparent);
   animation: orbitHalo 16s ease-in-out infinite;
 }
 
@@ -241,8 +248,8 @@
   left: 7%;
   width: 9px;
   height: 9px;
-  background: var(--landing-blue-on-ink);
-  box-shadow: 0 0 28px 10px rgb(80 145 240 / 18%);
+  background: var(--landing-info-on-ink);
+  box-shadow: 0 0 28px 10px color-mix(in srgb, var(--landing-info) 24%, transparent);
   animation: signalDrift 12s ease-in-out infinite;
 }
 
@@ -480,7 +487,7 @@
   inset: 0;
   background: radial-gradient(
     circle 260px at var(--spotlight-x) var(--spotlight-y),
-    rgb(107 166 255 / 13%),
+    color-mix(in srgb, var(--landing-info) 18%, transparent),
     transparent 72%
   );
   content: "";
@@ -563,7 +570,7 @@
   position: relative;
   padding: 25px;
   background:
-    radial-gradient(circle at 92% 4%, rgb(61 132 235 / 7%), transparent 20rem),
+    radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--landing-info) 10%, transparent), transparent 20rem),
     var(--landing-surface-soft);
 }
 
@@ -1780,7 +1787,7 @@
   border-radius: 9px;
   background: var(--landing-blue);
   padding: 0 14px;
-  color: var(--landing-surface);
+  color: var(--landing-blue-contrast);
   font-size: 11px;
   font-weight: 700;
   transition:
@@ -2448,7 +2455,7 @@
 .featuredPrice > a {
   border-color: var(--landing-blue) !important;
   background: var(--landing-blue);
-  color: var(--landing-surface) !important;
+  color: var(--landing-blue-contrast) !important;
 }
 
 .pricingNote {

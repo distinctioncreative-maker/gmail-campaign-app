@@ -168,14 +168,14 @@ export function AiEmailWriter({
   if (status?.enabled !== true) return null;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-xl border border-primary/20 bg-primary-soft/40">
+    <div className="mb-4 overflow-hidden rounded-xl border border-info/20 bg-info-soft/55">
       {!open ? (
         <button
           onClick={() => {
             setOpen(true);
             void loadBrand();
           }}
-          className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-primary transition hover:bg-primary-soft disabled:opacity-60"
+          className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-info transition hover:bg-info-soft disabled:opacity-60"
         >
           <Icon name="sparkles" size={16} aria-hidden />
           Write this email with AI
@@ -183,7 +183,7 @@ export function AiEmailWriter({
       ) : (
         <div className="p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
+            <div className="flex items-center gap-2 text-sm font-medium text-info">
               <Icon name="sparkles" size={16} aria-hidden /> Describe the email you want
             </div>
             <div className="flex items-center gap-1.5">
@@ -193,7 +193,7 @@ export function AiEmailWriter({
                   <select
                     value={selectedId ?? ""}
                     onChange={(e) => setSelectedId(e.target.value)}
-                    className="rounded-full border border-primary/20 bg-surface px-2 py-1 text-xs font-medium text-foreground focus:border-primary focus:outline-none"
+                    className="rounded-full border border-info/20 bg-surface px-2 py-1 text-xs font-medium text-foreground focus:border-info focus:outline-none"
                   >
                     {profiles.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -206,7 +206,7 @@ export function AiEmailWriter({
               {(canEditBrand || profiles.length > 0) && (
                 <button
                   onClick={() => void openMemory()}
-                  className="rounded-full border border-primary/20 bg-surface px-2.5 py-1 text-xs font-medium text-primary hover:border-primary"
+                  className="rounded-full border border-info/20 bg-surface px-2.5 py-1 text-xs font-medium text-info hover:border-info"
                 >
                   {profiles.length === 0 ? "Add brand memory" : canEditBrand ? "Edit" : "View"}
                 </button>
@@ -215,7 +215,7 @@ export function AiEmailWriter({
           </div>
 
           {memoryOpen && (
-            <div className="mt-2 rounded-xl border border-primary/20 bg-surface p-3">
+            <div className="mt-2 rounded-xl border border-info/20 bg-surface p-3">
               <p className="text-xs font-medium text-foreground">
                 Brand memory: the AI weaves the chosen brand into every email, freshly each time
               </p>
@@ -227,8 +227,8 @@ export function AiEmailWriter({
                     onClick={() => setSelectedId(p.id)}
                     className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
                       selectedId === p.id
-                        ? "bg-primary text-white"
-                        : "border border-border text-muted hover:border-primary"
+                        ? "bg-info text-info-contrast"
+                        : "border border-border text-muted hover:border-info"
                     }`}
                   >
                     {p.name || "Untitled"}
@@ -237,7 +237,7 @@ export function AiEmailWriter({
                 {canEditBrand && (
                   <button
                     onClick={addProfile}
-                    className="rounded-full border border-dashed border-primary/40 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary-soft"
+                    className="rounded-full border border-dashed border-info/40 px-2.5 py-1 text-xs font-medium text-info hover:bg-info-soft"
                   >
                     + Add brand
                   </button>
@@ -251,7 +251,7 @@ export function AiEmailWriter({
                       value={selected.name}
                       onChange={(e) => updateSelected({ name: e.target.value })}
                       placeholder="Brand name (e.g. Alpine, Everest)"
-                      className="mb-2 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm font-medium focus:border-primary focus:outline-none"
+                      className="mb-2 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm font-medium focus:border-info focus:outline-none"
                     />
                   )}
                   <p className="mb-1 text-[11px] text-muted">
@@ -268,7 +268,7 @@ export function AiEmailWriter({
                         ? "What the AI should always know about this brand…"
                         : "Only an admin can edit brand memory."
                     }
-                    className="w-full rounded-lg border border-border p-2.5 text-sm focus:border-primary focus:outline-none disabled:bg-surface-2 disabled:text-muted"
+                    className="w-full rounded-lg border border-border p-2.5 text-sm focus:border-info focus:outline-none disabled:bg-surface-2 disabled:text-muted"
                   />
                   {canEditBrand && (
                     <div className="mt-2 flex items-center gap-2">
@@ -305,14 +305,14 @@ export function AiEmailWriter({
             rows={2}
             autoFocus
             placeholder="e.g. Warm first-touch offering fast working capital to a busy auto-repair shop owner"
-            className="mt-2 w-full rounded-xl border border-primary/20 bg-surface p-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-info/20 bg-surface p-2.5 text-sm focus:border-info focus:outline-none"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
             {PRESETS.map((p) => (
               <button
                 key={p.label}
                 onClick={() => setPrompt(p.prompt)}
-                className="rounded-full border border-primary/20 bg-surface px-2.5 py-1 text-xs text-muted hover:border-primary"
+                className="rounded-full border border-info/20 bg-surface px-2.5 py-1 text-xs text-muted hover:border-info"
               >
                 {p.label}
               </button>

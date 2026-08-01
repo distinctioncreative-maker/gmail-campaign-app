@@ -95,7 +95,7 @@ function Leaderboard({
           <div key={m.userId} className="flex items-center gap-3 p-4 transition hover:bg-surface-2">
             {/* Rank / avatar */}
             <div className="relative shrink-0">
-              <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm">
+              <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-brand-contrast shadow-sm">
                 {initials(display)}
               </div>
               {ranked && (

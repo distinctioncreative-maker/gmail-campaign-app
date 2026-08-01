@@ -414,7 +414,7 @@ export function CampaignWizard() {
                 i < step
                   ? "bg-green-100 text-green-700 hover:bg-green-200"
                   : i === step
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-primary-contrast"
                     : "bg-surface-2 text-muted/70"
               }`}
             >
@@ -588,7 +588,7 @@ export function CampaignWizard() {
               {[
                 ["Selected", counts.selected, "text-primary"],
                 ["Ready", counts.ready, "text-green-600"],
-                ["Used before", counts.usedBefore, "text-blue-600"],
+                ["Used before", counts.usedBefore, "text-info"],
                 ["Excluded for safety", counts.excluded, "text-amber-600"],
               ].map(([label, value, color]) => (
                 <div key={label as string} className="rounded-xl border border-border p-4 text-center">
@@ -693,7 +693,7 @@ export function CampaignWizard() {
                       }`}
                     >
                       {selected && (
-                        <span className="absolute right-3 top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
+                        <span className="absolute right-3 top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-contrast">
                           {idx === 0 ? "A" : idx === 1 ? "B" : idx === 2 ? "C" : idx + 1}
                         </span>
                       )}
@@ -886,7 +886,7 @@ export function CampaignWizard() {
             </div>
 
             {aiEnabled && (
-              <div className="mt-3 rounded-xl border border-primary/20 bg-primary-soft/40 p-3">
+              <div className="mt-3 rounded-xl border border-info/20 bg-info-soft/55 p-3">
                 <label className="flex items-start gap-2 text-sm text-foreground">
                   <input
                     type="checkbox"
@@ -895,7 +895,7 @@ export function CampaignWizard() {
                     className="mt-0.5"
                   />
                   <span>
-                    <span className="inline-flex items-center gap-1.5"><Icon name="sparkles" size={15} className="text-primary" aria-hidden /> Add an AI-personalized opening line to each email</span>
+                    <span className="inline-flex items-center gap-1.5"><Icon name="sparkles" size={15} className="text-info" aria-hidden /> Add an AI-personalized opening line to each email</span>
                     <span className="mt-0.5 block text-xs text-muted">
                       Writes one tailored sentence per lead based on their business, added to the top
                       of the first email. Best for focused lists: capped at the first 150 recipients

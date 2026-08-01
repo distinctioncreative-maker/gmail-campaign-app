@@ -93,12 +93,12 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
           <linearGradient id={`stroke-${gid}`} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--primary)" />
             <stop offset="55%" stopColor="var(--primary)" />
-            <stop offset="100%" stopColor="#22d3ee" />
+            <stop offset="100%" stopColor="var(--info)" />
           </linearGradient>
           <linearGradient id={`sheen-${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#fff" stopOpacity="0" />
-            <stop offset="50%" stopColor="#fff" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--foreground)" stopOpacity="0" />
+            <stop offset="50%" stopColor="var(--foreground)" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="var(--foreground)" stopOpacity="0" />
           </linearGradient>
           <filter id={`glow-${gid}`} x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="3.2" result="b" />
@@ -148,7 +148,7 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
 
         {/* traveling glow dot along the line */}
         {geom.pts.length > 1 && (
-          <circle r="4.5" fill="#fff" opacity="0.95">
+          <circle r="4.5" fill="var(--surface)" opacity="0.95">
             <animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="linear">
               <mpath href={`#line-${gid}`} />
             </animateMotion>
@@ -160,8 +160,8 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
         {geom.pts.map((p, i) =>
           p.replied > 0 ? (
             <g key={i}>
-              <circle cx={p.px} cy={p.ry} r="7" fill="#1a9e5f" opacity="0.18" className="pulse-ring" style={{ animationDelay: `${i * 120}ms` }} />
-              <circle cx={p.px} cy={p.ry} r="3.5" fill="#1a9e5f" className="pulse-dot" style={{ animationDelay: `${i * 120}ms` }} />
+              <circle cx={p.px} cy={p.ry} r="7" fill="var(--success)" opacity="0.18" className="pulse-ring" style={{ animationDelay: `${i * 120}ms` }} />
+              <circle cx={p.px} cy={p.ry} r="3.5" fill="var(--success)" className="pulse-dot" style={{ animationDelay: `${i * 120}ms` }} />
             </g>
           ) : null
         )}

@@ -62,7 +62,7 @@ export function AdminPanel({
 
   return (
     <div className="space-y-6">
-      {notice && <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">{notice}</p>}
+      {notice && <p className="rounded-lg bg-info-soft p-3 text-sm text-info">{notice}</p>}
 
       <div className="card p-6">
         <h2 className="font-medium">Team members</h2>

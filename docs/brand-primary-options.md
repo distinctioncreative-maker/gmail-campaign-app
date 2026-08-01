@@ -1,7 +1,7 @@
 # Cadence primary color options
 
-Decision status: **founder choice required**. The current indigo-violet stays
-in production until one option below is approved.
+Decision status: **option B selected on 2026-08-01**. Restrained plum is the
+primary action color, supported by an editorial blue for AI and information.
 
 ## Why a choice is needed
 
@@ -19,27 +19,46 @@ continues to be reserved for replies, interested leads, pipeline, and money.
 | B: Restrained plum | `#72506f` | `#5e405b` | `#f4edf3` | 6.24:1 | Premium and distinctive without electric SaaS indigo | Still a chromatic accent, though substantially calmer than the current violet |
 | C: Warm blue-grey | `#4b5963` | `#3d4952` | `#eef1f2` | 6.64:1 | Quiet, editorial, closest to a Notion-like restraint | Least expressive and may make primary actions feel too conservative |
 
-All three primary values exceed WCAG AA for normal text on both warm paper
+All three primary candidates exceed WCAG AA for normal text on both warm paper
 and white surfaces. Each remains visually distinct from the fixed revenue
-gold. Dark-theme lifted values and gradient endpoints must be tuned after the
-light-theme choice rather than guessed in advance.
+gold. The selected option's dark-theme values and plum-to-blue gradient were
+tuned and measured as part of implementation.
 
-## Design recommendation
+## Selected system
 
-Option B, restrained plum, is the strongest balance. It preserves a memorable
-Cadence action color, removes the electric default-SaaS feeling, and remains
-clearly separate from revenue gold. Option C is the safest if the desired
-direction is extremely quiet. Option A is strongest if warmth matters more
-than strict separation from revenue moments.
+Option B was selected with an explicit request to retain blue in the brand.
+The implementation therefore uses two semantic lanes instead of turning every
+control into a gradient:
 
-## Implementation checklist after approval
+| Role | Light | Dark | Contrast evidence |
+|---|---|---|---|
+| Plum primary | `#72506f` | `#c7a8c4` | 6.24:1 on paper; 8.36:1 on dark surface |
+| Plum hover | `#5e405b` | `#d5b9d2` | 8.18:1 on paper; 9.95:1 on dark surface |
+| Plum soft | `#f4edf3` | `#30242f` | Used only as a surface with matching foreground token |
+| Editorial blue | `#456a8d` | `#8eb4d2` | 5.22:1 on paper; 8.17:1 on dark surface |
+| Blue hover | `#355674` | `#a5c6df` | 7.06:1 on paper; 9.99:1 on dark surface |
+| Blue soft | `#eaf1f7` | `#182634` | Used only as a surface with matching foreground token |
 
-1. Update `--primary`, `--primary-hover`, `--primary-soft`, `--brand-from`,
-   `--brand-to`, `--accent`, and `--ring` in `app/globals.css`.
-2. Tune the matching dark-theme primary, hover, soft, ring, and brand shadow.
-3. Render the Home dashboard, account menu, a destructive confirmation, the
-   landing hero, pricing, and a primary button in both themes.
-4. Measure text, focus-ring, button, chart, and selected-navigation contrast.
-5. Update `docs/brand.md`, this decision record, the feature registry, and the
-   visual regression evidence in the handoff.
-6. Run the complete quality gate before publishing.
+White text on the light plum and blue fills reaches 6.79:1 and 5.68:1.
+Dark-theme fills use `--primary-contrast` and `--info-contrast`, reaching
+8.25:1 and 8.05:1. The identity gradient runs from plum to blue and uses a
+separate `--brand-contrast` token in each theme.
+
+Plum owns calls to action, focus, active navigation, selected controls, and
+primary chart data. Blue owns AI panels, informational badges, previously
+contacted states, and system guidance. Revenue gold remains unchanged and
+reserved for replies, pipeline, and money.
+
+## Implementation record
+
+1. Updated light and dark primary, information, contrast, gradient, ring,
+   ambient-light, and shadow tokens in `app/globals.css`.
+2. Replaced direct blue, purple, violet, and indigo utility classes with the
+   semantic primary or information lane.
+3. Moved AI writing, AI sequence, campaign personalization, informational
+   status, and activity-chart accents onto the blue lane.
+4. Added theme-safe foreground tokens for primary, information, and brand
+   gradient fills.
+5. Updated the landing hero atmosphere, Open Graph artwork, unsubscribe page,
+   and starter email CTA to match the selected system.
+6. Added automated contrast and source-consistency regression coverage.

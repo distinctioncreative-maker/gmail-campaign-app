@@ -86,7 +86,7 @@ export function AiEmailTools({
             key={a.label}
             onClick={() => void improve(a.label, a.instruction)}
             disabled={disabled}
-            className="rounded-full border border-primary/20 bg-surface px-2.5 py-1 text-xs text-muted transition hover:border-primary disabled:opacity-50"
+            className="rounded-full border border-info/20 bg-surface px-2.5 py-1 text-xs text-muted transition hover:border-info disabled:opacity-50"
           >
             {busy === a.label ? "…" : a.label}
           </button>
@@ -94,7 +94,7 @@ export function AiEmailTools({
         <button
           onClick={() => void suggestSubjects()}
           disabled={disabled}
-          className="rounded-full border border-primary/20 bg-surface px-2.5 py-1 text-xs font-medium text-primary transition hover:border-primary disabled:opacity-50"
+          className="rounded-full border border-info/20 bg-surface px-2.5 py-1 text-xs font-medium text-info transition hover:border-info disabled:opacity-50"
         >
           {busy === "subjects" ? "…" : "Subject ideas"}
         </button>
@@ -110,7 +110,7 @@ export function AiEmailTools({
                 onSubject(s);
                 toast("Subject applied.", "success");
               }}
-              className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-left text-xs text-foreground transition hover:border-primary"
+              className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-left text-xs text-foreground transition hover:border-info"
             >
               {s}
             </button>

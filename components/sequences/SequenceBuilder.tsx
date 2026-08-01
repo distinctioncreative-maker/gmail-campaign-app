@@ -222,7 +222,7 @@ export function SequenceBuilder({
                     onClick={() => updateStep(i, { bodyMode: mode })}
                     className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
                       step.bodyMode === mode
-                        ? "bg-primary text-white"
+                        ? "bg-primary text-primary-contrast"
                         : "bg-surface-2 text-muted hover:bg-border"
                     }`}
                   >

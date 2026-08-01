@@ -67,7 +67,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
                   ? "alert-success text-success"
                   : t.variant === "error"
                     ? "alert-danger text-danger"
-                    : "border-border bg-surface text-foreground"
+                    : "alert-info text-info"
               }`}
             >
               {t.message}

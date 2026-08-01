@@ -174,7 +174,7 @@ export function ProfileForm({
                 }
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
                   profile.sendingDefaults.allowedWeekdays.includes(i)
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-primary-contrast"
                     : "bg-surface-2 text-muted"
                 }`}
               >

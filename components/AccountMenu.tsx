@@ -106,7 +106,7 @@ export function AccountMenu({
       >
         <span
           aria-hidden
-          className="brand-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+          className="brand-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-brand-contrast"
         >
           {initial}
         </span>
@@ -130,7 +130,7 @@ export function AccountMenu({
           <div className="flex items-center gap-3 border-b border-border p-4">
             <span
               aria-hidden
-              className="brand-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+              className="brand-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-brand-contrast"
             >
               {initial}
             </span>

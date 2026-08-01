@@ -17,14 +17,21 @@
   --muted: #6b655e;
   --border: #e8e3dc;
 
-  /* Action colour: indigo-violet. Premium, modern, and the recognised
-     colour language of serious go-to-market software. */
-  --primary: #5b47e0;
-  --primary-hover: #4a37cc;
-  --primary-soft: #f0edfd;
-  --brand-from: #6c55ea;
-  --brand-to: #9b5cd6;
-  --accent: #5b47e0;
+  /* Brand chroma: restrained plum owns actions and selection. Editorial
+     blue supports AI, information, and system guidance. The two meet only
+     in identity gradients and ambient light, so hierarchy stays obvious. */
+  --primary: #72506f;
+  --primary-hover: #5e405b;
+  --primary-soft: #f4edf3;
+  --primary-contrast: #ffffff;
+  --info: #456a8d;
+  --info-hover: #355674;
+  --info-soft: #eaf1f7;
+  --info-contrast: #ffffff;
+  --brand-from: #72506f;
+  --brand-to: #456a8d;
+  --brand-contrast: #ffffff;
+  --accent: #456a8d;
 
   /* Revenue accent. Deliberately rationed: pipeline, replies, money. */
   --revenue: #b07d2e;
@@ -36,7 +43,7 @@
   --warning-soft: #fdf3e3;
   --danger: #d94452;
   --danger-soft: #fdedee;
-  --ring: rgba(91, 71, 224, 0.38);
+  --ring: rgba(114, 80, 111, 0.42);
 
   /* Theme-invariant public-site neutrals. The authenticated app can switch
      themes, but the public landing page always renders the same warm brand
@@ -53,6 +60,12 @@
   --marketing-on-ink: #f9f7f4;
   --marketing-on-ink-muted: #c4bdb5;
   --marketing-on-ink-subtle: #a9a199;
+  --marketing-primary: #72506f;
+  --marketing-primary-hover: #5e405b;
+  --marketing-primary-soft: #f4edf3;
+  --marketing-primary-contrast: #ffffff;
+  --marketing-info: #456a8d;
+  --marketing-info-soft: #eaf1f7;
 
   /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
   --radius-sm: 8px;
@@ -66,7 +79,9 @@
   --shadow-sm: 0 1px 2px rgba(40, 32, 24, 0.045);
   --shadow-md: 0 8px 22px -14px rgba(40, 32, 24, 0.16), 0 2px 5px -3px rgba(40, 32, 24, 0.07);
   --shadow-lg: 0 28px 58px -30px rgba(40, 32, 24, 0.26), 0 9px 22px -15px rgba(40, 32, 24, 0.13);
-  --shadow-brand: 0 18px 40px -20px rgba(91, 71, 224, 0.45);
+  --shadow-brand:
+    0 18px 40px -20px rgba(114, 80, 111, 0.42),
+    0 12px 30px -24px rgba(69, 106, 141, 0.28);
 
   /* Motion tokens, so every transition shares one curve and tempo. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -89,9 +104,18 @@
   --foreground: #f6f4f1;
   --muted: #a29a91;
   --border: #302c29;
-  --primary: #8b78ff;
-  --primary-hover: #a394ff;
-  --primary-soft: #241f3d;
+  --primary: #c7a8c4;
+  --primary-hover: #d5b9d2;
+  --primary-soft: #30242f;
+  --primary-contrast: #1d171c;
+  --info: #8eb4d2;
+  --info-hover: #a5c6df;
+  --info-soft: #182634;
+  --info-contrast: #111a21;
+  --brand-from: #c7a8c4;
+  --brand-to: #8eb4d2;
+  --brand-contrast: #171319;
+  --accent: #8eb4d2;
   --revenue: #e0aa5c;
   --revenue-soft: #2b2216;
   --success: #35c491;
@@ -100,10 +124,12 @@
   --warning-soft: #2a2116;
   --danger: #f0707a;
   --danger-soft: #2c1a1c;
-  --ring: rgba(139, 120, 255, 0.42);
+  --ring: rgba(199, 168, 196, 0.48);
   --shadow-md: 0 6px 16px -8px rgba(0, 0, 0, 0.6), 0 2px 6px -3px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 24px 50px -24px rgba(0, 0, 0, 0.75), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
-  --shadow-brand: 0 18px 40px -20px rgba(139, 120, 255, 0.4);
+  --shadow-brand:
+    0 18px 40px -20px rgba(199, 168, 196, 0.36),
+    0 12px 30px -24px rgba(142, 180, 210, 0.28);
 }
 
 /* The slate/white compatibility shims that used to live here are gone: every
@@ -118,17 +144,14 @@
 :root[data-theme="dark"] .bg-green-50 { background-color: rgba(26,158,95,0.16); }
 :root[data-theme="dark"] .bg-red-50 { background-color: rgba(229,72,77,0.16); }
 :root[data-theme="dark"] .bg-amber-50 { background-color: rgba(224,123,0,0.16); }
-:root[data-theme="dark"] .bg-blue-50 { background-color: rgba(10,132,255,0.16); }
 :root[data-theme="dark"] .text-green-700 { color: #4ade80; }
 :root[data-theme="dark"] .text-red-700 { color: #ff8085; }
 :root[data-theme="dark"] .text-amber-700 { color: #f7b955; }
-:root[data-theme="dark"] .text-blue-700 { color: #5aa9ff; }
 /* Stronger status tints (chips/badges) → muted dark equivalents */
 :root[data-theme="dark"] .bg-green-100,
 :root[data-theme="dark"] .bg-emerald-100 { background-color: rgba(26,158,95,0.22); }
 :root[data-theme="dark"] .bg-red-100 { background-color: rgba(229,72,77,0.22); }
 :root[data-theme="dark"] .bg-amber-100 { background-color: rgba(224,123,0,0.22); }
-:root[data-theme="dark"] .bg-blue-100 { background-color: rgba(10,132,255,0.22); }
 :root[data-theme="dark"] .text-emerald-700 { color: #4ade80; }
 /* bg-primary-soft needs no override: --primary-soft is remapped above and the
    utility is generated from the token via @theme inline. */
@@ -143,6 +166,12 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-contrast: var(--primary-contrast);
+  --color-info: var(--info);
+  --color-info-hover: var(--info-hover);
+  --color-info-soft: var(--info-soft);
+  --color-info-contrast: var(--info-contrast);
+  --color-brand-contrast: var(--brand-contrast);
   --color-accent: var(--accent);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
@@ -166,9 +195,10 @@
 }
 
 body {
-  /* Whisper-subtle brand bloom over the warm paper base. */
+  /* Whisper-subtle plum and blue bloom over the warm paper base. */
   background:
-    radial-gradient(1100px 620px at 88% -12%, rgba(91, 71, 224, 0.055), transparent 60%),
+    radial-gradient(1100px 620px at 88% -12%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 60%),
+    radial-gradient(900px 560px at 4% 18%, color-mix(in srgb, var(--info) 5%, transparent), transparent 62%),
     var(--background);
   background-attachment: fixed;
   color: var(--foreground);
@@ -206,7 +236,7 @@ h1 { font-weight: 800; letter-spacing: -0.034em; }
   border: 3px solid transparent;
   background-clip: content-box;
 }
-*::-webkit-scrollbar-thumb:hover { background: #aeb8ca; }
+*::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--muted) 55%, var(--border)); }
 
 /* ── Surfaces ─────────────────────────────────────────────── */
 .card {
@@ -245,7 +275,8 @@ a.card-hover:focus-visible {
 /* Dark: a single deep, subtle bloom. */
 :root[data-theme="dark"] body {
   background:
-    radial-gradient(1100px 620px at 88% -12%, rgba(10, 132, 255, 0.10), transparent 60%),
+    radial-gradient(1100px 620px at 88% -12%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
+    radial-gradient(900px 560px at 4% 18%, color-mix(in srgb, var(--info) 8%, transparent), transparent 62%),
     var(--background);
 }
 
@@ -290,7 +321,7 @@ a.card-hover:focus-visible {
 
 .btn-primary {
   background: var(--primary);
-  color: #fff;
+  color: var(--primary-contrast);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04), 0 6px 16px -10px color-mix(in srgb, var(--primary) 80%, transparent);
 }
 .btn-primary:hover { background: var(--primary-hover); box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06), 0 10px 22px -10px color-mix(in srgb, var(--primary) 85%, transparent); }
@@ -328,6 +359,7 @@ a.card-hover:focus-visible {
 .alert-danger { border-color: color-mix(in srgb, var(--danger) 35%, transparent); background: color-mix(in srgb, var(--danger) 10%, var(--surface)); }
 .alert-success { border-color: color-mix(in srgb, var(--success) 35%, transparent); background: color-mix(in srgb, var(--success) 10%, var(--surface)); }
 .alert-warning { border-color: color-mix(in srgb, var(--warning) 40%, transparent); background: color-mix(in srgb, var(--warning) 12%, var(--surface)); }
+.alert-info { border-color: color-mix(in srgb, var(--info) 35%, transparent); background: color-mix(in srgb, var(--info) 10%, var(--surface)); }
 
 /* ── Button loading spinner + success flash (components/ui/Button.tsx) ─── */
 @keyframes btn-spin { to { transform: rotate(360deg); } }
@@ -391,7 +423,7 @@ a.card-hover:focus-visible {
 input, select, textarea {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-input::placeholder, textarea::placeholder { color: #98a2b3; }
+input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 76%, var(--surface)); }
 select {
   background-color: var(--surface);
   cursor: pointer;
@@ -487,8 +519,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   mix-blend-mode: screen;
 }
 .aurora-blob.b1 { background: color-mix(in srgb, var(--primary) 85%, transparent); top: -18%; right: 4%; animation: blob1 18s ease-in-out infinite; }
-.aurora-blob.b2 { background: #22d3ee; bottom: -22%; left: 2%; animation: blob2 22s ease-in-out infinite; }
-.aurora-blob.b3 { background: #7c5cff; top: 18%; left: 34%; opacity: 0.35; animation: blob3 26s ease-in-out infinite; }
+.aurora-blob.b2 { background: color-mix(in srgb, var(--info) 88%, transparent); bottom: -22%; left: 2%; animation: blob2 22s ease-in-out infinite; }
+.aurora-blob.b3 { background: color-mix(in srgb, var(--brand-to) 72%, var(--primary)); top: 18%; left: 34%; opacity: 0.35; animation: blob3 26s ease-in-out infinite; }
 :root[data-theme="dark"] .aurora-blob { opacity: 0.4; }
 @keyframes blob1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-8%, 10%) scale(1.15); } }
 @keyframes blob2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(10%, -8%) scale(1.2); } }

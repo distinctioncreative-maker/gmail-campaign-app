@@ -436,7 +436,7 @@ export function TemplateEditor({
               <button
                 onClick={() =>
                   insertHtmlAtCursor(
-                    `<a href="https://example.com" style="display:inline-block;background:#1d4ed8;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600">Book a call</a>`
+                    `<a href="https://example.com" style="display:inline-block;background:#72506f;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600">Book a call</a>`
                   )
                 }
                 className="rounded px-2 py-1 hover:bg-border"

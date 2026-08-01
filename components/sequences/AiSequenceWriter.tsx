@@ -56,19 +56,19 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
   if (enabled === false) return null;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-xl border border-primary/20 bg-primary-soft/40">
+    <div className="mb-4 overflow-hidden rounded-xl border border-info/20 bg-info-soft/55">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
           disabled={enabled === null}
-          className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-primary transition hover:bg-primary-soft disabled:opacity-60"
+          className="flex w-full items-center gap-2 p-3 text-left text-sm font-medium text-info transition hover:bg-info-soft disabled:opacity-60"
         >
           <Icon name="sparkles" size={16} aria-hidden />
           Draft the whole sequence with AI
         </button>
       ) : (
         <div className="p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-primary">
+          <div className="flex items-center gap-2 text-sm font-medium text-info">
             <Icon name="sparkles" size={16} aria-hidden /> Describe the follow-up sequence
           </div>
           <textarea
@@ -77,14 +77,14 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
             rows={2}
             autoFocus
             placeholder="e.g. Three gentle nudges over two weeks for owners who didn't reply to a working-capital intro"
-            className="mt-2 w-full rounded-xl border border-primary/20 bg-surface p-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-info/20 bg-surface p-2.5 text-sm focus:border-info focus:outline-none"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
             {IDEAS.map((i) => (
               <button
                 key={i}
                 onClick={() => setPrompt(i)}
-                className="rounded-full border border-primary/20 bg-surface px-2.5 py-1 text-xs text-muted hover:border-primary"
+                className="rounded-full border border-info/20 bg-surface px-2.5 py-1 text-xs text-muted hover:border-info"
               >
                 {i}
               </button>

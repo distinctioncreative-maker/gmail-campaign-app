@@ -92,6 +92,9 @@ describe("landing-page experience", () => {
       ["marketing-on-ink", "marketing-ink"],
       ["marketing-on-ink-muted", "marketing-ink"],
       ["marketing-on-ink-subtle", "marketing-ink"],
+      ["marketing-primary", "marketing-paper"],
+      ["marketing-info", "marketing-paper"],
+      ["marketing-primary-contrast", "marketing-primary"],
     ] as const;
 
     for (const [foreground, background] of textPairs) {

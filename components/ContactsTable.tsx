@@ -77,9 +77,9 @@ export function ContactsTable({ contacts }: { contacts: ContactRow[] }) {
     c.suppressed || c.emailOptOut
       ? { label: "Excluded for safety", className: "bg-amber-100 text-amber-700" }
       : c.repliedAt
-        ? { label: "Replied", className: "bg-blue-100 text-blue-700" }
+        ? { label: "Replied", className: "bg-info-soft text-info" }
         : c.campaignCount > 0
-          ? { label: "Contacted before", className: "bg-blue-100 text-blue-700" }
+          ? { label: "Contacted before", className: "bg-info-soft text-info" }
           : { label: "Ready", className: "bg-green-100 text-green-700" };
 
   const { sorted, sort, toggle } = useSort<

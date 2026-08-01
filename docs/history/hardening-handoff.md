@@ -789,3 +789,74 @@ isolation, `SIGNUP_MODE`, `TEST_MODE`, `FORCE_TEST_MODE`, billing activation,
 email delivery, suppression enforcement, idempotency, campaign safety,
 Firestore rules or indexes, OAuth scopes, secrets, or cloud configuration. It
 must not be deployed by an agent.
+
+## Restrained plum and editorial blue brand system, 2026-08-01
+
+This visual-system pass starts from verified `main` commit
+`d0de725cca807b087c5eae542d60dc040fa793d9` and is implemented on
+`agent/plum-blue-brand`. The founder selected option B, restrained plum, and
+explicitly asked for blue to remain part of the identity. Publication and
+deployment were not authorized by this request.
+
+Implemented:
+
+- replaced the retired electric indigo with a semantic plum action lane:
+  `#72506f` primary, `#5e405b` hover, and `#f4edf3` soft in light mode;
+- added an editorial blue information lane: `#456a8d` information,
+  `#355674` hover, and `#eaf1f7` soft in light mode;
+- tuned lifted dark-theme plum and blue tokens, plus separate foreground-on-fill
+  tokens so primary buttons, blue controls, and plum-to-blue identity gradients
+  retain AA text contrast in both themes;
+- assigned plum to calls to action, focus, selection, active navigation, and
+  primary data while assigning blue to AI writing, AI sequences, campaign
+  personalization, informational toasts and badges, previously contacted
+  states, and activity-chart transitions;
+- moved the logo, compact identity moments, sign-in panel, ambient page light,
+  Home aurora, and chart endpoint onto a coordinated plum-to-blue system;
+- made the public marketing plum and blue tokens theme-invariant so a saved
+  dashboard theme cannot change landing-page contrast or CTA readability;
+- refined the landing hero atmosphere with a restrained plum bloom and blue
+  signal light without changing layout, copy, motion cadence, responsive
+  behavior, pilot-request behavior, or deliverability qualifications;
+- updated the Open Graph image, signed unsubscribe page, and starter email CTA
+  so ancillary public surfaces no longer present the retired blue-only brand;
+- removed all direct blue, purple, violet, and indigo utility classes from
+  product source and replaced them with semantic information or primary tokens;
+- documented the approved decision and exact contrast evidence in
+  `docs/brand.md` and `docs/brand-primary-options.md`;
+- registered the shipped brand system in the shared feature registry and
+  regenerated `docs/features.md`, which also powers `/admin/features`;
+- added `tests/unit/brand-palette.test.ts` to verify exact light/dark tokens,
+  body text, soft-surface text, filled-control text, both gradient endpoints,
+  the absence of retired colors, semantic AI use, and marketing invariance.
+
+Measured contrast includes plum on paper at 6.24:1, blue on paper at 5.22:1,
+light filled controls at 6.79:1 and 5.68:1, dark plum and blue on the dark
+surface at 8.36:1 and 8.17:1, and dark filled controls at 8.25:1 and 8.05:1.
+
+Local verification:
+
+```bash
+npm run docs:features                           # pass
+npx vitest run tests/unit/brand-palette.test.ts tests/unit/landing-experience.test.ts tests/unit/premium-design-system.test.ts
+                                                # pass: 3 files, 20 tests
+npm run typecheck                               # pass
+npm run lint                                    # pass
+npm test                                        # pass: 47 files, 340 tests
+npm run build                                   # pass: 72 routes
+npm audit --omit=dev --audit-level=high         # pass: 0 vulnerabilities
+git diff --check                                # pass
+```
+
+A production standalone smoke check returned HTTP 200 for `/` and `/sign-in`,
+found the conversion headline in server-rendered HTML, and confirmed CSP,
+HSTS, Referrer-Policy, `nosniff`, frame denial, Permissions-Policy, and COOP
+headers. The generated production CSS contains the approved plum and blue
+tokens. The cloud visual browser still blocks local loopback and local-file
+URLs, so real-device screenshot confirmation remains an external observation
+step rather than an unverified release claim.
+
+This pass changes presentation tokens and semantic styling only. It does not
+change authentication, authorization, tenant isolation, signup mode, test
+modes, billing, sending, suppression enforcement, idempotency, campaign safety,
+Firestore, OAuth, secrets, cloud resources, or production traffic.

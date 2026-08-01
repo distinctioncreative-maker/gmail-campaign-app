@@ -296,7 +296,7 @@ export function QuickActions() {
         <Link key={a.href} href={a.href} className="card card-hover group p-5">
           <span
             aria-hidden
-            className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
+            className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-brand-contrast shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
           >
             <Icon name={a.icon} size={22} />
           </span>

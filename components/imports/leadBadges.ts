@@ -9,8 +9,8 @@ export type ClassifiedLead = ParsedLead & {
 export const BADGES: Record<string, { label: string; className: string; selectable: boolean }> = {
   NEW: { label: "Ready", className: "bg-green-100 text-green-700", selectable: true },
   EXISTING_NOT_CONTACTED: { label: "Ready", className: "bg-green-100 text-green-700", selectable: true },
-  CONTACTED_BEFORE: { label: "Used before", className: "bg-blue-100 text-blue-700", selectable: true },
-  REPLIED_BEFORE: { label: "Replied before", className: "bg-blue-100 text-blue-700", selectable: true },
+  CONTACTED_BEFORE: { label: "Used before", className: "bg-info-soft text-info", selectable: true },
+  REPLIED_BEFORE: { label: "Replied before", className: "bg-info-soft text-info", selectable: true },
   INVALID: { label: "Missing email", className: "bg-red-100 text-red-700", selectable: false },
   EMAIL_OPT_OUT: { label: "Opted out", className: "bg-amber-100 text-amber-700", selectable: false },
   UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-amber-100 text-amber-700", selectable: false },

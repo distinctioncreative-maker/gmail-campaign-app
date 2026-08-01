@@ -47,7 +47,7 @@ export default function SignInPage() {
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
       {/* Brand panel */}
-      <div className="brand-gradient relative hidden overflow-hidden p-12 text-white lg:flex lg:flex-col">
+      <div className="brand-gradient relative hidden overflow-hidden p-12 text-brand-contrast lg:flex lg:flex-col">
         <div className="aurora" aria-hidden>
           <span className="aurora-blob b1" />
           <span className="aurora-blob b2" />
@@ -63,7 +63,7 @@ export default function SignInPage() {
         />
 
         <Link href="/" className="relative flex items-center gap-3 transition-opacity hover:opacity-80">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface/15 text-white backdrop-blur">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface/15 text-brand-contrast backdrop-blur">
             <LogoMark size={26} className="[--brand-from:#fff] [--brand-to:#fff]" />
           </span>
           <span className="text-2xl font-semibold tracking-tight">{APP_NAME}</span>
@@ -74,14 +74,14 @@ export default function SignInPage() {
             Personal email campaigns,
             <br /> sent from your own Gmail.
           </h2>
-          <ul className="mt-8 space-y-4 text-white/90">
+          <ul className="mt-8 space-y-4 text-brand-contrast/90">
             {([
               ["mail", "Sends through your Gmail: replies come to your inbox"],
               ["shield", "Clears the deliverability gate before every send"],
               ["reply", "Follow-ups stop automatically when someone replies"],
             ] as Array<[IconName, string]>).map(([icon, label]) => (
               <li key={label} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface/15 text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface/15 text-brand-contrast">
                   <Icon name={icon} size={18} />
                 </span>
                 {label}

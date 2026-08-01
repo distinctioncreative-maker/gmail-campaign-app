@@ -637,6 +637,13 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         description: "The public landing page uses a theme-invariant warm neutral ramp from the shared brand tokens, with no literal hex colors left in its component stylesheet. Foreground, muted, and on-ink text pairs are regression-tested at WCAG AA contrast, while dark marketing bands use warm off-whites that remain visually consistent with the paper surfaces.",
         keyFiles: ["app/globals.css", "components/marketing/landing.module.css", "docs/brand.md", "tests/unit/landing-experience.test.ts"],
       },
+      {
+        id: "plum-blue-brand-system",
+        name: "Restrained plum and editorial blue brand system",
+        status: "shipped",
+        description: "Cadence uses restrained plum for primary actions and selection, editorial blue for AI and informational states, and a plum-to-blue identity gradient. Light and dark themes have separate foreground-on-fill tokens, measured AA contrast pairs, semantic status colors, coordinated ambient light, and regression coverage that prevents the retired electric indigo and direct palette utilities from returning.",
+        keyFiles: ["app/globals.css", "components/marketing/landing.module.css", "components/templates/AiEmailWriter.tsx", "components/sequences/AiSequenceWriter.tsx", "components/home/PulseChart.tsx", "docs/brand.md", "tests/unit/brand-palette.test.ts"],
+      },
     ],
   },
 ];

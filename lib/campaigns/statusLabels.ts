@@ -7,8 +7,8 @@ export const CAMPAIGN_STATUS_LABELS: Record<
 > = {
   DRAFT: { label: "Draft", className: "bg-surface-2 text-muted" },
   VALIDATING: { label: "Preparing", className: "bg-surface-2 text-muted" },
-  READY: { label: "Ready", className: "bg-blue-100 text-blue-700" },
-  PREPARING: { label: "Preparing", className: "bg-blue-100 text-blue-700" },
+  READY: { label: "Ready", className: "bg-info-soft text-info" },
+  PREPARING: { label: "Preparing", className: "bg-info-soft text-info" },
   ACTIVE: { label: "Sending", className: "bg-green-100 text-green-700" },
   PAUSED: { label: "Paused", className: "bg-amber-100 text-amber-700" },
   STOPPED: { label: "Stopped", className: "bg-border text-muted" },
@@ -21,8 +21,8 @@ export const CAMPAIGN_STATUS_LABELS: Record<
  * recipient table (campaign detail, team read-only view, …). */
 export const RECIPIENT_STATUS_LABELS: Record<string, { label: string; className: string }> = {
   PENDING: { label: "Waiting", className: "bg-surface-2 text-muted" },
-  SCHEDULED: { label: "Scheduled", className: "bg-blue-100 text-blue-700" },
-  DRAFTED: { label: "Draft created", className: "bg-blue-100 text-blue-700" },
+  SCHEDULED: { label: "Scheduled", className: "bg-info-soft text-info" },
+  DRAFTED: { label: "Draft created", className: "bg-info-soft text-info" },
   SENT: { label: "Sent", className: "bg-green-100 text-green-700" },
   REPLIED: { label: "Replied", className: "bg-green-100 text-green-700" },
   BOUNCED: { label: "Bounced", className: "bg-amber-100 text-amber-700" },

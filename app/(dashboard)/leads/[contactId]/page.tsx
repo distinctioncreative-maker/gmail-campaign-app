@@ -57,7 +57,7 @@ export default async function ContactDetailPage({
               Replied {contact.replyCount > 1 ? `${contact.replyCount}×` : ""}
             </span>
           ) : contact.campaignCount > 0 ? (
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700">
+            <span className="rounded-full bg-info-soft px-3 py-1 text-sm text-info">
               Contacted before
             </span>
           ) : (

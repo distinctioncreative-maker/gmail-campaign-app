@@ -53,7 +53,8 @@ geometric face is most of what makes type look designed rather than default.
 
 ## Colour
 
-Warm neutrals, one action colour, one rationed revenue accent.
+Warm neutrals, restrained plum for action, editorial blue for intelligence,
+and one rationed revenue accent.
 
 | Token | Light | Meaning |
 |---|---|---|
@@ -62,7 +63,12 @@ Warm neutrals, one action colour, one rationed revenue accent.
 | `--foreground` | `#1d1b18` | Warm near-black. Never pure black. |
 | `--muted` | `#6b655e` | Secondary text |
 | `--border` | `#e8e3dc` | Hairlines |
-| `--primary` | `#5b47e0` | Indigo-violet. Actions, focus, brand. |
+| `--primary` | `#72506f` | Restrained plum. Primary actions, focus, selection. |
+| `--primary-hover` | `#5e405b` | Stronger plum for active actions. |
+| `--primary-soft` | `#f4edf3` | Selected navigation, primary chips, quiet emphasis. |
+| `--info` | `#456a8d` | Editorial blue. AI, informational states, system guidance. |
+| `--info-hover` | `#355674` | Stronger blue for interactive information. |
+| `--info-soft` | `#eaf1f7` | AI panels, informational badges, contextual guidance. |
 | `--revenue` | `#b07d2e` | Money only: pipeline, replies won, revenue |
 | `--success` | `#0e9f6e` | Positive state |
 | `--warning` | `#cc7a00` | Deliverability risk |
@@ -86,25 +92,34 @@ that ramp:
 | `--marketing-on-ink` | `#f9f7f4` | Primary text on ink, 18.13:1 |
 | `--marketing-on-ink-muted` | `#c4bdb5` | Secondary text on ink, 10.43:1 |
 | `--marketing-on-ink-subtle` | `#a9a199` | Tertiary text on ink, 7.61:1 |
+| `--marketing-primary` | `#72506f` | Theme-invariant plum actions and selection |
+| `--marketing-primary-soft` | `#f4edf3` | Theme-invariant selected surfaces |
+| `--marketing-info` | `#456a8d` | Theme-invariant blue signals and AI atmosphere |
+| `--marketing-info-soft` | `#eaf1f7` | Theme-invariant informational surfaces |
 
 `components/marketing/landing.module.css` must contain no literal hex colors.
 Use these tokens, a semantic product token, or `color-mix()` derived from
 them. Body text must reach at least 4.5:1 against its actual surface. Large
 text and meaningful graphical controls must reach at least 3:1.
 
-### Primary color decision
+### Selected brand direction
 
-The current indigo-violet remains in place until the founder chooses a new
-direction. The exact AA-compliant candidates, risks, and token replacements
-are documented in [brand-primary-options.md](brand-primary-options.md). Do not
-change `--primary` without recording that choice there and updating both
-light and dark theme tokens.
+The founder selected option B, restrained plum, with editorial blue as the
+supporting color. Plum owns primary action and selection. Blue identifies AI,
+information, and system guidance. The logo, identity gradients, ambient light,
+and the activity chart may blend both colors; ordinary controls should not.
+That separation prevents every screen from becoming purple while keeping the
+system recognizably Cadence.
+
+The decision history and measured contrast pairs are recorded in
+[brand-primary-options.md](brand-primary-options.md).
 
 **The revenue accent is rationed on purpose.** If it appears everywhere it stops
 meaning money. Use it for the numbers a customer would screenshot for their boss.
 
-Dark mode is warm-toned charcoal (`#0e0d0c`, `#191716`) with a lifted primary
-(`#8b78ff`) so it reads as the same brand rather than a different product.
+Dark mode is warm-toned charcoal (`#0e0d0c`, `#191716`) with lifted plum
+(`#c7a8c4`) and blue (`#8eb4d2`). Filled controls use theme-specific contrast
+tokens, so text remains readable on the lighter dark-theme accents.
 
 ## Shape, depth, motion
 

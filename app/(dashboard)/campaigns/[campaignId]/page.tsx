@@ -261,7 +261,7 @@ export default async function CampaignDetailPage({
                 : ""}
             </p>
             <p>
-              <span className="font-semibold text-purple-600">{clickedCount}</span>{" "}
+              <span className="font-semibold text-info">{clickedCount}</span>{" "}
               unique clicker{clickedCount === 1 ? "" : "s"}
             </p>
           </div>

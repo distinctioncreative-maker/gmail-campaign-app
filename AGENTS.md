@@ -136,12 +136,12 @@ dark-mode override table in `globals.css` are covered (currently the
 and render washed out in dark mode — this bit several real components
 (toasts, the site-wide test-mode banner, danger-confirmation panels) before
 being caught in 2026-07. For a tinted panel (border + background), use the
-`.alert-danger` / `.alert-success` / `.alert-warning` classes in
+`.alert-danger` / `.alert-success` / `.alert-warning` / `.alert-info` classes in
 `globals.css` instead of hand-picking Tailwind shades; for a solitary danger
 button, use `.btn-danger`; for standalone text/border color, use the
 Tailwind utilities `text-danger`/`text-success`/`text-warning`/
 `border-danger` etc. (auto-generated from the `--color-danger` /
-`--color-success` / `--color-warning` tokens registered in `@theme inline` —
+`--color-success` / `--color-warning` / `--color-info` tokens registered in `@theme inline` —
 these don't need a dark override since the token's hex value already has
 enough contrast on both a near-white and a near-black surface, the same way
 `.btn-danger` has always worked). A fully solid/opaque tint (e.g. a solid

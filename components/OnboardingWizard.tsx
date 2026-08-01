@@ -82,7 +82,7 @@ export function OnboardingWizard({
               i < step
                 ? "bg-green-100 text-green-700"
                 : i === step
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-primary-contrast"
                   : "bg-surface-2 text-muted/70"
             }`}
           >
