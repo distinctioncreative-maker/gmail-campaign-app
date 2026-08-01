@@ -68,6 +68,38 @@ Warm neutrals, one action colour, one rationed revenue accent.
 | `--warning` | `#cc7a00` | Deliverability risk |
 | `--danger` | `#d94452` | Destructive, failure |
 
+### Public marketing neutrals
+
+The public landing page is intentionally theme-invariant. A visitor should
+see the same warm Cadence palette whether or not a saved dashboard theme is
+present in the browser. The `--marketing-*` tokens in `app/globals.css` own
+that ramp:
+
+| Token | Value | Use |
+|---|---|---|
+| `--marketing-paper` | `#f7f5f2` | Main page background |
+| `--marketing-surface` | `#ffffff` | Product frames and cards |
+| `--marketing-copy` | `#1d1b18` | Headings and primary text |
+| `--marketing-muted` | `#6b655e` | Secondary text, 5.29:1 on paper |
+| `--marketing-border` | `#e8e3dc` | Hairlines and resting borders |
+| `--marketing-ink` | `#0f0d0c` | Hero, trust, CTA, and footer bands |
+| `--marketing-on-ink` | `#f9f7f4` | Primary text on ink, 18.13:1 |
+| `--marketing-on-ink-muted` | `#c4bdb5` | Secondary text on ink, 10.43:1 |
+| `--marketing-on-ink-subtle` | `#a9a199` | Tertiary text on ink, 7.61:1 |
+
+`components/marketing/landing.module.css` must contain no literal hex colors.
+Use these tokens, a semantic product token, or `color-mix()` derived from
+them. Body text must reach at least 4.5:1 against its actual surface. Large
+text and meaningful graphical controls must reach at least 3:1.
+
+### Primary color decision
+
+The current indigo-violet remains in place until the founder chooses a new
+direction. The exact AA-compliant candidates, risks, and token replacements
+are documented in [brand-primary-options.md](brand-primary-options.md). Do not
+change `--primary` without recording that choice there and updating both
+light and dark theme tokens.
+
 **The revenue accent is rationed on purpose.** If it appears everywhere it stops
 meaning money. Use it for the numbers a customer would screenshot for their boss.
 

@@ -38,6 +38,22 @@
   --danger-soft: #fdedee;
   --ring: rgba(91, 71, 224, 0.38);
 
+  /* Theme-invariant public-site neutrals. The authenticated app can switch
+     themes, but the public landing page always renders the same warm brand
+     palette. Keeping this ramp here prevents its component stylesheet from
+     drifting back into one-off cool greys. */
+  --marketing-paper: #f7f5f2;
+  --marketing-surface: #ffffff;
+  --marketing-surface-2: #faf8f5;
+  --marketing-copy: #1d1b18;
+  --marketing-muted: #6b655e;
+  --marketing-border: #e8e3dc;
+  --marketing-ink: #0f0d0c;
+  --marketing-ink-soft: #1a1613;
+  --marketing-on-ink: #f9f7f4;
+  --marketing-on-ink-muted: #c4bdb5;
+  --marketing-on-ink-subtle: #a9a199;
+
   /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
   --radius-sm: 8px;
   --radius-md: 12px;

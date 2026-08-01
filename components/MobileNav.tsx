@@ -160,7 +160,7 @@ export function MobileNav({
             </div>
 
             <div className="mt-4 border-t border-border pt-4">
-              <AccountMenu displayName={displayName} email={email} role={role} />
+              <AccountMenu displayName={displayName} email={email} role={role} placement="inline" />
             </div>
           </div>
         </div>

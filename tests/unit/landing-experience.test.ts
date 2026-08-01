@@ -9,6 +9,15 @@ const landingStyles = readFileSync(
   "components/marketing/landing.module.css",
   "utf8"
 );
+const globalStyles = readFileSync("app/globals.css", "utf8");
+
+function tokenHex(name: string): string {
+  const value = globalStyles.match(
+    new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6});`)
+  )?.[1];
+  if (!value) throw new Error(`Missing six-digit token --${name}`);
+  return value;
+}
 
 function relativeLuminance(hex: string): number {
   const channels = hex
@@ -38,6 +47,17 @@ function contrastRatio(foreground: string, background: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+function mixHex(first: string, second: string, firstWeight: number): string {
+  const firstChannels = first.replace("#", "").match(/.{2}/g)?.map((value) => Number.parseInt(value, 16));
+  const secondChannels = second.replace("#", "").match(/.{2}/g)?.map((value) => Number.parseInt(value, 16));
+  if (!firstChannels || !secondChannels) throw new Error("Expected six-digit hex colors");
+  return `#${firstChannels.map((value, index) =>
+    Math.round(value * firstWeight + secondChannels[index] * (1 - firstWeight))
+      .toString(16)
+      .padStart(2, "0")
+  ).join("")}`;
+}
+
 describe("landing-page experience", () => {
   it("uses a calm typographic wordmark in the public navigation", () => {
     const navigation = landingSource.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
@@ -52,8 +72,49 @@ describe("landing-page experience", () => {
     expect(landingStyles).toMatch(
       /\.root \.navPilot \{[\s\S]*?color: var\(--landing-copy\);/
     );
-    expect(contrastRatio("#1d1b18", "#f3f7fc")).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(
+        tokenHex("marketing-copy"),
+        tokenHex("marketing-surface-2")
+      )
+    ).toBeGreaterThanOrEqual(4.5);
     expect(landingSource).toContain("Request a pilot <Arrow />");
+  });
+
+  it("uses only the semantic warm palette and keeps text pairs at AA contrast", () => {
+    expect(landingStyles.match(/#[0-9a-fA-F]{3,8}/g) ?? []).toHaveLength(0);
+
+    const textPairs = [
+      ["marketing-copy", "marketing-paper"],
+      ["marketing-muted", "marketing-paper"],
+      ["marketing-copy", "marketing-surface"],
+      ["marketing-muted", "marketing-surface"],
+      ["marketing-on-ink", "marketing-ink"],
+      ["marketing-on-ink-muted", "marketing-ink"],
+      ["marketing-on-ink-subtle", "marketing-ink"],
+    ] as const;
+
+    for (const [foreground, background] of textPairs) {
+      expect(
+        contrastRatio(tokenHex(foreground), tokenHex(background)),
+        `${foreground} on ${background}`
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+
+    const semanticTextPairs = [
+      [mixHex(tokenHex("success"), tokenHex("marketing-copy"), 0.7), tokenHex("marketing-paper")],
+      [mixHex(tokenHex("revenue"), tokenHex("marketing-copy"), 0.68), tokenHex("marketing-paper")],
+      [mixHex(tokenHex("danger"), tokenHex("marketing-copy"), 0.72), tokenHex("marketing-paper")],
+      [mixHex(tokenHex("marketing-on-ink"), tokenHex("danger"), 0.54), tokenHex("marketing-ink")],
+    ] as const;
+
+    for (const [foreground, background] of semanticTextPairs) {
+      expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(4.5);
+    }
+
+    for (const retiredColdColor of ["#718096", "#7a8799", "#2777e9", "#c7d7eb", "#d7e0eb"]) {
+      expect(landingStyles.toLowerCase()).not.toContain(retiredColdColor);
+    }
   });
 
   it("centers and focuses the pilot email field from every shared CTA", () => {
@@ -95,6 +156,12 @@ describe("landing-page experience", () => {
     expect(landingStyles).toContain("@keyframes signalSweep");
     expect(landingStyles).toContain("animation-timeline: view()");
     expect(landingStyles).toContain("contain: paint");
+    expect(landingStyles).toMatch(
+      /@keyframes heroReveal \{[\s\S]*?from \{[\s\S]*?opacity: 0\.72;/
+    );
+    expect(landingStyles).toMatch(
+      /@keyframes frameReveal \{[\s\S]*?from \{[\s\S]*?opacity: 0\.42;/
+    );
   });
 
   it("keeps demo interactions deterministic and away from production APIs", () => {

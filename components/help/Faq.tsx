@@ -91,6 +91,15 @@ const SECTIONS: Array<{ heading: string; items: QA[] }> = [
       },
     ],
   },
+  {
+    heading: "Account & access",
+    items: [
+      {
+        q: "How do I switch accounts or sign out?",
+        a: "On a computer, use the account control at the bottom of the left sidebar. On a phone, open More and use the account control at the bottom of the sheet. Choose Switch account to open Google's account chooser, or Sign out to end both your Cadence server session and browser session. Disconnect Gmail in Settings only revokes campaign access; it does not sign you out of Cadence.",
+      },
+    ],
+  },
 ];
 
 export function Faq({ query = "" }: { query?: string }) {

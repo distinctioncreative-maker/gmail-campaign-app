@@ -712,3 +712,80 @@ This pass does not change authentication, authorization, tenant isolation,
 signup mode, billing activation, email delivery, campaign safety, Firestore
 rules or indexes, OAuth, secrets, or cloud configuration. It must not be
 deployed by an agent.
+
+## Marketing contrast and account-access hardening, 2026-08-01
+
+This pass starts from verified `main` commit
+`7c8caa821084418602d80d96d509414663afcdd8` and was implemented on
+`agent/design-regression-accessibility`. Direct publication to `main` was
+authorized; deployment remains explicitly out of scope.
+
+Before changing source, the production landing page at
+`https://outreach-616949765761.us-central1.run.app/` was inspected in a real
+browser. The workflow content and pilot form were functional, but muted text
+still carried the older cool-grey character and the hero began near invisible,
+making the first viewport appear blank during its initial reveal. The top
+navigation pilot action moved focus to the hero email field and kept that field
+inside the desktop viewport.
+
+Implemented:
+
+- moved the public landing page onto a theme-invariant warm neutral ramp in
+  `app/globals.css`, removed all 217 literal hex colors from
+  `components/marketing/landing.module.css`, and assigned semantic foreground,
+  muted, on-ink, border, success, revenue, and danger combinations;
+- added source-level contrast regression tests for public paper, surface, and
+  dark-band text pairs, including computed color mixes, and kept normal text at
+  WCAG AA contrast targets;
+- preserved every landing section, conversion claim, pilot-request behavior,
+  safety caveat, responsive breakpoint, and reduced-motion behavior;
+- raised the initial hero and product-frame reveal opacity so the value
+  proposition is immediately visible while the premium entrance motion still
+  runs;
+- made the persistent account control explicitly say `Switch or sign out`,
+  added a clear account label and accessible menu relationship, returned focus
+  after Escape, and kept actions at practical touch-target sizes;
+- moved the desktop menu beside the sidebar and made the mobile menu expand
+  within the scrollable navigation sheet, preventing upward clipping on short
+  viewports;
+- replaced raw red sign-out utilities with semantic danger tokens, added the
+  shared logout icon, and removed the unused standalone sign-out component;
+- documented account switching in the in-product Help Center and user guide;
+- registered the marketing contrast system and updated account behavior in the
+  shared feature registry, then regenerated `docs/features.md`, which also
+  powers `/admin/features` inside the application;
+- documented public marketing tokens and their usage in `docs/brand.md`.
+
+The authenticated app primary color was not changed. The handoff requires an
+owner decision before that global brand change. Three accessible options,
+exact tokens, contrast ratios, tradeoffs, and a recommended restrained plum
+direction are recorded in `docs/brand-primary-options.md`.
+
+Local verification before publication:
+
+```bash
+NPM_CONFIG_CACHE=/tmp/cadence-npm-cache npm ci  # pass: 1,148 packages
+npm run docs:features                           # pass
+npx vitest run tests/unit/landing-experience.test.ts tests/unit/premium-design-system.test.ts
+                                                # pass: 2 files, 15 tests
+npm run typecheck                               # pass
+npm run lint                                    # pass
+npm test                                        # pass: 46 files, 335 tests
+npm run build                                   # pass: 72 routes
+npm audit --omit=dev --audit-level=high         # pass: 0 vulnerabilities
+git diff --check                                # pass
+```
+
+A standalone production smoke check returned HTTP 200 for `/`, found the hero
+and all three pilot calls to action in server-rendered HTML, and confirmed CSP,
+HSTS, Referrer-Policy, `nosniff`, frame denial, Permissions-Policy, and COOP
+headers. The cloud visual browser blocks local loopback and local-file URLs, so
+post-change browser screenshots could not be captured from this environment;
+no indirect bypass was attempted. GitHub Actions remains the authoritative
+Firestore emulator and integration gate after publication.
+
+This pass does not alter authentication flow semantics, authorization, tenant
+isolation, `SIGNUP_MODE`, `TEST_MODE`, `FORCE_TEST_MODE`, billing activation,
+email delivery, suppression enforcement, idempotency, campaign safety,
+Firestore rules or indexes, OAuth scopes, secrets, or cloud configuration. It
+must not be deployed by an agent.

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -20,6 +20,23 @@ describe("premium shared design system", () => {
     );
     expect(read("components/MobileNav.tsx")).toContain("min-h-14");
     expect(read("components/MobileNav.tsx")).toContain("min-h-11 min-w-11");
+  });
+
+  it("makes account switching and sign-out explicit, accessible, and unclipped", () => {
+    const accountMenu = read("components/AccountMenu.tsx");
+    const sidebar = read("components/Sidebar.tsx");
+    const mobileNav = read("components/MobileNav.tsx");
+
+    expect(accountMenu).toContain("Switch or sign out");
+    expect(accountMenu).toContain("account menu. Switch account or sign out.");
+    expect(accountMenu).toContain('aria-label="Account actions"');
+    expect(accountMenu).toContain("max-h-[calc(100vh-2rem)]");
+    expect(accountMenu).toContain("text-danger");
+    expect(accountMenu).toContain("hover:bg-danger-soft");
+    expect(accountMenu).not.toMatch(/text-red-(?:400|600)|hover:bg-red-50/);
+    expect(sidebar).toContain('placement="side"');
+    expect(mobileNav).toContain('placement="inline"');
+    expect(existsSync("components/SignOutButton.tsx")).toBe(false);
   });
 
   it("uses the shared icon language instead of decorative emoji in core journeys", () => {

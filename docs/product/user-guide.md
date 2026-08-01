@@ -10,6 +10,19 @@ pilot, use an account on a domain that an administrator has approved.
 Consumer Gmail accounts remain blocked until public OAuth verification is
 complete and production signup is deliberately switched to open mode.
 
+## Switching accounts and signing out
+
+On a computer, use the account control at the bottom of the left sidebar. On
+a phone, open **More** and use the account control at the bottom of the sheet.
+The control is labeled **Switch or sign out** so the actions are visible
+without guessing that the profile card is clickable.
+
+**Switch account** opens the Google account chooser and creates a fresh
+Cadence session for the selected approved account. **Sign out** ends the
+server session and the browser's Firebase session, then returns to the public
+homepage. Disconnecting Gmail in Settings is separate: it revokes Cadence's
+campaign access but does not sign you out of the app.
+
 ## Connecting your Gmail
 
 1. Go to **Settings**.

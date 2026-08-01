@@ -11,6 +11,7 @@ Everything below is the deeper reference.
 | [data-model.md](data-model.md) | Firestore collections, ownership scoping, and index requirements |
 | [features.md](features.md) | Every feature and its status. **Generated** from `lib/features/registry.ts` by `npm run docs:features` — never hand-edit |
 | [brand.md](brand.md) | Audience, voice rules, typography, colour, radius, motion. Read before touching UI or copy |
+| [brand-primary-options.md](brand-primary-options.md) | Founder decision record for the app's primary action colour |
 | [security.md](security.md) | Auth model, token encryption, tenant isolation, and the deny-by-default rules |
 | [campaign-safety.md](campaign-safety.md) | Suppression, bounce handling, pacing limits, and the guards that stop a bad send |
 | [salesforce-parser.md](salesforce-parser.md) | How pasted Salesforce text is parsed into leads |

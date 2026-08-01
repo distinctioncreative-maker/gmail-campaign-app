@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/UIProviders";
@@ -11,16 +11,20 @@ export function AccountMenu({
   displayName,
   email,
   role,
+  placement = "side",
 }: {
   displayName: string;
   email: string;
   role: string;
+  placement?: "side" | "inline";
 }) {
   const router = useRouter();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -28,7 +32,10 @@ export function AccountMenu({
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
     }
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -41,6 +48,10 @@ export function AccountMenu({
   const initial = displayName.trim().charAt(0).toUpperCase() || "U";
   const roleLabel =
     role === "ADMIN" ? "Administrator" : role === "MANAGER" ? "Team Lead" : "Sales Rep";
+  const menuPosition =
+    placement === "inline"
+      ? "relative mt-2 w-full origin-top"
+      : "absolute bottom-0 left-[calc(100%+0.75rem)] w-72 origin-bottom-left";
 
   async function switchAccount() {
     setBusy(true);
@@ -85,10 +96,13 @@ export function AccountMenu({
   return (
     <div ref={ref} className="relative">
       <button
+        ref={triggerRef}
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-3 rounded-2xl border border-border bg-surface/80 p-3 text-left transition hover:bg-surface"
+        className="group flex min-h-14 w-full items-center gap-3 rounded-xl border border-border bg-surface/80 p-3 text-left shadow-sm transition hover:border-primary/25 hover:bg-surface"
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls={menuId}
+        aria-label={`${displayName} account menu. Switch account or sign out.`}
       >
         <span
           aria-hidden
@@ -98,15 +112,20 @@ export function AccountMenu({
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium text-foreground">{displayName}</span>
-          <span className="block truncate text-xs capitalize text-muted">{roleLabel}</span>
+          <span className="block truncate text-xs font-medium text-muted">Switch or sign out</span>
         </span>
-        <Icon name="chevronDown" size={16} className={`shrink-0 text-muted/70 transition ${open ? "rotate-180" : ""}`} />
+        <span className="flex shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted/70 group-hover:text-foreground">
+          Account
+          <Icon name="chevronDown" size={15} className={`transition ${open ? "rotate-180" : ""}`} />
+        </span>
       </button>
 
       {open && (
         <div
+          id={menuId}
           role="menu"
-          className="glass absolute bottom-full left-0 z-30 mb-2 w-64 origin-bottom animate-rise overflow-hidden rounded-2xl border border-border shadow-lg"
+          aria-label="Account actions"
+          className={`glass z-50 max-h-[calc(100vh-2rem)] animate-rise overflow-y-auto rounded-xl border border-border shadow-lg ${menuPosition}`}
         >
           <div className="flex items-center gap-3 border-b border-border p-4">
             <span
@@ -118,6 +137,7 @@ export function AccountMenu({
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
               <p className="truncate text-xs text-muted">{email}</p>
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted/70">{roleLabel}</p>
             </div>
           </div>
           <div className="p-1.5">
@@ -125,7 +145,7 @@ export function AccountMenu({
               role="menuitem"
               onClick={() => void switchAccount()}
               disabled={busy}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition hover:bg-surface-2 disabled:opacity-50"
+              className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition hover:bg-surface-2 disabled:opacity-50"
             >
               <Icon name="users" size={18} className="text-muted/70" />
               {busy ? "Opening Google…" : "Switch account"}
@@ -134,9 +154,9 @@ export function AccountMenu({
               role="menuitem"
               onClick={() => void signOut()}
               disabled={busy}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+              className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-danger transition hover:bg-danger-soft disabled:opacity-50"
             >
-              <Icon name="external" size={18} className="text-red-400" />
+              <Icon name="logOut" size={18} className="text-danger" />
               Sign out
             </button>
           </div>

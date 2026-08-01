@@ -44,8 +44,8 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         name: "Google sign-in + server session",
         status: "shipped",
         description:
-          "Firebase Auth (Google provider) on the client, exchanged for an HttpOnly Firebase Admin session cookie. jose signs the separate Gmail-connect OAuth state. Every request resolves a typed AuthContext server-side before touching data. Visiting a protected app URL while signed out lands on the marketing site first.",
-        keyFiles: ["lib/auth/session.ts", "lib/auth/requireUser.ts", "app/api/auth/session", "app/(dashboard)/layout.tsx", "app/(auth)/sign-in/page.tsx"],
+          "Firebase Auth (Google provider) on the client, exchanged for an HttpOnly Firebase Admin session cookie. jose signs the separate Gmail-connect OAuth state. Every request resolves a typed AuthContext server-side before touching data. Visiting a protected app URL while signed out lands on the marketing site first. A persistent account control now names Switch account and Sign out directly, opens beside the desktop sidebar, and expands inside the scrollable mobile sheet.",
+        keyFiles: ["lib/auth/session.ts", "lib/auth/requireUser.ts", "app/api/auth/session", "app/(dashboard)/layout.tsx", "app/(auth)/sign-in/page.tsx", "components/AccountMenu.tsx", "components/Sidebar.tsx", "components/MobileNav.tsx"],
       },
       {
         id: "dual-mode-tenancy",
@@ -629,6 +629,13 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         status: "shipped",
         description: "Dashboard content can use a 1440px workspace for dense reporting and editing without clipping. Shared editorial neutrals, refined card and focus treatments, typography-first navigation, consistent page headers, calmer empty states, and 44px mobile controls unify the public and authenticated product. Core onboarding, import, campaign, AI, reply, and health journeys use the shared line-icon language instead of decorative emoji. Source-level regression tests preserve the navigation, touch-target, icon, and no-em-dash standards.",
         keyFiles: ["app/globals.css", "app/(dashboard)/layout.tsx", "components/ui/Logo.tsx", "components/ui/PageHeader.tsx", "components/MobileNav.tsx", "tests/unit/premium-design-system.test.ts", "tests/unit/copy-style.test.ts"],
+      },
+      {
+        id: "public-marketing-contrast",
+        name: "Public marketing contrast system",
+        status: "shipped",
+        description: "The public landing page uses a theme-invariant warm neutral ramp from the shared brand tokens, with no literal hex colors left in its component stylesheet. Foreground, muted, and on-ink text pairs are regression-tested at WCAG AA contrast, while dark marketing bands use warm off-whites that remain visually consistent with the paper surfaces.",
+        keyFiles: ["app/globals.css", "components/marketing/landing.module.css", "docs/brand.md", "tests/unit/landing-experience.test.ts"],
       },
     ],
   },

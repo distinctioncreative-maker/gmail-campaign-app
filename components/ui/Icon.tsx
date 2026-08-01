@@ -37,6 +37,7 @@ export type IconName =
   | "send"
   | "sparkles"
   | "arrowLeft"
+  | "logOut"
   | "external"
   | "reply"
   | "hourglass"
@@ -172,6 +173,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3L12 3ZM19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14Z" />
   ),
   arrowLeft: <path d="M19 12H5m0 0 6-6m-6 6 6 6" />,
+  logOut: (
+    <>
+      <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" />
+      <path d="M14 8l4 4-4 4M18 12H8" />
+    </>
+  ),
   external: (
     <>
       <path d="M14 4h6v6" />

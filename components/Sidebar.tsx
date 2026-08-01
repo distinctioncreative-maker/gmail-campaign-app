@@ -96,7 +96,7 @@ export function Sidebar({
         </div>
         <NavLinks items={items} />
         <div className="mt-auto">
-          <AccountMenu displayName={displayName} email={email} role={role} />
+          <AccountMenu displayName={displayName} email={email} role={role} placement="side" />
         </div>
       </aside>
 
