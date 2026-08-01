@@ -860,3 +860,73 @@ This pass changes presentation tokens and semantic styling only. It does not
 change authentication, authorization, tenant isolation, signup mode, test
 modes, billing, sending, suppression enforcement, idempotency, campaign safety,
 Firestore, OAuth, secrets, cloud resources, or production traffic.
+
+## Lead organization and zoom-accessibility hardening, 2026-08-01
+
+This pass starts from verified `main` commit
+`717d2e94551db43649df233186959047a65e503e` and was implemented on
+`agent/lead-tags-accessibility`. Direct publication to `main` was authorized;
+deployment remains out of scope.
+
+Implemented:
+
+- added normalized, case-insensitive lead tags with a 20-tag per-contact cap
+  and 32-character label limit while keeping legacy contact documents readable;
+- added tag and saved-list filters to the Leads directory, tag-aware search,
+  visible tag chips, per-lead editing, and accessible bulk controls for adding
+  or removing selected leads from tags and lead lists;
+- added tag filtering and tag context to the campaign lead picker so saved
+  segments can become campaign audiences without duplicating contact data;
+- kept all bulk operations under `users/{uid}` after `requireUser()`, verified
+  list ownership before mutation, made repeated membership changes idempotent,
+  and reconciled denormalized lead-list counts transactionally when membership
+  changes or contacts are deleted;
+- kept the public Log in action visible at narrow effective widths created by
+  browser zoom and maintained a practical 44-pixel target;
+- made the desktop app navigation independently scrollable inside `100dvh` so
+  the account and sign-out control cannot be clipped on short or zoomed
+  viewports;
+- made the mobile More sheet use dynamic viewport height, a persistent account
+  region, two-column fallback on very narrow screens, body-scroll locking,
+  initial focus, Escape handling, focus trapping, and focus restoration;
+- added arrow-key, Home, End, and Escape behavior to the account menu;
+- added a dashboard skip link, responsive lead-detail definition lists,
+  semantic success/warning/danger treatments, 44-pixel action targets, and
+  mobile-safe campaign filters and horizontal lead-table scrolling;
+- replaced unsupported landing-page inbox and spam guarantees with compelling
+  but qualified Gmail, pacing, AI-review, deliverability, and reply-workflow
+  language;
+- registered the shipped feature in `lib/features/registry.ts`, regenerated the
+  in-app feature documentation, and updated the architecture and data model.
+
+Local verification:
+
+```bash
+NPM_CONFIG_CACHE=/tmp/cadence-lead-tags-npm-cache npm ci
+                                                # pass: 1,148 packages
+npm run docs:features                           # pass
+npx vitest run tests/unit/lead-tags.test.ts tests/unit/landing-experience.test.ts tests/unit/premium-design-system.test.ts
+                                                # pass: 3 files, 24 tests
+npm run lint                                    # pass
+npm run typecheck                               # pass
+npm test                                        # pass: 48 files, 349 tests
+npm run build                                   # pass once; final rerun blocked by fonts.gstatic.com HTTP 502
+npm audit --omit=dev --audit-level=high         # pass: 0 vulnerabilities
+git diff --check                                # pass
+```
+
+The successful production build generated a BUILD_ID, and its standalone server
+returned HTTP 200 for `/`, rendered the new
+qualified hero copy plus Log in and all pilot calls to action, and returned CSP,
+HSTS, Referrer-Policy, `nosniff`, frame denial, Permissions-Policy, and COOP
+headers. A final build rerun reached Next.js font optimization but failed before
+application compilation when every Google Fonts request returned HTTP 502; no
+source, type, lint, or test failure was reported. The local Firestore emulator
+gate also could not start because its uncached binary requires network approval
+unavailable in this workspace. GitHub Actions on Java 21 remains the
+authoritative clean build, emulator, and integration gate after publication.
+
+This pass does not change signup mode, test modes, live billing, email sending,
+OAuth scopes, secrets, suppression enforcement, ambiguous-delivery quarantine,
+rate limits, plan limits, idempotency, Firestore rules or indexes, cloud
+resources, or production traffic. It must not be deployed by an agent.

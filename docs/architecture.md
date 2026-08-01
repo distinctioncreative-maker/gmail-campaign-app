@@ -25,7 +25,7 @@ in `Sidebar`, `UIProviders` (toast/confirm), `ProductTour`, `NotificationBell`,
 | `/home` | Personal briefing: greeting, activity pulse chart, campaign status, quick counts. |
 | `/campaigns`, `/campaigns/new`, `/campaigns/[campaignId]` | Campaign command center: counted status segments, progress, outcome rates, create wizard, controls, configuration, diagnostics, recipients, A/B performance, event log, and dedicated-report links. |
 | `/replies` | Cross-campaign reply inbox, triaged by intent, with AI draft + manual scan actions. |
-| `/leads`, `/leads/[contactId]`, `/leads/lists/[listId]` | Audience KPI summary, searchable/countable contacts table, safe bulk actions, single-contact detail/engagement, and named lead lists. |
+| `/leads`, `/leads/[contactId]`, `/leads/lists/[listId]` | Audience KPI summary, tag/list/status filtering, safe bulk organization, single-contact detail/engagement, and named lead lists. |
 | `/templates`, `/templates/[templateId]`, `/templates/new` | Reusable email workspace with full-height visual/HTML editing, desktop/phone preview, spam check, starter layouts, and Gmail draft import. |
 | `/sequences`, `/sequences/[sequenceId]`, `/sequences/new` | Follow-up sequences (multi-step, auto-stop on reply). |
 | `/reports` | Campaign intelligence: all-campaign or single-campaign scope, 30/90/365-day send cohorts, exact all-time KPIs, funnel, timing analysis, tracked-engagement caveats, comparison table, and CSV export. |
@@ -90,7 +90,7 @@ Zod schemas.
 | `admin/*` | Org policy CRUD: settings, AI toggle, workspace rename, sending mode, members. |
 | `ai/brand-memory` | Org brand profile used to steer AI generation. |
 | `campaigns/*` | CRUD, launch, controls (pause/resume/cancel/retry/clone), diagnose, reply scan, undo-unsubscribe. |
-| `contacts/*`, `lead-lists/*`, `leads/*` | Contact CRUD/bulk ops, lead lists, CSV/Salesforce-paste parsing + import. |
+| `contacts/*`, `lead-lists/*`, `leads/*` | Owner-scoped contact CRUD, idempotent bulk tag/list operations, lead lists, CSV/Salesforce-paste parsing + import. |
 | `sequences/*` | CRUD + AI generation. |
 | `templates/*` | CRUD + AI generate/improve/preview/subjects/test-send. |
 | `replies/*` | AI draft creation, on-demand mailbox scan. |
@@ -121,7 +121,7 @@ Zod schemas.
 | `observability/` | `reportError` — structured logs + optional webhook alert. |
 | `firebase/` | Admin SDK (`admin.ts`) + browser SDK config (`client.ts`). |
 | `kms/` | Encrypt/decrypt stored OAuth refresh tokens. |
-| `leads/` | Classification/reconciliation for import flows. |
+| `leads/` | Classification/reconciliation for import flows plus normalized contact-tag helpers. |
 | `parser/` | Salesforce-paste parsing, email normalization. |
 | `personalization/` | Template placeholder rendering. |
 | `sanitize/` | HTML sanitization for user-authored email bodies. |

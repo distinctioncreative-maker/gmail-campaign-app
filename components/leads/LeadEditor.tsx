@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
+import { normalizeContactTags } from "@/lib/leads/tags";
 
 interface LeadFields {
   fullName: string;
@@ -14,6 +15,7 @@ interface LeadFields {
   leadSource: string;
   notes: string;
   emailOptOut: boolean;
+  tags: string[];
 }
 
 /** Inline editor for a lead's details + notes, with opt-out and delete. */
@@ -30,6 +32,7 @@ export function LeadEditor({
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState<LeadFields>(initial);
+  const [tagInput, setTagInput] = useState(initial.tags.join(", "));
 
   function set<K extends keyof LeadFields>(key: K, value: LeadFields[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -41,7 +44,10 @@ export function LeadEditor({
       await fetchJson(`/api/contacts/${contactId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
+        body: JSON.stringify({
+          ...draft,
+          tags: normalizeContactTags(tagInput.split(",")),
+        }),
       });
       toast("Lead updated.", "success");
       setEditing(false);
@@ -102,21 +108,21 @@ export function LeadEditor({
   }
 
   const field =
-    "w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
   if (!editing) {
     return (
       <div className="flex flex-wrap items-center gap-2">
-        <button onClick={() => setEditing(true)} className="btn-secondary px-4 py-2 text-sm">
+        <button onClick={() => setEditing(true)} className="btn-secondary min-h-11 px-4 text-sm">
           Edit lead
         </button>
-        <button onClick={() => void toggleOptOut()} disabled={busy} className="btn-ghost px-4 py-2 text-sm">
+        <button onClick={() => void toggleOptOut()} disabled={busy} className="btn-ghost min-h-11 px-4 text-sm">
           {draft.emailOptOut ? "Allow emailing again" : "Do Not Email"}
         </button>
         <button
           onClick={() => void remove()}
           disabled={busy}
-          className="btn-ghost px-4 py-2 text-sm text-red-600"
+          className="btn-ghost min-h-11 px-4 text-sm text-danger hover:bg-danger-soft"
         >
           Delete
         </button>
@@ -131,6 +137,19 @@ export function LeadEditor({
         <label className="block text-sm">
           <span className="mb-1 block text-muted">Full name</span>
           <input className={field} value={draft.fullName} onChange={(e) => set("fullName", e.target.value)} />
+        </label>
+        <label className="block text-sm sm:col-span-2">
+          <span className="mb-1 block text-muted">Tags</span>
+          <input
+            className={field}
+            value={tagInput}
+            maxLength={679}
+            onChange={(event) => setTagInput(event.target.value)}
+            placeholder="Priority, Founder, Northeast"
+          />
+          <span className="mt-1 block text-xs text-muted">
+            Separate tags with commas. Up to 20 tags, 32 characters each.
+          </span>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block text-muted">Business</span>
@@ -173,17 +192,18 @@ export function LeadEditor({
       <p className="mt-2 text-xs text-muted/70">
         The email address can&apos;t be changed: it identifies this lead across imports and campaigns.
       </p>
-      <div className="mt-4 flex gap-2">
-        <button onClick={() => void save()} disabled={busy} className="btn-primary px-4 py-2 text-sm">
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button onClick={() => void save()} disabled={busy} className="btn-primary min-h-11 px-4 text-sm">
           {busy ? "Saving…" : "Save changes"}
         </button>
         <button
           onClick={() => {
             setDraft(initial);
+            setTagInput(initial.tags.join(", "));
             setEditing(false);
           }}
           disabled={busy}
-          className="btn-ghost px-4 py-2 text-sm"
+          className="btn-ghost min-h-11 px-4 text-sm"
         >
           Cancel
         </button>

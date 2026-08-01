@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { EpochMillis } from "./common";
+import { MAX_CONTACT_TAG_LENGTH, MAX_CONTACT_TAGS } from "@/lib/leads/tags";
 
 export const ContactSchema = z.object({
   contactId: z.string().min(1),
@@ -40,6 +41,8 @@ export const ContactSchema = z.object({
   notes: z.string().default(""),
   /** Lead lists (named collections) this contact belongs to. */
   listIds: z.array(z.string()).default([]),
+  /** Lightweight labels used for filtering and campaign selection. */
+  tags: z.array(z.string().trim().min(1).max(MAX_CONTACT_TAG_LENGTH)).max(MAX_CONTACT_TAGS).default([]),
   repliedAt: EpochMillis.nullable().default(null),
   bouncedAt: EpochMillis.nullable().default(null),
   unsubscribedAt: EpochMillis.nullable().default(null),

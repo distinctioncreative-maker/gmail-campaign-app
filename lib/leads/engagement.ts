@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_CONTACT_TAG_LENGTH, MAX_CONTACT_TAGS, normalizeContactTags } from "@/lib/leads/tags";
 
 /**
  * Pure engagement math for leads: no Firestore access, fully unit-testable.
@@ -18,6 +19,11 @@ export const ContactPatchSchema = z.object({
   leadSource: z.string().trim().max(100).optional(),
   notes: z.string().max(5000).optional(),
   emailOptOut: z.boolean().optional(),
+  tags: z
+    .array(z.string().trim().min(1).max(MAX_CONTACT_TAG_LENGTH))
+    .max(MAX_CONTACT_TAGS)
+    .transform(normalizeContactTags)
+    .optional(),
 });
 export type ContactPatch = z.infer<typeof ContactPatchSchema>;
 

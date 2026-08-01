@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
-import { getLeadList } from "@/lib/repositories/leadLists";
+import { getLeadList, listLeadLists } from "@/lib/repositories/leadLists";
 import { listContactsInList } from "@/lib/repositories/contacts";
 import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
@@ -16,7 +16,10 @@ export default async function LeadListDetailPage({
   const ctx = await requireUser();
   const { listId } = await params;
 
-  const list = await getLeadList(ctx, listId);
+  const [list, leadLists] = await Promise.all([
+    getLeadList(ctx, listId),
+    listLeadLists(ctx),
+  ]);
   if (!list) notFound();
 
   const contacts = await listContactsInList(ctx, listId);
@@ -33,6 +36,8 @@ export default async function LeadListDetailPage({
     emailOptOut: c.emailOptOut,
     repliedAt: c.repliedAt,
     lastCampaignAt: c.lastCampaignAt,
+    tags: c.tags,
+    listIds: c.listIds,
   }));
 
   return (
@@ -65,7 +70,10 @@ export default async function LeadListDetailPage({
             description="Paste or upload leads above to start building it. Duplicates are skipped automatically."
           />
         ) : (
-          <ContactsTable contacts={rows} />
+          <ContactsTable
+            contacts={rows}
+            leadLists={leadLists.map((item) => ({ listId: item.listId, name: item.name }))}
+          />
         )}
       </div>
     </div>

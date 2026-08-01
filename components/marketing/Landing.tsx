@@ -1317,15 +1317,15 @@ export function Landing() {
             <div className={styles.heroCopy}>
               <span className={styles.pill}>
                 <span />
-                Outreach that lands in the inbox
+                Gmail outreach with deliberate control
               </span>
               <h1>
                 Your list is worth more than you are getting from it.
               </h1>
               <p className={styles.heroLead}>
-                Cadence sends personalized campaigns from your own Gmail,
-                keeps them out of spam, and turns every reply into pipeline
-                your team can actually work.
+                Cadence helps you prepare and schedule personalized campaigns
+                from your own Gmail, with human-reviewed AI, measured pacing,
+                and every reply organized for the next step.
               </p>
               <div
                 className={styles.pilotAnchor}
@@ -1352,7 +1352,7 @@ export function Landing() {
             <div className={styles.proofBar}>
               {[
                 ["Your real Gmail", "Not a relay. Replies land in your thread."],
-                ["Inbox, not Promotions", "Paced sending and domain checks built in."],
+                ["Built for deliverability", "Pacing and domain checks before launch."],
                 ["Personal at scale", "Every email written for that one recipient."],
                 ["Replies ranked", "Your team works the hot ones first."],
               ].map(([title, copy]) => (
@@ -1374,7 +1374,7 @@ export function Landing() {
               <span className={styles.eyebrow}>
                 Why teams switch
               </span>
-              <h2>More replies from the same list.</h2>
+              <h2>Turn more of your list into real conversations.</h2>
               <p>
                 Most outreach fails for three reasons. Cadence is built to
                 remove all three.
@@ -1384,15 +1384,15 @@ export function Landing() {
               {[
                 [
                   "It never reached them",
-                  "Blasted email lands in spam. We send from your real Gmail at a human pace and check your domain before you hit go, so your message shows up where people read.",
+                  "High-volume blasts can damage sender reputation. Cadence uses your connected Gmail, measured pacing, and preflight domain checks to help you send more responsibly.",
                 ],
                 [
                   "It read like a template",
-                  "Generic mail gets deleted. AI writes every email in your brand voice for that specific person, so it reads like a rep wrote it, because effectively one did.",
+                  "Generic email is easy to ignore. AI-assisted drafts use your brand voice and lead context, while your team stays responsible for review and approval.",
                 ],
                 [
                   "The reply went cold",
-                  "Interest dies in a crowded inbox. Every reply is ranked by intent and answered in the original thread, so the hot ones get worked while they are still hot.",
+                  "Interest can fade in a crowded inbox. Cadence groups replies by intent and keeps follow-up in the original Gmail thread so the right conversations surface sooner.",
                 ],
               ].map(([title, copy], index) => (
                 <article key={title}>

@@ -23,6 +23,7 @@ export const GET = handleApiErrors(async () => {
         email: c.email,
         classification,
         listIds: c.listIds ?? [],
+        tags: c.tags ?? [],
         lastCampaignName: c.lastCampaignName,
         lastCampaignAt: c.lastCampaignAt,
       };

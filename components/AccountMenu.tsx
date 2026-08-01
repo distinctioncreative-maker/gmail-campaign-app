@@ -16,7 +16,7 @@ export function AccountMenu({
   displayName: string;
   email: string;
   role: string;
-  placement?: "side" | "inline";
+  placement?: "side" | "inline" | "sheet";
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -24,6 +24,7 @@ export function AccountMenu({
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export function AccountMenu({
     }
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
+    menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
     return () => {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
@@ -51,7 +53,25 @@ export function AccountMenu({
   const menuPosition =
     placement === "inline"
       ? "relative mt-2 w-full origin-top"
-      : "absolute bottom-0 left-[calc(100%+0.75rem)] w-72 origin-bottom-left";
+      : placement === "sheet"
+        ? "absolute bottom-[calc(100%+0.5rem)] left-0 w-full origin-bottom"
+        : "absolute bottom-0 left-[calc(100%+0.75rem)] w-72 max-w-[calc(100vw-18rem)] origin-bottom-left";
+
+  function handleMenuKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    const items = [...(menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])]
+      .filter((item) => !item.disabled);
+    if (items.length === 0) return;
+    event.preventDefault();
+    const current = Math.max(0, items.indexOf(document.activeElement as HTMLButtonElement));
+    const target =
+      event.key === "Home"
+        ? items[0]
+        : event.key === "End"
+          ? items.at(-1)
+          : items[(current + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length];
+    target?.focus();
+  }
 
   async function switchAccount() {
     setBusy(true);
@@ -122,10 +142,12 @@ export function AccountMenu({
 
       {open && (
         <div
+          ref={menuRef}
           id={menuId}
           role="menu"
           aria-label="Account actions"
-          className={`glass z-50 max-h-[calc(100vh-2rem)] animate-rise overflow-y-auto rounded-xl border border-border shadow-lg ${menuPosition}`}
+          onKeyDown={handleMenuKeyDown}
+          className={`glass z-50 max-h-[calc(100dvh-2rem)] animate-rise overflow-y-auto rounded-xl border border-border shadow-lg ${menuPosition}`}
         >
           <div className="flex items-center gap-3 border-b border-border p-4">
             <span

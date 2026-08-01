@@ -49,6 +49,8 @@ See `schemas/*.ts` for authoritative field lists:
 - `user.ts` — User, Member, Organization
 - `gmailConnection.ts` — GmailConnection (+ Public variant without token)
 - `contact.ts` — Contact, LeadClassification enum
+  - `listIds` stores reusable saved-list membership.
+  - `tags` stores up to 20 normalized, owner-managed labels of 32 characters each.
 - `suppression.ts` — Suppression (USER / ORGANIZATION scope)
 - `parsedLead.ts` — pre-import parsed lead + warnings + confidence
 

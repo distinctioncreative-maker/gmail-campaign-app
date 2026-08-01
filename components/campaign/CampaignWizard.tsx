@@ -15,6 +15,7 @@ import { Icon } from "@/components/ui/Icon";
 import { useConfirm } from "@/components/ui/UIProviders";
 import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
 import { buildLaunchSelections, computeListScopedCounts } from "@/lib/campaigns/wizardSelections";
+import { TagChips } from "@/components/leads/TagChips";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
 
@@ -25,6 +26,7 @@ interface WizardContact {
   email: string;
   classification: string;
   listIds: string[];
+  tags: string[];
   lastCampaignName: string | null;
   lastCampaignAt: number | null;
 }
@@ -161,6 +163,7 @@ export function CampaignWizard() {
   const [leadSearch, setLeadSearch] = useState("");
   const [leadFilter, setLeadFilter] = useState<"all" | "ready" | "used" | "excluded">("all");
   const [leadSort, setLeadSort] = useState<"name" | "business" | "status">("name");
+  const [tagFilter, setTagFilter] = useState("");
 
   const { restored, clear, dismissRestored } = useDraftAutosave(
     "draft.campaign.new",
@@ -176,6 +179,8 @@ export function CampaignWizard() {
       draftStrategy,
       trackingEnabled,
       priorPolicy,
+      listFilter,
+      tagFilter,
     }
   );
 
@@ -192,6 +197,8 @@ export function CampaignWizard() {
     setDraftStrategy(restored.draftStrategy);
     if (typeof restored.trackingEnabled === "boolean") setTrackingEnabled(restored.trackingEnabled);
     setPriorPolicy(restored.priorPolicy);
+    setListFilter(restored.listFilter ?? "");
+    setTagFilter(restored.tagFilter ?? "");
     dismissRestored();
   }
 
@@ -342,6 +349,14 @@ export function CampaignWizard() {
     );
   }
 
+  const availableTags = useMemo(
+    () =>
+      [...new Set((contacts ?? []).flatMap((contact) => contact.tags ?? []))].sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" })
+      ),
+    [contacts]
+  );
+
   // Filtered + sorted view of the contacts in the lead picker.
   const visibleContacts = useMemo(() => {
     const list = contacts ?? [];
@@ -355,7 +370,9 @@ export function CampaignWizard() {
 
     const filtered = list.filter((c) => {
       if (listFilter && !c.listIds.includes(listFilter)) return false;
-      if (q && !(`${c.fullName} ${c.businessName} ${c.email}`.toLowerCase().includes(q)))
+      if (tagFilter && !c.tags.some((tag) => tag.toLocaleLowerCase() === tagFilter.toLocaleLowerCase()))
+        return false;
+      if (q && !(`${c.fullName} ${c.businessName} ${c.email} ${c.tags.join(" ")}`.toLowerCase().includes(q)))
         return false;
       if (leadFilter === "ready") return !isExcluded(c) && !isUsed(c);
       if (leadFilter === "used") return isUsed(c);
@@ -368,7 +385,7 @@ export function CampaignWizard() {
       if (leadSort === "status") return a.classification.localeCompare(b.classification);
       return (a.fullName || a.email).localeCompare(b.fullName || b.email);
     });
-  }, [contacts, leadSearch, leadFilter, leadSort, listFilter]);
+  }, [contacts, leadSearch, leadFilter, leadSort, listFilter, tagFilter]);
 
   function selectableIds(list: WizardContact[]): string[] {
     return list.filter((c) => badgeFor(c.classification).selectable).map((c) => c.contactId);
@@ -412,7 +429,7 @@ export function CampaignWizard() {
               disabled={i > step}
               className={`rounded-full px-3 py-1 transition ${
                 i < step
-                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  ? "bg-success-soft text-success hover:brightness-95"
                   : i === step
                     ? "bg-primary text-primary-contrast"
                     : "bg-surface-2 text-muted/70"
@@ -426,7 +443,7 @@ export function CampaignWizard() {
       </ol>
 
       <div className="mt-5 card animate-rise p-8">
-        {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {error && <p className="alert-danger mb-4 rounded-lg border p-3 text-sm text-danger">{error}</p>}
 
         {step === 0 && (
           <>
@@ -466,7 +483,7 @@ export function CampaignWizard() {
                 <SkeletonList rows={5} />
               </div>
             ) : contacts.length === 0 ? (
-              <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+              <p className="alert-warning mt-4 rounded-lg border p-3 text-sm text-warning">
                 You have no contacts yet: import leads first.
               </p>
             ) : (
@@ -479,7 +496,7 @@ export function CampaignWizard() {
                       <select
                         value={listFilter}
                         onChange={(e) => chooseList(e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none sm:max-w-md"
+                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:max-w-md"
                       >
                         <option value="">All leads ({contacts.length})</option>
                         {leadLists.map((l) => (
@@ -491,20 +508,20 @@ export function CampaignWizard() {
                     </label>
                   </div>
                 )}
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                   <input
                     type="search"
                     value={leadSearch}
                     onChange={(e) => setLeadSearch(e.target.value)}
                     placeholder="Search name, business, or email"
                     aria-label="Search leads"
-                    className="w-56 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:col-span-2 lg:col-span-1"
                   />
                   <select
                     value={leadFilter}
                     onChange={(e) => setLeadFilter(e.target.value as typeof leadFilter)}
                     aria-label="Filter leads"
-                    className="rounded-xl border border-border px-2 py-2 text-sm"
+                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm"
                   >
                     <option value="all">All</option>
                     <option value="ready">Ready</option>
@@ -512,21 +529,30 @@ export function CampaignWizard() {
                     <option value="excluded">Excluded</option>
                   </select>
                   <select
+                    value={tagFilter}
+                    onChange={(event) => setTagFilter(event.target.value)}
+                    aria-label="Filter leads by tag"
+                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+                  >
+                    <option value="">Any tag</option>
+                    {availableTags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}
+                  </select>
+                  <select
                     value={leadSort}
                     onChange={(e) => setLeadSort(e.target.value as typeof leadSort)}
                     aria-label="Sort leads"
-                    className="rounded-xl border border-border px-2 py-2 text-sm"
+                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm"
                   >
                     <option value="name">Sort: Name</option>
                     <option value="business">Sort: Business</option>
                     <option value="status">Sort: Status</option>
                   </select>
-                  <div className="ml-auto flex gap-2 text-sm">
+                  <div className="flex flex-wrap gap-2 text-sm sm:col-span-2 lg:col-span-4 lg:justify-end">
                     <button
                       onClick={() =>
                         setSelected((prev) => new Set([...prev, ...selectableIds(visibleContacts)]))
                       }
-                      className="rounded-lg px-3 py-1.5 font-medium text-primary hover:bg-primary-soft"
+                      className="min-h-11 rounded-lg px-3 font-medium text-primary hover:bg-primary-soft"
                     >
                       Select all shown
                     </button>
@@ -535,7 +561,7 @@ export function CampaignWizard() {
                         const shown = new Set(visibleContacts.map((c) => c.contactId));
                         setSelected((prev) => new Set([...prev].filter((id) => !shown.has(id))));
                       }}
-                      className="rounded-lg px-3 py-1.5 font-medium text-muted hover:bg-surface-2"
+                      className="min-h-11 rounded-lg px-3 font-medium text-muted hover:bg-surface-2"
                     >
                       Clear shown
                     </button>
@@ -546,8 +572,8 @@ export function CampaignWizard() {
                   Showing {visibleContacts.length} of {contacts.length} · {selected.size} selected
                 </p>
 
-                <div className="mt-2 max-h-96 overflow-y-auto rounded-xl border border-border">
-                  <table className="w-full text-left text-sm">
+                <div className="mt-2 max-h-96 overflow-auto rounded-xl border border-border">
+                  <table className="w-full min-w-[48rem] text-left text-sm">
                     <tbody>
                       {visibleContacts.map((c) => {
                         const badge = badgeFor(c.classification);
@@ -565,6 +591,7 @@ export function CampaignWizard() {
                             <td className="px-3 py-2 font-medium">{c.fullName || "Not available"}</td>
                             <td className="px-3 py-2 text-muted">{c.businessName}</td>
                             <td className="px-3 py-2 text-muted">{c.email}</td>
+                            <td className="min-w-40 px-3 py-2"><TagChips tags={c.tags} limit={2} /></td>
                             <td className="px-3 py-2">
                               <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
                                 {badge.label}
@@ -587,9 +614,9 @@ export function CampaignWizard() {
             <div className="mt-4 grid gap-3 sm:grid-cols-4">
               {[
                 ["Selected", counts.selected, "text-primary"],
-                ["Ready", counts.ready, "text-green-600"],
+                ["Ready", counts.ready, "text-success"],
                 ["Used before", counts.usedBefore, "text-info"],
-                ["Excluded for safety", counts.excluded, "text-amber-600"],
+                ["Excluded for safety", counts.excluded, "text-warning"],
               ].map(([label, value, color]) => (
                 <div key={label as string} className="rounded-xl border border-border p-4 text-center">
                   <p className={`text-2xl font-semibold ${color}`}>{value}</p>
@@ -666,7 +693,7 @@ export function CampaignWizard() {
                 <SkeletonList rows={3} />
               </div>
             ) : templates.length === 0 ? (
-              <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+              <p className="alert-warning mt-4 rounded-lg border p-3 text-sm text-warning">
                 No templates yet: {" "}
                 <button
                   onClick={() => setEditing({ templateId: null, initial: null })}
@@ -819,7 +846,7 @@ export function CampaignWizard() {
                   ))}
                   {benchmarkTip && <li>{benchmarkTip}</li>}
                 </ul>
-                <p className="mt-1.5 text-xs text-amber-700">
+                <p className="mt-1.5 text-xs text-warning">
                   You&apos;ll be asked to confirm this again before launch.
                 </p>
               </div>
@@ -874,10 +901,10 @@ export function CampaignWizard() {
                   className="mt-0.5"
                 />
                 <span>
-                  Track opens and clicks <span className="font-normal text-amber-700">(optional)</span>
+                  Track opens and clicks <span className="font-normal text-warning">(optional)</span>
                   <span className="mt-0.5 block text-xs text-muted">
                     Adds an invisible open pixel and rewrites links to measure clicks. Off by default.{" "}
-                    <strong className="font-medium text-amber-700">Tracking pixels and rewritten links are a
+                    <strong className="font-medium text-warning">Tracking pixels and rewritten links are a
                     known deliverability risk</strong> and can lower inbox placement. Leave this off unless
                     you specifically need open/click numbers for this campaign.
                   </span>
@@ -933,7 +960,7 @@ export function CampaignWizard() {
                 {preset === "custom"
                   ? `${customPace.emailsPerBatch} per batch · ${customPace.minDelaySeconds} to ${customPace.maxDelaySeconds}s apart · ${customPace.interBatchDelayMinutes} min between batches · ${customPace.dailySendLimit}/day`
                   : PRESETS[preset].detail}
-                {paceRisk.risky && <span className="ml-1 font-medium text-amber-700">: risky, see above</span>}
+                {paceRisk.risky && <span className="ml-1 font-medium text-warning">: risky, see above</span>}
                 </span>
               </li>
               <li className="flex items-start gap-2"><Icon name="check" size={17} className="mt-0.5 shrink-0 text-success" aria-hidden /><span>Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</span></li>
@@ -984,14 +1011,14 @@ export function CampaignWizard() {
               at the pace you chose.
             </p>
             {testMode === true && (
-              <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-warning">
+              <div className="alert-warning mt-3 flex items-start gap-2 rounded-lg border p-3 text-sm text-warning">
                 <Icon name="shield" size={17} className="mt-0.5 shrink-0" aria-hidden />
                 <p>You&apos;re in test mode: these emails go only to your test address, not real
                 recipients. Perfect for a practice run.</p>
               </div>
             )}
             {testMode === false && (
-              <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-success">
+              <p className="alert-success mt-3 rounded-lg border p-3 text-sm text-success">
                 ● Live mode: these emails will be sent to real recipients.
               </p>
             )}

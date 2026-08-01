@@ -30,12 +30,17 @@ describe("premium shared design system", () => {
     expect(accountMenu).toContain("Switch or sign out");
     expect(accountMenu).toContain("account menu. Switch account or sign out.");
     expect(accountMenu).toContain('aria-label="Account actions"');
-    expect(accountMenu).toContain("max-h-[calc(100vh-2rem)]");
+    expect(accountMenu).toContain("max-h-[calc(100dvh-2rem)]");
+    expect(accountMenu).toContain('event.key === "ArrowDown"');
     expect(accountMenu).toContain("text-danger");
     expect(accountMenu).toContain("hover:bg-danger-soft");
     expect(accountMenu).not.toMatch(/text-red-(?:400|600)|hover:bg-red-50/);
     expect(sidebar).toContain('placement="side"');
-    expect(mobileNav).toContain('placement="inline"');
+    expect(sidebar).toContain("h-[100dvh]");
+    expect(sidebar).toContain("overflow-y-auto overscroll-contain");
+    expect(mobileNav).toContain('placement="sheet"');
+    expect(mobileNav).toContain("max-h-[92dvh]");
+    expect(mobileNav).toContain("document.addEventListener(\"keydown\", onKeyDown)");
     expect(existsSync("components/SignOutButton.tsx")).toBe(false);
   });
 

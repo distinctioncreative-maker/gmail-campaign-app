@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/Icon";
@@ -38,14 +38,44 @@ export function MobileNav({
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const moreTriggerRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   // Lock body scroll while the sheet is open.
   useEffect(() => {
     if (!moreOpen) return;
     const prev = document.body.style.overflow;
+    const trigger = moreTriggerRef.current;
     document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMoreOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !sheetRef.current) return;
+      const focusable = [...sheetRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )];
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKeyDown);
+      trigger?.focus();
     };
   }, [moreOpen]);
 
@@ -85,9 +115,11 @@ export function MobileNav({
           );
         })}
         <button
+          ref={moreTriggerRef}
           onClick={() => setMoreOpen(true)}
           aria-label="More"
           aria-expanded={moreOpen}
+          aria-controls="mobile-more-menu"
           className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium"
         >
           {(moreOpen || moreActive) && (
@@ -113,18 +145,21 @@ export function MobileNav({
       {moreOpen && (
         <div className="fixed inset-0 z-40 sm:hidden" role="dialog" aria-modal="true" aria-label="More menu">
           <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-[rise_0.2s_ease]"
+            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm animate-[rise_0.2s_ease]"
             onClick={() => setMoreOpen(false)}
             aria-hidden
           />
           <div
-            className="absolute inset-x-0 bottom-0 max-h-[82vh] overflow-y-auto rounded-t-[1.25rem] border-t border-border bg-surface p-5 shadow-2xl"
+            ref={sheetRef}
+            id="mobile-more-menu"
+            className="absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col rounded-t-[1.25rem] border-t border-border bg-surface p-5 shadow-2xl"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)", animation: "rise 0.26s cubic-bezier(0.22,1,0.36,1)" }}
           >
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-border" aria-hidden />
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-muted">Menu</h2>
               <button
+                ref={closeRef}
                 onClick={() => setMoreOpen(false)}
                 aria-label="Close"
                 className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-muted/70 hover:bg-surface-2"
@@ -133,7 +168,8 @@ export function MobileNav({
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="min-h-0 overflow-y-auto overscroll-contain pr-1">
+            <div className="grid grid-cols-2 gap-2.5 min-[380px]:grid-cols-3">
               {rest.map((item) => {
                 const active = isActive(pathname, item.href);
                 return (
@@ -158,9 +194,10 @@ export function MobileNav({
               <span className="text-sm text-muted">Appearance</span>
               <ThemeToggle />
             </div>
+            </div>
 
-            <div className="mt-4 border-t border-border pt-4">
-              <AccountMenu displayName={displayName} email={email} role={role} placement="inline" />
+            <div className="shrink-0 border-t border-border pt-4">
+              <AccountMenu displayName={displayName} email={email} role={role} placement="sheet" />
             </div>
           </div>
         </div>

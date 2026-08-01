@@ -108,10 +108,17 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["schemas/leadList.ts", "lib/repositories/leadLists.ts"],
       },
       {
+        id: "lead-tags-and-segmentation",
+        name: "Lead tags and reusable segmentation",
+        status: "shipped",
+        description: "Owner-scoped tags let reps label leads, filter the directory and campaign picker, and organize selected leads across tags and saved lead lists. Bulk list membership updates and deletions reconcile denormalized list counts transactionally, while repeated requests remain idempotent.",
+        keyFiles: ["lib/leads/tags.ts", "components/ContactsTable.tsx", "components/leads/BulkLeadOrganizer.tsx", "app/api/contacts/bulk/route.ts"],
+      },
+      {
         id: "lead-command-center",
         name: "Lead command center",
         status: "shipped",
-        description: "An enterprise-style contact directory with audience KPI cards, reusable lead lists, searchable status segments with live counts, safe bulk actions, and editable per-lead detail pages with real engagement history and notes.",
+        description: "An enterprise-style contact directory with audience KPI cards, reusable lead lists and tags, searchable status segments with live counts, safe bulk actions, and editable per-lead detail pages with real engagement history and notes.",
         keyFiles: ["app/(dashboard)/leads", "components/ContactsTable.tsx", "lib/leads/engagement.ts"],
       },
       {

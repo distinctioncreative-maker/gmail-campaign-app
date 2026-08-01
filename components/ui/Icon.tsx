@@ -44,7 +44,9 @@ export type IconName =
   | "sun"
   | "moon"
   | "edit"
-  | "more";
+  | "more"
+  | "tag"
+  | "folder";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <path d="M3 10.5 12 3l9 7.5M5.5 9.5V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1V9.5" />,
@@ -218,6 +220,15 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
       <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
     </>
+  ),
+  tag: (
+    <>
+      <path d="M20 13 13 20 4 11V4h7l9 9Z" />
+      <circle cx="8.5" cy="8.5" r="1.25" />
+    </>
+  ),
+  folder: (
+    <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-11Z" />
   ),
 };
 

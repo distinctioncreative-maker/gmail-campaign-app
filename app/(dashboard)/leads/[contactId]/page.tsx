@@ -6,6 +6,7 @@ import { getContact } from "@/lib/repositories/contacts";
 import { isSuppressed } from "@/lib/repositories/suppressions";
 import { LocalTime } from "@/components/LocalTime";
 import { LeadEditor } from "@/components/leads/LeadEditor";
+import { TagChips } from "@/components/leads/TagChips";
 
 function fmt(ms: number | null) {
   return ms ? <LocalTime value={ms} /> : "Not available";
@@ -49,11 +50,11 @@ export default async function ContactDetailPage({
         backLabel="All leads"
         actions={
           suppression || contact.emailOptOut ? (
-            <span className="rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700">
+            <span className="rounded-full bg-warning-soft px-3 py-1 text-sm text-warning">
               Excluded for safety
             </span>
           ) : contact.repliedAt ? (
-            <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
+            <span className="rounded-full bg-success-soft px-3 py-1 text-sm text-success">
               Replied {contact.replyCount > 1 ? `${contact.replyCount}×` : ""}
             </span>
           ) : contact.campaignCount > 0 ? (
@@ -61,7 +62,7 @@ export default async function ContactDetailPage({
               Contacted before
             </span>
           ) : (
-            <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">Ready</span>
+            <span className="rounded-full bg-success-soft px-3 py-1 text-sm text-success">Ready</span>
           )
         }
       />
@@ -92,6 +93,7 @@ export default async function ContactDetailPage({
             leadSource: contact.leadSource,
             notes: contact.notes,
             emailOptOut: contact.emailOptOut,
+            tags: contact.tags,
           }}
         />
       </div>
@@ -99,7 +101,7 @@ export default async function ContactDetailPage({
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <div className="card p-6">
           <h2 className="font-medium">Details</h2>
-          <dl className="mt-3 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
+          <dl className="mt-3 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
             <dt className="text-muted">Email</dt>
             <dd>{contact.email}</dd>
             <dt className="text-muted">Phone</dt>
@@ -114,6 +116,8 @@ export default async function ContactDetailPage({
             </dd>
             <dt className="text-muted">Lead source</dt>
             <dd>{contact.leadSource || "Not available"}</dd>
+            <dt className="text-muted">Tags</dt>
+            <dd><TagChips tags={contact.tags} /></dd>
             <dt className="text-muted">First imported</dt>
             <dd>{fmt(contact.firstSeenAt)}</dd>
             <dt className="text-muted">Last seen in an import</dt>
@@ -134,7 +138,7 @@ export default async function ContactDetailPage({
               This person has not been included in any of your campaigns yet.
             </p>
           ) : (
-            <dl className="mt-3 grid grid-cols-[10rem_1fr] gap-y-2 text-sm">
+            <dl className="mt-3 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
               <dt className="text-muted">Last campaign</dt>
               <dd>{contact.lastCampaignName ?? "Not available"}</dd>
               <dt className="text-muted">Last emailed</dt>
@@ -151,7 +155,7 @@ export default async function ContactDetailPage({
           )}
 
           {(suppression || contact.emailOptOut) && (
-            <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+            <p className="mt-4 rounded-lg bg-warning-soft p-3 text-sm text-warning">
               {contact.emailOptOut
                 ? "This person is marked Do Not Email and will never receive campaigns."
                 : `On your do-not-email list (${suppression?.reason.replaceAll("_", " ").toLowerCase()}).`}

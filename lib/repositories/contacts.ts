@@ -15,6 +15,12 @@ import {
   type ContactPatch,
   type ContactEngagement,
 } from "@/lib/leads/engagement";
+import {
+  addContactTag,
+  normalizeContactTags,
+  removeContactTag,
+  sameContactTags,
+} from "@/lib/leads/tags";
 
 /**
  * All contact access is scoped by the verified AuthContext. The owner's
@@ -24,6 +30,10 @@ import {
 
 function contactsRef(ctx: Scope) {
   return firestore().collection("users").doc(ctx.userId).collection("contacts");
+}
+
+function leadListsRef(ctx: Scope) {
+  return firestore().collection("users").doc(ctx.userId).collection("leadLists");
 }
 
 export async function findByNormalizedEmail(
@@ -150,28 +160,132 @@ export async function updateContactDetails(
   if (patch.leadSource !== undefined) update.leadSource = patch.leadSource;
   if (patch.notes !== undefined) update.notes = patch.notes;
   if (patch.emailOptOut !== undefined) update.emailOptOut = patch.emailOptOut;
+  if (patch.tags !== undefined) update.tags = normalizeContactTags(patch.tags);
   await contactsRef(ctx).doc(contactId).update(update);
 }
 
-/** Permanently delete a lead. Campaign snapshots are unaffected (they carry
- * their own copies), so history stays intact. */
+/** Permanently delete a lead and keep every saved-list count accurate.
+ * Campaign snapshots are unaffected because they carry their own copies. */
 export async function deleteContact(ctx: Scope, contactId: string): Promise<void> {
-  await contactsRef(ctx).doc(contactId).delete();
+  const db = firestore();
+  const contactRef = contactsRef(ctx).doc(contactId);
+  await db.runTransaction(async (tx) => {
+    const contactSnap = await tx.get(contactRef);
+    if (!contactSnap.exists) return;
+    const contact = ContactSchema.parse(contactSnap.data());
+    const listRefs = [...new Set(contact.listIds)].map((listId) => leadListsRef(ctx).doc(listId));
+    const listSnaps = listRefs.length > 0 ? await tx.getAll(...listRefs) : [];
+    const now = Date.now();
+
+    for (const listSnap of listSnaps) {
+      if (!listSnap.exists) continue;
+      const count = Number(listSnap.data()?.count ?? 0);
+      tx.update(listSnap.ref, { count: Math.max(0, count - 1), updatedAt: now });
+    }
+    tx.delete(contactRef);
+  });
 }
 
-/** Delete many leads at once (batched, 400 per commit). */
+/** Delete many leads transactionally while decrementing saved-list counts. */
 export async function bulkDeleteContacts(ctx: Scope, contactIds: string[]): Promise<number> {
   const db = firestore();
   let deleted = 0;
-  for (let i = 0; i < contactIds.length; i += 400) {
-    const batch = db.batch();
-    for (const id of contactIds.slice(i, i + 400)) {
-      batch.delete(contactsRef(ctx).doc(id));
-      deleted++;
-    }
-    await batch.commit();
+  for (let i = 0; i < contactIds.length; i += 200) {
+    const refs = contactIds.slice(i, i + 200).map((id) => contactsRef(ctx).doc(id));
+    deleted += await db.runTransaction(async (tx) => {
+      const snaps = await tx.getAll(...refs);
+      const existing = snaps.filter((snap) => snap.exists);
+      const membershipCounts = new Map<string, number>();
+      for (const snap of existing) {
+        const contact = ContactSchema.parse(snap.data());
+        for (const listId of new Set(contact.listIds)) {
+          membershipCounts.set(listId, (membershipCounts.get(listId) ?? 0) + 1);
+        }
+      }
+
+      const listRefs = [...membershipCounts.keys()].map((listId) => leadListsRef(ctx).doc(listId));
+      const listSnaps = listRefs.length > 0 ? await tx.getAll(...listRefs) : [];
+      const now = Date.now();
+      for (const listSnap of listSnaps) {
+        if (!listSnap.exists) continue;
+        const count = Number(listSnap.data()?.count ?? 0);
+        const removed = membershipCounts.get(listSnap.id) ?? 0;
+        tx.update(listSnap.ref, { count: Math.max(0, count - removed), updatedAt: now });
+      }
+      for (const snap of existing) tx.delete(snap.ref);
+      return existing.length;
+    });
   }
   return deleted;
+}
+
+/** Add or remove one tag across selected contacts. Returns actual changes. */
+export async function bulkUpdateContactTags(
+  ctx: Scope,
+  contactIds: string[],
+  tag: string,
+  action: "add" | "remove"
+): Promise<number> {
+  const db = firestore();
+  let updated = 0;
+  for (let i = 0; i < contactIds.length; i += 300) {
+    const refs = contactIds.slice(i, i + 300).map((id) => contactsRef(ctx).doc(id));
+    updated += await db.runTransaction(async (tx) => {
+      const snaps = await tx.getAll(...refs);
+      const now = Date.now();
+      let changed = 0;
+      for (const snap of snaps) {
+        if (!snap.exists) continue;
+        const contact = ContactSchema.parse(snap.data());
+        const next = action === "add" ? addContactTag(contact.tags, tag) : removeContactTag(contact.tags, tag);
+        if (sameContactTags(contact.tags, next)) continue;
+        tx.update(snap.ref, { tags: next, updatedAt: now });
+        changed++;
+      }
+      return changed;
+    });
+  }
+  return updated;
+}
+
+/** Move selected contacts into or out of one saved list and update its count
+ * in the same transaction, so repeated requests remain idempotent. */
+export async function bulkUpdateContactList(
+  ctx: Scope,
+  contactIds: string[],
+  listId: string,
+  action: "add" | "remove"
+): Promise<number> {
+  const db = firestore();
+  const listRef = leadListsRef(ctx).doc(listId);
+  let updated = 0;
+  for (let i = 0; i < contactIds.length; i += 200) {
+    const refs = contactIds.slice(i, i + 200).map((id) => contactsRef(ctx).doc(id));
+    updated += await db.runTransaction(async (tx) => {
+      const [listSnap, ...contactSnaps] = await tx.getAll(listRef, ...refs);
+      if (!listSnap.exists) throw new Error("Lead list no longer exists");
+      const currentCount = Number(listSnap.data()?.count ?? 0);
+      const now = Date.now();
+      let changed = 0;
+
+      for (const snap of contactSnaps) {
+        if (!snap.exists) continue;
+        const contact = ContactSchema.parse(snap.data());
+        const member = contact.listIds.includes(listId);
+        if ((action === "add" && member) || (action === "remove" && !member)) continue;
+        tx.update(snap.ref, {
+          listIds: action === "add" ? FieldValue.arrayUnion(listId) : FieldValue.arrayRemove(listId),
+          updatedAt: now,
+        });
+        changed++;
+      }
+
+      const delta = action === "add" ? changed : -changed;
+      tx.update(listRef, { count: Math.max(0, currentCount + delta), updatedAt: now });
+      return changed;
+    });
+  }
+  return updated;
 }
 
 /** Set the Do-Not-Email flag on many leads at once. */

@@ -81,6 +81,25 @@ describe("landing-page experience", () => {
     expect(landingSource).toContain("Request a pilot <Arrow />");
   });
 
+  it("keeps Log in visible and touchable when zoom creates a narrow viewport", () => {
+    const narrowStyles = landingStyles.match(
+      /@media \(max-width: 720px\) \{([\s\S]*?)\n\}\n\n@media \(max-width: 520px\)/
+    )?.[1] ?? "";
+    expect(landingSource).toContain('<a className={styles.login} href="/sign-in">');
+    expect(landingStyles).toMatch(
+      /\.login \{[\s\S]*?display: inline-flex;[\s\S]*?min-height: 44px;/
+    );
+    expect(narrowStyles).toContain(".login {");
+    expect(narrowStyles).not.toContain("display: none");
+  });
+
+  it("qualifies deliverability claims instead of promising inbox placement", () => {
+    expect(landingSource).toContain("Gmail outreach with deliberate control");
+    expect(landingSource).toContain("Built for deliverability");
+    expect(landingSource).not.toContain("keeps them out of spam");
+    expect(landingSource).not.toContain("Outreach that lands in the inbox");
+  });
+
   it("uses only the semantic warm palette and keeps text pairs at AA contrast", () => {
     expect(landingStyles.match(/#[0-9a-fA-F]{3,8}/g) ?? []).toHaveLength(0);
 

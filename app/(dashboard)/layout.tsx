@@ -79,6 +79,12 @@ export default async function DashboardLayout({
 
   return (
     <UIProviders>
+    <a
+      href="#dashboard-main"
+      className="fixed left-3 top-3 z-[100] -translate-y-24 rounded-lg bg-surface px-4 py-3 text-sm font-semibold text-foreground shadow-lg transition focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+      Skip to main content
+    </a>
     <div className="flex min-h-screen">
       <Sidebar
         items={nav}
@@ -112,7 +118,7 @@ export default async function DashboardLayout({
             Test mode: emails only go to your test address, never real recipients.
           </div>
         ) : (
-          <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 px-4 py-1.5 text-center text-xs font-semibold text-white">
+          <div className="alert-success flex items-center justify-center gap-2 border-y px-4 py-1.5 text-center text-xs font-semibold text-success">
             <span aria-hidden>●</span>
             Live: campaigns send real emails to real recipients.
           </div>
@@ -121,7 +127,7 @@ export default async function DashboardLayout({
           <ThemeToggle />
           <NotificationBell />
         </div>
-        <main className="mx-auto w-full max-w-[1440px] flex-1 p-4 pb-28 sm:p-6 sm:pb-6 md:p-8">
+        <main id="dashboard-main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] flex-1 p-4 pb-28 outline-none sm:p-6 sm:pb-6 md:p-8">
           <div className="animate-rise">{children}</div>
         </main>
       </div>

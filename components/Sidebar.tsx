@@ -19,7 +19,8 @@ export interface NavItem {
 function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-col gap-0.5" aria-label="Main">
+    <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1" aria-label="Main">
+      <div className="flex flex-col gap-0.5">
       {items.map((item, i) => {
         const active = pathname === item.href || pathname.startsWith(item.href + "/");
         const showHeading = Boolean(item.section) && item.section !== items[i - 1]?.section;
@@ -57,6 +58,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
           </div>
         );
       })}
+      </div>
     </nav>
   );
 }
@@ -90,12 +92,12 @@ export function Sidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="glass sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border p-4 sm:flex">
-        <div className="mb-8 mt-1 border-b border-border/70 pb-5">
+      <aside className="glass sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col overflow-hidden border-r border-border p-4 sm:flex">
+        <div className="mb-3 mt-1 shrink-0 border-b border-border/70 pb-4">
           <Brand workspaceName={workspaceName} />
         </div>
         <NavLinks items={items} />
-        <div className="mt-auto">
+        <div className="shrink-0 border-t border-border/70 pt-3">
           <AccountMenu displayName={displayName} email={email} role={role} placement="side" />
         </div>
       </aside>

@@ -56,6 +56,8 @@ export default async function LeadsPage({
     emailOptOut: c.emailOptOut,
     repliedAt: c.repliedAt,
     lastCampaignAt: c.lastCampaignAt,
+    tags: c.tags,
+    listIds: c.listIds,
   }));
 
   return (
@@ -127,7 +129,10 @@ export default async function LeadsPage({
             Search, segment, review engagement, or apply safe bulk actions to the newest {rows.length.toLocaleString()} leads.
           </p>
         </div>
-        <ContactsTable contacts={rows} />
+        <ContactsTable
+          contacts={rows}
+          leadLists={lists.map((list) => ({ listId: list.listId, name: list.name }))}
+        />
         {maybeMore && (
           <div className="mt-3 text-center">
             <Link
