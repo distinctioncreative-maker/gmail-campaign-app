@@ -14,7 +14,7 @@ const STATUS_BADGE: Record<FeatureStatus, { label: string; className: string }> 
 };
 
 /** Admin-only, live view of lib/features/registry.ts: the same source that
- * generates FEATURES.md. Editing the registry and redeploying is the only
+ * generates docs/features.md. Editing the registry and redeploying is the only
  * way to change what shows up here, so this view can never drift from the
  * doc the way a hand-maintained checklist would. */
 export default async function FeaturesPage() {
@@ -33,7 +33,7 @@ export default async function FeaturesPage() {
     <div>
       <PageHeader
         title="Feature checklist"
-        description="What Cadence can do today, and what's still on the roadmap. Generated from the same registry as FEATURES.md in the repo."
+        description="What Cadence can do today, and what's still on the roadmap. Generated from the same registry as docs/features.md in the repo."
       />
 
       <p className="mt-4 text-sm text-muted">

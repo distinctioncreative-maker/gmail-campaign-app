@@ -48,4 +48,4 @@
 
 ## Incident quick reference
 
-See INCIDENT_RESPONSE.md.
+See docs/operations/incident-response.md.

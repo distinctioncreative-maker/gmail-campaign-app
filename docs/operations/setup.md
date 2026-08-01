@@ -4,7 +4,7 @@
 
 - Node.js 22+
 - A Google Cloud project **owned by your Google Workspace organization**
-  (required for internal OAuth consent — see GOOGLE_OAUTH.md)
+  (required for internal OAuth consent — see docs/operations/google-oauth.md)
 - `gcloud` CLI authenticated against that project
 
 ## Operator CLI authentication

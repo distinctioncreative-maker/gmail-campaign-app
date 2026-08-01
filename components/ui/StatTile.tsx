@@ -11,7 +11,7 @@ export type StatTone = "default" | "revenue" | "success" | "warning" | "danger" 
  */
 const TONE: Record<StatTone, { value: string; chip: string }> = {
   default: { value: "text-foreground", chip: "bg-surface-2 text-muted" },
-  // Money moments only, per BRAND.md: the revenue accent loses its meaning
+  // Money moments only, per docs/brand.md: the revenue accent loses its meaning
   // if it is used for every number on the page.
   revenue: { value: "text-revenue", chip: "bg-revenue-soft text-revenue" },
   success: { value: "text-success", chip: "bg-success-soft text-success" },

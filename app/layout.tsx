@@ -4,7 +4,7 @@ import "./globals.css";
 import { env } from "@/lib/env";
 
 /**
- * Brand typography (see BRAND.md).
+ * Brand typography (see docs/brand.md).
  *
  * Display: Plus Jakarta Sans. Warm, geometric, slightly humanist. Carries the
  * confident marketing voice in headlines without feeling corporate-cold.

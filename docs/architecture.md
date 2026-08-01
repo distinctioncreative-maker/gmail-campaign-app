@@ -2,8 +2,8 @@
 
 A structural map of Cadence, so anyone can find their way around without
 reading the whole codebase first. For *what's built* (feature-level), see
-[FEATURES.md](FEATURES.md). For the Firestore schema, see
-[DATA_MODEL.md](DATA_MODEL.md).
+[docs/features.md](docs/features.md). For the Firestore schema, see
+[docs/data-model.md](docs/data-model.md).
 
 Every request flow works the same way: an App Router page or `app/api/*`
 route calls `requireUser()` / `requireRole()` (`lib/auth/requireUser.ts`) to
@@ -174,7 +174,7 @@ source of truth for every Firestore document shape: `common.ts` (shared
 primitives + `OwnedRecord`), `user.ts`, `campaign.ts`, `contact.ts`,
 `leadList.ts`, `parsedLead.ts`, `sequence.ts`, `suppression.ts`,
 `template.ts`, `userSettings.ts`, `gmailConnection.ts`. See
-[DATA_MODEL.md](DATA_MODEL.md) for how these map to Firestore collections.
+[docs/data-model.md](docs/data-model.md) for how these map to Firestore collections.
 
 ## Adding a new admin tab — the short version
 

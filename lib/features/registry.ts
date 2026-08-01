@@ -2,14 +2,14 @@
  * Single source of truth for "what Cadence can do."
  *
  * This file is read by two consumers:
- *  - `scripts/generate-features-doc.mts` → regenerates FEATURES.md (run via
+ *  - `scripts/generate-features-doc.mts` → regenerates docs/features.md (run via
  *    `npm run docs:features`).
  *  - `app/(dashboard)/admin/features/page.tsx` → renders the same list live
  *    inside the app for admins.
  *
  * Convention (see AGENTS.md "Documentation upkeep"): when you ship, change,
  * or remove a feature, update the relevant entry here first, then run
- * `npm run docs:features`. Do not hand-edit FEATURES.md.
+ * `npm run docs:features`. Do not hand-edit docs/features.md.
  *
  * Kept dependency-free (no "@/..." aliases) so it can be imported both by
  * the Next.js app and by a plain Node script run outside the bundler.
@@ -591,9 +591,37 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       {
         id: "shared-empty-states-motion",
         name: "Shared empty states, animated counters, staggered entrances",
-        status: "beta",
-        description: "A shared components/ui/EmptyState.tsx (icon, plain-language title/description, optional CTA) replaces ad hoc duplicated empty-state markup on Templates, Campaigns, Sequences, and Replies. The home page's count-up number component moved to components/ui/CountUp.tsx (it was never home-specific) and now drives the Reports KPI tiles, the open/click tracking card, campaign-detail stat tiles, and the Deliverability page's Postmaster stats, not just Home and Team. List/grid rows on Templates, Campaigns, Sequences, and lead lists get a staggered fade-in entrance instead of appearing all at once, and Settings' stacked form sections get the same gentle rise Home already used. Rolled out to the highest-traffic pages first; a few secondary pages remain.",
-        keyFiles: ["components/ui/EmptyState.tsx", "components/ui/CountUp.tsx", "app/(dashboard)/reports/page.tsx", "app/(dashboard)/deliverability/page.tsx", "app/(dashboard)/settings/page.tsx"],
+        status: "shipped",
+        description: "A shared components/ui/EmptyState.tsx replaces ad hoc empty-state markup everywhere. It now has two variants: a full brand moment for a surface a customer has not used yet (medallion in a soft halo, display-face title, optional secondary path) and an inline one-liner for sub-panels, which absorbed the six hand-rolled muted-text panels left across Reports, Team, lead lists, and admin. Copy leads with the outcome rather than the mechanism. The home page's count-up number component moved to components/ui/CountUp.tsx (it was never home-specific) and drives KPI tiles app-wide. List and grid rows get a staggered fade-in entrance instead of appearing all at once.",
+        keyFiles: ["components/ui/EmptyState.tsx", "components/ui/CountUp.tsx", "app/(dashboard)/reports/page.tsx", "app/(dashboard)/team/page.tsx", "app/(dashboard)/sequences/page.tsx"],
+      },
+      {
+        id: "stat-tile-system",
+        name: "One KPI treatment across the app",
+        status: "shipped",
+        description: "Nineteen KPI tiles had been hand-built across thirteen pages, each with its own type size, chip colour, and spacing, which was a large part of why the app read as unpolished. components/ui/StatTile.tsx now owns the treatment: display face, tight tracking, tabular figures so digits do not jitter as values update, an optional icon chip, an optional link affordance, and a shared staggered grid. A tile's tone drives both the number and its chip, so pages pass meaning rather than colour classes, and the revenue accent stays rationed to money moments (replies, interested leads) per docs/brand.md. Soft surface tokens for success, warning, and danger were added in both themes so status chips no longer reach for literal Tailwind palette classes.",
+        keyFiles: ["components/ui/StatTile.tsx", "app/globals.css", "app/(dashboard)/home/page.tsx", "app/(dashboard)/reports/page.tsx", "app/(dashboard)/campaigns/[campaignId]/page.tsx", "docs/brand.md"],
+      },
+      {
+        id: "launch-moment",
+        name: "Campaign launch moment",
+        status: "shipped",
+        description: "Launching a campaign used to be a silent redirect, so the most consequential action in the product felt like a page load. It now lands on a banner that names what is happening (how many personalized emails are queued, that they send from the customer's own Gmail at the pace they set) and where the payoff will show up. The banner strips its own launched flag from the URL on mount, so a refresh or a shared link never re-celebrates a campaign that has been running for a week.",
+        keyFiles: ["components/campaign/LaunchCelebration.tsx", "components/campaign/CampaignWizard.tsx", "app/(dashboard)/campaigns/[campaignId]/page.tsx"],
+      },
+      {
+        id: "outreach-trend-chart",
+        name: "Reports hero chart",
+        status: "shipped",
+        description: "The outreach trend was a strip of 3px bars with replies plotted on the send-volume axis, which flattened every reply into the baseline and made the chart unreadable. It is now the hero of the Reports page: a filled volume area under a smooth Catmull-Rom curve, replies on their own scale as a second line with per-day markers, labelled gridlines, and date ticks. Dependency-free SVG rendered on the server. Geometry was verified against single-point, two-point, zero-reply, and empty inputs.",
+        keyFiles: ["components/analytics/Charts.tsx", "app/(dashboard)/reports/page.tsx"],
+      },
+      {
+        id: "page-composition-pattern",
+        name: "Pages compose, they do not compute",
+        status: "shipped",
+        description: "Reports (646 lines) and Home (416) each interleaved data loading, aggregation, and several hundred lines of JSX in one file, so neither half could be read without scrolling past the other and none of the arithmetic could be tested without a Firestore stub. Both split three ways: a lib module owning the loading plus pure exported helpers, a Sections component file owning the presentational blocks, and a page that parses params and composes. 21 tests now cover arithmetic that was previously unreachable, including follow-ups counting toward total sends but not initial sends, funnel percentages never dividing by zero or exceeding 100%, leaderboard ties breaking toward the larger sample, and reply rate computed off the selected range rather than all-time.",
+        keyFiles: ["lib/analytics/report.ts", "lib/home/dashboard.ts", "components/analytics/ReportSections.tsx", "components/home/HomeSections.tsx", "tests/unit/report-aggregation.test.ts", "tests/unit/home-dashboard.test.ts"],
       },
       {
         id: "enterprise-workspace-layout",

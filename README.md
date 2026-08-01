@@ -13,8 +13,8 @@ first use case, not the ceiling. The same product serves founders,
 marketers, recruiters, agencies, fundraising, partnerships, and newsletters.
 
 For the full structural map of routes, modules, and components, see
-**[ARCHITECTURE.md](ARCHITECTURE.md)**. For a live-maintained list of what's
-built vs. planned, see **[FEATURES.md](FEATURES.md)** (also viewable in-app
+**[docs/architecture.md](docs/architecture.md)**. For a live-maintained list of what's
+built vs. planned, see **[docs/features.md](docs/features.md)** (also viewable in-app
 at `/admin/features`).
 
 ## Stack
@@ -57,17 +57,17 @@ validation everywhere.
   catalog; `stripe.ts` is a dependency-free REST client + webhook verifier.
 - **Documentation upkeep is enforced as a workflow, not a hope**: see
   [AGENTS.md](AGENTS.md) → "Documentation upkeep." Every feature change
-  updates `lib/features/registry.ts`, which regenerates `FEATURES.md` and
+  updates `lib/features/registry.ts`, which regenerates `docs/features.md` and
   is what the in-app `/admin/features` checklist renders — so the doc, the
   generated file, and the live UI can't drift apart.
 - **GitHub is the quality gate**: pull requests and pushes to `main` run
   typecheck, lint, unit tests, Firestore emulator isolation tests, a
   production build, and a high-severity production-dependency audit.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full route/module/component
-breakdown, and [DATA_MODEL.md](DATA_MODEL.md) for the Firestore schema.
+See [docs/architecture.md](docs/architecture.md) for the full route/module/component
+breakdown, and [docs/data-model.md](docs/data-model.md) for the Firestore schema.
 
-## What's built (summary — see FEATURES.md for the live list)
+## What's built (summary — see docs/features.md for the live list)
 
 | Area | Highlights |
 |---|---|
@@ -102,14 +102,14 @@ breakdown, and [DATA_MODEL.md](DATA_MODEL.md) for the Firestore schema.
 
 ```bash
 npm install
-cp .env.example .env        # fill in values — see SETUP.md
+cp .env.example .env        # fill in values — see docs/operations/setup.md
 npm run dev                 # http://localhost:3000
 npm test                    # unit tests — parser, scheduling, eligibility, safety…
 npm run test:emulator       # Firestore rules isolation tests (needs Java)
 npm run typecheck
 npm run lint
 npm run build
-npm run docs:features       # regenerate FEATURES.md after editing the registry
+npm run docs:features       # regenerate docs/features.md after editing the registry
 ```
 
 After the first Cloud Run deploy, run `bash scripts/setup-cloud.sh PROJECT_ID`
@@ -128,23 +128,25 @@ var locks an environment into test mode and disables the in-app switch
 
 ## Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — structural map: routes, modules, components
-- [HARDENING_HANDOFF.md](HARDENING_HANDOFF.md) — current cross-agent hardening
-  invariants, changed flows, validation state, and deployment follow-ups
-- [PUBLIC_LAUNCH_AUDIT.md](PUBLIC_LAUNCH_AUDIT.md) — sell-today pilot scope,
-  public-launch gates, competitor position, and mobile-readiness plan
-- [PRODUCT_STRATEGY_2026.md](PRODUCT_STRATEGY_2026.md) — source-backed
-  competitor analysis, sending-volume position, product gaps, and P0/P1/P2
-  roadmap
-- [FEATURES.md](FEATURES.md) — generated, living feature checklist
-- [SETUP.md](SETUP.md) — local development and Google Cloud configuration
-- [DEPLOYMENT.md](DEPLOYMENT.md) — Cloud Run deployment
-- [SECURITY.md](SECURITY.md) — controls and threat notes
-- [DATA_MODEL.md](DATA_MODEL.md) — Firestore collections and isolation
-- [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md) — the two OAuth layers (app sign-in vs. Gmail send consent) and scopes
-- [SALESFORCE_PARSER.md](SALESFORCE_PARSER.md) — paste-format parsing rules
-- [CAMPAIGN_SAFETY.md](CAMPAIGN_SAFETY.md) — send-safety gate design
-- [ADD_A_COMPANY.md](ADD_A_COMPANY.md) — onboarding a new company/tenant
-- [OPERATIONS.md](OPERATIONS.md) · [TESTING.md](TESTING.md) ·
-  [USER_GUIDE.md](USER_GUIDE.md) · [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md)
-- [TODO.md](TODO.md) — outstanding infra/ops follow-ups
+Everything lives under **[docs/](docs/README.md)**, which indexes the lot. The
+files you are most likely to want:
+
+| Doc | What it covers |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | Routes, modules, components, and how a send travels through the system |
+| [docs/features.md](docs/features.md) | Every feature and its status. Generated from `lib/features/registry.ts`, never hand-edited |
+| [docs/brand.md](docs/brand.md) | Audience, voice, typography, colour, motion. Read before touching UI or copy |
+| [docs/campaign-safety.md](docs/campaign-safety.md) | The guards that stop a bad send |
+| [docs/security.md](docs/security.md) | Auth model, token encryption, tenant isolation |
+| [docs/data-model.md](docs/data-model.md) | Firestore collections and ownership scoping |
+| [docs/operations/setup.md](docs/operations/setup.md) | First-time local and Google Cloud setup |
+| [docs/operations/deployment.md](docs/operations/deployment.md) | Deploying to Cloud Run |
+| [docs/product/strategy.md](docs/product/strategy.md) | Positioning, competitor analysis, and the launch roadmap |
+
+`AGENTS.md` at the root holds the conventions any agent editing this repo has
+to follow: the shared UI components, the token-based theming rules, the
+page-composition pattern, and the documentation-upkeep loop.
+
+Point-in-time snapshots (audits, handoffs, readiness reviews) live in
+[docs/history/](docs/history/README.md) and are deliberately not maintained.
+When one disagrees with a doc in `docs/`, the doc in `docs/` wins.

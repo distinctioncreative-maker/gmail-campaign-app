@@ -1,8 +1,8 @@
 /**
- * Regenerates FEATURES.md from lib/features/registry.ts.
+ * Regenerates docs/features.md from lib/features/registry.ts.
  *
  * Run with `npm run docs:features` after changing the registry. Do not
- * hand-edit FEATURES.md — it's generated and will be overwritten.
+ * hand-edit docs/features.md — it's generated and will be overwritten.
  */
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -55,6 +55,6 @@ function render(): string {
 }
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const outPath = path.join(here, "..", "FEATURES.md");
+const outPath = path.join(here, "..", "docs", "features.md");
 writeFileSync(outPath, render(), "utf8");
 console.log(`Wrote ${outPath}`);

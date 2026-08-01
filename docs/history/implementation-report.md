@@ -2,7 +2,7 @@
 
 > Historical implementation snapshot. For the current production invariants,
 > hardening changes, validation status, and next-agent instructions, read
-> [HARDENING_HANDOFF.md](HARDENING_HANDOFF.md) first.
+> [docs/history/hardening-handoff.md](docs/history/hardening-handoff.md) first.
 
 Multi-user Gmail outreach platform for a non-technical sales team, built to
 the master specification. Live at
@@ -76,7 +76,7 @@ Cloud Run, Firestore (native), Cloud Tasks (`campaign-sends`), Cloud
 Scheduler (reply/bounce/repair/metrics), Secret Manager, Cloud KMS
 (token key), Firebase Auth, Artifact Registry, Cloud Build. Two service
 accounts (runtime + tasks invoker), least-privilege IAM. See
-`scripts/setup-cloud.sh` and DEPLOYMENT.md.
+`scripts/setup-cloud.sh` and docs/operations/deployment.md.
 
 ## OAuth scopes and justification
 

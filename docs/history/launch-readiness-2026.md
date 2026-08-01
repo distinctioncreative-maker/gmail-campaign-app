@@ -146,7 +146,7 @@ active. Daily limits are hard product ceilings, not recommended targets or a
 promise that every Gmail account can safely use the maximum. Final pacing must
 remain provider-aware and account-specific.
 
-`PRODUCT_STRATEGY_2026.md` contains the current official-source competitor
+`docs/product/strategy.md` contains the current official-source competitor
 research. The implemented strategy follows the defensible gaps identified
 there: clearer Gmail-native operation, honest deliverability language,
 campaign-level context, a simpler workflow, visible safety controls, and a
@@ -192,7 +192,7 @@ Before a later approved deployment:
 2. Record the current Cloud Run service image and latest ready revision.
 3. Confirm `SIGNUP_MODE=allowlist` and preserve `TEST_MODE` /
    `FORCE_TEST_MODE`.
-4. Deploy only through the documented `DEPLOYMENT.md` process.
+4. Deploy only through the documented `docs/operations/deployment.md` process.
 5. Smoke-test health, signed-out landing/sign-in, authenticated access,
    imports, templates, reports, and a test-mode email.
 6. Roll back by routing Cloud Run traffic to the recorded ready revision if

@@ -60,7 +60,7 @@ changing the managed-pilot launch decision:
   recipient, with explicit wording that image preloading can cause the signal.
 - Application copy no longer uses em dashes, with a source-level regression
   test.
-- `PRODUCT_STRATEGY_2026.md` records current first-party competitor evidence,
+- `docs/product/strategy.md` records current first-party competitor evidence,
   responsible sending-volume language, and the P0/P1/P2 product sequence.
 
 These are product and UX improvements. They do not authorize
@@ -162,7 +162,7 @@ supports fewer inboxes and lower volume. Sell the safety, Gmail fidelity,
 guided setup, and workflow quality rather than claiming feature parity.
 
 The dated source set, provider-limit analysis, and expanded competitor matrix
-now live in [PRODUCT_STRATEGY_2026.md](PRODUCT_STRATEGY_2026.md). Recheck those
+now live in [docs/product/strategy.md](docs/product/strategy.md). Recheck those
 first-party pages before publishing any named comparison or price claim.
 
 ## Mobile readiness plan

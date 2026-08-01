@@ -41,7 +41,7 @@
 
 ## Outbound email safety
 
-See CAMPAIGN_SAFETY.md. Summary: a single choke point
+See docs/campaign-safety.md. Summary: a single choke point
 (`applySendSafety`) forces all mail to the configured test destination with
 a `[TEST]` subject while the organization is in TEST mode. Organizations
 default to TEST; `FORCE_TEST_MODE=true` is a deployment-level emergency

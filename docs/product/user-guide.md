@@ -87,5 +87,5 @@ sender details, Gmail connectivity, template rendering, import parsing, and
 reply classification. Administrators can use **System health** for worker,
 cron, Gmail connection, and environment readiness.
 
-For a production incident, follow `INCIDENT_RESPONSE.md`. For deployment
-and service setup, follow `SETUP.md` and `DEPLOYMENT.md`.
+For a production incident, follow `docs/operations/incident-response.md`. For deployment
+and service setup, follow `docs/operations/setup.md` and `docs/operations/deployment.md`.

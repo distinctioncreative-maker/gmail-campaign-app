@@ -25,9 +25,9 @@ chat history.
 The hardening and public-launch work is preserved in the merged history. This
 follow-up keeps those safety boundaries while improving the operator-facing
 product. Read
-`PUBLIC_LAUNCH_AUDIT.md` before changing positioning, public signup, billing,
+`docs/history/public-launch-audit.md` before changing positioning, public signup, billing,
 legal/compliance work, or mobile architecture, and read
-`PRODUCT_STRATEGY_2026.md` before expanding the competitive roadmap.
+`docs/product/strategy.md` before expanding the competitive roadmap.
 
 ## Why this pass exists
 
@@ -432,7 +432,7 @@ release:
    and DPA pages.
 9. Confirm backup/export policy and recovery test.
 
-`SETUP.md` contains the exact one-at-a-time gcloud, Firebase, and Stripe
+`docs/operations/setup.md` contains the exact one-at-a-time gcloud, Firebase, and Stripe
 authentication/verification sequence. Those credentials are machine-local;
 they cannot be made permanent through repository changes or safely stored in
 agent chat. This terminal has no `gcloud`, and the repo-local Firebase CLI is
@@ -454,8 +454,8 @@ not authenticated.
 
 ## Safe continuation rules for the next agent
 
-- Read `AGENTS.md`, this file, `CAMPAIGN_SAFETY.md`, `SECURITY.md`, and
-  `ARCHITECTURE.md` before editing. Read `PRODUCT_STRATEGY_2026.md` before
+- Read `AGENTS.md`, this file, `docs/campaign-safety.md`, `docs/security.md`, and
+  `docs/architecture.md` before editing. Read `docs/product/strategy.md` before
   adding roadmap scope or public claims.
 - Run `git status --short` first. All uncommitted changes on this branch are
   part of this hardening pass.
@@ -484,7 +484,7 @@ Implemented in this release:
 - signed RFC 8058 one-click unsubscribe with scanner-safe GET and atomic
   suppression/counter updates;
 - purpose-built mobile campaign cards and accessible campaign-section dialog;
-- `LAUNCH_READINESS_2026.md` with exact evidence and remaining blockers.
+- `docs/history/launch-readiness-2026.md` with exact evidence and remaining blockers.
 
 Local verification:
 
