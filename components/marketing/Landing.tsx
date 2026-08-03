@@ -1290,7 +1290,7 @@ export function Landing() {
       <nav className={styles.nav} aria-label="Primary navigation">
         <div className={styles.navInner}>
           <Link className={styles.brand} href="/" aria-label="Cadence home">
-            <Wordmark descriptor="Outreach OS" />
+            <Wordmark />
           </Link>
           <div className={styles.navLinks}>
             <a href="#workflow">Workflow</a>
@@ -1300,6 +1300,9 @@ export function Landing() {
             <a href="#trust">Trust</a>
           </div>
           <div className={styles.navActions}>
+            <a className={styles.login} href="/demo">
+              See it live
+            </a>
             <a className={styles.login} href="/sign-in">
               Log in
             </a>
@@ -1611,7 +1614,7 @@ export function Landing() {
         <div className={styles.footerInner}>
           <div>
             <Link className={styles.brand} href="/">
-              <Wordmark descriptor="Outreach OS" />
+              <Wordmark />
             </Link>
             <p>
               AI-powered Gmail outreach with human review, deliberate pacing,

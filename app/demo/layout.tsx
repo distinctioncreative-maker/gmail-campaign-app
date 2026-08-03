@@ -1,0 +1,71 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Sidebar, type NavItem } from "@/components/Sidebar";
+import { UIProviders } from "@/components/ui/UIProviders";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Icon } from "@/components/ui/Icon";
+import { demoEnabled } from "@/lib/demo/enabled";
+
+export const metadata: Metadata = {
+  title: "Product tour",
+  // The tour is a sales surface, not a page anyone should land on from search
+  // expecting the real product.
+  robots: { index: false, follow: false },
+};
+
+const DEMO_NAV: NavItem[] = [
+  { href: "/demo", label: "Home", icon: "home", section: "Overview" },
+  { href: "/demo/campaigns", label: "Campaigns", icon: "rocket", section: "Outreach" },
+  { href: "/demo/replies", label: "Replies", icon: "check", section: "Outreach" },
+  { href: "/demo/leads", label: "Leads", icon: "users", section: "Audience & content" },
+  { href: "/demo/reports", label: "Reports", icon: "chart", section: "Insights" },
+];
+
+/**
+ * Signed-out product tour.
+ *
+ * This route group deliberately never calls `requireUser()`, never opens a
+ * Firestore handle, and never reaches Gmail or Stripe. It renders the same
+ * components the real dashboard renders, against the fixtures in
+ * lib/demo/fixtures.ts. Keeping it structurally separate is the point: there
+ * is no code path here that could be widened into a way into a real workspace.
+ */
+export default function DemoLayout({ children }: { children: React.ReactNode }) {
+  if (!demoEnabled()) notFound();
+
+  return (
+    <UIProviders>
+      <div className="flex min-h-screen">
+        <Sidebar
+          items={DEMO_NAV}
+          displayName="Alex Rivera"
+          email="alex@northwindpartners.com"
+          role="ADMIN"
+          roleLabel="Administrator"
+          workspaceName="Northwind Partners"
+        />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="glass sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-2.5 sm:px-6">
+            <span className="flex items-center gap-2 text-xs font-medium text-muted">
+              <Icon name="sparkles" size={14} aria-hidden />
+              Product tour with sample data. Nothing here sends email.
+            </span>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Link href="/" className="btn-ghost px-3 py-1.5 text-xs">
+                Back to site
+              </Link>
+              <Link href="/sign-in" className="btn-primary px-3.5 py-1.5 text-xs">
+                Get started
+              </Link>
+            </div>
+          </header>
+          <main className="mx-auto w-full max-w-[1440px] flex-1 p-4 pb-28 sm:p-6 sm:pb-6 md:p-10">
+            <div className="animate-rise">{children}</div>
+          </main>
+        </div>
+      </div>
+    </UIProviders>
+  );
+}

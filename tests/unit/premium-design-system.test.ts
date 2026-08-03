@@ -6,10 +6,10 @@ const read = (path: string) => readFileSync(path, "utf8");
 describe("premium shared design system", () => {
   it("keeps navigation typography-first across public and app chrome", () => {
     expect(read("components/marketing/Landing.tsx")).toContain(
-      '<Wordmark descriptor="Outreach OS" />'
+      "<Wordmark />"
     );
     expect(read("components/Sidebar.tsx")).toContain(
-      '<Wordmark descriptor="Outreach OS" />'
+      "<Wordmark />"
     );
     expect(read("app/(dashboard)/layout.tsx")).toContain("<Wordmark />");
   });

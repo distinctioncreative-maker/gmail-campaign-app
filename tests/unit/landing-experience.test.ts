@@ -61,7 +61,7 @@ function mixHex(first: string, second: string, firstWeight: number): string {
 describe("landing-page experience", () => {
   it("uses a calm typographic wordmark in the public navigation", () => {
     const navigation = landingSource.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
-    expect(navigation).toContain('<Wordmark descriptor="Outreach OS" />');
+    expect(navigation).toContain("<Wordmark />");
     expect(navigation).not.toContain("<LogoMark");
   });
 

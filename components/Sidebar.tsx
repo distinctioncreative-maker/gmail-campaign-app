@@ -66,7 +66,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
 function Brand({ workspaceName }: { workspaceName?: string }) {
   return (
     <div className="px-2">
-      <Wordmark descriptor="Outreach OS" />
+      <Wordmark />
       {workspaceName && (
         <p className="mt-2 truncate text-[11px] font-medium text-muted">
           {workspaceName}
