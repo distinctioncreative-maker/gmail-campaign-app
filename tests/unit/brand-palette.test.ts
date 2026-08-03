@@ -47,9 +47,24 @@ describe("ivory and brass brand palette", () => {
     expect(token(lightBlock, "revenue")).toBe(token(lightBlock, "primary"));
     // `info` is a warm stone neutral, not a second brand colour.
     expect(token(lightBlock, "info")).toBe("#4a4034");
-    expect(token(lightBlock, "info-soft")).toBe("#efebe3");
+    expect(token(lightBlock, "info-soft")).toBe("#f2f0ec");
     expect(token(lightBlock, "brand-from")).toBe("#856428");
     expect(token(lightBlock, "brand-to")).toBe("#2b2419");
+  });
+
+  it("keeps one accent across two grounds: bone in light, midnight in dark", () => {
+    // Light is a warm bone paper, dark is a blue-black. Both carry the same
+    // brass, which is what stops the themes reading as two different products.
+    expect(token(lightBlock, "background")).toBe("#faf9f7");
+    expect(token(darkBlock, "background")).toBe("#0b0f17");
+    for (const block of [lightBlock, darkBlock]) {
+      // The accent must stay clearly separable from body and muted text, which
+      // is the failure that made an earlier plum accent invisible as an action.
+      const primary = token(block, "primary");
+      expect(primary).not.toBe(token(block, "muted"));
+      expect(contrast(primary, token(block, "background"))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(primary, token(block, "surface"))).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it("keeps espresso bands readable and in the warm family", () => {

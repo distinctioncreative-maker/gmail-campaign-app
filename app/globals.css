@@ -11,12 +11,12 @@
 
   /* Ivory neutral ramp. Warmer and lower in chroma than plain white, so a
      full working day in the product does not feel clinical. */
-  --background: #f5f2ec;
-  --surface: #fffdf9;
-  --surface-2: #efebe3;
-  --foreground: #16140f;
-  --muted: #5a544a;
-  --border: #e3ddd1;
+  --background: #faf9f7;
+  --surface: #ffffff;
+  --surface-2: #f2f0ec;
+  --foreground: #14130f;
+  --muted: #5c574e;
+  --border: #e5e2da;
 
   /* One identity colour. Brass owns the single primary action on a view and
      anything to do with money, and appears nowhere else. An accent applied
@@ -36,8 +36,8 @@
      not give every feature its own hue; they typeset it well and move on. */
   --info: #4a4034;
   --info-hover: #383025;
-  --info-soft: #efebe3;
-  --info-contrast: #fffdf9;
+  --info-soft: #f2f0ec;
+  --info-contrast: #ffffff;
 
   /* Revenue is the same brass. Money and the primary action are the only two
      things allowed to carry it, so they never compete. */
@@ -61,19 +61,19 @@
   --danger-contrast: #ffffff;
   --success-contrast: #ffffff;
   --warning-contrast: #ffffff;
-  --overlay: rgba(22, 20, 15, 0.58);
+  --overlay: rgba(20, 19, 15, 0.6);
   --ring: rgba(133, 100, 40, 0.42);
 
   /* Theme-invariant public-site neutrals. The authenticated app can switch
      themes, but the public landing page always renders the same warm brand
      palette. Keeping this ramp here prevents its component stylesheet from
      drifting back into one-off cool greys. */
-  --marketing-paper: #f5f2ec;
-  --marketing-surface: #fffdf9;
-  --marketing-surface-2: #efebe3;
-  --marketing-copy: #16140f;
-  --marketing-muted: #5a544a;
-  --marketing-border: #e3ddd1;
+  --marketing-paper: #faf9f7;
+  --marketing-surface: #ffffff;
+  --marketing-surface-2: #f2f0ec;
+  --marketing-copy: #14130f;
+  --marketing-muted: #5c574e;
+  --marketing-border: #e5e2da;
   --marketing-ink: #2b2419;
   --marketing-ink-soft: #3a3122;
   --marketing-on-ink: #f7f4ed;
@@ -89,7 +89,7 @@
      shorthand those calls sit in, which is how the hero once lost its
      background entirely and rendered light text on light paper. */
   --marketing-info: #4a4034;
-  --marketing-info-soft: #efebe3;
+  --marketing-info-soft: #f2f0ec;
 
   /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
   --radius-sm: 3px;
@@ -119,46 +119,47 @@
    handful of literal Tailwind color utilities the app uses so every
    surface adapts without editing each component. */
 :root[data-theme="dark"] {
-  /* Warm-toned dark: charcoals carry a trace of brown so the dark theme
-     reads as the same brand, not a different product. */
-  --background: #14120f;
-  --surface: #1c1915;
-  --surface-2: #231f1a;
-  --foreground: #f4f1ea;
-  --muted: #a29a8c;
-  --border: #2f2a23;
-  --primary: #c9a45c;
-  --primary-hover: #dbb878;
-  --primary-soft: #2a2114;
-  --primary-contrast: #1a1509;
-  --brand-from: #c9a45c;
+  /* Midnight blue ground with the same brass accent. Gold on navy is the
+     oldest luxury pairing there is, and keeping one brand colour across both
+     themes is what stops light and dark reading as two products. */
+  --background: #0b0f17;
+  --surface: #121721;
+  --surface-2: #1a202c;
+  --foreground: #e9edf4;
+  --muted: #98a3b5;
+  --border: #232b39;
+  --primary: #d2a961;
+  --primary-hover: #e3be7c;
+  --primary-soft: #241e13;
+  --primary-contrast: #0e1219;
+  --brand-from: #d2a961;
   /* Both ends of the gradient must carry --brand-contrast, so the dark end
      stays light enough for near-black text (a deeper brass measured 2.57:1). */
-  --brand-to: #b08f4a;
-  --brand-contrast: #1a1509;
-  --accent: #c9a45c;
-  --info: #b5aa98;
-  --info-hover: #c9bfae;
-  --info-soft: #231f1a;
-  --info-contrast: #14120f;
-  --revenue: #c9a45c;
-  --revenue-soft: #2a2114;
-  --ink: #100e0b;
-  --ink-soft: #1c1915;
-  --on-ink: #f4f1ea;
-  --on-ink-muted: #a29a8c;
-  --brass-on-ink: #c9a45c;
+  --brand-to: #b8904a;
+  --brand-contrast: #0e1219;
+  --accent: #d2a961;
+  --info: #9fb0c6;
+  --info-hover: #b6c4d6;
+  --info-soft: #1a202c;
+  --info-contrast: #0b0f17;
+  --revenue: #d2a961;
+  --revenue-soft: #241e13;
+  --ink: #070a10;
+  --ink-soft: #121721;
+  --on-ink: #e9edf4;
+  --on-ink-muted: #98a3b5;
+  --brass-on-ink: #d2a961;
   --success: #4fb88c;
-  --success-soft: #0f241c;
+  --success-soft: #0e2119;
   --warning: #d9a44a;
-  --warning-soft: #2a2012;
+  --warning-soft: #241c10;
   --danger: #e8737c;
-  --danger-soft: #2c1618;
+  --danger-soft: #2a1417;
   --danger-contrast: #2a0f12;
-  --success-contrast: #0c1f16;
-  --warning-contrast: #1e1505;
-  --overlay: rgba(8, 7, 5, 0.66);
-  --ring: rgba(201, 164, 92, 0.48);
+  --success-contrast: #08140f;
+  --warning-contrast: #171004;
+  --overlay: rgba(4, 6, 10, 0.7);
+  --ring: rgba(210, 169, 97, 0.5);
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: 0 10px 30px -20px rgba(0, 0, 0, 0.7);
@@ -236,36 +237,29 @@ body {
    restraint in weight. Fraunces above 600 turns decorative, and negative
    tracking collapses its serifs into each other. */
 h1, h2, h3, h4 {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 40;
-  letter-spacing: -0.008em;
+  font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
+  letter-spacing: -0.021em;
   font-weight: 600;
-  line-height: 1.18;
+  line-height: 1.2;
 }
-h1 { letter-spacing: -0.014em; }
-/* Smaller headings sit closer to body copy, so they take the text optical
-   size and a touch more tracking to stay legible. */
-h3, h4 {
-  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 18;
-  letter-spacing: 0;
-}
+/* Larger sizes need proportionally tighter tracking to hold together. */
+h1 { letter-spacing: -0.032em; font-weight: 620; }
+h2 { letter-spacing: -0.026em; }
 
 /* The figure a customer screenshots for their boss, and the short display
    titles beside it. One class owns the serif numeral treatment so the eight
    places that render a headline number cannot drift apart again. Tabular
    figures keep digits from jittering as live values tick up. */
 .display-figure {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 40;
+  font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.006em;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
 }
 .display-title {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 24;
+  font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.004em;
+  letter-spacing: -0.022em;
 }
 
 :focus-visible {

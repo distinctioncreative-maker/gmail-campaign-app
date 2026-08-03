@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { env } from "@/lib/env";
 
 /**
  * Brand typography (see docs/brand.md).
  *
- * Display: Fraunces. A warm editorial serif, set at a low optical size and
- * modest weight so it reads as considered rather than decorative. A serif in
- * the headline is the cheapest signal that a product was designed rather than
- * assembled, and it pairs with the ivory paper the way print does.
- * Text: Inter. The workhorse, tuned for dense product UI at small sizes.
+ * One superfamily, two optical sizes. Inter Tight carries headings and
+ * figures; Inter carries body and dense UI. A single family across the whole
+ * product is what makes an interface feel seamless rather than assembled, and
+ * it is the reason enterprise software converged on this approach.
+ *
+ * This replaces a display serif (Fraunces), which had real character but read
+ * as editorial and slightly quirky rather than as enterprise software. A
+ * quirky headline face is a liability on a screen someone stares at all day.
+ *
  * Mono: JetBrains Mono for data, tokens, and technical labels.
  */
-// Variable weight, so `weight` is omitted: next/font rejects a fixed weight
-// list alongside custom axes. SOFT/WONK/opsz are driven from globals.css.
-const display = Fraunces({
+const display = Inter_Tight({
   variable: "--font-display",
   subsets: ["latin"],
-  axes: ["SOFT", "WONK", "opsz"],
   display: "swap",
 });
 
