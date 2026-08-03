@@ -44,7 +44,7 @@ export function LaunchCelebration({
           <Icon name="rocket" size={20} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-display text-lg font-bold tracking-[-0.02em] text-foreground">
+          <p className="display-title text-lg text-foreground">
             {startedNow ? "You are live." : "Campaign is ready."}
           </p>
           <p className="mt-1 text-sm leading-6 text-foreground">

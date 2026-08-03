@@ -169,7 +169,7 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
                 <p className="text-sm font-medium">{step.label}</p>
                 <p className="text-xs text-muted">{step.detail}</p>
               </div>
-              <p className="font-display text-xl font-bold tabular-nums tracking-[-0.03em]">
+              <p className="display-figure text-xl">
                 {step.value.toLocaleString()}
               </p>
             </div>
@@ -253,7 +253,7 @@ export function TrackedEngagementPanel({
           <div className="mt-5 grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-surface-2 p-4">
               <p className="text-[0.8125rem] font-medium leading-tight text-muted">Open detected</p>
-              <p className="mt-2.5 font-display text-2xl font-bold leading-none tabular-nums tracking-[-0.03em] text-primary">
+              <p className="mt-2.5 display-figure text-2xl leading-none text-primary">
                 {tracking.sent > 0 ? (
                   <CountUp value={tracking.openRate} decimals={1} suffix="%" />
                 ) : (
@@ -266,7 +266,7 @@ export function TrackedEngagementPanel({
             </div>
             <div className="rounded-xl bg-surface-2 p-4">
               <p className="text-[0.8125rem] font-medium leading-tight text-muted">Click rate</p>
-              <p className="mt-2.5 font-display text-2xl font-bold leading-none tabular-nums tracking-[-0.03em] text-revenue">
+              <p className="mt-2.5 display-figure text-2xl leading-none text-revenue">
                 {tracking.sent > 0 ? (
                   <CountUp value={tracking.clickRate} decimals={1} suffix="%" />
                 ) : (

@@ -22,7 +22,7 @@ export default function OpenGraphImage() {
       <div style={{ display: "flex", flexDirection: "column", maxWidth: 980 }}>
         <div
           style={{
-            color: "#c7a8c4",
+            color: "#c9a45c",
             display: "flex",
             fontSize: 30,
             fontWeight: 650,

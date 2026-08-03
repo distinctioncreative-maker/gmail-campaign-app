@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { env } from "@/lib/env";
 
 /**
  * Brand typography (see docs/brand.md).
  *
- * Display: Plus Jakarta Sans. Warm, geometric, slightly humanist. Carries the
- * confident marketing voice in headlines without feeling corporate-cold.
+ * Display: Fraunces. A warm editorial serif, set at a low optical size and
+ * modest weight so it reads as considered rather than decorative. A serif in
+ * the headline is the cheapest signal that a product was designed rather than
+ * assembled, and it pairs with the ivory paper the way print does.
  * Text: Inter. The workhorse, tuned for dense product UI at small sizes.
  * Mono: JetBrains Mono for data, tokens, and technical labels.
  */
-const display = Plus_Jakarta_Sans({
+// Variable weight, so `weight` is omitted: next/font rejects a fixed weight
+// list alongside custom axes. SOFT/WONK/opsz are driven from globals.css.
+const display = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  axes: ["SOFT", "WONK", "opsz"],
   display: "swap",
 });
 

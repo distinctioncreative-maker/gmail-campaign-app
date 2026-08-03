@@ -37,16 +37,28 @@ function sourceFiles(root: string): string[] {
   });
 }
 
-describe("plum and editorial-blue brand palette", () => {
+describe("ivory and brass brand palette", () => {
   it("records the selected semantic roles and identity gradient", () => {
-    expect(token(lightBlock, "primary")).toBe("#72506f");
-    expect(token(lightBlock, "primary-hover")).toBe("#5e405b");
-    expect(token(lightBlock, "primary-soft")).toBe("#f4edf3");
-    expect(token(lightBlock, "info")).toBe("#456a8d");
-    expect(token(lightBlock, "info-hover")).toBe("#355674");
-    expect(token(lightBlock, "info-soft")).toBe("#eaf1f7");
-    expect(token(lightBlock, "brand-from")).toBe("#72506f");
-    expect(token(lightBlock, "brand-to")).toBe("#456a8d");
+    expect(token(lightBlock, "primary")).toBe("#856428");
+    expect(token(lightBlock, "primary-hover")).toBe("#6f5426");
+    expect(token(lightBlock, "primary-soft")).toBe("#f5eee0");
+    // Money and the single primary action share one colour on purpose, so
+    // they can never compete for the eye.
+    expect(token(lightBlock, "revenue")).toBe(token(lightBlock, "primary"));
+    // `info` is a warm stone neutral, not a second brand colour.
+    expect(token(lightBlock, "info")).toBe("#4a4034");
+    expect(token(lightBlock, "info-soft")).toBe("#efebe3");
+    expect(token(lightBlock, "brand-from")).toBe("#856428");
+    expect(token(lightBlock, "brand-to")).toBe("#2b2419");
+  });
+
+  it("keeps espresso bands readable and in the warm family", () => {
+    for (const block of [lightBlock, darkBlock]) {
+      const ink = token(block, "ink");
+      expect(contrast(token(block, "on-ink"), ink)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(block, "on-ink-muted"), ink)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(block, "brass-on-ink"), ink)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it("keeps primary and information text and fills at WCAG AA contrast", () => {
@@ -134,12 +146,15 @@ describe("plum and editorial-blue brand palette", () => {
       /\b(?:bg|text|border|from|to|ring)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|purple|indigo|violet|fuchsia|pink|rose|white|black)-\d+\b/
     );
     expect(sources).not.toMatch(/\btext-muted\/(?:50|60|70)\b/);
-    expect(sources).not.toMatch(/#(?:5b47e0|4a37cc|6c55ea|9b5cd6|8b78ff|a394ff|7c5cff)\b/i);
+    // Retired identity colours: electric indigo, then the plum that replaced it.
+    expect(sources).not.toMatch(
+      /#(?:5b47e0|4a37cc|6c55ea|9b5cd6|8b78ff|a394ff|7c5cff|72506f|5e405b|c7a8c4|456a8d|8eb4d2)\b/i
+    );
     expect(sources).not.toMatch(/bg-primary[^"\n]*text-white/);
     expect(sources).not.toMatch(/brand-gradient[^"\n]*text-white/);
   });
 
-  it("uses blue for AI and information while plum remains the action lane", () => {
+  it("keeps AI on the neutral stone lane while brass owns actions", () => {
     const aiSources = [
       "components/templates/AiEmailWriter.tsx",
       "components/templates/AiEmailTools.tsx",
@@ -157,5 +172,14 @@ describe("plum and editorial-blue brand palette", () => {
     expect(landing).toContain("--landing-blue: var(--marketing-primary)");
     expect(landing).toContain("var(--landing-blue)");
     expect(landing).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    // A hex ban alone let ~50 cold-blue and green rgb() literals survive the
+    // last migration, hidden inside shadows, glows, and gradients. Any
+    // non-neutral rgb() is a colour the palette does not control.
+    // Neutral scrims (equal channels) and the one canonical warm shadow are
+    // allowed; anything else is a colour the palette does not control.
+    const colouredRgb = [...landing.matchAll(/rgb\(\s*(\d+)\s+(\d+)\s+(\d+)/g)].filter(
+      ([, r, g, b]) => !(r === g && g === b) && !(r === "40" && g === "32" && b === "24")
+    );
+    expect(colouredRgb).toHaveLength(0);
   });
 });

@@ -72,7 +72,7 @@ export function StatTile({
         )}
       </div>
       <p
-        className={`mt-2.5 font-display font-bold leading-none tabular-nums tracking-[-0.03em] ${VALUE_SIZE[size]} ${t.value}`}
+        className={`mt-2.5 display-figure leading-none ${VALUE_SIZE[size]} ${t.value}`}
       >
         {value}
       </p>
@@ -90,12 +90,12 @@ export function StatTile({
 
   if (href) {
     return (
-      <Link href={href} className="card card-hover group block p-5">
+      <Link href={href} className="card card-hover group block p-6">
         {body}
       </Link>
     );
   }
-  return <div className="card card-hover group p-5">{body}</div>;
+  return <div className="card card-hover group p-6">{body}</div>;
 }
 
 /**
@@ -115,5 +115,5 @@ export function StatGrid({
     5: "sm:grid-cols-3 lg:grid-cols-5",
     6: "sm:grid-cols-3 lg:grid-cols-6",
   };
-  return <div className={`stagger grid gap-3 ${cols[columns]}`}>{children}</div>;
+  return <div className={`stagger grid gap-4 ${cols[columns]}`}>{children}</div>;
 }

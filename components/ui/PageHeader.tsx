@@ -25,7 +25,7 @@ export function PageHeader({
   backLabel?: string;
 }) {
   return (
-    <div className="mb-7 border-b border-border/70 pb-5">
+    <div className="mb-10 border-b border-border pb-6">
       {backHref && (
         <Link
           href={backHref}
@@ -42,7 +42,7 @@ export function PageHeader({
       )}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-[1.75rem] font-semibold leading-tight tracking-[-0.035em] text-foreground">
+          <h1 className="text-[2.125rem] leading-[1.15] text-foreground">
             {title}
           </h1>
           {description && (

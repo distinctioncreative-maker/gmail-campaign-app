@@ -9,83 +9,102 @@
      feel considered instead of clinical. One confident action colour,
      plus a rationed revenue accent used only where money is the subject. */
 
-  /* Warm neutral ramp */
-  --background: #f7f5f2;
-  --surface: #ffffff;
-  --surface-2: #faf8f5;
-  --foreground: #1d1b18;
-  --muted: #6b655e;
-  --border: #e8e3dc;
+  /* Ivory neutral ramp. Warmer and lower in chroma than plain white, so a
+     full working day in the product does not feel clinical. */
+  --background: #f5f2ec;
+  --surface: #fffdf9;
+  --surface-2: #efebe3;
+  --foreground: #16140f;
+  --muted: #5a544a;
+  --border: #e3ddd1;
 
-  /* Brand chroma: restrained plum owns actions and selection. Editorial
-     blue supports AI, information, and system guidance. The two meet only
-     in identity gradients and ambient light, so hierarchy stays obvious. */
-  --primary: #72506f;
-  --primary-hover: #5e405b;
-  --primary-soft: #f4edf3;
+  /* One identity colour. Brass owns the single primary action on a view and
+     anything to do with money, and appears nowhere else. An accent applied
+     to everything stops being a signal, which is exactly what went wrong
+     with the plum it replaces. Aim for at most three brass marks per screen. */
+  --primary: #856428;
+  --primary-hover: #6f5426;
+  --primary-soft: #f5eee0;
   --primary-contrast: #ffffff;
-  --info: #456a8d;
-  --info-hover: #355674;
-  --info-soft: #eaf1f7;
-  --info-contrast: #ffffff;
-  --brand-from: #72506f;
-  --brand-to: #456a8d;
+  --brand-from: #856428;
+  --brand-to: #2b2419;
   --brand-contrast: #ffffff;
-  --accent: #456a8d;
+  --accent: #856428;
 
-  /* Revenue accent. Deliberately rationed: pipeline, replies, money. */
-  --revenue: #99661c;
-  --revenue-soft: #fdf5e7;
+  /* Not a second brand colour. `info` is a warm stone neutral that marks AI
+     and system guidance without competing with brass. Premium products do
+     not give every feature its own hue; they typeset it well and move on. */
+  --info: #4a4034;
+  --info-hover: #383025;
+  --info-soft: #efebe3;
+  --info-contrast: #fffdf9;
 
-  --success: #087a55;
-  --success-soft: #e7f6f0;
-  --warning: #985700;
-  --warning-soft: #fdf3e3;
-  --danger: #cc3342;
-  --danger-soft: #fdedee;
+  /* Revenue is the same brass. Money and the primary action are the only two
+     things allowed to carry it, so they never compete. */
+  --revenue: #856428;
+  --revenue-soft: #f5eee0;
+
+  /* Espresso bands, used instead of near-black so dark sections stay in the
+     same warm family as the paper. */
+  --ink: #2b2419;
+  --ink-soft: #3a3122;
+  --on-ink: #f7f4ed;
+  --on-ink-muted: #c0b7a6;
+  --brass-on-ink: #c9a45c;
+
+  --success: #1f6b4f;
+  --success-soft: #e4f0ea;
+  --warning: #8a5a12;
+  --warning-soft: #f7eedd;
+  --danger: #a83232;
+  --danger-soft: #f7e7e7;
   --danger-contrast: #ffffff;
   --success-contrast: #ffffff;
   --warning-contrast: #ffffff;
-  --overlay: rgba(15, 13, 12, 0.58);
-  --ring: rgba(114, 80, 111, 0.42);
+  --overlay: rgba(22, 20, 15, 0.58);
+  --ring: rgba(133, 100, 40, 0.42);
 
   /* Theme-invariant public-site neutrals. The authenticated app can switch
      themes, but the public landing page always renders the same warm brand
      palette. Keeping this ramp here prevents its component stylesheet from
      drifting back into one-off cool greys. */
-  --marketing-paper: #f7f5f2;
-  --marketing-surface: #ffffff;
-  --marketing-surface-2: #faf8f5;
-  --marketing-copy: #1d1b18;
-  --marketing-muted: #6b655e;
-  --marketing-border: #e8e3dc;
-  --marketing-ink: #0f0d0c;
-  --marketing-ink-soft: #1a1613;
-  --marketing-on-ink: #f9f7f4;
-  --marketing-on-ink-muted: #c4bdb5;
-  --marketing-on-ink-subtle: #a9a199;
-  --marketing-primary: #72506f;
-  --marketing-primary-hover: #5e405b;
-  --marketing-primary-soft: #f4edf3;
+  --marketing-paper: #f5f2ec;
+  --marketing-surface: #fffdf9;
+  --marketing-surface-2: #efebe3;
+  --marketing-copy: #16140f;
+  --marketing-muted: #5a544a;
+  --marketing-border: #e3ddd1;
+  --marketing-ink: #2b2419;
+  --marketing-ink-soft: #3a3122;
+  --marketing-on-ink: #f7f4ed;
+  --marketing-on-ink-muted: #c0b7a6;
+  --marketing-on-ink-subtle: #a89f8e;
+  --marketing-primary: #856428;
+  --marketing-primary-hover: #6f5426;
+  --marketing-primary-soft: #f5eee0;
   --marketing-primary-contrast: #ffffff;
-  --marketing-info: #456a8d;
-  --marketing-info-soft: #eaf1f7;
+  --marketing-brass-on-ink: #c9a45c;
+  /* Warm stone, matching --info. The public stylesheet references these in
+     several `color-mix()` calls; dropping them silently invalidates the whole
+     shorthand those calls sit in, which is how the hero once lost its
+     background entirely and rendered light text on light paper. */
+  --marketing-info: #4a4034;
+  --marketing-info-soft: #efebe3;
 
   /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 22px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-full: 999px;
 
-  /* Elevation ladder, warm-tinted so shadows sit in the same world as the
-     surfaces they lift off. */
-  --shadow-sm: 0 1px 2px rgba(40, 32, 24, 0.045);
-  --shadow-md: 0 8px 22px -14px rgba(40, 32, 24, 0.16), 0 2px 5px -3px rgba(40, 32, 24, 0.07);
-  --shadow-lg: 0 28px 58px -30px rgba(40, 32, 24, 0.26), 0 9px 22px -15px rgba(40, 32, 24, 0.13);
-  --shadow-brand:
-    0 18px 40px -20px rgba(114, 80, 111, 0.42),
-    0 12px 30px -24px rgba(69, 106, 141, 0.28);
+  /* Elevation ladder. Tighter and lighter than before: a large soft shadow
+     reads cheap, while a hairline border plus a whisper of lift reads
+     considered. Definition comes from --border, not from blur. */
+  --shadow-sm: 0 1px 2px rgba(22, 20, 15, 0.04);
+  --shadow-md: 0 4px 14px -10px rgba(22, 20, 15, 0.14), 0 1px 3px -2px rgba(22, 20, 15, 0.06);
+  --shadow-lg: 0 16px 38px -24px rgba(22, 20, 15, 0.2), 0 5px 14px -12px rgba(22, 20, 15, 0.1);
+  --shadow-brand: 0 12px 28px -18px rgba(133, 100, 40, 0.36);
 
   /* Motion tokens, so every transition shares one curve and tempo. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -102,41 +121,48 @@
 :root[data-theme="dark"] {
   /* Warm-toned dark: charcoals carry a trace of brown so the dark theme
      reads as the same brand, not a different product. */
-  --background: #0e0d0c;
-  --surface: #191716;
-  --surface-2: #201e1c;
-  --foreground: #f6f4f1;
-  --muted: #a29a91;
-  --border: #302c29;
-  --primary: #c7a8c4;
-  --primary-hover: #d5b9d2;
-  --primary-soft: #30242f;
-  --primary-contrast: #1d171c;
-  --info: #8eb4d2;
-  --info-hover: #a5c6df;
-  --info-soft: #182634;
-  --info-contrast: #111a21;
-  --brand-from: #c7a8c4;
-  --brand-to: #8eb4d2;
-  --brand-contrast: #171319;
-  --accent: #8eb4d2;
-  --revenue: #e0aa5c;
-  --revenue-soft: #2b2216;
-  --success: #35c491;
-  --success-soft: #14261f;
-  --warning: #e8a13c;
-  --warning-soft: #2a2116;
-  --danger: #f0707a;
-  --danger-soft: #2c1a1c;
-  --danger-contrast: #1d171c;
-  --success-contrast: #102019;
-  --warning-contrast: #21180d;
-  --ring: rgba(199, 168, 196, 0.48);
-  --shadow-md: 0 6px 16px -8px rgba(0, 0, 0, 0.6), 0 2px 6px -3px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 24px 50px -24px rgba(0, 0, 0, 0.75), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
-  --shadow-brand:
-    0 18px 40px -20px rgba(199, 168, 196, 0.36),
-    0 12px 30px -24px rgba(142, 180, 210, 0.28);
+  --background: #14120f;
+  --surface: #1c1915;
+  --surface-2: #231f1a;
+  --foreground: #f4f1ea;
+  --muted: #a29a8c;
+  --border: #2f2a23;
+  --primary: #c9a45c;
+  --primary-hover: #dbb878;
+  --primary-soft: #2a2114;
+  --primary-contrast: #1a1509;
+  --brand-from: #c9a45c;
+  /* Both ends of the gradient must carry --brand-contrast, so the dark end
+     stays light enough for near-black text (a deeper brass measured 2.57:1). */
+  --brand-to: #b08f4a;
+  --brand-contrast: #1a1509;
+  --accent: #c9a45c;
+  --info: #b5aa98;
+  --info-hover: #c9bfae;
+  --info-soft: #231f1a;
+  --info-contrast: #14120f;
+  --revenue: #c9a45c;
+  --revenue-soft: #2a2114;
+  --ink: #100e0b;
+  --ink-soft: #1c1915;
+  --on-ink: #f4f1ea;
+  --on-ink-muted: #a29a8c;
+  --brass-on-ink: #c9a45c;
+  --success: #4fb88c;
+  --success-soft: #0f241c;
+  --warning: #d9a44a;
+  --warning-soft: #2a2012;
+  --danger: #e8737c;
+  --danger-soft: #2c1618;
+  --danger-contrast: #2a0f12;
+  --success-contrast: #0c1f16;
+  --warning-contrast: #1e1505;
+  --overlay: rgba(8, 7, 5, 0.66);
+  --ring: rgba(201, 164, 92, 0.48);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px -10px rgba(0, 0, 0, 0.66), 0 1px 3px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 38px -24px rgba(0, 0, 0, 0.78), 0 5px 14px -12px rgba(0, 0, 0, 0.6);
+  --shadow-brand: 0 12px 28px -18px rgba(201, 164, 92, 0.34);
 }
 
 /* App surfaces, text, borders, status treatments, overlays, and filled-control
@@ -172,6 +198,11 @@
   --color-overlay: var(--overlay);
   --color-revenue: var(--revenue);
   --color-revenue-soft: var(--revenue-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-on-ink: var(--on-ink);
+  --color-on-ink-muted: var(--on-ink-muted);
+  --color-brass-on-ink: var(--brass-on-ink);
   --font-sans: var(--font-sans-base);
   --font-display: var(--font-display);
   --font-mono: var(--font-mono-base);
@@ -200,15 +231,42 @@ body {
   letter-spacing: -0.011em;
 }
 
-/* Headings carry the brand voice: display face, tighter tracking, more
-   weight. This is the single biggest signal that the product is designed
-   rather than scaffolded. */
+/* Headings carry the brand voice. A serif needs the opposite treatment to the
+   geometric sans it replaces: near-neutral tracking rather than tight, and
+   restraint in weight. Fraunces above 600 turns decorative, and negative
+   tracking collapses its serifs into each other. */
 h1, h2, h3, h4 {
-  font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
-  letter-spacing: -0.028em;
-  font-weight: 700;
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 40;
+  letter-spacing: -0.008em;
+  font-weight: 600;
+  line-height: 1.18;
 }
-h1 { font-weight: 800; letter-spacing: -0.034em; }
+h1 { letter-spacing: -0.014em; }
+/* Smaller headings sit closer to body copy, so they take the text optical
+   size and a touch more tracking to stay legible. */
+h3, h4 {
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 18;
+  letter-spacing: 0;
+}
+
+/* The figure a customer screenshots for their boss, and the short display
+   titles beside it. One class owns the serif numeral treatment so the eight
+   places that render a headline number cannot drift apart again. Tabular
+   figures keep digits from jittering as live values tick up. */
+.display-figure {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 40;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  font-variant-numeric: tabular-nums;
+}
+.display-title {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 24;
+  font-weight: 600;
+  letter-spacing: -0.004em;
+}
 
 :focus-visible {
   outline: 3px solid var(--ring);

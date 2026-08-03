@@ -136,7 +136,7 @@ export function DailyAllowanceTile({
           </div>
         </div>
         <div className="text-sm">
-          <p className="font-display font-bold tabular-nums tracking-[-0.02em]">
+          <p className="display-figure">
             <CountUp value={sentToday} /> / {dailyLimit}
           </p>
           <p className="text-xs text-muted">{remaining} left today</p>
