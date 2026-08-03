@@ -17,7 +17,7 @@ export function TagChips({
         <span
           key={tag}
           role="listitem"
-          className="inline-flex max-w-40 items-center truncate rounded-full border border-primary/15 bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary"
+          className="inline-flex max-w-40 items-center truncate rounded-full border border-border bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-foreground"
           title={tag}
         >
           {tag}

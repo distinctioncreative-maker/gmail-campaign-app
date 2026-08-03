@@ -85,7 +85,7 @@ export function NotificationBell() {
                     <Link
                       href={`/campaigns/${n.campaignId}`}
                       onClick={() => setOpen(false)}
-                      className="text-sm font-medium text-foreground hover:text-primary"
+                      className="text-sm font-medium text-foreground hover:text-foreground"
                     >
                       {n.title}
                     </Link>

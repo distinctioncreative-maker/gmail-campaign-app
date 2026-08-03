@@ -1,29 +1,27 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Icon, type IconName } from "@/components/ui/Icon";
+import { type IconName } from "@/components/ui/Icon";
 
 export type StatTone = "default" | "revenue" | "success" | "warning" | "danger" | "primary";
 
 /**
- * Tone drives both the number and its icon chip, so a tile only ever needs to
- * say what it means. Before this, each page picked its own text colour and its
- * own chip background, which is why no two stat rows in the app matched.
+ * Only two kinds of number on a screen may carry colour: money, and a genuine
+ * problem. Everything else is ink. A grid where every figure is tinted has no
+ * hierarchy, so it reads as decorated rather than designed.
  */
-const TONE: Record<StatTone, { value: string; chip: string }> = {
-  default: { value: "text-foreground", chip: "bg-surface-2 text-muted" },
-  // Money moments only, per docs/brand.md: the revenue accent loses its meaning
-  // if it is used for every number on the page.
-  revenue: { value: "text-revenue", chip: "bg-revenue-soft text-revenue" },
-  success: { value: "text-success", chip: "bg-success-soft text-success" },
-  warning: { value: "text-warning", chip: "bg-warning-soft text-warning" },
-  danger: { value: "text-danger", chip: "bg-danger-soft text-danger" },
-  primary: { value: "text-primary", chip: "bg-primary-soft text-primary" },
+const TONE: Record<StatTone, string> = {
+  default: "text-foreground",
+  revenue: "text-revenue",
+  success: "text-foreground",
+  warning: "text-warning",
+  danger: "text-danger",
+  primary: "text-foreground",
 };
 
 const VALUE_SIZE = {
-  sm: "text-2xl",
-  md: "text-[2rem]",
-  lg: "text-[2.5rem]",
+  sm: "text-[1.625rem]",
+  md: "text-[1.875rem]",
+  lg: "text-[2.25rem]",
 } as const;
 
 export type StatTileProps = {
@@ -33,20 +31,22 @@ export type StatTileProps = {
   hint?: string;
   tone?: StatTone;
   size?: keyof typeof VALUE_SIZE;
-  /** Line icon shown as a soft chip beside the label. */
+  /**
+   * Accepted so call sites do not all need editing, but deliberately not
+   * rendered. A decorative badge beside every figure is a large part of what
+   * made this grid look like a toy.
+   */
   icon?: IconName;
-  /** Turns the whole tile into a link and reveals a "View" affordance on hover. */
   href?: string;
 };
 
 /**
- * The number a customer would screenshot for their boss.
+ * The figure a customer would screenshot for their boss.
  *
- * Nineteen of these were hand-built across thirteen pages with slightly
- * different type sizes, chip colours, and spacing, which is a large part of
- * why the app read as unpolished. One component now owns the treatment:
- * display face, tight tracking, tabular figures so digits do not jitter as
- * values update, and a restrained hover lift.
+ * Set as a ruled cell rather than a floating card: hairline separation,
+ * near-square corners, no shadow, no hover lift, no icon medallion. The number
+ * and its label carry it. This is how printed financial reporting has always
+ * handled a figure, and why it still reads as serious.
  */
 export function StatTile({
   label,
@@ -54,53 +54,34 @@ export function StatTile({
   hint,
   tone = "default",
   size = "md",
-  icon,
   href,
 }: StatTileProps) {
-  const t = TONE[tone];
   const body = (
     <>
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-[0.8125rem] font-medium leading-tight text-muted">{label}</p>
-        {icon && (
-          <span
-            aria-hidden
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${t.chip} transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-110`}
-          >
-            <Icon name={icon} size={16} />
-          </span>
-        )}
-      </div>
-      <p
-        className={`mt-2.5 display-figure leading-none ${VALUE_SIZE[size]} ${t.value}`}
-      >
+      <p className="text-[0.6875rem] font-medium uppercase leading-none tracking-[0.09em] text-muted">
+        {label}
+      </p>
+      <p className={`display-figure mt-4 leading-none ${VALUE_SIZE[size]} ${TONE[tone]}`}>
         {value}
       </p>
-      {hint && <p className="mt-2 text-xs leading-5 text-muted">{hint}</p>}
-      {href && (
-        <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted opacity-0 transition-[opacity,color] duration-[--dur-base] group-hover:text-primary group-hover:opacity-100">
-          View
-          <span aria-hidden className="transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:translate-x-0.5">
-            →
-          </span>
-        </span>
-      )}
+      {hint && <p className="mt-2.5 text-xs leading-5 text-muted">{hint}</p>}
     </>
   );
 
   if (href) {
     return (
-      <Link href={href} className="card card-hover group block p-6">
+      <Link href={href} className="block bg-surface p-5 transition-colors duration-[--dur-base] hover:bg-surface-2">
         {body}
       </Link>
     );
   }
-  return <div className="card card-hover group p-6">{body}</div>;
+  return <div className="bg-surface p-5">{body}</div>;
 }
 
 /**
- * Consistent responsive grid for a row of stat tiles, with the shared
- * staggered entrance so a dashboard resolves rather than snapping in.
+ * A ruled block of figures rather than a row of separate cards. The 1px gap
+ * over a border-coloured ground draws the hairlines between cells, so the
+ * group reads as one table instead of several floating objects.
  */
 export function StatGrid({
   columns = 4,
@@ -115,5 +96,11 @@ export function StatGrid({
     5: "sm:grid-cols-3 lg:grid-cols-5",
     6: "sm:grid-cols-3 lg:grid-cols-6",
   };
-  return <div className={`stagger grid gap-4 ${cols[columns]}`}>{children}</div>;
+  return (
+    <div
+      className={`grid gap-px overflow-hidden rounded-[--radius-lg] border border-border bg-border ${cols[columns]}`}
+    >
+      {children}
+    </div>
+  );
 }

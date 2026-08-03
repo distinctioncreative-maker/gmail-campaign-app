@@ -41,7 +41,7 @@ export function EmptyState({
         <p className="text-sm font-medium">{title}</p>
         {description && <p className="max-w-sm text-sm leading-6 text-muted">{description}</p>}
         {action && (
-          <Link href={action.href} className="mt-1 text-sm font-medium text-primary hover:underline">
+          <Link href={action.href} className="mt-1 text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
             {action.label}
           </Link>
         )}
@@ -56,9 +56,9 @@ export function EmptyState({
       {/* Soft brand halo behind the medallion, so the panel has a centre of gravity. */}
       <span
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-0 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface-2 blur-3xl"
       />
-      <span className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary ring-1 ring-primary/15">
+      <span className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 text-foreground ring-1 ring-border">
         <Icon name={icon} size={24} />
       </span>
       <p className="relative mt-5 display-title text-lg">{title}</p>

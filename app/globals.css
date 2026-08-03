@@ -92,19 +92,19 @@
   --marketing-info-soft: #efebe3;
 
   /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
   --radius-full: 999px;
 
   /* Elevation ladder. Tighter and lighter than before: a large soft shadow
      reads cheap, while a hairline border plus a whisper of lift reads
      considered. Definition comes from --border, not from blur. */
-  --shadow-sm: 0 1px 2px rgba(22, 20, 15, 0.04);
-  --shadow-md: 0 4px 14px -10px rgba(22, 20, 15, 0.14), 0 1px 3px -2px rgba(22, 20, 15, 0.06);
-  --shadow-lg: 0 16px 38px -24px rgba(22, 20, 15, 0.2), 0 5px 14px -12px rgba(22, 20, 15, 0.1);
-  --shadow-brand: 0 12px 28px -18px rgba(133, 100, 40, 0.36);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 8px 28px -18px rgba(22, 20, 15, 0.18);
+  --shadow-brand: none;
 
   /* Motion tokens, so every transition shares one curve and tempo. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -159,10 +159,10 @@
   --warning-contrast: #1e1505;
   --overlay: rgba(8, 7, 5, 0.66);
   --ring: rgba(201, 164, 92, 0.48);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 14px -10px rgba(0, 0, 0, 0.66), 0 1px 3px -2px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 38px -24px rgba(0, 0, 0, 0.78), 0 5px 14px -12px rgba(0, 0, 0, 0.6);
-  --shadow-brand: 0 12px 28px -18px rgba(201, 164, 92, 0.34);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 10px 30px -20px rgba(0, 0, 0, 0.7);
+  --shadow-brand: none;
 }
 
 /* App surfaces, text, borders, status treatments, overlays, and filled-control
@@ -288,26 +288,23 @@ h3, h4 {
 *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--muted) 55%, var(--border)); }
 
 /* ── Surfaces ─────────────────────────────────────────────── */
+/* A ruled panel, not a floating object. Definition comes from the hairline
+   and from the space around it. Stacked soft shadows and a 16px radius are
+   what made this read as a template rather than a considered product. */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  box-shadow: var(--shadow-sm), var(--shadow-md);
+  border-radius: var(--radius-lg);
 }
 .card-hover {
-  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.24s ease;
-  will-change: transform;
+  transition: border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
 }
+/* Hover darkens the rule. It does not lift, glow, or tint: a panel that
+   floats off the page on mouseover is the visual language of a toy. */
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), 0 12px 30px -12px color-mix(in srgb, var(--primary) 40%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
-}
-.card-hover:active {
-  transform: translateY(-1px) scale(0.994);
-  transition-duration: 0.08s;
+  border-color: color-mix(in srgb, var(--foreground) 28%, var(--border));
+  background: color-mix(in srgb, var(--surface-2) 55%, var(--surface));
 }
 /* Clickable cards: crisp keyboard focus ring, no default outline. */
 a.card-hover:focus-visible {
@@ -354,16 +351,12 @@ a.card-hover:focus-visible {
   transition: background 0.15s ease, border-color 0.15s ease, filter 0.15s ease,
     transform 0.06s ease, box-shadow 0.15s ease;
 }
-.btn-primary:active, .btn-ghost:active, .btn-secondary:active, .btn-danger:active {
-  transform: translateY(0.5px);
-}
+
 
 /* Every button in the app already carries one of these classes, so a subtle
    hover-lift here gives the whole product a more animated feel with no
    per-component changes. */
-.btn-primary:hover, .btn-secondary:hover, .btn-ghost:hover, .btn-danger:hover {
-  transform: translateY(-1px);
-}
+
 .btn-primary:disabled:hover, .btn-secondary:disabled:hover, .btn-ghost:disabled:hover, .btn-danger:disabled:hover {
   transform: none;
 }
@@ -371,16 +364,16 @@ a.card-hover:focus-visible {
 .btn-primary {
   background: var(--primary);
   color: var(--primary-contrast);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04), 0 6px 16px -10px color-mix(in srgb, var(--primary) 80%, transparent);
 }
-.btn-primary:hover { background: var(--primary-hover); box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06), 0 10px 22px -10px color-mix(in srgb, var(--primary) 85%, transparent); }
+.btn-primary:hover { background: var(--primary-hover); }
 .btn-primary:disabled { filter: grayscale(0.25) opacity(0.55); box-shadow: none; }
 
 .btn-secondary {
-  background: var(--primary-soft);
-  color: var(--primary);
+  border: 1px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
 }
-.btn-secondary:hover { filter: brightness(0.98); box-shadow: var(--shadow-sm); }
+.btn-secondary:hover { background: var(--foreground); color: var(--surface); }
 
 .btn-ghost {
   border: 1px solid var(--border);
@@ -556,10 +549,11 @@ a.card-hover:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  border-radius: 9999px;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.6875rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
   line-height: 1.2;
 }
 
@@ -601,82 +595,28 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .animate-rise { animation: rise 0.28s ease both; }
 
 /* ── Mission-control Home (JARVIS pulse) ─────────────────────────── */
+/* The hero is a ruled panel. It previously carried two radial gradients, a
+   glowing top rule, a scanline grid, and three animated blurred colour blobs
+   on `mix-blend-mode: screen`. That is the visual language of a gaming
+   peripheral, not of something a company pays three thousand a month for.
+   Editorial weight comes from type and space. */
 .jarvis-hero {
   position: relative;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 1.125rem;
-  background:
-    radial-gradient(120% 140% at 85% -10%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 60%),
-    radial-gradient(90% 120% at -5% 110%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 55%),
-    var(--surface);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
 }
-.jarvis-hero::before {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 70%, transparent), transparent);
-}
-/* faint scanline grid, very subtle */
-.jarvis-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px);
-  background-size: 100% 34px;
-  opacity: 0.5;
-  pointer-events: none;
-  mask-image: linear-gradient(180deg, transparent, #000 40%, transparent);
-}
+/* Kept as no-ops so the markup does not need touching everywhere at once. */
+.aurora, .aurora-blob { display: none; }
 
-@keyframes pulse-draw { to { stroke-dashoffset: 0; } }
-.pulse-line {
-  stroke-dasharray: 2000;
-  stroke-dashoffset: 2000;
-  animation: pulse-draw 1.4s ease-out forwards;
-}
-@keyframes pulse-fade { from { opacity: 0; } to { opacity: 1; } }
-.pulse-area { opacity: 0; animation: pulse-fade 1.2s ease-out 0.5s forwards; }
-@keyframes dot-pop { 0% { opacity: 0; transform: scale(0); } 70% { transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
-.pulse-dot { transform-box: fill-box; transform-origin: center; opacity: 0; animation: dot-pop 0.5s ease-out forwards; }
-@keyframes ring-breathe { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.30; } }
-.pulse-ring { animation: ring-breathe 2.4s ease-in-out infinite; }
-
-/* Live status dot */
-@keyframes live-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-.live-dot { animation: live-blink 1.8s ease-in-out infinite; }
-
-@media (prefers-reduced-motion: reduce) {
-  .pulse-line, .pulse-area, .pulse-dot, .pulse-ring, .live-dot { animation: none; opacity: 1; stroke-dashoffset: 0; }
-}
-
-/* ── Premium home: aurora, shimmer, traveling glow ───────────────── */
-.aurora { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
-.aurora-blob {
-  position: absolute;
-  width: 42%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.55;
-  mix-blend-mode: screen;
-}
-.aurora-blob.b1 { background: color-mix(in srgb, var(--primary) 85%, transparent); top: -18%; right: 4%; animation: blob1 18s ease-in-out infinite; }
-.aurora-blob.b2 { background: color-mix(in srgb, var(--info) 88%, transparent); bottom: -22%; left: 2%; animation: blob2 22s ease-in-out infinite; }
-.aurora-blob.b3 { background: color-mix(in srgb, var(--brand-to) 72%, var(--primary)); top: 18%; left: 34%; opacity: 0.35; animation: blob3 26s ease-in-out infinite; }
-:root[data-theme="dark"] .aurora-blob { opacity: 0.4; }
-@keyframes blob1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-8%, 10%) scale(1.15); } }
-@keyframes blob2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(10%, -8%) scale(1.2); } }
-@keyframes blob3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-12%, -6%) scale(0.9); } }
 
 /* shimmer sweep traveling along the activity line */
 @keyframes sheen-move { 0% { stroke-dasharray: 60 2000; stroke-dashoffset: 2000; } 100% { stroke-dasharray: 60 2000; stroke-dashoffset: 0; } }
-.pulse-sheen { opacity: 0.9; animation: sheen-move 3.4s linear infinite; mix-blend-mode: screen; }
+.pulse-sheen { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .aurora-blob, .pulse-sheen { animation: none; }
+  .pulse-sheen { animation: none; }
 }
 
 /* ── Seamless fintech polish ─────────────────────────────────────── */

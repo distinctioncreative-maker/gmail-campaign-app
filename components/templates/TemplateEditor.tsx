@@ -452,7 +452,7 @@ export function TemplateEditor({
                   if (m === "gmail" && drafts === null) void loadDrafts();
                 }}
                 className={`rounded-t-lg px-3 py-2 font-medium ${
-                  mode === m ? "border border-b-0 border-border bg-surface text-primary" : "text-muted hover:text-foreground"
+                  mode === m ? "border border-b-0 border-border bg-surface text-foreground" : "text-muted hover:text-foreground"
                 }`}
               >
                 {label}
@@ -476,7 +476,7 @@ export function TemplateEditor({
                   if (safeUrl) exec("createLink", safeUrl);
                   else if (url) setError("Links must start with http:// or https://.");
                 }}
-                className="rounded px-2 py-1 text-primary hover:bg-border"
+                className="rounded px-2 py-1 text-foreground hover:bg-border"
               >
                 Link
               </button>
@@ -744,7 +744,7 @@ export function TemplateEditor({
           </>
         ) : (
           <div className="mt-4 rounded-xl border border-dashed border-border bg-surface-2 p-8 text-center">
-            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-foreground">
               <Icon name="mail" size={19} />
             </span>
             <p className="mt-3 text-sm font-medium text-foreground">Preview example lead data</p>

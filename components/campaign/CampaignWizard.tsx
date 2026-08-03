@@ -416,7 +416,7 @@ export function CampaignWizard() {
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
         <div
-          className="h-full rounded-full brand-gradient transition-all duration-300"
+          className="h-full rounded-full bg-foreground/75 transition-all duration-300"
           style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
         />
       </div>
@@ -473,7 +473,7 @@ export function CampaignWizard() {
             <h2 className="text-xl font-semibold">Choose your leads</h2>
             <p className="mt-1 text-sm text-muted">
               Need more leads?{" "}
-              <Link href="/leads" className="text-primary hover:underline">
+              <Link href="/leads" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
                 Import them first
               </Link>
               , then come back.
@@ -552,7 +552,7 @@ export function CampaignWizard() {
                       onClick={() =>
                         setSelected((prev) => new Set([...prev, ...selectableIds(visibleContacts)]))
                       }
-                      className="min-h-11 rounded-lg px-3 font-medium text-primary hover:bg-primary-soft"
+                      className="min-h-11 rounded-lg px-3 font-medium text-foreground hover:bg-surface-2"
                     >
                       Select all shown
                     </button>
@@ -613,7 +613,7 @@ export function CampaignWizard() {
             <h2 className="text-xl font-semibold">Review your list</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-4">
               {[
-                ["Selected", counts.selected, "text-primary"],
+                ["Selected", counts.selected, "text-foreground"],
                 ["Ready", counts.ready, "text-success"],
                 ["Used before", counts.usedBefore, "text-info"],
                 ["Excluded for safety", counts.excluded, "text-warning"],
@@ -697,7 +697,7 @@ export function CampaignWizard() {
                 No templates yet: {" "}
                 <button
                   onClick={() => setEditing({ templateId: null, initial: null })}
-                  className="font-medium text-primary hover:underline"
+                  className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
                 >
                   create one right here
                 </button>
@@ -716,7 +716,7 @@ export function CampaignWizard() {
                         if (!selected) void loadPreview(t.templateId);
                       }}
                       className={`relative rounded-xl border p-4 text-left transition ${
-                        selected ? "border-primary bg-primary-soft" : "border-border hover:border-primary"
+                        selected ? "border-primary bg-surface-2" : "border-border hover:border-primary"
                       }`}
                     >
                       {selected && (
@@ -741,7 +741,7 @@ export function CampaignWizard() {
                           }
                         }}
                         aria-label={`Edit ${t.name}`}
-                        className="absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-primary"
+                        className="absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-foreground"
                       >
                         <Icon name="edit" size={15} />
                       </span>
@@ -751,7 +751,7 @@ export function CampaignWizard() {
               </div>
             )}
             {templateIds.length > 1 && (
-              <p className="mt-3 rounded-lg bg-primary-soft p-2 text-xs font-medium text-primary">
+              <p className="mt-3 rounded-lg bg-surface-2 p-2 text-xs font-medium text-foreground">
                 A/B test: {templateIds.length} templates will be rotated evenly across recipients.
               </p>
             )}
@@ -782,7 +782,7 @@ export function CampaignWizard() {
                     key={key}
                     onClick={() => setPreset(key)}
                     className={`rounded-xl border p-4 text-left transition ${
-                      preset === key ? "border-primary bg-primary-soft" : "border-border hover:border-primary"
+                      preset === key ? "border-primary bg-surface-2" : "border-border hover:border-primary"
                     }`}
                   >
                     <p className="font-medium">{p.label}</p>
@@ -793,7 +793,7 @@ export function CampaignWizard() {
               <button
                 onClick={() => setPreset("custom")}
                 className={`rounded-xl border p-4 text-left transition ${
-                  preset === "custom" ? "border-primary bg-primary-soft" : "border-border hover:border-primary"
+                  preset === "custom" ? "border-primary bg-surface-2" : "border-border hover:border-primary"
                 }`}
               >
                 <p className="font-medium">Custom</p>
@@ -874,7 +874,7 @@ export function CampaignWizard() {
               </label>
               <p className="mt-1 text-xs text-muted">
                 Follow-ups stop automatically when someone replies.{" "}
-                <a href="/sequences/new" target="_blank" className="text-primary hover:underline">
+                <a href="/sequences/new" target="_blank" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
                   Build a sequence
                 </a>
               </p>

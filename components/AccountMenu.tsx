@@ -121,7 +121,7 @@ export function AccountMenu({
       <button
         ref={triggerRef}
         onClick={() => setOpen((o) => !o)}
-        className="group flex min-h-14 w-full items-center gap-3 rounded-xl border border-border bg-surface/80 p-3 text-left shadow-sm transition hover:border-primary/25 hover:bg-surface"
+        className="group flex min-h-14 w-full items-center gap-3 rounded-md border border-border bg-surface p-3 text-left transition hover:bg-surface-2"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
@@ -129,18 +129,21 @@ export function AccountMenu({
       >
         <span
           aria-hidden
-          className="brand-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-brand-contrast"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-foreground text-xs font-semibold text-surface"
         >
           {initial}
         </span>
+        {/* The "Account" caption used to sit beside the name and squeezed both
+            into ellipses at sidebar width. The chevron alone says it opens. */}
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium text-foreground">{displayName}</span>
-          <span className="block truncate text-xs font-medium text-muted">Switch or sign out</span>
+          <span className="block truncate text-xs text-muted">Switch or sign out</span>
         </span>
-        <span className="flex shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted group-hover:text-foreground">
-          Account
-          <Icon name="chevronDown" size={15} className={`transition ${open ? "rotate-180" : ""}`} />
-        </span>
+        <Icon
+          name="chevronDown"
+          size={15}
+          className={`shrink-0 text-muted transition group-hover:text-foreground ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
@@ -155,7 +158,7 @@ export function AccountMenu({
           <div className="flex items-center gap-3 border-b border-border p-4">
             <span
               aria-hidden
-              className="brand-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-brand-contrast"
+              className="bg-surface-2 text-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-brand-contrast"
             >
               {initial}
             </span>

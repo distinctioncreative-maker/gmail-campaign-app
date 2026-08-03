@@ -70,7 +70,7 @@ type Status = "idle" | "running" | "pass" | "fail";
 
 const STATUS_PRESENTATION: Record<Status, { label: string; icon: IconName; className: string }> = {
   idle: { label: "Not run", icon: "pause", className: "bg-surface-2 text-muted" },
-  running: { label: "Running", icon: "hourglass", className: "bg-primary-soft text-primary" },
+  running: { label: "Running", icon: "hourglass", className: "bg-surface-2 text-foreground" },
   pass: { label: "Passed", icon: "check", className: "bg-success-soft text-success" },
   fail: { label: "Failed", icon: "alert", className: "bg-danger-soft text-danger" },
 };

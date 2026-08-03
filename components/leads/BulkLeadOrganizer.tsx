@@ -40,9 +40,9 @@ export function BulkLeadOrganizer({
 
   return (
     <details className="group mt-3 rounded-xl border border-border bg-surface-2/70">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border">
         <span className="flex items-center gap-2">
-          <Icon name="tag" size={17} className="text-primary" />
+          <Icon name="tag" size={17} className="text-foreground" />
           Tag or move {selectedCount} selected lead{selectedCount === 1 ? "" : "s"}
         </span>
         <Icon name="chevronDown" size={16} className="text-muted transition group-open:rotate-180" />

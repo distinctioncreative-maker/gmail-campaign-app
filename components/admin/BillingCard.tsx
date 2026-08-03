@@ -122,7 +122,7 @@ function PlanTile({
   name: string; price: string; blurb: string; featured?: boolean; busy: boolean; onPick: () => void;
 }) {
   return (
-    <div className={`rounded-xl border p-4 ${featured ? "border-primary bg-primary-soft/40" : "border-border"}`}>
+    <div className={`rounded-xl border p-4 ${featured ? "border-primary bg-surface-2/40" : "border-border"}`}>
       <div className="flex items-baseline justify-between">
         <span className="font-medium">{name}</span>
         <span className="text-sm text-muted">{price}</span>

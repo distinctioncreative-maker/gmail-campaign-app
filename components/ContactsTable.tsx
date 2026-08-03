@@ -284,7 +284,7 @@ export function ContactsTable({
       </div>
 
       {selected.size > 0 && (
-        <div className="glass mt-3 rounded-xl border border-primary/20 p-3 shadow-sm">
+        <div className="glass mt-3 rounded-xl border border-border p-3 shadow-sm">
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-auto px-1 text-sm font-medium" aria-live="polite">
               {selected.size} selected
@@ -331,7 +331,7 @@ export function ContactsTable({
             return (
               <li
                 key={c.contactId}
-                className={`card flex items-start gap-3 p-3 ${selected.has(c.contactId) ? "ring-1 ring-primary/40" : ""}`}
+                className={`card flex items-start gap-3 p-3 ${selected.has(c.contactId) ? "ring-1 ring-border" : ""}`}
               >
                 <input
                   type="checkbox"
@@ -392,7 +392,7 @@ export function ContactsTable({
                 <tr
                   key={c.contactId}
                   className={`border-b border-border last:border-0 hover:bg-surface-2 ${
-                    selected.has(c.contactId) ? "bg-primary-soft/40" : ""
+                    selected.has(c.contactId) ? "bg-surface-2/40" : ""
                   }`}
                 >
                   <td className="px-3 py-3">

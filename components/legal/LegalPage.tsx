@@ -32,7 +32,7 @@ export function LegalPage({
       </header>
 
       <main className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
           {eyebrow}
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">

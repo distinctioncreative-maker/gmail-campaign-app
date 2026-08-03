@@ -221,7 +221,7 @@ export function BestSendTimes({
         <div key={r.hour} className="flex items-center gap-2 text-xs">
           <span className="w-8 shrink-0 text-right text-muted">{fmtHour(r.hour)}</span>
           <div className="h-3 flex-1 overflow-hidden rounded-full bg-border">
-            <div className="h-full rounded-full brand-gradient" style={{ width: `${(r.rate / maxRate) * 100}%` }} />
+            <div className="h-full rounded-full bg-surface-2" style={{ width: `${(r.rate / maxRate) * 100}%` }} />
           </div>
           <span className="w-24 shrink-0 tabular-nums text-muted">
             {r.rate.toFixed(0)}% · {r.replied}/{r.sent}

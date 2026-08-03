@@ -27,12 +27,12 @@ export function TemplateListActions({
   return (
     <div className="flex gap-3 text-xs">
       {archived ? (
-        <button onClick={() => act("restore")} disabled={busy} className="text-primary hover:underline disabled:opacity-50">
+        <button onClick={() => act("restore")} disabled={busy} className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground disabled:opacity-50">
           Restore
         </button>
       ) : (
         <>
-          <button onClick={() => act("duplicate")} disabled={busy} className="text-primary hover:underline disabled:opacity-50">
+          <button onClick={() => act("duplicate")} disabled={busy} className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground disabled:opacity-50">
             Duplicate
           </button>
           <button onClick={() => act("archive")} disabled={busy} className="text-muted hover:underline disabled:opacity-50">

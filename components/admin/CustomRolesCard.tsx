@@ -14,7 +14,7 @@ const ACCESS_LABELS: Record<Role, string> = {
 };
 
 const field =
-  "min-h-11 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+  "min-h-11 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border";
 
 export function CustomRolesCard({ roles }: { roles: CustomRoleDefinition[] }) {
   const router = useRouter();

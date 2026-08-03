@@ -159,7 +159,7 @@ export function SequenceBuilder({
 
       <div className="mt-4 card p-6">
         <div className="mb-4 flex items-center gap-2 rounded-lg bg-surface-2 p-3 text-sm text-muted">
-          <Icon name="mail" size={17} className="shrink-0 text-primary" aria-hidden />
+          <Icon name="mail" size={17} className="shrink-0 text-foreground" aria-hidden />
           Initial email is sent first. Then:
         </div>
         {steps.map((step, i) => (

@@ -78,7 +78,7 @@ export default async function CampaignsPage({
             aria-current={view === item.key ? "page" : undefined}
             className={`min-h-11 rounded-xl border px-4 py-2.5 text-sm font-medium transition ${
               view === item.key
-                ? "border-primary bg-primary-soft text-primary"
+                ? "border-primary bg-surface-2 text-foreground"
                 : "border-border bg-surface text-muted hover:text-foreground"
             }`}
           >

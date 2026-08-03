@@ -53,8 +53,8 @@ export function DraftReplyButton({
       disabled={busy}
       className={
         compact
-          ? "rounded-lg px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:opacity-50"
-          : "rounded-lg border border-primary/30 bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary transition hover:bg-primary/10 disabled:opacity-50"
+          ? "rounded-lg px-2 py-1 text-xs font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-50"
+          : "rounded-lg border border-border bg-surface-2 px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-50"
       }
     >
       <span className="inline-flex items-center gap-1.5">

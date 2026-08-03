@@ -295,7 +295,7 @@ export function HelpGuides({ query = "" }: { query?: string }) {
                   className="flex w-full items-start gap-3 p-5 text-left hover:bg-surface-2"
                   aria-expanded={open === g.id}
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-foreground">
                     <Icon name={g.icon} size={19} />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -320,7 +320,7 @@ export function HelpGuides({ query = "" }: { query?: string }) {
                     {g.cta && (
                       <Link
                         href={g.cta.href}
-                        className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                        className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
                       >
                         {g.cta.label}
                         <Icon name="chevronRight" size={14} />

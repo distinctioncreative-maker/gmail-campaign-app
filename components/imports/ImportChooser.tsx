@@ -8,7 +8,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 type Mode = "paste" | "csv" | null;
 
 function ImportIcon({ name }: { name: IconName }) {
-  return <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name={name} size={20} /></span>;
+  return <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-2 text-foreground"><Icon name={name} size={20} /></span>;
 }
 
 export function ImportChooser({ listId }: { listId?: string }) {
@@ -54,7 +54,7 @@ export function ImportChooser({ listId }: { listId?: string }) {
         <ImportIcon name="external" />
         <p className="mt-2 font-medium">Salesforce Lightning sync</p>
         <p className="mt-1 text-sm text-muted">
-          One-click connect to pull leads directly: <span className="font-medium text-primary">coming soon</span>
+          One-click connect to pull leads directly: <span className="font-medium text-foreground">coming soon</span>
         </p>
       </div>
       <div className="card p-6 opacity-60">

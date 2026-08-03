@@ -45,7 +45,7 @@ export default async function WaitlistPage() {
       />
 
       <p className="mt-4 text-sm text-muted">
-        <Link href="/admin" className="text-primary hover:underline">
+        <Link href="/admin" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
           ← Back to Administration
         </Link>
       </p>

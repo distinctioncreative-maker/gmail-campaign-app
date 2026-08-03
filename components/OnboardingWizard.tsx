@@ -59,7 +59,7 @@ function SetupPreview() {
       {stages.map((stage, index) => (
         <div key={stage.label} className="relative z-10 flex flex-1 flex-col items-center gap-2 text-center">
           <span
-            className="onboarding-node flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-surface text-primary shadow-sm"
+            className="onboarding-node flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground shadow-sm"
             style={{ animationDelay: `${index * 180}ms` }}
             aria-hidden
           >
@@ -192,7 +192,7 @@ export function OnboardingWizard({
     <div className="mx-auto max-w-4xl">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Workspace setup</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">Workspace setup</p>
           <p className="mt-1 text-sm text-muted">A guided path to your first safe test campaign.</p>
         </div>
         <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted">
@@ -202,7 +202,7 @@ export function OnboardingWizard({
 
       <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
         <div
-          className="brand-gradient h-full rounded-full transition-[width] duration-500"
+          className="bg-foreground/70 h-full rounded-full transition-[width] duration-500"
           style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
         />
       </div>
@@ -215,7 +215,7 @@ export function OnboardingWizard({
               index < step
                 ? "bg-success-soft text-success"
                 : index === step
-                  ? "bg-primary-soft text-primary"
+                  ? "bg-surface-2 text-foreground"
                   : "text-muted"
             }`}
           >
@@ -231,7 +231,7 @@ export function OnboardingWizard({
           {step === 0 && (
             <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary" aria-hidden>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2 text-foreground" aria-hidden>
                   <Icon name="sparkles" size={21} />
                 </span>
                 <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -259,7 +259,7 @@ export function OnboardingWizard({
 
           {step === 1 && (
             <>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Workspace profile</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">Workspace profile</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Make Cadence fit the way you work.</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
                 {canConfigureWorkspace
@@ -276,7 +276,7 @@ export function OnboardingWizard({
                         value={workspaceName}
                         onChange={(event) => setWorkspaceName(event.target.value)}
                         maxLength={80}
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       />
                     </label>
                     <label className="text-sm font-medium text-foreground">
@@ -286,7 +286,7 @@ export function OnboardingWizard({
                         onChange={(event) => setIndustry(event.target.value)}
                         maxLength={80}
                         placeholder="Financial services, software, recruiting..."
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       />
                     </label>
                     <label className="text-sm font-medium text-foreground">
@@ -294,7 +294,7 @@ export function OnboardingWizard({
                       <select
                         value={teamSize}
                         onChange={(event) => setTeamSize(event.target.value as WorkspaceProfile["teamSize"])}
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       >
                         <option value="JUST_ME">Just me</option>
                         <option value="2_5">2 to 5 people</option>
@@ -308,7 +308,7 @@ export function OnboardingWizard({
                       <select
                         value={monthlyEmailGoal}
                         onChange={(event) => setMonthlyEmailGoal(event.target.value as WorkspaceProfile["monthlyEmailGoal"])}
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       >
                         <option value="UNDER_500">Fewer than 500 emails</option>
                         <option value="500_2000">500 to 2,000 emails</option>
@@ -329,8 +329,8 @@ export function OnboardingWizard({
                             key={useCase.value}
                             className={`flex min-h-20 cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
                               selected
-                                ? "border-primary/40 bg-primary-soft"
-                                : "border-border bg-surface hover:border-primary/25"
+                                ? "border-border bg-surface-2"
+                                : "border-border bg-surface hover:border-border"
                             }`}
                           >
                             <input
@@ -341,7 +341,7 @@ export function OnboardingWizard({
                               onChange={() => setPrimaryUseCase(useCase.value)}
                               className="sr-only"
                             />
-                            <Icon name={useCase.icon} size={18} className={selected ? "text-primary" : "text-muted"} />
+                            <Icon name={useCase.icon} size={18} className={selected ? "text-foreground" : "text-muted"} />
                             <span>
                               <span className="block text-sm font-medium text-foreground">{useCase.label}</span>
                               <span className="mt-0.5 block text-xs leading-5 text-muted">{useCase.detail}</span>
@@ -370,7 +370,7 @@ export function OnboardingWizard({
 
           {step === 2 && (
             <>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Connection</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">Connection</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Connect your Gmail.</h1>
               <p className="mt-3 max-w-2xl leading-7 text-muted">
                 Cadence can send approved messages as you and read replies to campaign threads.
@@ -465,7 +465,7 @@ export function OnboardingWizard({
                     "Review results before requesting live sending",
                   ].map((item, index) => (
                     <li key={item} className="flex items-start gap-3 text-muted">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">{index + 1}</span>
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-foreground">{index + 1}</span>
                       <span>{item}</span>
                     </li>
                   ))}

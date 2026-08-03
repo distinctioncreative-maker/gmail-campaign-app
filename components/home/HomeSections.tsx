@@ -15,7 +15,7 @@ import type { Campaign } from "@/schemas/campaign";
  */
 
 const STATUS_PILL: Record<string, { label: string; className: string; dot: string }> = {
-  SENDING: { label: "Sending live", className: "text-primary", dot: "bg-primary" },
+  SENDING: { label: "Sending live", className: "text-foreground", dot: "bg-primary" },
   REPLIES: { label: "Replies waiting", className: "text-success", dot: "bg-success" },
   READY: { label: "Systems ready", className: "text-muted", dot: "bg-muted" },
   SETUP: { label: "Setup needed", className: "text-warning", dot: "bg-warning" },
@@ -120,9 +120,9 @@ export function DailyAllowanceTile({
   const pct = dailyLimit > 0 ? Math.min(100, (sentToday / dailyLimit) * 100) : 0;
   const remaining = Math.max(0, dailyLimit - sentToday);
   return (
-    <Link href="/settings" className="card card-hover group p-5">
-      <p className="text-[0.8125rem] font-medium leading-tight text-muted">Today&apos;s sending</p>
-      <div className="mt-2.5 flex items-center gap-3">
+    <Link href="/settings" className="group block bg-surface p-5 transition-colors duration-[--dur-base] hover:bg-surface-2">
+      <p className="text-[0.6875rem] font-medium uppercase leading-none tracking-[0.09em] text-muted">Today&apos;s sending</p>
+      <div className="mt-4 flex items-center gap-3">
         <div
           className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
           style={{ background: `conic-gradient(var(--primary) ${pct * 3.6}deg, var(--surface-2) 0deg)` }}
@@ -162,7 +162,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
       </div>
       <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
         <div
-          className="brand-gradient h-full rounded-full transition-all duration-500"
+          className="bg-foreground/70 h-full rounded-full transition-all duration-500"
           style={{ width: `${(done / steps.length) * 100}%` }}
         />
       </div>
@@ -176,7 +176,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
                 s.done
                   ? "border-transparent bg-surface-2"
                   : isNext
-                    ? "border-primary/30 bg-primary-soft/50"
+                    ? "border-border bg-surface-2"
                     : "border-border"
               }`}
             >
@@ -200,7 +200,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
                   className={
                     isNext
                       ? "btn-primary px-3.5 py-1.5 text-xs"
-                      : "text-xs font-medium text-primary hover:underline"
+                      : "text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
                   }
                 >
                   {s.cta} →
@@ -220,7 +220,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-medium">Live campaigns</h2>
-        <Link href="/campaigns" className="text-sm font-medium text-primary hover:underline">
+        <Link href="/campaigns" className="text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
           View all
         </Link>
       </div>
@@ -243,7 +243,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2">
                 <div
-                  className="brand-gradient h-full rounded-full transition-all"
+                  className="bg-foreground/70 h-full rounded-full transition-all"
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -251,7 +251,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
                 <span className="tabular-nums">
                   {sent} of {total} sent
                 </span>
-                <span className="tabular-nums text-revenue">{c.replyCount} replies</span>
+                <span className="tabular-nums">{c.replyCount} replies</span>
               </div>
             </Link>
           );
@@ -296,11 +296,11 @@ export function QuickActions() {
         <Link key={a.href} href={a.href} className="card card-hover group p-5">
           <span
             aria-hidden
-            className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-brand-contrast shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
+            className="bg-surface-2 text-foreground flex h-11 w-11 items-center justify-center rounded-2xl text-brand-contrast shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
           >
             <Icon name={a.icon} size={22} />
           </span>
-          <p className="mt-3 font-semibold group-hover:text-primary">{a.title}</p>
+          <p className="mt-3 font-semibold group-hover:text-foreground">{a.title}</p>
           <p className="mt-1 text-sm text-muted">{a.desc}</p>
         </Link>
       ))}
@@ -313,7 +313,7 @@ export function RecentCampaigns({ campaigns }: { campaigns: Campaign[] }) {
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-medium">Recent campaigns</h2>
-        <Link href="/campaigns" className="text-sm font-medium text-primary hover:underline">
+        <Link href="/campaigns" className="text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
           View all
         </Link>
       </div>

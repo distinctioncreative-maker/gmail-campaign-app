@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { CountUp } from "@/components/ui/CountUp";
-import { StatTile, type StatTone } from "@/components/ui/StatTile";
+import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import {
   HomeHero,
   DailyAllowanceTile,
@@ -56,7 +56,7 @@ export default async function DemoHomePage({
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
           Your numbers
         </h2>
-        <div className="flex gap-1 rounded-full border border-border bg-surface p-1 text-xs">
+        <div className="flex overflow-hidden rounded-sm border border-border bg-surface text-xs">
           {(
             [
               ["all", "All time"],
@@ -67,8 +67,10 @@ export default async function DemoHomePage({
             <Link
               key={key}
               href={key === "all" ? "/demo" : `/demo?range=${key}`}
-              className={`rounded-full px-3 py-1.5 font-medium transition ${
-                range === key ? "bg-primary text-primary-contrast" : "text-muted hover:text-foreground"
+              className={`border-r border-border px-3.5 py-1.5 font-medium transition last:border-r-0 ${
+                range === key
+                  ? "bg-foreground text-surface"
+                  : "text-muted hover:bg-surface-2 hover:text-foreground"
               }`}
             >
               {label}
@@ -95,7 +97,7 @@ export default async function DemoHomePage({
         </Link>
       )}
 
-      <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatGrid columns={4}>
         {orbs.map((o) => (
           <StatTile
             key={o.label}
@@ -107,7 +109,7 @@ export default async function DemoHomePage({
           />
         ))}
         <DailyAllowanceTile sentToday={home.sentToday} dailyLimit={home.dailyLimit} />
-      </div>
+      </StatGrid>
 
       <LiveCampaignCards campaigns={home.activeCampaigns} />
       <RecentCampaigns campaigns={home.campaigns} />

@@ -138,7 +138,7 @@ export default async function RepDetailPage({
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/team/${userId}/campaigns/${c.campaignId}`}
-                        className="text-xs font-medium text-primary hover:underline"
+                        className="text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
                       >
                         Open →
                       </Link>

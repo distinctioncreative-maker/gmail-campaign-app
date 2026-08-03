@@ -126,15 +126,15 @@ export default function SignInPage() {
             </p>
             <p className="mt-3 text-xs leading-relaxed text-muted">
               By continuing, you agree to the{" "}
-              <Link href="/terms" className="font-medium text-primary hover:underline">
+              <Link href="/terms" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
                 Managed Pilot Terms
               </Link>{" "}
               and acknowledge the{" "}
-              <Link href="/privacy" className="font-medium text-primary hover:underline">
+              <Link href="/privacy" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
                 Privacy Notice
               </Link>{" "}
               and{" "}
-              <Link href="/acceptable-use" className="font-medium text-primary hover:underline">
+              <Link href="/acceptable-use" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
                 Acceptable Use Policy
               </Link>
               .
@@ -143,7 +143,7 @@ export default function SignInPage() {
 
           <p className="mt-6 text-center text-sm text-muted">
             New here?{" "}
-            <Link href="/" className="font-medium text-primary hover:underline">
+            <Link href="/" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
               See what Cadence does →
             </Link>
           </p>

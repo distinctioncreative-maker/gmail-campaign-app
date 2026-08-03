@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { CountUp } from "@/components/ui/CountUp";
-import { StatTile, type StatTone } from "@/components/ui/StatTile";
+import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import { RangeTabs, type HomeRange } from "@/components/home/RangeTabs";
 import {
   HomeHero,
@@ -125,22 +125,22 @@ export default async function HomePage({
       {home.best && (
         <Link
           href={`/campaigns/${home.best.c.campaignId}`}
-          className="card card-hover flex items-center justify-between gap-3 bg-primary-soft/50 p-4"
+          className="card card-hover flex items-center justify-between gap-3 bg-surface-2 p-4"
         >
-          <span className="flex items-center gap-2 text-sm text-primary">
+          <span className="flex items-center gap-2 text-sm text-foreground">
             <Icon name="chart" size={16} className="shrink-0" aria-hidden />
             <span>
               Top campaign: <strong>{home.best.c.name}</strong> at{" "}
               {home.best.rate.toFixed(1)}% reply rate
             </span>
           </span>
-          <span aria-hidden className="text-primary">
+          <span aria-hidden className="text-foreground">
             →
           </span>
         </Link>
       )}
 
-      <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatGrid columns={4}>
         {orbs.map((o) => (
           <StatTile
             key={o.label}
@@ -158,7 +158,7 @@ export default async function HomePage({
           />
         ))}
         <DailyAllowanceTile sentToday={home.sentToday} dailyLimit={home.dailyLimit} />
-      </div>
+      </StatGrid>
 
       {!home.setupComplete ? (
         <SetupChecklist steps={home.setupSteps} />

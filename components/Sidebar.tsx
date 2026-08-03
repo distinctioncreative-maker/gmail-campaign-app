@@ -38,7 +38,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
             aria-current={active ? "page" : undefined}
             className={`group relative flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
               active
-                ? "bg-primary-soft text-primary"
+                ? "bg-surface-2 text-foreground"
                 : "text-muted hover:bg-surface hover:text-foreground"
             }`}
           >

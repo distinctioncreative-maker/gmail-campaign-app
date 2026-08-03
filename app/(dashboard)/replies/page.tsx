@@ -202,7 +202,7 @@ export default async function RepliesPage() {
                         href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-medium text-primary"
+                        className="font-medium text-foreground"
                       >
                         Gmail →
                       </a>
@@ -270,7 +270,7 @@ export default async function RepliesPage() {
                             href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="whitespace-nowrap text-xs font-medium text-primary hover:underline"
+                            className="whitespace-nowrap text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
                           >
                             Open in Gmail →
                           </a>

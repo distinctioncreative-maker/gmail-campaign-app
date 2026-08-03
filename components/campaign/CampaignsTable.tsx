@@ -266,7 +266,7 @@ export function CampaignsTable({
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
                 <div
-                  className="h-full rounded-full brand-gradient"
+                  className="h-full rounded-full bg-surface-2"
                   style={{ width: `${c.progressRate}%` }}
                 />
               </div>
@@ -316,7 +316,7 @@ export function CampaignsTable({
                   <button
                     onClick={() => void restoreDeleted(c)}
                     disabled={busyId === c.campaignId}
-                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-primary hover:bg-primary-soft disabled:opacity-40"
+                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
                   >
                     Restore
                   </button>
@@ -324,7 +324,7 @@ export function CampaignsTable({
                   <button
                     onClick={() => void setArchived(c, false)}
                     disabled={busyId === c.campaignId}
-                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-primary hover:bg-primary-soft disabled:opacity-40"
+                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
                   >
                     Restore
                   </button>
@@ -402,7 +402,7 @@ export function CampaignsTable({
                   <div className="flex min-w-36 items-center gap-2">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
                       <div
-                        className="h-full rounded-full brand-gradient"
+                        className="h-full rounded-full bg-surface-2"
                         style={{ width: `${c.progressRate}%` }}
                       />
                     </div>
@@ -456,7 +456,7 @@ export function CampaignsTable({
                       <button
                         onClick={() => void restoreDeleted(c)}
                         disabled={busyId === c.campaignId}
-                        className="rounded-lg px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:opacity-40"
+                        className="rounded-lg px-2 py-1 text-xs font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-40"
                       >
                         Restore
                       </button>
@@ -464,7 +464,7 @@ export function CampaignsTable({
                       <button
                         onClick={() => void setArchived(c, false)}
                         disabled={busyId === c.campaignId}
-                        className="rounded-lg px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:opacity-40"
+                        className="rounded-lg px-2 py-1 text-xs font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-40"
                       >
                         Restore
                       </button>

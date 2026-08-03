@@ -132,7 +132,7 @@ export function ReportKpis({
 
 export function BestCampaignCallout({ best }: { best: LeaderboardRow }) {
   return (
-    <div className="mt-4 flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary-soft p-4 text-sm text-primary">
+    <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border bg-surface-2 p-4 text-sm text-foreground">
       <span className="mt-0.5 rounded-lg bg-surface p-1.5">
         <Icon name="chart" size={17} />
       </span>
@@ -175,7 +175,7 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
               <div
-                className="brand-gradient h-full rounded-full"
+                className="bg-foreground/70 h-full rounded-full"
                 style={{ width: `${Math.max(step.value > 0 ? 3 : 0, (step.value / max) * 100)}%` }}
               />
             </div>
@@ -253,7 +253,7 @@ export function TrackedEngagementPanel({
           <div className="mt-5 grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-surface-2 p-4">
               <p className="text-[0.8125rem] font-medium leading-tight text-muted">Open detected</p>
-              <p className="mt-2.5 display-figure text-2xl leading-none text-primary">
+              <p className="mt-2.5 display-figure text-2xl leading-none text-foreground">
                 {tracking.sent > 0 ? (
                   <CountUp value={tracking.openRate} decimals={1} suffix="%" />
                 ) : (
@@ -348,7 +348,7 @@ export function CampaignLeaderboard({
                     <td className="px-4 py-3 font-medium">
                       <Link
                         href={`/reports?campaign=${campaign.campaignId}&range=${rangeDays}`}
-                        className="hover:text-primary"
+                        className="hover:text-foreground"
                       >
                         {campaign.name}
                       </Link>
@@ -384,7 +384,7 @@ export function CampaignLeaderboard({
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/campaigns/${campaign.campaignId}`}
-                        className="text-xs font-medium text-primary hover:underline"
+                        className="text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
                       >
                         View
                       </Link>

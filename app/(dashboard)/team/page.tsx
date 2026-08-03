@@ -95,7 +95,7 @@ function Leaderboard({
           <div key={m.userId} className="flex items-center gap-3 p-4 transition hover:bg-surface-2">
             {/* Rank / avatar */}
             <div className="relative shrink-0">
-              <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-brand-contrast shadow-sm">
+              <div className="bg-surface-2 text-foreground flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-brand-contrast shadow-sm">
                 {initials(display)}
               </div>
               {ranked && (
@@ -124,7 +124,7 @@ function Leaderboard({
               <div className="mt-2 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
                   <div
-                    className="brand-gradient h-full rounded-full"
+                    className="bg-foreground/70 h-full rounded-full"
                     style={{ width: `${s.sent > 0 ? Math.max(4, (s.replyRate / topRate) * 100) : 0}%` }}
                   />
                 </div>
@@ -136,7 +136,7 @@ function Leaderboard({
 
             {/* Actions */}
             <div className="flex shrink-0 flex-col items-end gap-2">
-              <Link href={`/team/${m.userId}`} className="text-xs font-medium text-primary hover:underline">
+              <Link href={`/team/${m.userId}`} className="text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
                 View →
               </Link>
               {canManage && teamId && (

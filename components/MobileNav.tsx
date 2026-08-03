@@ -110,9 +110,9 @@ export function MobileNav({
               <Icon
                 name={item.icon}
                 size={22}
-                className={`transition ${active ? "text-primary" : "text-muted"}`}
+                className={`transition ${active ? "text-foreground" : "text-muted"}`}
               />
-              <span className={active ? "text-primary" : "text-muted"}>{item.label}</span>
+              <span className={active ? "text-foreground" : "text-muted"}>{item.label}</span>
             </Link>
           );
         })}
@@ -133,13 +133,13 @@ export function MobileNav({
             viewBox="0 0 24 24"
             fill="currentColor"
             aria-hidden
-            className={moreOpen || moreActive ? "text-primary" : "text-muted"}
+            className={moreOpen || moreActive ? "text-foreground" : "text-muted"}
           >
             <circle cx="5" cy="12" r="2" />
             <circle cx="12" cy="12" r="2" />
             <circle cx="19" cy="12" r="2" />
           </svg>
-          <span className={moreOpen || moreActive ? "text-primary" : "text-muted"}>More</span>
+          <span className={moreOpen || moreActive ? "text-foreground" : "text-muted"}>More</span>
         </button>
       </nav>
 
@@ -181,11 +181,11 @@ export function MobileNav({
                     onClick={() => setMoreOpen(false)}
                     className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center text-xs font-medium transition ${
                       active
-                        ? "border-primary/30 bg-primary-soft text-primary"
+                        ? "border-border bg-surface-2 text-foreground"
                         : "border-border text-muted hover:bg-surface-2"
                     }`}
                   >
-                    <Icon name={item.icon} size={20} className={active ? "text-primary" : "text-muted"} />
+                    <Icon name={item.icon} size={20} className={active ? "text-foreground" : "text-muted"} />
                     {item.label}
                   </Link>
                 );

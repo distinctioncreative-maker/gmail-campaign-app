@@ -33,14 +33,14 @@ export function LaunchCelebration({
   return (
     <div
       role="status"
-      className="animate-rise relative mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-primary-soft p-5"
+      className="animate-rise relative mb-4 overflow-hidden rounded-2xl border border-border bg-surface-2 p-5"
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-primary/15 blur-3xl"
+        className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-surface-2 blur-3xl"
       />
       <div className="relative flex items-start gap-4">
-        <span className="brand-gradient flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-brand-contrast shadow-md">
+        <span className="bg-surface-2 text-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-brand-contrast shadow-md">
           <Icon name="rocket" size={20} />
         </span>
         <div className="min-w-0 flex-1">

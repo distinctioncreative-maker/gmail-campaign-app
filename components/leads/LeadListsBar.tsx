@@ -91,10 +91,10 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
               style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
             >
               <div className="min-w-0">
-                <p className="truncate font-medium group-hover:text-primary">{l.name}</p>
+                <p className="truncate font-medium group-hover:text-foreground">{l.name}</p>
                 <p className="text-xs text-muted">{l.count.toLocaleString()} lead{l.count === 1 ? "" : "s"}</p>
               </div>
-              <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-primary">
+              <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2 text-foreground">
                 <Icon name="users" size={16} />
               </span>
             </Link>

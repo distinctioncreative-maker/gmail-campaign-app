@@ -193,13 +193,13 @@ export default async function CampaignDetailPage({
               </p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-semibold tabular-nums text-primary">{pct}%</p>
+              <p className="text-2xl font-semibold tabular-nums text-foreground">{pct}%</p>
               <p className="text-xs text-muted">{remaining.toLocaleString()} remaining</p>
             </div>
           </div>
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-surface-2">
             <div
-              className="h-full rounded-full brand-gradient transition-all"
+              className="h-full rounded-full bg-foreground/75 transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -334,7 +334,7 @@ export default async function CampaignDetailPage({
                   return (
                     <tr key={i} className="border-t border-border">
                       <td className="py-2 pr-4 font-medium">
-                        <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary-soft text-[10px] font-bold text-primary">
+                        <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-2 text-[10px] font-bold text-foreground">
                           {String.fromCharCode(65 + i)}
                         </span>
                         {r.name}

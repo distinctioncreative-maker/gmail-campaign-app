@@ -57,7 +57,7 @@ export function ReplyThreadViewer({
     <>
       <button
         onClick={() => void openViewer()}
-        className={`font-medium text-primary ${compact ? "text-xs" : "text-xs hover:underline"}`}
+        className={`font-medium text-foreground ${compact ? "text-xs" : "text-xs hover:underline"}`}
       >
         Read reply
       </button>

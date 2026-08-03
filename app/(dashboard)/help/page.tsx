@@ -55,7 +55,7 @@ export default function HelpPage() {
 
       <div className="card overflow-hidden">
         <div className="border-b border-border bg-surface-2 p-5 sm:p-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-primary">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Knowledge center
           </p>
           <h2 className="mt-1 text-xl font-semibold">What can we help you accomplish?</h2>
@@ -80,11 +80,11 @@ export default function HelpPage() {
                 href={item.href}
                 className="group flex items-start gap-3 bg-surface p-5 hover:bg-surface-2"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-foreground">
                   <Icon name={item.icon} size={18} />
                 </span>
                 <span>
-                  <span className="flex items-center gap-1 text-sm font-semibold group-hover:text-primary">
+                  <span className="flex items-center gap-1 text-sm font-semibold group-hover:text-foreground">
                     {item.title}
                     <Icon name="chevronRight" size={14} />
                   </span>
@@ -108,7 +108,7 @@ export default function HelpPage() {
             </p>
           </div>
           {!query ? (
-            <a href="#questions" className="text-xs font-medium text-primary hover:underline">
+            <a href="#questions" className="text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
               Jump to troubleshooting
             </a>
           ) : null}
@@ -140,7 +140,7 @@ export default function HelpPage() {
 
       {!query ? (
         <div className="mt-10 card p-5 sm:p-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-primary">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Trust and responsible use
           </p>
           <h2 className="mt-1 font-semibold">Compliance and pilot policies</h2>
