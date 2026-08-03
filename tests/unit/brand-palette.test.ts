@@ -103,6 +103,27 @@ describe("plum and editorial-blue brand palette", () => {
     }
   });
 
+  it("keeps body, muted, status, and revenue text readable in both themes", () => {
+    for (const block of [lightBlock, darkBlock]) {
+      const background = token(block, "background");
+      const surface = token(block, "surface");
+      for (const foreground of [
+        token(block, "foreground"),
+        token(block, "muted"),
+        token(block, "success"),
+        token(block, "warning"),
+        token(block, "danger"),
+        token(block, "revenue"),
+      ]) {
+        expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(foreground, surface)).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(contrast(token(block, "success-contrast"), token(block, "success"))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(block, "warning-contrast"), token(block, "warning"))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(block, "danger-contrast"), token(block, "danger"))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it("keeps direct palette utilities and retired electric indigo out of product source", () => {
     const sources = sourceFiles("app")
       .concat(sourceFiles("components"), sourceFiles("lib"))
@@ -110,8 +131,9 @@ describe("plum and editorial-blue brand palette", () => {
       .join("\n");
 
     expect(sources).not.toMatch(
-      /\b(?:bg|text|border|from|to|ring)-(?:blue|purple|indigo|violet)-\d+\b/
+      /\b(?:bg|text|border|from|to|ring)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|purple|indigo|violet|fuchsia|pink|rose|white|black)-\d+\b/
     );
+    expect(sources).not.toMatch(/\btext-muted\/(?:50|60|70)\b/);
     expect(sources).not.toMatch(/#(?:5b47e0|4a37cc|6c55ea|9b5cd6|8b78ff|a394ff|7c5cff)\b/i);
     expect(sources).not.toMatch(/bg-primary[^"\n]*text-white/);
     expect(sources).not.toMatch(/brand-gradient[^"\n]*text-white/);

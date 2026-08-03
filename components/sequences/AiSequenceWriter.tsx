@@ -101,7 +101,7 @@ export function AiSequenceWriter({ onResult }: { onResult: (steps: GeneratedStep
             <button onClick={() => setOpen(false)} className="btn-ghost px-3 py-2 text-sm">
               Close
             </button>
-            <span className="text-xs text-muted/70">Replaces the steps below: you can still edit each.</span>
+            <span className="text-xs text-muted">Replaces the steps below: you can still edit each.</span>
           </div>
         </div>
       )}

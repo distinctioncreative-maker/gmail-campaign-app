@@ -23,21 +23,30 @@ in `Sidebar`, `UIProviders` (toast/confirm), `ProductTour`, `NotificationBell`,
 | Route | What it does |
 |---|---|
 | `/home` | Personal briefing: greeting, activity pulse chart, campaign status, quick counts. |
-| `/campaigns`, `/campaigns/new`, `/campaigns/[campaignId]` | Campaign command center: counted status segments, progress, outcome rates, create wizard, controls, configuration, diagnostics, recipients, A/B performance, event log, and dedicated-report links. |
+| `/campaigns`, `/campaigns/new`, `/campaigns/[campaignId]` | Campaign command center: active, archived, and Recently Deleted lifecycle views; progress and outcome rates; create wizard; controls; configuration; diagnostics; recipients; retained per-campaign KPIs; event log; and dedicated-report links for current campaigns. |
 | `/replies` | Cross-campaign reply inbox, triaged by intent, with AI draft + manual scan actions. |
-| `/leads`, `/leads/[contactId]`, `/leads/lists/[listId]` | Audience KPI summary, tag/list/status filtering, safe bulk organization, single-contact detail/engagement, and named lead lists. |
-| `/templates`, `/templates/[templateId]`, `/templates/new` | Reusable email workspace with full-height visual/HTML editing, desktop/phone preview, spam check, starter layouts, and Gmail draft import. |
+| `/leads`, `/leads/[contactId]`, `/leads/lists/[listId]` | Audience KPI summary, stable cursor pagination, date-added context, tag/list/status filtering, safe bulk organization, single-contact detail/engagement, and named lead lists. |
+| `/templates`, `/templates/[templateId]`, `/templates/new` | Reusable email workspace with stable-caret visual/HTML editing, desktop/phone preview, spam check, starter layouts, Gmail draft import, and a compliance-footer helper that cannot bypass launch requirements. |
 | `/sequences`, `/sequences/[sequenceId]`, `/sequences/new` | Follow-up sequences (multi-step, auto-stop on reply). |
 | `/reports` | Campaign intelligence: all-campaign or single-campaign scope, 30/90/365-day send cohorts, exact all-time KPIs, funnel, timing analysis, tracked-engagement caveats, comparison table, and CSV export. |
 | `/deliverability` | SPF/DKIM/DMARC + Postmaster reputation for the sending domain. |
 | `/suppressions` | Do-not-email management (personal + org scope). |
-| `/team`, `/team/[userId]`, `/team/[userId]/campaigns/[campaignId]` | Manager/Admin roster + leaderboard, read-only rep drill-down. |
+| `/team`, `/team/[userId]`, `/team/[userId]/campaigns/[campaignId]` | Cycle-safe parent/child team hierarchy, inherited manager visibility, roster + leaderboard, and read-only member drill-down. |
 | `/settings` | Gmail connection status, sender profile/signature, invite teammates. |
 | `/system-health` | Admin-only ops view: cron freshness, member Gmail health, sending-mode state, env summary. |
-| `/onboarding` | First-run wizard: connect Gmail, sender profile, sending defaults. |
+| `/onboarding` | Personalized first-run wizard: workspace profile, Gmail connection, sender identity, responsible defaults, self-test, first-success milestone, and guided-tour handoff. |
 | `/help` | Task-first knowledge center, searchable professional guides, expanded FAQ, safe Test Center, feature suggestions, and replayable tour. |
 | `/admin`, `/admin/waitlist`, `/admin/features` | Admin console (see below), waitlist signups, live feature checklist. |
 | `(auth)/sign-in` | Sign-in (outside the dashboard layout). |
+
+## Public legal and trust routes
+
+`/terms`, `/privacy`, `/acceptable-use`, and `/compliance` are public,
+indexable managed-pilot disclosures composed through
+`components/legal/LegalPage.tsx`. They describe the controls that exist in
+source and explicitly defer unresolved legal identity, jurisdiction, retention,
+subprocessor, DPA, deletion/export, and counsel decisions to a signed pilot
+agreement. They are a launch baseline, not a substitute for legal approval.
 
 ### The admin console specifically
 
@@ -56,7 +65,7 @@ if (
 ```
 
 Current sections, top to bottom: `WorkspaceNameCard`, `SendingModeCard`,
-`AiWritingCard`, `BillingCard`, `InviteTeamCard`, a link card to
+`AiWritingCard`, `BillingCard`, `InviteTeamCard`, `CustomRolesCard`, a link card to
 `/admin/waitlist`, a link card to `/admin/features`, then `AdminPanel`
 (member list).
 
@@ -87,18 +96,18 @@ Zod schemas.
 | `auth/session` | Firebase ID token → session cookie exchange, provisions membership. |
 | `gmail/*` | OAuth connect/callback/disconnect, connection status, list drafts. |
 | `billing/*` | Plan/subscription state, seat-aware Checkout, billing portal, idempotent Stripe webhook. |
-| `admin/*` | Org policy CRUD: settings, AI toggle, workspace rename, sending mode, members. |
+| `admin/*` | Org policy CRUD: settings, AI toggle, workspace rename, sending mode, members, and reusable custom role definitions mapped to audited access levels. |
 | `ai/brand-memory` | Org brand profile used to steer AI generation. |
-| `campaigns/*` | CRUD, launch, controls (pause/resume/cancel/retry/clone), diagnose, reply scan, undo-unsubscribe. |
+| `campaigns/*` | CRUD, launch, controls (pause/resume/cancel/retry/clone/archive/restore), recoverable deletion, permanent deletion only after soft deletion, diagnose, reply scan, undo-unsubscribe. |
 | `contacts/*`, `lead-lists/*`, `leads/*` | Owner-scoped contact CRUD, idempotent bulk tag/list operations, lead lists, CSV/Salesforce-paste parsing + import. |
 | `sequences/*` | CRUD + AI generation. |
 | `templates/*` | CRUD + AI generate/improve/preview/subjects/test-send. |
 | `replies/*` | AI draft creation, on-demand mailbox scan. |
 | `suppressions` | List/add/deactivate do-not-email entries. |
 | `u/[token]` | Public signed one-click unsubscribe confirmation and RFC 8058 POST. GET never mutates recipient state. |
-| `teams/*` | Team CRUD + membership. |
+| `teams/*` | Team CRUD, cycle-safe parent hierarchy, inherited manager scope, and membership. |
 | `invites` | List/create/revoke invites; can promote Solo → Workspace. |
-| `me`, `settings/profile`, `onboarding`, `notifications` | Self-service user state. Tracked campaigns write one transactional notification for the first detected open per recipient; the notification explicitly warns that email clients may preload images. |
+| `me`, `settings/profile`, `onboarding`, `notifications` | Self-service user state plus admin-only shared workspace setup. Tracked campaigns write one transactional notification for the first detected open per recipient; the notification explicitly warns that email clients may preload images. |
 | `feature-suggestions`, `waitlist` | Lightweight feedback board; public landing-page signup capture. |
 | `sending-mode` | Read-only current TEST/LIVE state for any signed-in user. |
 | `health` | Public readiness probe (Firestore connectivity) for uptime monitors. |
@@ -111,9 +120,9 @@ Zod schemas.
 | Folder | Responsibility |
 |---|---|
 | `auth/` | Session/auth-context resolution, sign-in domain policy (`requireUser.ts`, `session.ts`, `domains.ts`). |
-| `tenancy/` | Solo vs. Workspace classification and capability matrix (`accountType.ts`, `capabilities.ts`). |
+| `tenancy/` | Solo vs. Workspace classification and capability matrix (`accountType.ts`, `capabilities.ts`). Custom role names do not change this matrix or the three base access levels. |
 | `billing/` | Stripe integration + plan catalog (`stripe.ts`, `plans.ts`) plus shared public pricing copy (`publicPricing.ts`); webhook claims/customer pointers live in `repositories/billing.ts`. |
-| `campaigns/` | Core campaign lifecycle — launch, commercial-email placeholder enforcement, controls, monitoring, repair, diagnose, eligibility, collision, followups, idempotency (largest module). |
+| `campaigns/` | Core campaign lifecycle: launch, active/archive/deleted partitioning, commercial-email placeholder enforcement, visible unsubscribe insertion, controls, monitoring, repair, diagnose, eligibility, collision, followups, and idempotency (largest module). |
 | `gmail/` | Gmail API wrapper + the send-safety gate (`send.ts`, `safety.ts`, `drafts.ts`, `classifyBounce.ts`, `classifyReply.ts`). |
 | `google/` | Gmail-connect OAuth mechanics, separate from Firebase app sign-in (`oauth.ts`, `oauthState.ts`). |
 | `repositories/` | Firestore data access; every doc validated against a `schemas/*` type. |
@@ -121,7 +130,7 @@ Zod schemas.
 | `observability/` | `reportError` — structured logs + optional webhook alert. |
 | `firebase/` | Admin SDK (`admin.ts`) + browser SDK config (`client.ts`). |
 | `kms/` | Encrypt/decrypt stored OAuth refresh tokens. |
-| `leads/` | Classification/reconciliation for import flows plus normalized contact-tag helpers. |
+| `leads/` | Classification/reconciliation for import flows, bounded import batching, cursor helpers, and normalized contact-tag helpers. |
 | `parser/` | Salesforce-paste parsing, email normalization. |
 | `personalization/` | Template placeholder rendering. |
 | `sanitize/` | HTML sanitization for user-authored email bodies. |
@@ -132,7 +141,7 @@ Zod schemas.
 | `sending/` | Org-wide TEST/LIVE mode resolution. |
 | `spam/` | Spam-risk scoring for template content. |
 | `tasks/` | Cloud Tasks enqueue + OIDC verification. |
-| `teams/` | Team-scoped access control + stats. |
+| `teams/` | Team-scoped access control, cycle-safe hierarchy traversal, inherited manager scope, and stats. |
 | `deliverability/` | DNS auth checks + Postmaster stats. |
 | `analytics/` | Shared campaign performance math, send-cohort windows, and report visualizations used by Reports, Campaigns, Home, and Replies. |
 | `home/` | Home-page briefing composition. |

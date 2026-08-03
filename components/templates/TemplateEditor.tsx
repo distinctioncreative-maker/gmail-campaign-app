@@ -11,6 +11,10 @@ import { AiEmailTools } from "./AiEmailTools";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
+import {
+  appendMissingCommercialFooter,
+  missingCommercialEmailPlaceholders,
+} from "@/lib/campaigns/compliance";
 
 const PLACEHOLDER_MENU: Array<{ token: string; label: string }> = [
   { token: "{{first_name}}", label: "First name" },
@@ -66,6 +70,7 @@ export function TemplateEditor({
 }) {
   const router = useRouter();
   const editorRef = useRef<HTMLDivElement>(null);
+  const lastVisualInputRef = useRef<string | null>(null);
   const subjectInputRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>(
     initial?.type === "PASTED_HTML" ? "html" : "visual"
@@ -86,6 +91,7 @@ export function TemplateEditor({
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cssWarnings, setCssWarnings] = useState<string[]>([]);
+  const [autoComplianceFooter, setAutoComplianceFooter] = useState(true);
 
   const { restored, clear, dismissRestored } = useDraftAutosave(
     `draft.template.${templateId ?? "new"}`,
@@ -95,6 +101,14 @@ export function TemplateEditor({
   // Keep the visual editor's DOM in sync when html changes from outside it.
   useEffect(() => {
     if (mode === "visual" && editorRef.current) {
+      // A contentEditable owns its selection while the user is typing. Do not
+      // rewrite innerHTML for state that came from this same editor, because a
+      // DOM replacement moves the caret to the beginning. External changes
+      // such as AI output, draft restore, and mode switches still sync here.
+      if (lastVisualInputRef.current === html) {
+        lastVisualInputRef.current = null;
+        return;
+      }
       const safeHtml = sanitizeEmailHtml(html);
       if (editorRef.current.innerHTML !== safeHtml) {
         editorRef.current.innerHTML = safeHtml;
@@ -104,11 +118,23 @@ export function TemplateEditor({
 
   function syncFromEditor() {
     if (!editorRef.current) return;
-    const safeHtml = sanitizeEmailHtml(editorRef.current.innerHTML);
-    if (editorRef.current.innerHTML !== safeHtml) {
-      editorRef.current.innerHTML = safeHtml;
+    const nextHtml = editorRef.current.innerHTML;
+    lastVisualInputRef.current = nextHtml;
+    setHtml(nextHtml);
+  }
+
+  function preparedCommercialHtml(): string {
+    const safeHtml = sanitizeEmailHtml(html);
+    if (autoComplianceFooter) {
+      return appendMissingCommercialFooter(safeHtml);
     }
-    setHtml(safeHtml);
+    const missing = missingCommercialEmailPlaceholders(safeHtml);
+    if (missing.length > 0) {
+      throw new Error(
+        `Add ${missing.map((field) => `{{${field}}}`).join(" and ")} before continuing. Commercial outreach must include a valid postal address and a clear opt-out.`
+      );
+    }
+    return safeHtml;
   }
 
   function exec(command: string, value?: string) {
@@ -204,7 +230,7 @@ export function TemplateEditor({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subjectTemplate: subject || "(no subject)",
-          htmlTemplate: sanitizeEmailHtml(html),
+          htmlTemplate: preparedCommercialHtml(),
         }),
       });
       const body = await res.json();
@@ -230,7 +256,7 @@ export function TemplateEditor({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subjectTemplate: subject,
-          htmlTemplate: sanitizeEmailHtml(html),
+          htmlTemplate: preparedCommercialHtml(),
         }),
       });
       const body = await res.json();
@@ -254,7 +280,7 @@ export function TemplateEditor({
       const input = {
         name: name || subject || "Untitled template",
         subjectTemplate: subject,
-        htmlTemplate: sanitizeEmailHtml(html),
+        htmlTemplate: preparedCommercialHtml(),
         type: mode === "html" ? "PASTED_HTML" : mode === "gmail" ? "GMAIL_DRAFT" : "VISUAL",
         description: "",
         category: "",
@@ -322,10 +348,10 @@ export function TemplateEditor({
           </div>
         </div>
         <div className="p-4 sm:p-6">
-        {notice && <p className="mb-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
-        {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {notice && <p className="mb-3 rounded-lg bg-success-soft p-3 text-sm text-success">{notice}</p>}
+        {error && <p className="mb-3 rounded-lg bg-danger-soft p-3 text-sm text-danger">{error}</p>}
         {cssWarnings.map((w) => (
-          <p key={w} className="mb-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-700">{w}</p>
+          <p key={w} className="mb-2 rounded-lg bg-warning-soft p-2 text-xs text-warning">{w}</p>
         ))}
 
         <AiEmailWriter
@@ -375,7 +401,7 @@ export function TemplateEditor({
             placeholder="Quick question for {{business_name}}"
             className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
-          <p className="mt-1 text-xs text-muted/70">
+          <p className="mt-1 text-xs text-muted">
             Placeholders work in the subject too: personalize it the same way as the body.
           </p>
         </div>
@@ -386,6 +412,27 @@ export function TemplateEditor({
           onSubject={setSubject}
           onHtml={(nextHtml) => setHtml(sanitizeEmailHtml(nextHtml))}
         />
+
+        <div className="mt-5 rounded-xl border border-border bg-surface-2 p-4">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={autoComplianceFooter}
+              onChange={(event) => setAutoComplianceFooter(event.target.checked)}
+              className="mt-1"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-foreground">
+                Cadence compliance footer
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted">
+                Recommended. Cadence adds any missing company address and opt-out fields when you
+                preview or save. Turn this off only if your custom footer already contains both
+                required placeholders. Campaign launch remains blocked if either field is missing.
+              </span>
+            </span>
+          </label>
+        </div>
 
         <div className="mt-5 overflow-x-auto border-b border-border">
           <div className="flex min-w-max gap-1 text-sm">
@@ -647,12 +694,19 @@ export function TemplateEditor({
 
         {rightTab === "spam" ? (
           <div className="mt-4">
-            <SpamCheck subject={subject} html={html} />
+            <SpamCheck
+              subject={subject}
+              html={
+                autoComplianceFooter
+                  ? appendMissingCommercialFooter(sanitizeEmailHtml(html))
+                  : html
+              }
+            />
           </div>
         ) : preview ? (
           <>
             {preview.unresolved.length > 0 && (
-              <p className="mt-3 rounded-lg bg-amber-50 p-2 text-xs text-amber-700">
+              <p className="mt-3 rounded-lg bg-warning-soft p-2 text-xs text-warning">
                 Some placeholders have no value yet:{" "}
                 {preview.unresolved.map((u) => `{{${u}}}`).join(", ")}: fill in your sender
                 profile in Settings, or they&apos;ll show as-is in sent emails.

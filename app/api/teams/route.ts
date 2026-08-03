@@ -5,7 +5,8 @@ import { handleApiErrors } from "@/lib/api";
 import { listTeams, createTeam } from "@/lib/repositories/teams";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
-import { ledTeamIds, viewableUserIds } from "@/lib/teams/access";
+import { viewableUserIds } from "@/lib/teams/access";
+import { managedTeamIds } from "@/lib/teams/hierarchy";
 
 /** Teams + members for the Team section (Team Leads and Admins only). */
 export const GET = handleApiErrors(async () => {
@@ -26,7 +27,7 @@ export const GET = handleApiErrors(async () => {
     )
   );
   const visibleTeamIds =
-    ctx.role === "ADMIN" ? null : new Set(ledTeamIds(ctx.userId, teams));
+    ctx.role === "ADMIN" ? null : managedTeamIds(ctx.userId, teams);
   return NextResponse.json({
     teams: visibleTeamIds
       ? teams.filter((team) => visibleTeamIds.has(team.teamId))
@@ -44,15 +45,17 @@ export const GET = handleApiErrors(async () => {
 const CreateSchema = z.object({
   name: z.string().trim().min(1).max(80),
   leadUserId: z.string().min(1).nullable().optional(),
+  parentTeamId: z.string().min(1).nullable().optional(),
 });
 
 /** Create a team. Admin only: admins set up teams and pick each lead. */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireRole("ADMIN");
   const input = CreateSchema.parse(await req.json());
-  const [settings, members] = await Promise.all([
+  const [settings, members, teams] = await Promise.all([
     getOrgSettings(ctx.organizationId),
     listMembers(ctx.organizationId),
+    listTeams(ctx.organizationId),
   ]);
   if (!capabilitiesFor(ctx.tenantType, settings.billing.plan).teams) {
     return NextResponse.json({ error: "Team features require the Team plan." }, { status: 403 });
@@ -66,9 +69,13 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       );
     }
   }
+  if (input.parentTeamId && !teams.some((team) => team.teamId === input.parentTeamId)) {
+    return NextResponse.json({ error: "Parent team not found." }, { status: 400 });
+  }
   const team = await createTeam(ctx.organizationId, {
     name: input.name,
     leadUserId: input.leadUserId ?? null,
+    parentTeamId: input.parentTeamId ?? null,
   });
   return NextResponse.json({ team, message: `Team "${team.name}" created.` });
 });

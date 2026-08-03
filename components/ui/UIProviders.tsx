@@ -78,7 +78,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
         {/* Confirm modal */}
         {confirmState && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/40" onClick={() => closeConfirm(false)} aria-hidden />
+            <div className="absolute inset-0 bg-overlay" onClick={() => closeConfirm(false)} aria-hidden />
             <div
               role="dialog"
               aria-modal="true"
@@ -95,7 +95,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
                   autoFocus
                   className={
                     confirmState.danger
-                      ? "rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                      ? "rounded-xl bg-danger px-4 py-2 text-sm font-semibold text-danger-contrast hover:brightness-95"
                       : "btn-primary px-4 py-2 text-sm"
                   }
                 >

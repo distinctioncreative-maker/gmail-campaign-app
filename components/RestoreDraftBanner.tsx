@@ -17,13 +17,13 @@ export function RestoreDraftBanner({
       <div className="flex gap-2">
         <button
           onClick={onRestore}
-          className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
+          className="rounded-lg bg-warning px-3 py-1.5 text-sm font-medium text-warning-contrast hover:brightness-95"
         >
           Restore
         </button>
         <button
           onClick={onDiscard}
-          className="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-100"
+          className="rounded-lg px-3 py-1.5 text-sm font-medium text-warning hover:bg-warning-soft"
         >
           Discard
         </button>

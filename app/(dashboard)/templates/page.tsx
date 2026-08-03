@@ -43,7 +43,7 @@ export default async function TemplatesPage() {
                 {t.name}
               </Link>
               <p className="mt-1 line-clamp-2 text-sm text-muted">{t.subjectTemplate}</p>
-              <p className="mt-2 text-xs text-muted/70">
+              <p className="mt-2 text-xs text-muted">
                 v{t.version} · updated{" "}
                 <LocalTime value={t.updatedAt} options={{ dateStyle: "medium" }} />
               </p>

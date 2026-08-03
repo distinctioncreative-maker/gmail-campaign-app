@@ -6,7 +6,7 @@ import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { getUser } from "@/lib/repositories/users";
 import { statsForReps, type RepStats } from "@/lib/teams/stats";
-import { ledTeamIds } from "@/lib/teams/access";
+import { managedTeamIds, orderTeamsByHierarchy } from "@/lib/teams/hierarchy";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { type IconName } from "@/components/ui/Icon";
@@ -109,8 +109,8 @@ function Leaderboard({
                 <p className="truncate font-medium">{display}</p>
                 {!m.active && <span className="badge bg-border text-muted">disabled</span>}
                 {s.activeCampaigns > 0 && (
-                  <span className="live-dot inline-flex items-center gap-1 text-xs font-medium text-green-600">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> live
+                  <span className="live-dot inline-flex items-center gap-1 text-xs font-medium text-success">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success" /> live
                   </span>
                 )}
               </div>
@@ -166,13 +166,13 @@ export default async function TeamPage() {
   ]);
 
   const isAdmin = ctx.role === "ADMIN";
-  const led = new Set(ledTeamIds(ctx.userId, teams));
-  const visibleTeams: Team[] = isAdmin ? teams : teams.filter((t) => led.has(t.teamId));
+  const managed = managedTeamIds(ctx.userId, teams);
+  const visibleTeams: Team[] = isAdmin ? teams : teams.filter((t) => managed.has(t.teamId));
 
   // Stats only for members we'll actually display.
   const visibleMemberIds = isAdmin
     ? members.map((m) => m.userId)
-    : members.filter((m) => m.teamId !== null && led.has(m.teamId!)).map((m) => m.userId);
+    : members.filter((m) => m.teamId !== null && managed.has(m.teamId!)).map((m) => m.userId);
   const [stats, userDocs] = await Promise.all([
     statsForReps(ctx.organizationId, visibleMemberIds),
     Promise.all(members.map((m) => getUser(m.userId))),
@@ -205,7 +205,12 @@ export default async function TeamPage() {
       {isAdmin && (
         <div className="mb-6">
           <TeamManager
-            teams={teams.map((t) => ({ teamId: t.teamId, name: t.name, leadUserId: t.leadUserId }))}
+            teams={teams.map((t) => ({
+              teamId: t.teamId,
+              name: t.name,
+              leadUserId: t.leadUserId,
+              parentTeamId: t.parentTeamId,
+            }))}
             members={memberOptions}
           />
         </div>
@@ -223,17 +228,20 @@ export default async function TeamPage() {
         />
       ) : (
         <div className="space-y-10">
-          {visibleTeams.map((team) => {
+          {orderTeamsByHierarchy(visibleTeams).map(({ team, depth }) => {
             const roster = members.filter((m) => m.teamId === team.teamId);
-            const canManage = isAdmin || led.has(team.teamId);
+            const canManage = isAdmin || managed.has(team.teamId);
             const assignable = memberOptions.filter(
               (m) => m.teamId !== team.teamId && (isAdmin || m.teamId === null)
             );
             return (
-              <section key={team.teamId}>
+              <section key={team.teamId} className={depth > 0 ? "border-l border-border pl-3 sm:pl-6" : ""}>
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-semibold">{team.name}</h2>
+                    <h2 className="text-lg font-semibold">
+                      {depth > 0 && <span aria-hidden className="mr-2 text-muted">↳</span>}
+                      {team.name}
+                    </h2>
                     <p className="text-xs text-muted">
                       Lead: {team.leadUserId ? (emailById.get(team.leadUserId) ?? "Not available") : "none yet"} ·{" "}
                       {roster.length} rep{roster.length === 1 ? "" : "s"}

@@ -183,6 +183,8 @@ export async function upsertMember(
     organizationId,
     email,
     role,
+    customRoleId: null,
+    roleLabel: null,
     active: true,
     teamId: null,
     createdAt: now,

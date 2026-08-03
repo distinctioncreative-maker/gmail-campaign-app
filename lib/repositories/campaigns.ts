@@ -87,12 +87,34 @@ export async function getCampaign(
   return snap.exists ? CampaignSchema.parse(snap.data()) : null;
 }
 
-/**
- * Permanently delete a campaign and all of its subcollections (recipients,
- * queue, events, messages). Uses Firestore recursiveDelete so nothing is left
- * orphaned. Callers must enforce the DRAFT-only policy before calling.
- */
-export async function deleteCampaign(owner: OwnerRef, campaignId: string): Promise<void> {
+/** Move a finished campaign to Recently Deleted without destroying reporting
+ * evidence. All recipients, messages, events, and metrics remain available. */
+export async function softDeleteCampaign(
+  owner: OwnerRef,
+  campaignId: string
+): Promise<void> {
+  const now = Date.now();
+  await updateCampaign(owner, campaignId, {
+    archived: true,
+    archivedAt: now,
+    deletedAt: now,
+  });
+}
+
+export async function restoreDeletedCampaign(
+  owner: OwnerRef,
+  campaignId: string
+): Promise<void> {
+  await updateCampaign(owner, campaignId, {
+    archived: false,
+    archivedAt: null,
+    deletedAt: null,
+  });
+}
+
+/** Permanently delete an already soft-deleted campaign and all subcollections.
+ * Callers must require a second, explicit confirmation before invoking this. */
+export async function purgeCampaign(owner: OwnerRef, campaignId: string): Promise<void> {
   await firestore().recursiveDelete(campaignRef(owner, campaignId));
 }
 
@@ -145,6 +167,7 @@ export async function claimCampaignLaunch(
     const snap = await tx.get(ref);
     if (!snap.exists) return null;
     const campaign = CampaignSchema.parse(snap.data());
+    if (campaign.deletedAt !== null) return null;
     if (campaign.status !== "DRAFT" && campaign.status !== "READY") return null;
     const claimed = CampaignSchema.parse({
       ...campaign,

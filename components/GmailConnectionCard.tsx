@@ -34,7 +34,7 @@ export function GmailConnectionCard({
       {connectedEmail ? (
         <div className="mt-4">
           <p className="text-sm">
-            <span className="font-medium text-green-600">Connected</span> as{" "}
+            <span className="font-medium text-success">Connected</span> as{" "}
             <span className="font-medium">{connectedEmail}</span>
           </p>
           {lastRefreshAt && (

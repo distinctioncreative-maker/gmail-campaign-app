@@ -11,6 +11,7 @@ import { env } from "@/lib/env";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { Icon } from "@/components/ui/Icon";
+import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 
 /** A sweep is healthy if it ran within the last 6 hours. */
 function sweepFresh(at: number | null): boolean {
@@ -49,14 +50,15 @@ export default async function SystemHealthPage() {
         getUser(m.userId),
         listCampaigns(owner, 100),
       ]);
+      const visibleCampaigns = campaignsIncludedInWorkspaceStats(campaigns);
       return {
         member: m,
         displayName: user?.displayName ?? "",
         connectionStatus: conn?.status ?? "DISCONNECTED",
         connectedEmail: conn?.status === "CONNECTED" ? (conn.connectedEmail ?? "") : "",
         lastLoginAt: user?.lastLoginAt ?? null,
-        activeCampaigns: campaigns.filter((c) => c.status === "ACTIVE").length,
-        erroredCampaigns: campaigns.filter((c) => c.status === "ERROR").length,
+        activeCampaigns: visibleCampaigns.filter((c) => c.status === "ACTIVE").length,
+        erroredCampaigns: visibleCampaigns.filter((c) => c.status === "ERROR").length,
       };
     })
   );
@@ -108,7 +110,7 @@ export default async function SystemHealthPage() {
                   <td className="px-4 py-3 font-medium">{label}</td>
                   <td className="px-4 py-3 text-muted">{value}</td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${ok ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`} title={ok ? "Healthy" : "Needs attention"}>
+                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${ok ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`} title={ok ? "Healthy" : "Needs attention"}>
                       <Icon name={ok ? "check" : "alert"} size={14} aria-hidden />
                     </span>
                   </td>
@@ -135,7 +137,7 @@ export default async function SystemHealthPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${sweepFresh(at) ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`} title={sweepFresh(at) ? "Healthy" : "Needs attention"}>
+                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${sweepFresh(at) ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`} title={sweepFresh(at) ? "Healthy" : "Needs attention"}>
                       <Icon name={sweepFresh(at) ? "check" : "alert"} size={14} aria-hidden />
                     </span>
                   </td>
@@ -143,7 +145,7 @@ export default async function SystemHealthPage() {
               ))}
             </tbody>
           </table>
-          <p className="px-4 py-3 text-xs text-muted/70">
+          <p className="px-4 py-3 text-xs text-muted">
             Sweeps run on a schedule. A warning here usually means Cloud Scheduler isn&apos;t set up
             or hasn&apos;t fired yet: see scripts/setup-cloud.sh.
           </p>
@@ -175,23 +177,23 @@ export default async function SystemHealthPage() {
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs ${
-                        conn.ok ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                        conn.ok ? "bg-success-soft text-success" : "bg-warning-soft text-warning"
                       }`}
                     >
                       {conn.label}
                     </span>
                     {r.connectedEmail && r.connectedEmail !== m.email && (
-                      <span className="ml-2 text-xs text-amber-600">sends as {r.connectedEmail}</span>
+                      <span className="ml-2 text-xs text-warning">sends as {r.connectedEmail}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 tabular-nums">{r.activeCampaigns}</td>
                   <td className="px-4 py-3">
                     {r.erroredCampaigns > 0 ? (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                      <span className="rounded-full bg-danger-soft px-2 py-0.5 text-xs text-danger">
                         {r.erroredCampaigns} campaign{r.erroredCampaigns === 1 ? "" : "s"} errored
                       </span>
                     ) : (
-                      <span className="text-xs text-muted/70">None</span>
+                      <span className="text-xs text-muted">None</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-xs text-muted">
@@ -203,7 +205,7 @@ export default async function SystemHealthPage() {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-xs text-muted/70">
+      <p className="mt-3 text-xs text-muted">
         “Needs reconnect” means that person must open Settings and reconnect Gmail before their
         campaigns can send or scan replies.
       </p>

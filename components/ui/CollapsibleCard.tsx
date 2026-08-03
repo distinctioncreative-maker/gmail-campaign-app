@@ -59,7 +59,7 @@ export function CollapsibleCard({
           {description && <p className="mt-1 text-sm text-muted">{description}</p>}
         </div>
         <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted/70 transition-transform duration-300 ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted transition-transform duration-300 ${
             open ? "rotate-180" : ""
           }`}
           aria-hidden

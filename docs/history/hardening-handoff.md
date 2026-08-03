@@ -930,3 +930,102 @@ This pass does not change signup mode, test modes, live billing, email sending,
 OAuth scopes, secrets, suppression enforcement, ambiguous-delivery quarantine,
 rate limits, plan limits, idempotency, Firestore rules or indexes, cloud
 resources, or production traffic. It must not be deployed by an agent.
+
+## Lifecycle, compliance, onboarding, and organization hardening, 2026-08-03
+
+This pass starts from verified `main` commit
+`939b32d111031b1d351bd495424657aaa8e70e41` and was implemented on
+`agent/lifecycle-compliance-release`. Direct publication to `main` is
+authorized, but staging and committing still require the repository-owner
+confirmation recorded by the GitHub workflow. Deployment remains explicitly
+out of scope.
+
+Implemented:
+
+- replaced destructive campaign deletion with a terminal-state soft-delete
+  lifecycle, active, archived, and Recently Deleted views, retained campaign
+  KPIs and deletion dates, restore, and an explicit permanent-purge boundary;
+- excluded soft-deleted campaigns from current and all-time dashboard, report,
+  reply, system-health, and team totals while retaining their metrics inside
+  Recently Deleted;
+- removed the fixed lead-directory ceiling through stable cursor pagination,
+  added Date added throughout lead views, and split large imports into bounded
+  200-row API batches without weakening duplicate or suppression checks;
+- kept click tracking enabled by default with campaign-level opt-out, excluded
+  unsubscribe links from click rewriting and counting, and preserved signed
+  one-click unsubscribe behavior;
+- fixed template-editor caret resets, moved sanitization to preview, test, and
+  save boundaries, and added an optional compliance-footer helper that cannot
+  remove the required physical-address or opt-out content;
+- added public Terms, Privacy, Acceptable Use, and Compliance surfaces, linked
+  them from marketing, sign-in, Help, sitemap, and footer surfaces, and marked
+  unresolved legal-entity, address, jurisdiction, retention, subprocessors,
+  DPA, and counsel review as launch requirements rather than invented facts;
+- rebuilt onboarding as an accessible workspace setup flow for workspace name,
+  industry, team size, planned monthly outreach, primary workflow, Gmail,
+  profile, sending defaults, safe testing, and a clear first-success milestone;
+- added an optional first-run product tour with responsive positioning, focus
+  trapping, Escape and focus restoration, reduced-motion support, and concise
+  plum-and-blue workflow animation;
+- added organization-scoped custom role labels that map to the audited Member,
+  Manager, and Administrator permission tiers instead of introducing arbitrary
+  permissions, including assignment-safe deletion and role labels throughout
+  app navigation;
+- added parent-team hierarchy with admin-only structure changes, cycle
+  prevention, descendant visibility for parent-team managers, safe reparenting
+  on deletion, and explicit hierarchy tests;
+- completed a source-level semantic color sweep across the authenticated app,
+  removed literal status palettes and opacity-reduced muted text from product
+  source, and added AA regression checks for both light and dark themes;
+- patched compatible transitive `brace-expansion` and `postcss` releases in the
+  lockfile, reducing the production dependency audit from two advisory classes
+  to zero vulnerabilities;
+- removed unused default Next.js public assets, kept generated build artifacts
+  ignored, documented the intentionally tracked public Firebase browser
+  configuration, updated architecture, data model, security, campaign safety,
+  product strategy, launch audit, feature registry, and generated feature docs;
+- recorded 20 brand-name candidates and a five-name shortlist in
+  `docs/product/brand-naming-exploration.md`, with trademark and domain checks
+  explicitly required before renaming the product;
+- kept lead sourcing or scraping as a future discovery item that requires
+  provider terms, privacy, consent, accuracy, provenance, cost, and abuse review
+  before implementation.
+
+Local verification after the dependency patch:
+
+```bash
+NPM_CONFIG_CACHE=/tmp/cadence-npm-cache npm ci
+                                                # pass: 1,148 packages
+npm run typecheck                               # pass
+npm run lint                                    # pass
+npm test                                        # pass: 55 files, 370 tests
+npm run docs:features                           # pass
+npm run build                                   # pass: 78 routes
+npm audit --omit=dev --audit-level=high         # pass: 0 vulnerabilities
+npm audit --audit-level=high                    # 20 dev-tool findings: 2 moderate, 18 high
+git diff --check                                # pass
+```
+
+The all-dependency audit findings are confined to development tooling through
+`eslint` and `firebase-tools`; npm reports no current upstream fix. Those
+packages are not copied into the production runner. They remain documented
+toolchain debt and must not be described as a clean all-dependency audit.
+
+The standalone production server returned HTTP 200 for `/`, `/sign-in`,
+`/terms`, `/privacy`, `/acceptable-use`, `/compliance`, `/sitemap.xml`, and
+`/robots.txt`. It returned CSP, HSTS, Referrer-Policy, `nosniff`, frame denial,
+Permissions-Policy, and COOP headers. `/api/health` returned the expected local
+503 degraded response because this environment has no Google Cloud credentials;
+the authenticated Firestore check must be repeated against the deployed
+revision. The local Firestore emulator gate cannot run because this container
+has OpenJDK 17 and the required emulator download is unavailable. GitHub Actions
+installs Java 21 and remains the authoritative Firestore isolation gate after
+publication.
+
+This release preserves `SIGNUP_MODE=allowlist`, `TEST_MODE`,
+`FORCE_TEST_MODE`, tenant isolation, suppression enforcement, idempotency,
+ambiguous-delivery quarantine, rate and plan limits, send safety, existing OAuth
+scopes, secret handling, and billing gates. It adds one Firestore campaign index
+that must be deployed before application traffic is moved to the new revision.
+No merge, Cloud Run deployment, unrestricted registration, live billing, or
+real-send activation was performed by the agent.

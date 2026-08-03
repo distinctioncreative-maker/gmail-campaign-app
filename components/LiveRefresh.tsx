@@ -32,10 +32,10 @@ export function LiveRefresh({ intervalMs = 15000, label = "Live" }: { intervalMs
   }, [router, intervalMs]);
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted/70">
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted">
       <span
         aria-hidden
-        className={`h-1.5 w-1.5 rounded-full bg-green-500 ${pulse ? "" : "live-dot"}`}
+        className={`h-1.5 w-1.5 rounded-full bg-success ${pulse ? "" : "live-dot"}`}
         style={pulse ? { boxShadow: "0 0 0 4px rgba(34,197,94,0.25)", transition: "box-shadow 0.9s ease" } : undefined}
       />
       {label}

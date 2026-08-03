@@ -14,6 +14,15 @@
   user creation, invite consumption, and organization bootstrap use
   transactions or create-if-absent semantics to close concurrent-signup
   races.
+- Workspace-defined role names always map to one of the existing
+  `SALES_REP`, `MANAGER`, or `ADMIN` authorization levels. The server resolves
+  that mapping from organization settings, prevents an administrator from
+  demoting their own access through the member endpoint, and never accepts an
+  arbitrary permission set from the client.
+- Only administrators create team hierarchy edges. Parent references must
+  resolve inside the same organization and cycle checks run before writes.
+  Manager visibility and roster control inherit only through that explicit,
+  tested descendant graph.
 - Session creation is rate-limited with a fail-closed Firestore-backed key.
 
 ## Data isolation
@@ -72,6 +81,16 @@ lock. Explicit self-tests may use only the server-verified signed-in email.
   confirmed form POST is rate-limited and atomically marks the recipient,
   increments campaign/daily counters, and writes a deterministic
   do-not-email suppression before queued follow-ups are canceled.
+- A visible signed unsubscribe link is appended after tracking injection, so
+  the link and its destination are never rewritten or counted as engagement.
+  Turning off Cadence's footer helper requires equivalent address and opt-out
+  placeholders; it never disables the server-side launch gate.
+- New campaigns default tracking on but retain an explicit opt-out. Tokens
+  remain signed, expiring, rate-limited, and campaign scoped; open detection is
+  presented as an estimate because privacy preloading can create false signals.
+- Campaign deletion is recoverable first. Deleted campaigns are blocked from
+  launch and mutation, retained in Recently Deleted with their historical
+  records, and require a separate explicit action before recursive purge.
 - Auth, waitlist, tracking, and interactive AI endpoints have bounded,
   fail-closed rate limits.
 - Errors returned to clients are friendly strings. Structured log and alert

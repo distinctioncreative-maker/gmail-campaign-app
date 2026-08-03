@@ -68,17 +68,17 @@ export function AiWritingCard() {
         </div>
         <span
           className={`rounded-full px-3 py-1 text-sm font-semibold ${
-            on ? "bg-green-100 text-green-700" : "bg-surface-2 text-muted"
+            on ? "bg-success-soft text-success" : "bg-surface-2 text-muted"
           }`}
         >
           {on ? "● On" : "○ Off"}
         </span>
       </div>
 
-      {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-4 rounded-lg bg-danger-soft p-3 text-sm text-danger">{error}</p>}
 
       {!state.keyConfigured && (
-        <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+        <div className="mt-4 flex items-start gap-2 rounded-lg bg-warning-soft p-3 text-sm text-warning">
           <Icon name="alert" size={16} className="mt-0.5 shrink-0" aria-hidden />
           <p>No AI key is configured on the server yet, so turning this on won&apos;t enable AI
           until a <code className="rounded bg-surface px-1">GEMINI_API_KEY</code> is set on the

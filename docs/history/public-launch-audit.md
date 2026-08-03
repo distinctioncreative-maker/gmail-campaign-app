@@ -1,6 +1,6 @@
 # Cadence Public Launch Audit
 
-**Audit date:** 2026-07-28
+**Audit date:** 2026-08-03
 
 **Repository:** `distinctioncreative-maker/gmail-campaign-app`
 
@@ -46,6 +46,40 @@ The sell-today offer is:
 - Clarified the Team plan's two-seat minimum across marketing and billing UI.
 - Replaced the obsolete user guide with the shipped workflow and safety model.
 
+## Lifecycle, compliance, and lead-scale follow-up
+
+The August 3 release candidate adds the following without changing the
+managed-pilot launch decision:
+
+- fixes the template editor's caret reset by avoiding same-editor DOM rewrites
+  during visual input while preserving sanitization at preview, test, and save
+  boundaries;
+- adds active, archived, and Recently Deleted campaign views, retained
+  per-campaign KPIs and deletion dates, restoration, a separate permanent
+  deletion step, and exclusion of deleted campaigns from current workspace and
+  rep totals, reports, replies, and health summaries;
+- shows contact Date added and replaces the bounded directory read with stable
+  250-row cursor pages while splitting imports into safe 200-row requests, so
+  there is no application-wide total-lead cap;
+- defaults click/open tracking on for new campaigns with an explicit opt-out,
+  keeps the privacy and deliverability caveat visible, and excludes the signed
+  unsubscribe destination from click tracking;
+- adds a default-on compliance-footer helper while keeping physical-address
+  and opt-out placeholders as non-optional launch requirements;
+- appends a visible signed unsubscribe link after tracking instrumentation and
+  retains RFC 8058 headers and idempotent suppression behavior;
+- publishes managed-pilot Terms, Privacy, Acceptable Use and Anti-Spam, and
+  Compliance pages with explicit unresolved legal facts and limitations; and
+- records future lead research and sourcing as a separately reviewed roadmap
+  item rather than shipping unrestricted scraping.
+- adds a personalized workspace questionnaire, safe first-success milestone,
+  and keyboard/reduced-motion product tour without turning intended volume
+  into a provider or plan override;
+- adds reusable custom role names mapped to the three audited permission
+  levels plus an admin-defined, cycle-safe parent-team hierarchy; and
+- replaces literal status palettes and opacity-reduced small text across the
+  authenticated product with measured light/dark semantic contrast tokens.
+
 ## Enterprise workflow follow-up
 
 The next review branch adds a coherent operator-experience phase without
@@ -71,15 +105,15 @@ controls.
 
 | Gate | Current state | Required evidence | Owner |
 |---|---|---|---|
-| Legal identity and documents | Blocked. No ToS, Privacy Policy, DPA, or Acceptable Use Policy is published. | Legal entity name, business address, privacy/support email, governing jurisdiction, approved ToS, Privacy Policy, DPA, AUP, cookie/tracking disclosure, retention schedule, and subprocessor list. | Founder + counsel |
+| Legal identity and documents | Partially addressed. Managed-pilot Terms, Privacy, AUP/Anti-Spam, and Compliance pages now exist, but they deliberately defer unresolved legal facts. No DPA or counsel approval is claimed. | Legal entity name, business address, privacy/support email, governing jurisdiction, counsel-approved documents, DPA, retention schedule, subprocessor list, and signed pilot terms that match production operations. | Founder + counsel |
 | Google OAuth verification | Blocked. Production remains allowlisted. | Verified app branding/domain, approved requested scopes, privacy links, demo video, verification approval, and any required CASA assessment. | Founder + security |
 | Stripe production billing | Code exists; external configuration is unverified. | Test-mode Checkout, webhook, plan/seat update, portal, cancellation, retry, and idempotency evidence; then separately configured live products, prices, webhook, tax decision, receipts, and support process. | Engineering + finance |
 | Account/data deletion | Not implemented. | Authenticated deletion request, ownership/team transfer rules, retention exceptions, deletion job, audit trail, and a public deletion-request page. | Product + counsel |
 | Data export/DSAR | Not implemented as a complete account export. | User and organization export covering contacts, campaigns, templates, settings, billing metadata, and audit records, with an operator runbook and identity verification. | Engineering + privacy |
 | Error alerting and uptime | Structured logs exist; production webhook/monitor is not confirmed. | `ERROR_WEBHOOK_URL`, external `/api/health` monitor, escalation target, test alert, and incident drill. | Operations |
 | Cadence-owned infrastructure | Production is owned by Alpine. | Cadence domain and Workspace, migration plan, new GCP/Firebase project or approved transfer, new KMS/OAuth credentials, data migration rehearsal, and reconnect communication. | Founder + cloud admin |
-| Abuse prevention | Product controls exist, but no customer policy or abuse workflow exists. | AUP, prohibited-use list, complaint intake, suspension procedure, customer verification, per-tenant emergency stop, and evidence-retention rules. | Trust + operations |
-| Compliance review by market | US CAN-SPAM controls are partially automated; non-US rules are not productized. | Launch-country decision, lawful-basis/consent process where required, regional suppression rules, customer contractual duties, and counsel approval. | Founder + counsel |
+| Abuse prevention | Partially addressed. A public AUP and Anti-Spam baseline prohibits scraping, purchased lists, evasion, and deceptive use, while product controls can pause unsafe sending. Complaint intake, case handling, customer verification, and evidence-retention operations remain unverified. | Counsel-approved AUP, complaint intake, suspension and appeal procedure, customer verification, per-tenant emergency stop, evidence-retention rules, and an exercised operator runbook. | Trust + operations |
+| Compliance review by market | Partially addressed. Address and opt-out placeholders remain launch requirements, real messages receive visible and header-based signed opt-outs, and suppressions are enforced. Non-US consent and regional rules are not productized. | Launch-country decision, lawful-basis/consent process where required, regional suppression rules, customer contractual duties, approved business identity/address, and counsel approval. | Founder + counsel |
 | Production deployment review | No deployment is authorized by this audit alone. | Clean CI, reviewed PR, exact env diff, database/index migration review, rollback revision, smoke test, test-mode proof, then explicit deploy approval. | Engineering |
 
 ### Legal facts still needed
@@ -97,11 +131,12 @@ Do not invent these in code or policy pages:
 ## P1 product work for a trustworthy launch
 
 1. **One-click unsubscribe**
-   - The current reply-to-opt-out flow is enforced and suppressions are checked
-     before every send.
-   - Add a signed, tenant-scoped unsubscribe URL and `List-Unsubscribe` /
-     `List-Unsubscribe-Post` headers before serving high-volume senders.
-   - Never route unsubscribe links through click tracking.
+   - Complete in source: signed tenant-scoped visible URL,
+     `List-Unsubscribe` / `List-Unsubscribe-Post` headers, scanner-safe GET,
+     idempotent POST suppression, and exclusion from click tracking.
+   - Remaining launch evidence: verify the public base URL, live rendering,
+     Gmail header behavior, suppression, and follow-up cancellation in a
+     test-mode production smoke exercise.
 
 2. **Complaint handling**
    - Add an organization-level complaint state, automatic campaign stop
@@ -242,6 +277,7 @@ Use this for each private pilot:
 3. Supply legal identity facts and have counsel approve the public documents.
 4. Turn on alerting and uptime monitoring.
 5. Add pilot-request workflow and support routing.
-6. Implement deletion/export and the one-click unsubscribe foundation.
+6. Implement account deletion/export and verify the shipped one-click
+   unsubscribe foundation in the production smoke run.
 7. Complete Cadence-owned infrastructure and OAuth/CASA work.
 8. Only then consider `SIGNUP_MODE=open`.

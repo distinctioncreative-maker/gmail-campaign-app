@@ -73,15 +73,15 @@ export function FeatureSuggestions() {
       </div>
 
       {items === null ? (
-        <p className="mt-4 text-sm text-muted/70">Loading ideas…</p>
+        <p className="mt-4 text-sm text-muted">Loading ideas…</p>
       ) : items.length === 0 ? (
-        <p className="mt-4 text-sm text-muted/70">No suggestions yet: be the first.</p>
+        <p className="mt-4 text-sm text-muted">No suggestions yet: be the first.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {items.map((s) => (
             <li key={s.id} className="rounded-xl border border-border p-3">
               <p className="text-sm">{s.text}</p>
-              <p className="mt-1 text-xs text-muted/70">
+              <p className="mt-1 text-xs text-muted">
                 {s.authorName} · <LocalTime value={s.createdAt} options={{ dateStyle: "medium" }} />
               </p>
             </li>

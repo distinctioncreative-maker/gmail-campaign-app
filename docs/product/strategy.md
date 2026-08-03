@@ -1,6 +1,6 @@
 # Cadence Product Strategy and Competitive Gap Analysis
 
-Last reviewed: July 30, 2026
+Last reviewed: August 3, 2026
 
 ## Product decision
 
@@ -118,6 +118,13 @@ Implemented in the current branch:
 - An AI-forward public demonstration and professional outreach-to-reply-to-pipeline animation without playful revenue emoji or unqualified result claims.
 - One transactionally deduplicated notification for the first detected tracked open per recipient, with a privacy-preloading caveat.
 - Removal of em dashes from application copy, backed by a regression test.
+- Personalized workspace setup for founders, sales teams, agencies,
+  recruiting, fundraising, partnerships, customer success, and other approved
+  outreach workflows, followed by a keyboard-safe animated product tour.
+- Reusable custom role names mapped to audited permission levels and a
+  cycle-safe parent-team hierarchy with explicit inherited manager scope.
+- A semantic contrast pass across authenticated surfaces, including readable
+  muted text, status colors, overlays, and filled controls in both themes.
 
 This phase improves the core loop:
 
@@ -154,6 +161,9 @@ This phase improves the core loop:
    - Require source citations and a user review before content can enter a template.
    - Keep external content isolated from system instructions and protect against prompt injection.
    - Start with company website and approved search sources; do not depend on restricted scraping.
+   - Keep broad lead scraping out of scope until source terms, provenance,
+     privacy, lawful-basis, abuse, deletion, and regional compliance controls
+     receive a separate review.
 
 6. **Notification preferences**
    - Let users choose first-open alerts, click alerts, replies only, or a digest.
@@ -199,6 +209,15 @@ Claims to avoid:
 - “Know exactly when someone read your email.”
 - “AI researches every lead automatically” before sources, cost, and review are implemented.
 - “Switch accounts instantly” until server sessions and Gmail identities are isolated safely.
+
+## Brand naming exploration
+
+Twenty positioning-compatible product-name candidates, a shortlist, and the
+required trademark, domain, app-store, social, and linguistic clearance steps
+are documented in
+[docs/product/brand-naming-exploration.md](brand-naming-exploration.md). The
+working name remains Cadence until that clearance is complete; no candidate in
+the list is represented as legally available.
 
 ## Success measures
 

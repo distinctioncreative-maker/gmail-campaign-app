@@ -27,7 +27,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
         return (
           <div key={`${item.href}-wrap`} className="contents">
           {showHeading && (
-            <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-muted/70 first:pt-1">
+            <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-muted first:pt-1">
               {item.section}
             </p>
           )}
@@ -68,7 +68,7 @@ function Brand({ workspaceName }: { workspaceName?: string }) {
     <div className="px-2">
       <Wordmark descriptor="Outreach OS" />
       {workspaceName && (
-        <p className="mt-2 truncate text-[11px] font-medium text-muted/70">
+        <p className="mt-2 truncate text-[11px] font-medium text-muted">
           {workspaceName}
         </p>
       )}
@@ -81,12 +81,14 @@ export function Sidebar({
   displayName,
   email,
   role,
+  roleLabel,
   workspaceName,
 }: {
   items: NavItem[];
   displayName: string;
   email: string;
   role: string;
+  roleLabel?: string | null;
   workspaceName?: string;
 }) {
   return (
@@ -98,12 +100,12 @@ export function Sidebar({
         </div>
         <NavLinks items={items} />
         <div className="shrink-0 border-t border-border/70 pt-3">
-          <AccountMenu displayName={displayName} email={email} role={role} placement="side" />
+          <AccountMenu displayName={displayName} email={email} role={role} roleLabel={roleLabel} placement="side" />
         </div>
       </aside>
 
       {/* Mobile bottom tab bar + More sheet */}
-      <MobileNav items={items} displayName={displayName} email={email} role={role} />
+      <MobileNav items={items} displayName={displayName} email={email} role={role} roleLabel={roleLabel} />
     </>
   );
 }

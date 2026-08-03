@@ -30,11 +30,13 @@ export function MobileNav({
   displayName,
   email,
   role,
+  roleLabel,
 }: {
   items: NavItem[];
   displayName: string;
   email: string;
   role: string;
+  roleLabel?: string | null;
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -108,7 +110,7 @@ export function MobileNav({
               <Icon
                 name={item.icon}
                 size={22}
-                className={`transition ${active ? "text-primary" : "text-muted/70"}`}
+                className={`transition ${active ? "text-primary" : "text-muted"}`}
               />
               <span className={active ? "text-primary" : "text-muted"}>{item.label}</span>
             </Link>
@@ -131,7 +133,7 @@ export function MobileNav({
             viewBox="0 0 24 24"
             fill="currentColor"
             aria-hidden
-            className={moreOpen || moreActive ? "text-primary" : "text-muted/70"}
+            className={moreOpen || moreActive ? "text-primary" : "text-muted"}
           >
             <circle cx="5" cy="12" r="2" />
             <circle cx="12" cy="12" r="2" />
@@ -162,7 +164,7 @@ export function MobileNav({
                 ref={closeRef}
                 onClick={() => setMoreOpen(false)}
                 aria-label="Close"
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-muted/70 hover:bg-surface-2"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-muted hover:bg-surface-2"
               >
                 <Icon name="x" size={18} />
               </button>
@@ -183,7 +185,7 @@ export function MobileNav({
                         : "border-border text-muted hover:bg-surface-2"
                     }`}
                   >
-                    <Icon name={item.icon} size={20} className={active ? "text-primary" : "text-muted/70"} />
+                    <Icon name={item.icon} size={20} className={active ? "text-primary" : "text-muted"} />
                     {item.label}
                   </Link>
                 );
@@ -197,7 +199,7 @@ export function MobileNav({
             </div>
 
             <div className="shrink-0 border-t border-border pt-4">
-              <AccountMenu displayName={displayName} email={email} role={role} placement="sheet" />
+              <AccountMenu displayName={displayName} email={email} role={role} roleLabel={roleLabel} placement="sheet" />
             </div>
           </div>
         </div>

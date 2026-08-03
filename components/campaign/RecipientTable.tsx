@@ -152,7 +152,7 @@ export function RecipientTable({
           <button
             onClick={() => void skip(r.recipientId, r.email)}
             disabled={busy}
-            className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+            className="text-xs font-medium text-danger hover:underline disabled:opacity-50"
           >
             Remove
           </button>
@@ -162,7 +162,7 @@ export function RecipientTable({
             onClick={() => void undoUnsubscribe(r.recipientId, r.email)}
             disabled={busy}
             title="If this was actually a normal reply, correct it and allow emailing again."
-            className="text-xs font-medium text-amber-600 hover:underline disabled:opacity-50"
+            className="text-xs font-medium text-warning hover:underline disabled:opacity-50"
           >
             Not an unsubscribe? Undo
           </button>
@@ -175,7 +175,7 @@ export function RecipientTable({
     if (r.sentAt) return <span className="text-muted">Sent <LocalTime value={r.sentAt} /></span>;
     if (r.scheduledAt && ["PENDING", "SCHEDULED"].includes(r.status))
       return <span className="text-muted">Planned <LocalTime value={r.scheduledAt} /></span>;
-    return <span className="text-muted/50">: </span>;
+    return <span className="text-muted">: </span>;
   }
 
   return (
@@ -190,7 +190,7 @@ export function RecipientTable({
             placeholder="Search name or email…"
             className="min-w-0 flex-1 rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
           />
-          <span className="text-xs text-muted/70">
+          <span className="text-xs text-muted">
             {filter === "Batches" ? `${batches.length} batches` : `${sorted.length} shown`}
           </span>
         </div>

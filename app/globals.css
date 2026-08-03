@@ -34,15 +34,19 @@
   --accent: #456a8d;
 
   /* Revenue accent. Deliberately rationed: pipeline, replies, money. */
-  --revenue: #b07d2e;
+  --revenue: #99661c;
   --revenue-soft: #fdf5e7;
 
-  --success: #0e9f6e;
+  --success: #087a55;
   --success-soft: #e7f6f0;
-  --warning: #cc7a00;
+  --warning: #985700;
   --warning-soft: #fdf3e3;
-  --danger: #d94452;
+  --danger: #cc3342;
   --danger-soft: #fdedee;
+  --danger-contrast: #ffffff;
+  --success-contrast: #ffffff;
+  --warning-contrast: #ffffff;
+  --overlay: rgba(15, 13, 12, 0.58);
   --ring: rgba(114, 80, 111, 0.42);
 
   /* Theme-invariant public-site neutrals. The authenticated app can switch
@@ -124,6 +128,9 @@
   --warning-soft: #2a2116;
   --danger: #f0707a;
   --danger-soft: #2c1a1c;
+  --danger-contrast: #1d171c;
+  --success-contrast: #102019;
+  --warning-contrast: #21180d;
   --ring: rgba(199, 168, 196, 0.48);
   --shadow-md: 0 6px 16px -8px rgba(0, 0, 0, 0.6), 0 2px 6px -3px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 24px 50px -24px rgba(0, 0, 0, 0.75), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
@@ -132,29 +139,9 @@
     0 12px 30px -24px rgba(142, 180, 210, 0.28);
 }
 
-/* The slate/white compatibility shims that used to live here are gone: every
-   surface, text, and border utility in the app now uses a semantic token, so
-   there is nothing left to patch. Deliberately theme-invariant elements
-   (modal backdrops, always-dark tooltips) keep bg-slate-900 on purpose and
-   never needed an override. Do not reintroduce this list; add a token to
-   @theme inline instead. */
-
-/* Status tints are a separate system and are still in use. These map the soft
-   light-mode tints to muted dark equivalents. */
-:root[data-theme="dark"] .bg-green-50 { background-color: rgba(26,158,95,0.16); }
-:root[data-theme="dark"] .bg-red-50 { background-color: rgba(229,72,77,0.16); }
-:root[data-theme="dark"] .bg-amber-50 { background-color: rgba(224,123,0,0.16); }
-:root[data-theme="dark"] .text-green-700 { color: #4ade80; }
-:root[data-theme="dark"] .text-red-700 { color: #ff8085; }
-:root[data-theme="dark"] .text-amber-700 { color: #f7b955; }
-/* Stronger status tints (chips/badges) → muted dark equivalents */
-:root[data-theme="dark"] .bg-green-100,
-:root[data-theme="dark"] .bg-emerald-100 { background-color: rgba(26,158,95,0.22); }
-:root[data-theme="dark"] .bg-red-100 { background-color: rgba(229,72,77,0.22); }
-:root[data-theme="dark"] .bg-amber-100 { background-color: rgba(224,123,0,0.22); }
-:root[data-theme="dark"] .text-emerald-700 { color: #4ade80; }
-/* bg-primary-soft needs no override: --primary-soft is remapped above and the
-   utility is generated from the token via @theme inline. */
+/* App surfaces, text, borders, status treatments, overlays, and filled-control
+   foregrounds all use semantic tokens. Do not reintroduce light-theme palette
+   shims; add a token with an explicit light and dark value instead. */
 
 @theme inline {
   --color-background: var(--background);
@@ -179,6 +166,10 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-danger-contrast: var(--danger-contrast);
+  --color-success-contrast: var(--success-contrast);
+  --color-warning-contrast: var(--warning-contrast);
+  --color-overlay: var(--overlay);
   --color-revenue: var(--revenue);
   --color-revenue-soft: var(--revenue-soft);
   --font-sans: var(--font-sans-base);
@@ -380,6 +371,102 @@ a.card-hover:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .btn-spinner { animation: none; border-top-color: currentColor; }
   .btn-success-flash { animation: none; }
+}
+
+/* ── Guided setup and product tour motion ───────────────── */
+.onboarding-preview {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.onboarding-preview::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 1.35rem;
+  height: 1px;
+  background: color-mix(in srgb, var(--primary) 20%, var(--border));
+}
+.onboarding-signal {
+  position: absolute;
+  z-index: 20;
+  top: 1.05rem;
+  left: 10%;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: var(--info);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--info) 14%, transparent);
+  animation: onboarding-signal 3.2s var(--ease-in-out) infinite;
+}
+.onboarding-node {
+  animation: onboarding-node 3.2s var(--ease-in-out) infinite;
+}
+@keyframes onboarding-signal {
+  0%, 8% { left: 10%; transform: scale(0.8); opacity: 0; }
+  14%, 28% { left: 10%; transform: scale(1); opacity: 1; }
+  38%, 48% { left: 36.5%; }
+  58%, 68% { left: 63%; }
+  78%, 92% { left: 89%; transform: scale(1); opacity: 1; }
+  100% { left: 89%; transform: scale(0.8); opacity: 0; }
+}
+@keyframes onboarding-node {
+  0%, 100% { transform: translateY(0); }
+  12%, 20% { transform: translateY(-3px); }
+}
+.tour-spotlight {
+  border: 2px solid color-mix(in srgb, var(--primary) 38%, white);
+  box-shadow: 0 0 0 9999px var(--overlay), var(--shadow-brand);
+}
+.tour-card-accent { background: linear-gradient(90deg, var(--brand-from), var(--brand-to)); }
+.tour-signal {
+  position: relative;
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 3rem;
+  place-items: center;
+}
+.tour-signal-core {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+}
+.tour-signal-orbit,
+.tour-signal-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--info) 42%, transparent);
+  animation: tour-orbit 2.4s var(--ease-in-out) infinite;
+}
+.tour-signal-pulse {
+  border-color: color-mix(in srgb, var(--primary) 38%, transparent);
+  animation: tour-pulse 1.8s var(--ease-out) infinite;
+}
+@keyframes tour-orbit {
+  0%, 100% { transform: rotate(0deg) scale(0.95); border-radius: 1rem; }
+  50% { transform: rotate(90deg) scale(1.08); border-radius: 50%; }
+}
+@keyframes tour-pulse {
+  0% { transform: scale(0.72); opacity: 0; }
+  42% { opacity: 0.7; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-signal { display: none; }
+  .onboarding-node,
+  .tour-signal-orbit,
+  .tour-signal-pulse { animation: none; }
 }
 
 /* ── Segmented control (Apple-style tabs / filters) ──────── */

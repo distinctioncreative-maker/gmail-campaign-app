@@ -149,7 +149,7 @@ export function CampaignWizard() {
     dailySendLimit: 100,
   });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
-  const [trackingEnabled, setTrackingEnabled] = useState(false);
+  const [trackingEnabled, setTrackingEnabled] = useState(true);
   // Data-backed addition to the pace-risk warning below, once the
   // anonymized cross-user benchmarks have a surfaced daily-limit bucket.
   const [benchmarkTip, setBenchmarkTip] = useState<string | null>(null);
@@ -408,7 +408,7 @@ export function CampaignWizard() {
           }}
         />
       )}
-      <div className="mb-2 flex items-center justify-between text-xs text-muted/70">
+      <div className="mb-2 flex items-center justify-between text-xs text-muted">
         <span className="font-medium text-muted">
           Step {step + 1} of {STEPS.length} · {STEPS[step]}
         </span>
@@ -432,7 +432,7 @@ export function CampaignWizard() {
                   ? "bg-success-soft text-success hover:brightness-95"
                   : i === step
                     ? "bg-primary text-primary-contrast"
-                    : "bg-surface-2 text-muted/70"
+                    : "bg-surface-2 text-muted"
               }`}
             >
               {i < step && "✓ "}
@@ -741,7 +741,7 @@ export function CampaignWizard() {
                           }
                         }}
                         aria-label={`Edit ${t.name}`}
-                        className="absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-muted/70 hover:bg-surface-2 hover:text-primary"
+                        className="absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-primary"
                       >
                         <Icon name="edit" size={15} />
                       </span>
@@ -825,7 +825,7 @@ export function CampaignWizard() {
                           }
                           className="mt-1 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
                         />
-                        <span className="mt-0.5 block text-[11px] font-normal text-muted/70">{hint}</span>
+                        <span className="mt-0.5 block text-[11px] font-normal text-muted">{hint}</span>
                       </label>
                     )
                   )}
@@ -901,12 +901,13 @@ export function CampaignWizard() {
                   className="mt-0.5"
                 />
                 <span>
-                  Track opens and clicks <span className="font-normal text-warning">(optional)</span>
+                  Track opens and clicks <span className="font-normal text-warning">(on by default)</span>
                   <span className="mt-0.5 block text-xs text-muted">
-                    Adds an invisible open pixel and rewrites links to measure clicks. Off by default.{" "}
+                    Adds an open pixel and signed link redirects so this campaign can report engagement.{" "}
                     <strong className="font-medium text-warning">Tracking pixels and rewritten links are a
-                    known deliverability risk</strong> and can lower inbox placement. Leave this off unless
-                    you specifically need open/click numbers for this campaign.
+                    deliverability and privacy tradeoff</strong>. Open detection can include privacy
+                    preloading. Turn tracking off for sensitive campaigns or when replies are the only
+                    signal you need.
                   </span>
                 </span>
               </label>

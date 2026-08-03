@@ -133,7 +133,7 @@ export default async function CampaignDetailPage({
 
   return (
     <div className="animate-rise">
-      {launched === "1" && (
+      {launched === "1" && campaign.deletedAt === null && (
         <LaunchCelebration
           recipientCount={campaign.eligibleRecipients}
           startedNow={campaign.status !== "READY" && campaign.status !== "DRAFT"}
@@ -143,18 +143,20 @@ export default async function CampaignDetailPage({
       <PageHeader
         title={campaign.name}
         description={campaign.description || undefined}
-        backHref="/campaigns"
-        backLabel="All campaigns"
+        backHref={campaign.deletedAt !== null ? "/campaigns?view=deleted" : "/campaigns"}
+        backLabel={campaign.deletedAt !== null ? "Recently deleted" : "All campaigns"}
         actions={
           <>
             {campaign.status === "ACTIVE" && <LiveRefresh intervalMs={12000} />}
-            <Link
-              href={`/reports?campaign=${campaign.campaignId}&range=30`}
-              className="btn-ghost px-3 py-2 text-xs"
-            >
-              <Icon name="chart" size={15} />
-              View report
-            </Link>
+            {campaign.deletedAt === null ? (
+              <Link
+                href={`/reports?campaign=${campaign.campaignId}&range=30`}
+                className="btn-ghost px-3 py-2 text-xs"
+              >
+                <Icon name="chart" size={15} />
+                View report
+              </Link>
+            ) : null}
             <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>
               {badge.label}
             </span>
@@ -162,7 +164,22 @@ export default async function CampaignDetailPage({
         }
       />
 
-      <CampaignSectionNav />
+      {campaign.deletedAt !== null ? (
+        <div className="alert-warning mt-5 rounded-xl border p-4 text-sm leading-relaxed">
+          <p className="font-semibold">This campaign is in Recently Deleted.</p>
+          <p className="mt-1">
+            Deleted <LocalTime value={campaign.deletedAt} options={{ dateStyle: "long", timeStyle: "short" }} />.
+            Its recipients, activity, and KPIs are retained, but it is excluded from workspace and report totals.
+          </p>
+        </div>
+      ) : campaign.archivedAt !== null ? (
+        <div className="mt-5 rounded-xl border border-border bg-surface-2 p-4 text-sm text-muted">
+          Archived <LocalTime value={campaign.archivedAt} options={{ dateStyle: "long" }} />.
+          This campaign remains included in reporting.
+        </div>
+      ) : null}
+
+      <CampaignSectionNav showControls={campaign.deletedAt === null} />
 
       <div id="overview" className="mt-5 grid scroll-mt-24 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="card p-5 sm:p-6">
@@ -254,7 +271,7 @@ export default async function CampaignDetailPage({
         <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <p>
-              <span className="font-semibold text-sky-600">{openedCount}</span>{" "}
+              <span className="font-semibold text-info">{openedCount}</span>{" "}
               open detection{openedCount === 1 ? "" : "s"}
               {trackedSentCount > 0
                 ? ` (${((openedCount / trackedSentCount) * 100).toFixed(1)}%)`
@@ -272,25 +289,29 @@ export default async function CampaignDetailPage({
         </div>
       ) : null}
 
-      <div id="controls" className="mt-6 scroll-mt-24">
-        <CampaignControls
-          campaignId={campaign.campaignId}
-          status={campaign.status}
-          followupsPaused={campaign.followupsPaused}
-          maxDailySends={PLANS[settings.billing.plan].maxDailySends}
-          pace={{
-            dailySendLimit: campaign.schedule.dailySendLimit,
-            emailsPerBatch: campaign.schedule.emailsPerBatch,
-            minDelaySeconds: campaign.schedule.minDelaySeconds,
-            maxDelaySeconds: campaign.schedule.maxDelaySeconds,
-            interBatchDelayMinutes: campaign.schedule.interBatchDelayMinutes,
-          }}
-        />
-      </div>
+      {campaign.deletedAt === null ? (
+        <>
+          <div id="controls" className="mt-6 scroll-mt-24">
+            <CampaignControls
+              campaignId={campaign.campaignId}
+              status={campaign.status}
+              followupsPaused={campaign.followupsPaused}
+              maxDailySends={PLANS[settings.billing.plan].maxDailySends}
+              pace={{
+                dailySendLimit: campaign.schedule.dailySendLimit,
+                emailsPerBatch: campaign.schedule.emailsPerBatch,
+                minDelaySeconds: campaign.schedule.minDelaySeconds,
+                maxDelaySeconds: campaign.schedule.maxDelaySeconds,
+                interBatchDelayMinutes: campaign.schedule.interBatchDelayMinutes,
+              }}
+            />
+          </div>
 
-      <div className="mt-4">
-        <CampaignDiagnostics campaignId={campaign.campaignId} />
-      </div>
+          <div className="mt-4">
+            <CampaignDiagnostics campaignId={campaign.campaignId} />
+          </div>
+        </>
+      ) : null}
 
       {abRows.length > 0 && (
         <div className="mt-4 card p-5">
@@ -317,14 +338,14 @@ export default async function CampaignDetailPage({
                           {String.fromCharCode(65 + i)}
                         </span>
                         {r.name}
-                        {isBest && <span className="ml-2 text-xs font-semibold text-green-600">Leading variant</span>}
+                        {isBest && <span className="ml-2 text-xs font-semibold text-success">Leading variant</span>}
                       </td>
                       <td className="py-2 pr-4 tabular-nums">{r.sent}</td>
                       <td className="py-2 pr-4 tabular-nums">{r.replied}</td>
                       <td className="py-2">
                         <div className="flex items-center gap-2">
                           <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
-                            <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.min(100, rate)}%` }} />
+                            <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, rate)}%` }} />
                           </div>
                           <span className="tabular-nums text-xs text-muted">
                             {r.sent > 0 ? `${rate.toFixed(1)}%` : "Not available"}
@@ -372,15 +393,15 @@ export default async function CampaignDetailPage({
                     <p
                       className={
                         e.severity === "ERROR"
-                          ? "text-red-700"
+                          ? "text-danger"
                           : e.severity === "WARNING"
-                            ? "text-amber-700"
+                            ? "text-warning"
                             : "text-foreground"
                       }
                     >
                       {e.message}
                     </p>
-                    <LocalTime value={e.createdAt} className="text-xs text-muted/70" />
+                    <LocalTime value={e.createdAt} className="text-xs text-muted" />
                   </li>
                 ))}
               </ul>

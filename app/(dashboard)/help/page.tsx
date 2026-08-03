@@ -60,7 +60,7 @@ export default function HelpPage() {
           </p>
           <h2 className="mt-1 text-xl font-semibold">What can we help you accomplish?</h2>
           <div className="relative mt-4 max-w-2xl">
-            <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-muted/70">
+            <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-muted">
               <Icon name="search" size={18} />
             </span>
             <input
@@ -137,6 +137,31 @@ export default function HelpPage() {
         </p>
         <Faq query={query} />
       </div>
+
+      {!query ? (
+        <div className="mt-10 card p-5 sm:p-6">
+          <p className="text-xs font-medium uppercase tracking-wide text-primary">
+            Trust and responsible use
+          </p>
+          <h2 className="mt-1 font-semibold">Compliance and pilot policies</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            Review how Cadence handles commercial email footers, opt-outs, tracking,
+            privacy, and acceptable use before launching a campaign.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {[
+              ["/compliance", "Email compliance"],
+              ["/acceptable-use", "Acceptable use"],
+              ["/privacy", "Privacy notice"],
+              ["/terms", "Pilot terms"],
+            ].map(([href, label]) => (
+              <Link key={href} href={href} className="btn-secondary min-h-11 px-4 py-2.5 text-sm">
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* Feature suggestions */}
       {!query && (

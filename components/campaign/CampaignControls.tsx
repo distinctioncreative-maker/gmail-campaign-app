@@ -243,7 +243,7 @@ export function CampaignControls({
                   onChange={(e) => num(f.k, e.target.value)}
                   className={`mt-1 ${numInput}`}
                 />
-                <span className="mt-0.5 block font-normal text-[11px] text-muted/70">{f.hint}</span>
+                <span className="mt-0.5 block font-normal text-[11px] text-muted">{f.hint}</span>
               </label>
             ))}
           </div>

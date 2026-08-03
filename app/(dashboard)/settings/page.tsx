@@ -30,17 +30,17 @@ export default async function SettingsPage({
       <PageHeader title="Settings" description="Your Gmail connection, sender profile, signature, and default pacing." />
 
       {gmail === "connected" && (
-        <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+        <p className="mt-4 rounded-lg bg-success-soft p-3 text-sm text-success">
           Gmail connected successfully.
         </p>
       )}
       {gmail === "denied" && (
-        <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+        <p className="mt-4 rounded-lg bg-warning-soft p-3 text-sm text-warning">
           Gmail connection was cancelled. You can try again whenever you&apos;re ready.
         </p>
       )}
       {(gmail === "error" || gmail === "no_refresh_token") && (
-        <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <p className="mt-4 rounded-lg bg-danger-soft p-3 text-sm text-danger">
           Something went wrong connecting Gmail. Please try again.
         </p>
       )}

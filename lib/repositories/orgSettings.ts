@@ -2,7 +2,16 @@ import "server-only";
 import crypto from "node:crypto";
 import { firestore } from "@/lib/firebase/admin";
 import { encryptSecret, decryptSecret } from "@/lib/kms/crypto";
-import { MemberSchema, OrganizationSchema, type Member, type Organization } from "@/schemas/user";
+import {
+  CustomRoleDefinitionSchema,
+  MemberSchema,
+  OrganizationSchema,
+  WorkspaceProfileSchema,
+  type CustomRoleDefinition,
+  type Member,
+  type Organization,
+  type WorkspaceProfile,
+} from "@/schemas/user";
 import type { Role } from "@/schemas/common";
 import { type PlanId, defaultPlanFor, isPlanId } from "@/lib/billing/plans";
 
@@ -51,6 +60,11 @@ export interface OrgSettings {
   /** Admin-controlled master switch for all AI writing features. Defaults
    * off: AI stays hidden from users until an admin turns it on. */
   aiEnabled: boolean;
+  /** Setup answers used to tailor guidance and safe defaults. They never
+   * override provider, plan, or campaign safety limits. */
+  workspaceProfile: WorkspaceProfile;
+  /** Reusable workspace role names, each mapped to an audited base role. */
+  customRoles: CustomRoleDefinition[];
   /** Subscription / plan state. Defaults preserve current behavior: existing
    * workspaces read as the TEAM plan, so nothing is gated until billing
    * assigns a plan. */
@@ -94,9 +108,46 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
     liveEnabledAt: (data.liveEnabledAt as number) ?? null,
     liveEnabledBy: (data.liveEnabledBy as string) ?? null,
     aiEnabled: data.aiEnabled === true,
+    workspaceProfile: WorkspaceProfileSchema.parse(data.workspaceProfile ?? {}),
+    customRoles: Array.isArray(data.customRoles)
+      ? data.customRoles
+          .map((row) => CustomRoleDefinitionSchema.safeParse(row))
+          .filter((row) => row.success)
+          .map((row) => row.data)
+          .slice(0, 20)
+      : [],
     billing: resolveBilling(data.billing, org?.tenantType ?? "WORKSPACE"),
     ...resolveBrandFields(data),
   };
+}
+
+export async function saveWorkspaceProfile(
+  organizationId: string,
+  profile: WorkspaceProfile
+): Promise<void> {
+  const parsed = WorkspaceProfileSchema.parse(profile);
+  await orgRef(organizationId)
+    .collection("organizationSettings")
+    .doc("main")
+    .set({ workspaceProfile: parsed, updatedAt: Date.now() }, { merge: true });
+}
+
+export async function saveCustomRoles(
+  organizationId: string,
+  roles: CustomRoleDefinition[]
+): Promise<CustomRoleDefinition[]> {
+  const normalized = roles.slice(0, 20).map((role) => CustomRoleDefinitionSchema.parse(role));
+  const names = new Set<string>();
+  for (const role of normalized) {
+    const key = role.name.toLocaleLowerCase();
+    if (names.has(key)) throw new Error("Custom role names must be unique");
+    names.add(key);
+  }
+  await orgRef(organizationId)
+    .collection("organizationSettings")
+    .doc("main")
+    .set({ customRoles: normalized, updatedAt: Date.now() }, { merge: true });
+  return normalized;
 }
 
 /** Read stored billing state, defaulting to the tenant's baseline plan so
@@ -284,10 +335,11 @@ export async function listMembers(organizationId: string): Promise<Member[]> {
   return snap.docs.map((d) => MemberSchema.parse(d.data()));
 }
 
-export async function setMemberRole(
+export async function setMemberAccess(
   organizationId: string,
   userId: string,
-  role: Role
+  role: Role,
+  customRole: CustomRoleDefinition | null = null
 ): Promise<void> {
   const now = Date.now();
   const memberRef = orgRef(organizationId).collection("members").doc(userId);
@@ -300,9 +352,55 @@ export async function setMemberRole(
     if (!memberSnap.exists || !userSnap.exists) {
       throw new Error("Member or user record not found");
     }
-    tx.update(memberRef, { role, updatedAt: now });
-    tx.update(userRef, { role, updatedAt: now });
+    tx.update(memberRef, {
+      role,
+      customRoleId: customRole?.id ?? null,
+      roleLabel: customRole?.name ?? null,
+      updatedAt: now,
+    });
+    tx.update(userRef, {
+      role,
+      roleLabel: customRole?.name ?? null,
+      updatedAt: now,
+    });
   });
+}
+
+/** Backward-compatible built-in role update. */
+export async function setMemberRole(
+  organizationId: string,
+  userId: string,
+  role: Role
+): Promise<void> {
+  await setMemberAccess(organizationId, userId, role, null);
+}
+
+/** Keep denormalized labels current when an administrator renames a role. */
+export async function refreshCustomRoleAssignments(
+  organizationId: string,
+  role: CustomRoleDefinition
+): Promise<void> {
+  const members = await orgRef(organizationId)
+    .collection("members")
+    .where("customRoleId", "==", role.id)
+    .get();
+  const now = Date.now();
+  for (let offset = 0; offset < members.docs.length; offset += 200) {
+    const batch = firestore().batch();
+    for (const member of members.docs.slice(offset, offset + 200)) {
+      batch.update(member.ref, {
+        role: role.baseRole,
+        roleLabel: role.name,
+        updatedAt: now,
+      });
+      batch.update(firestore().collection("users").doc(member.id), {
+        role: role.baseRole,
+        roleLabel: role.name,
+        updatedAt: now,
+      });
+    }
+    await batch.commit();
+  }
 }
 
 export async function setMemberActive(

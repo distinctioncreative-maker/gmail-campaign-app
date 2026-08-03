@@ -20,17 +20,17 @@ const OWN_SETTING_BUCKET: Partial<Record<string, (n: number) => string>> = {
 export const dynamic = "force-dynamic";
 
 const STATUS_PILL: Record<string, string> = {
-  PASS: "bg-green-100 text-green-700",
-  WARN: "bg-amber-100 text-amber-700",
-  FAIL: "bg-red-100 text-red-700",
+  PASS: "bg-success-soft text-success",
+  WARN: "bg-warning-soft text-warning",
+  FAIL: "bg-danger-soft text-danger",
 };
 const STATUS_WORD: Record<string, string> = { PASS: "Good", WARN: "Check", FAIL: "Fix" };
 
 const REPUTATION_PILL: Record<string, string> = {
-  HIGH: "bg-green-100 text-green-700",
-  MEDIUM: "bg-amber-100 text-amber-700",
-  LOW: "bg-red-100 text-red-700",
-  BAD: "bg-red-100 text-red-700",
+  HIGH: "bg-success-soft text-success",
+  MEDIUM: "bg-warning-soft text-warning",
+  LOW: "bg-danger-soft text-danger",
+  BAD: "bg-danger-soft text-danger",
 };
 
 function spamPct(ratio: number | null): string {
@@ -74,7 +74,7 @@ export default async function DeliverabilityPage() {
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs text-muted/70">
+      <p className="mt-2 text-xs text-muted">
         These three records tell inbox providers your email is genuinely from {domain}. All-green
         here removes the most common structural cause of spam foldering.
       </p>
@@ -157,7 +157,7 @@ export default async function DeliverabilityPage() {
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-muted/70">
+          <p className="mt-2 text-xs text-muted">
             Google only publishes daily stats when enough of your mail reached Gmail inboxes that
             day: gaps are normal for lower volumes.
           </p>
@@ -227,7 +227,7 @@ export default async function DeliverabilityPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4 text-xs text-muted/70">
+          <p className="mb-4 text-xs text-muted">
             From {benchmarks?.totalCampaignsConsidered ?? 0} anonymized campaigns across every Cadence
             user: nothing here is traceable to one account, and a setting only appears once enough
             campaigns share it.
@@ -285,9 +285,9 @@ function DimensionCard({
         {formatPercent(best.avgReplyRate)} reply rate · {formatPercent(best.avgBounceRate)} bounce rate
         {best.avgOpenRate !== null && ` · ${formatPercent(best.avgOpenRate)} open rate`}
       </p>
-      <p className="mt-1 text-[11px] text-muted/70">Best of {dimension.buckets.length} groups · {best.campaigns} campaigns</p>
+      <p className="mt-1 text-[11px] text-muted">Best of {dimension.buckets.length} groups · {best.campaigns} campaigns</p>
       {ownBucket !== null && (
-        <p className={`mt-2 text-xs font-medium ${ownBucket === best.bucket ? "text-green-600" : "text-amber-600"}`}>
+        <p className={`mt-2 text-xs font-medium ${ownBucket === best.bucket ? "text-success" : "text-warning"}`}>
           {ownBucket === best.bucket ? "✓ Your default matches this" : `Your default: ${ownBucket}`}
         </p>
       )}

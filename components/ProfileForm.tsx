@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { SenderProfile } from "@/schemas/userSettings";
 import { HelpTip } from "@/components/HelpTip";
 
@@ -65,8 +66,8 @@ export function ProfileForm({
 
   return (
     <div>
-      {notice && <p className="mb-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
-      {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {notice && <p className="mb-3 rounded-lg bg-success-soft p-3 text-sm text-success">{notice}</p>}
+      {error && <p className="mb-3 rounded-lg bg-danger-soft p-3 text-sm text-danger">{error}</p>}
 
       <h3 className="mb-3 text-sm font-semibold text-muted">Your identity</h3>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -101,9 +102,13 @@ export function ProfileForm({
       </h3>
       <label className="mt-2 block text-sm font-medium text-foreground">
         Company mailing address
-        <HelpTip text="US anti-spam law (CAN-SPAM) requires a real physical mailing address in marketing emails. A PO box or suite is fine." />
+        <HelpTip text="US commercial-email rules require a valid current postal address. This may be a street address, a registered PO box, or a properly registered private mailbox." />
         <span className="block text-xs font-normal text-muted">
-          Shown in the footer of your emails: required for commercial email rules.
+          Shown in the footer of commercial emails. Review the{" "}
+          <Link href="/compliance" className="font-medium text-primary hover:underline">
+            compliance guide
+          </Link>
+          .
         </span>
         <input value={profile.physicalAddress} onChange={(e) => set("physicalAddress", e.target.value)} className={input} />
       </label>
@@ -220,7 +225,7 @@ export function ProfileForm({
                   onChange={(e) => setDefault("minDelaySeconds", Number(e.target.value))}
                   className={input}
                 />
-                <span className="mt-1 text-muted/70">–</span>
+                <span className="mt-1 text-muted">–</span>
                 <input
                   type="number" min={1} max={600}
                   value={profile.sendingDefaults.maxDelaySeconds}

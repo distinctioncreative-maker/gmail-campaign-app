@@ -19,6 +19,7 @@ export interface AuthContext {
   organizationId: string;
   email: string;
   role: Role;
+  roleLabel: string | null;
   tenantType: TenantType;
   user: User;
 }
@@ -87,6 +88,7 @@ export async function requireUser(): Promise<AuthContext> {
       organizationId: existing.organizationId,
       email: existing.email,
       role: repairedMember.role,
+      roleLabel: repairedMember.roleLabel,
       tenantType: orgDoc.tenantType,
       user: existing,
     };
@@ -116,6 +118,7 @@ export async function requireUser(): Promise<AuthContext> {
           organizationId: invitedOrg.organizationId,
           email: accepted.user.email,
           role: accepted.member.role,
+          roleLabel: accepted.member.roleLabel,
           tenantType: invitedOrg.tenantType,
           user: accepted.user,
         };
@@ -150,6 +153,7 @@ export async function requireUser(): Promise<AuthContext> {
     organizationId: org.organizationId,
     email: user.email,
     role: member.role,
+    roleLabel: member.roleLabel,
     tenantType: org.tenantType,
     user,
   };

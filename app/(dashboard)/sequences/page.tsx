@@ -47,7 +47,7 @@ export default async function SequencesPage() {
               <p className="mt-1 text-sm text-muted">
                 {s.steps.length} follow-up{s.steps.length === 1 ? "" : "s"}
               </p>
-              <ul className="mt-3 space-y-1 text-xs text-muted/70">
+              <ul className="mt-3 space-y-1 text-xs text-muted">
                 {s.steps.slice(0, 3).map((step, i) => (
                   <li key={i}>
                     ↓ wait {step.delayValue} {UNIT_LABEL[step.delayUnit]} → follow-up {i + 1}

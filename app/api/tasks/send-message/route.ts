@@ -47,6 +47,7 @@ import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 import { unsubscribeUrl } from "@/lib/unsubscribe/token";
+import { appendVisibleUnsubscribeLink } from "@/lib/campaigns/compliance";
 
 const PayloadSchema = z.object({
   organizationId: z.string().min(1),
@@ -454,9 +455,9 @@ export async function POST(req: NextRequest) {
     const testMode = await isTestModeForOrg(organizationId);
     const threaded = isFollowup && step?.sameThread && recipient.gmailThreadId;
 
-    // Optional open/click tracking: opt-in per campaign, off by default
-    // (see schemas/campaign.ts CampaignSchema.trackingEnabled), and skipped
-    // in test mode so test sends never write real tracking data.
+    // Optional open/click tracking is skipped in test mode so test sends never
+    // write real engagement data. New campaigns default it on, while a sender
+    // can still disable it for privacy or deliverability-sensitive outreach.
     let finalHtml = sanitizeEmailHtml(body.output);
     let trackingLinkUrls: string[] | null = null;
     if (campaign.trackingEnabled && !testMode) {
@@ -469,6 +470,20 @@ export async function POST(req: NextRequest) {
       trackingLinkUrls = injected.linkUrls;
     }
 
+    const signedUnsubscribeUrl = !testMode
+      ? unsubscribeUrl({
+          ownerUserId,
+          organizationId,
+          campaignId,
+          recipientId: item.recipientId,
+        })
+      : undefined;
+    if (signedUnsubscribeUrl) {
+      // Append after tracking injection so an opt-out never travels through a
+      // tracking redirect and remains available if tracking is unavailable.
+      finalHtml = appendVisibleUnsubscribeLink(finalHtml, signedUnsubscribeUrl);
+    }
+
     // Past this point a failure's outcome is ambiguous: never retry.
     reachedDeliveryAttempt = true;
     const deliveryInput = {
@@ -476,19 +491,13 @@ export async function POST(req: NextRequest) {
       to: recipient.emailSnapshot,
       subject: subjectOutput,
       htmlBody: finalHtml,
-      textBody: renderedPlainText,
+      textBody: signedUnsubscribeUrl
+        ? `${renderedPlainText}\n\nUnsubscribe: ${signedUnsubscribeUrl}`
+        : renderedPlainText,
       testMode,
       threadId: threaded ? recipient.gmailThreadId ?? undefined : undefined,
       inReplyToMessageId: threaded ? recipient.initialMessageId ?? undefined : undefined,
-      unsubscribeUrl:
-        !testMode
-          ? unsubscribeUrl({
-              ownerUserId,
-              organizationId,
-              campaignId,
-              recipientId: item.recipientId,
-            })
-          : undefined,
+      unsubscribeUrl: signedUnsubscribeUrl,
     };
     const result = isDraft
       ? await createEmailDraft(deliveryInput)

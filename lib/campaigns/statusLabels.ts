@@ -9,12 +9,12 @@ export const CAMPAIGN_STATUS_LABELS: Record<
   VALIDATING: { label: "Preparing", className: "bg-surface-2 text-muted" },
   READY: { label: "Ready", className: "bg-info-soft text-info" },
   PREPARING: { label: "Preparing", className: "bg-info-soft text-info" },
-  ACTIVE: { label: "Sending", className: "bg-green-100 text-green-700" },
-  PAUSED: { label: "Paused", className: "bg-amber-100 text-amber-700" },
+  ACTIVE: { label: "Sending", className: "bg-success-soft text-success" },
+  PAUSED: { label: "Paused", className: "bg-warning-soft text-warning" },
   STOPPED: { label: "Stopped", className: "bg-border text-muted" },
   CANCELLED: { label: "Cancelled", className: "bg-border text-muted" },
-  COMPLETED: { label: "Finished", className: "bg-green-100 text-green-700" },
-  ERROR: { label: "Needs attention", className: "bg-red-100 text-red-700" },
+  COMPLETED: { label: "Finished", className: "bg-success-soft text-success" },
+  ERROR: { label: "Needs attention", className: "bg-danger-soft text-danger" },
 };
 
 /** Friendly labels for recipient states: one source of truth for every
@@ -23,14 +23,14 @@ export const RECIPIENT_STATUS_LABELS: Record<string, { label: string; className:
   PENDING: { label: "Waiting", className: "bg-surface-2 text-muted" },
   SCHEDULED: { label: "Scheduled", className: "bg-info-soft text-info" },
   DRAFTED: { label: "Draft created", className: "bg-info-soft text-info" },
-  SENT: { label: "Sent", className: "bg-green-100 text-green-700" },
-  REPLIED: { label: "Replied", className: "bg-green-100 text-green-700" },
-  BOUNCED: { label: "Bounced", className: "bg-amber-100 text-amber-700" },
-  UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-amber-100 text-amber-700" },
+  SENT: { label: "Sent", className: "bg-success-soft text-success" },
+  REPLIED: { label: "Replied", className: "bg-success-soft text-success" },
+  BOUNCED: { label: "Bounced", className: "bg-warning-soft text-warning" },
+  UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-warning-soft text-warning" },
   SKIPPED: { label: "Removed", className: "bg-border text-muted" },
-  EXCLUDED: { label: "Excluded for safety", className: "bg-amber-100 text-amber-700" },
+  EXCLUDED: { label: "Excluded for safety", className: "bg-warning-soft text-warning" },
   CANCELLED: { label: "Cancelled", className: "bg-border text-muted" },
-  ERROR: { label: "Needs attention", className: "bg-red-100 text-red-700" },
+  ERROR: { label: "Needs attention", className: "bg-danger-soft text-danger" },
 };
 
 export function recipientStatusBadge(status: string): { label: string; className: string } {

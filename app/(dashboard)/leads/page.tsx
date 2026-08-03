@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
-import { listContacts } from "@/lib/repositories/contacts";
+import { countContacts, listContactsPage } from "@/lib/repositories/contacts";
 import { listLeadLists } from "@/lib/repositories/leadLists";
 import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
@@ -8,27 +7,30 @@ import { LeadListsBar } from "@/components/leads/LeadListsBar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
-
-const PAGE_SIZE = 500;
-const MAX_LIMIT = 5000;
+import {
+  CONTACT_PAGE_SIZE,
+  decodeContactCursor,
+  decodeCursorTrail,
+  encodeContactCursor,
+} from "@/lib/leads/contactPagination";
+import { LeadDirectoryPagination } from "@/components/leads/LeadDirectoryPagination";
 
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ limit?: string }>;
+  searchParams: Promise<{ cursor?: string; trail?: string }>;
 }) {
   const ctx = await requireUser();
-  const { limit: rawLimit } = await searchParams;
-  const requested = Number(rawLimit);
-  const limit = Number.isFinite(requested)
-    ? Math.min(MAX_LIMIT, Math.max(PAGE_SIZE, Math.floor(requested)))
-    : PAGE_SIZE;
+  const params = await searchParams;
+  const cursor = decodeContactCursor(params.cursor);
+  const trail = decodeCursorTrail(params.trail);
 
-  const [contacts, lists] = await Promise.all([
-    listContacts(ctx, { limit }),
+  const [page, totalContacts, lists] = await Promise.all([
+    listContactsPage(ctx, { pageSize: CONTACT_PAGE_SIZE, cursor }),
+    countContacts(ctx),
     listLeadLists(ctx),
   ]);
-  const maybeMore = contacts.length === limit && limit < MAX_LIMIT;
+  const contacts = page.contacts;
   const readyCount = contacts.filter(
     (contact) =>
       !contact.suppressed && !contact.emailOptOut && contact.campaignCount === 0
@@ -58,6 +60,7 @@ export default async function LeadsPage({
     lastCampaignAt: c.lastCampaignAt,
     tags: c.tags,
     listIds: c.listIds,
+    createdAt: c.createdAt,
   }));
 
   return (
@@ -75,28 +78,28 @@ export default async function LeadsPage({
                 {
                   label: "Ready",
                   value: readyCount,
-                  hint: "Never contacted and safe to email",
+                  hint: "On this page, never contacted and safe",
                   icon: "check",
                   tone: "success",
                 },
                 {
                   label: "Contacted",
                   value: contactedCount,
-                  hint: "Used in at least one campaign",
+                  hint: "On this page, used in a campaign",
                   icon: "mail",
                   tone: "primary",
                 },
                 {
                   label: "Replied",
                   value: repliedCount,
-                  hint: "Live conversations you can work",
+                  hint: "On this page, live conversations",
                   icon: "reply",
                   tone: repliedCount > 0 ? "revenue" : "default",
                 },
                 {
                   label: "Excluded",
                   value: excludedCount,
-                  hint: "Suppressed or opted out",
+                  hint: "On this page, suppressed or opted out",
                   icon: "ban",
                   tone: excludedCount > 0 ? "warning" : "default",
                 },
@@ -126,23 +129,21 @@ export default async function LeadsPage({
         <div className="mb-3">
           <h2 className="font-semibold">Contact directory</h2>
           <p className="mt-1 text-xs text-muted">
-            Search, segment, review engagement, or apply safe bulk actions to the newest {rows.length.toLocaleString()} leads.
+            {totalContacts.toLocaleString()} total leads. Search, filter, and organize this page of {rows.length.toLocaleString()}.
           </p>
         </div>
         <ContactsTable
           contacts={rows}
           leadLists={lists.map((list) => ({ listId: list.listId, name: list.name }))}
         />
-        {maybeMore && (
-          <div className="mt-3 text-center">
-            <Link
-              href={`/leads?limit=${Math.min(MAX_LIMIT, limit + PAGE_SIZE)}`}
-              className="btn-secondary inline-block px-4 py-2 text-sm"
-            >
-              Load {PAGE_SIZE} more (showing newest {rows.length})
-            </Link>
-          </div>
-        )}
+        <LeadDirectoryPagination
+          basePath="/leads"
+          currentCursor={cursor && params.cursor ? params.cursor : null}
+          trail={trail}
+          nextCursor={page.nextCursor ? encodeContactCursor(page.nextCursor) : null}
+          shown={rows.length}
+          total={totalContacts}
+        />
       </div>
     </div>
   );

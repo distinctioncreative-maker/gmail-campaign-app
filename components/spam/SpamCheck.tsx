@@ -4,9 +4,9 @@ import { useMemo } from "react";
 import { analyzeSpam, type SpamStatus } from "@/lib/spam/score";
 
 const MARK: Record<SpamStatus, { icon: string; className: string }> = {
-  pass: { icon: "✓", className: "bg-green-100 text-green-700" },
-  warn: { icon: "!", className: "bg-amber-100 text-amber-700" },
-  fail: { icon: "✕", className: "bg-red-100 text-red-700" },
+  pass: { icon: "✓", className: "bg-success-soft text-success" },
+  warn: { icon: "!", className: "bg-warning-soft text-warning" },
+  fail: { icon: "✕", className: "bg-danger-soft text-danger" },
 };
 
 function ringColor(score: number): string {
@@ -55,7 +55,7 @@ export function SpamCheck({ subject, html }: { subject: string; html: string }) 
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-2xl font-semibold tabular-nums text-foreground">{score}</span>
-            <span className="text-[10px] font-medium uppercase tracking-wide text-muted/70">Grade {grade}</span>
+            <span className="text-[10px] font-medium uppercase tracking-wide text-muted">Grade {grade}</span>
           </div>
         </div>
         <div>
@@ -81,7 +81,7 @@ export function SpamCheck({ subject, html }: { subject: string; html: string }) 
                   <span className="ml-2 font-normal text-muted">{c.detail}</span>
                 </p>
                 {c.status !== "pass" && c.fix && (
-                  <p className="mt-0.5 text-xs text-muted/70">{c.fix}</p>
+                  <p className="mt-0.5 text-xs text-muted">{c.fix}</p>
                 )}
               </div>
             </li>
@@ -89,7 +89,7 @@ export function SpamCheck({ subject, html }: { subject: string; html: string }) 
         })}
       </ul>
 
-      <p className="mt-4 text-xs text-muted/70">
+      <p className="mt-4 text-xs text-muted">
         This is a content guide, not a guarantee of inbox placement. Replies and a clean list matter
         most.
       </p>

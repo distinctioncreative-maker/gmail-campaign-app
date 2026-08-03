@@ -13,6 +13,7 @@ import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { LocalTime } from "@/components/LocalTime";
 import { formatPercent } from "@/lib/analytics/metrics";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
+import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 
 
 /**
@@ -42,10 +43,11 @@ export default async function RepDetailPage({
   const rep = members.find((m) => m.userId === userId);
   if (!rep) notFound();
 
-  const [repUser, campaigns] = await Promise.all([
+  const [repUser, allCampaigns] = await Promise.all([
     getUser(userId),
     listCampaigns({ userId, organizationId: ctx.organizationId }, 200),
   ]);
+  const campaigns = campaignsIncludedInWorkspaceStats(allCampaigns);
   const repName = repUser?.displayName || rep.email;
   const sent = campaigns.reduce((a, c) => a + c.sentCount + c.followupSentCount, 0);
   const replies = campaigns.reduce((a, c) => a + c.replyCount, 0);

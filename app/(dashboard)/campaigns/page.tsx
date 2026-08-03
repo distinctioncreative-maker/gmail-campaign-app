@@ -8,19 +8,30 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { campaignPerformance } from "@/lib/analytics/metrics";
+import {
+  campaignsForCollectionView,
+  type CampaignCollectionView,
+} from "@/lib/campaigns/lifecycle";
 
 export default async function CampaignsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ archived?: string }>;
+  searchParams: Promise<{ archived?: string; view?: string }>;
 }) {
   const ctx = await requireUser();
-  const { archived: showArchivedParam } = await searchParams;
-  const showArchived = showArchivedParam === "1";
+  const params = await searchParams;
+  const view: CampaignCollectionView =
+    params.view === "deleted"
+      ? "deleted"
+      : params.view === "archived" || params.archived === "1"
+        ? "archived"
+        : "active";
 
   const all = await listCampaigns(ownerFromCtx(ctx));
-  const archivedCount = all.filter((c) => c.archived).length;
-  const campaigns = all.filter((c) => (showArchived ? c.archived : !c.archived));
+  const activeCountAll = campaignsForCollectionView(all, "active").length;
+  const archivedCount = campaignsForCollectionView(all, "archived").length;
+  const deletedCount = campaignsForCollectionView(all, "deleted").length;
+  const campaigns = campaignsForCollectionView(all, view);
   const activeCount = campaigns.filter((campaign) =>
     ["READY", "PREPARING", "ACTIVE", "PAUSED"].includes(campaign.status)
   ).length;
@@ -36,8 +47,18 @@ export default async function CampaignsPage({
   return (
     <div>
       <PageHeader
-        title={showArchived ? "Archived campaigns" : "Campaigns"}
-        description="Plan, monitor, and compare every outreach motion from one workspace."
+        title={
+          view === "deleted"
+            ? "Recently deleted"
+            : view === "archived"
+              ? "Archived campaigns"
+              : "Campaigns"
+        }
+        description={
+          view === "deleted"
+            ? "Restore campaigns or review retained metrics before deleting them forever."
+            : "Plan, monitor, and compare every outreach motion from one workspace."
+        }
         actions={
           <Link href="/campaigns/new" className="btn-primary px-5 py-2.5 text-sm">
             Create campaign
@@ -45,28 +66,42 @@ export default async function CampaignsPage({
         }
       />
 
-      {(archivedCount > 0 || showArchived) && (
-        <div className="mb-4">
-          {showArchived ? (
-            <Link href="/campaigns" className="text-sm font-medium text-primary hover:underline">
-              ← Back to active campaigns
-            </Link>
-          ) : (
-            <Link href="/campaigns?archived=1" className="text-sm text-muted hover:underline">
-              View archived ({archivedCount}) →
-            </Link>
-          )}
+      <nav className="mb-5 flex flex-wrap gap-2" aria-label="Campaign collections">
+        {[
+          { key: "active", href: "/campaigns", label: "Active", count: activeCountAll },
+          { key: "archived", href: "/campaigns?view=archived", label: "Archived", count: archivedCount },
+          { key: "deleted", href: "/campaigns?view=deleted", label: "Recently deleted", count: deletedCount },
+        ].map((item) => (
+          <Link
+            key={item.key}
+            href={item.href}
+            aria-current={view === item.key ? "page" : undefined}
+            className={`min-h-11 rounded-xl border px-4 py-2.5 text-sm font-medium transition ${
+              view === item.key
+                ? "border-primary bg-primary-soft text-primary"
+                : "border-border bg-surface text-muted hover:text-foreground"
+            }`}
+          >
+            {item.label} <span className="ml-1 tabular-nums opacity-70">{item.count}</span>
+          </Link>
+        ))}
+      </nav>
+
+      {view === "deleted" && campaigns.length > 0 ? (
+        <div className="alert-warning mb-5 rounded-xl border p-4 text-sm leading-relaxed">
+          Deleted campaigns no longer contribute to workspace or report totals. Their recipient
+          history and KPIs stay available here until you choose Delete forever.
         </div>
-      )}
+      ) : null}
 
       {campaigns.length > 0 ? (
         <StatGrid columns={4}>
           {(
             [
               {
-                label: showArchived ? "Archived" : "In progress",
-                value: showArchived ? campaigns.length : activeCount,
-                hint: showArchived ? "Kept for reporting" : "Ready, sending, or paused",
+                label: view === "deleted" ? "Deleted" : view === "archived" ? "Archived" : "In progress",
+                value: view === "active" ? activeCount : campaigns.length,
+                hint: view === "deleted" ? "Retained for recovery" : view === "archived" ? "Included in reporting" : "Ready, sending, or paused",
                 icon: "rocket",
                 tone: "primary",
               },
@@ -80,7 +115,7 @@ export default async function CampaignsPage({
               {
                 label: "Replies",
                 value: totalReplies,
-                hint: "Conversations this view has started",
+                hint: "Across this campaign view",
                 icon: "reply",
                 tone: totalReplies > 0 ? "revenue" : "default",
               },
@@ -108,14 +143,15 @@ export default async function CampaignsPage({
 
       {campaigns.length === 0 ? (
         <EmptyState
-          icon="rocket"
-          title="Your first campaign is four steps away"
-          description="Pick your leads, write one email, set the pace, and Cadence sends it from your own Gmail. A safety review runs before anything leaves your account."
-          action={{ href: "/campaigns/new", label: "Create your first campaign" }}
-          secondaryAction={{ href: "/help", label: "See how it works" }}
+          icon={view === "active" ? "rocket" : "trash"}
+          title={view === "deleted" ? "Recently deleted is empty" : view === "archived" ? "No archived campaigns" : "Your first campaign is four steps away"}
+          description={view === "deleted" ? "Campaigns you delete will remain recoverable here." : view === "archived" ? "Archive finished campaigns to keep the active list focused without changing reports." : "Pick your leads, write one email, set the pace, and Cadence sends it from your own Gmail. A safety review runs before anything leaves your account."}
+          action={view === "active" ? { href: "/campaigns/new", label: "Create your first campaign" } : { href: "/campaigns", label: "Back to campaigns" }}
+          secondaryAction={view === "active" ? { href: "/help", label: "See how it works" } : undefined}
         />
       ) : (
         <CampaignsTable
+          lifecycleView={view}
           campaigns={campaigns.map((c) => {
             const badge = CAMPAIGN_STATUS_LABELS[c.status];
             const performance = campaignPerformance(c);
@@ -130,11 +166,14 @@ export default async function CampaignsPage({
               sent: c.sentCount + c.followupSentCount,
               replies: c.replyCount,
               bounces: c.bounceCount,
+              unsubscribes: c.unsubscribeCount,
               errors: c.errorCount,
               progressRate: performance.progressRate,
               replyRate: performance.replyRate,
               updatedAt: c.updatedAt,
               archived: c.archived,
+              archivedAt: c.archivedAt,
+              deletedAt: c.deletedAt,
             };
           })}
         />

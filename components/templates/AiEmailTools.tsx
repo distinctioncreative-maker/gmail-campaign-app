@@ -102,7 +102,7 @@ export function AiEmailTools({
 
       {subjects && (
         <div className="mt-2 flex flex-col gap-1">
-          <p className="text-[11px] text-muted/70">Tap to use one:</p>
+          <p className="text-[11px] text-muted">Tap to use one:</p>
           {subjects.map((s) => (
             <button
               key={s}

@@ -47,10 +47,32 @@ rateLimits/{bucketAndFingerprint}               — fixed window + expiresAt TTL
 See `schemas/*.ts` for authoritative field lists:
 
 - `user.ts` — User, Member, Organization
+  - `organizationSettings/main.workspaceProfile` stores onboarding context:
+    industry, team-size range, intended monthly outreach range, primary use
+    case, and configuration time. It is guidance context only and never a send
+    limit override.
+  - `organizationSettings/main.customRoles` stores up to 20 reusable names,
+    descriptions, and one audited base permission level each.
+  - Member `customRoleId` and `roleLabel` select the display role while `role`
+    remains the server authorization boundary. The user record mirrors the
+    label for app chrome; authorization still re-checks membership.
+  - Team `parentTeamId` forms an admin-managed hierarchy. Writes reject self
+    parenting, missing parents, and ancestor cycles. Parent-team managers have
+    tested descendant visibility and roster scope.
 - `gmailConnection.ts` — GmailConnection (+ Public variant without token)
 - `contact.ts` — Contact, LeadClassification enum
   - `listIds` stores reusable saved-list membership.
   - `tags` stores up to 20 normalized, owner-managed labels of 32 characters each.
+  - `createdAt` is the authoritative Date added value shown in directories and
+    lead detail. Directory pages order by `createdAt` and document ID for a
+    stable cursor when multiple leads share a timestamp.
+- `campaign.ts` — Campaign and recipient lifecycle
+  - `archived` and `archivedAt` hide a retained campaign from the active view.
+  - `deletedAt` moves a terminal campaign into Recently Deleted without
+    removing its recipients, events, messages, or KPIs.
+  - A campaign with `deletedAt` set is excluded from workspace and rep totals,
+    reports, replies, and launch/control paths until restored. Permanent
+    recursive deletion is a separate explicit action available only afterward.
 - `suppression.ts` — Suppression (USER / ORGANIZATION scope)
 - `parsedLead.ts` — pre-import parsed lead + warnings + confidence
 
@@ -60,3 +82,13 @@ See `schemas/*.ts` for authoritative field lists:
   `lib/parser/normalize.ts` for rationale)
 - Secondary signals (warnings only): `normalizedPhone`,
   `normalizedBusinessName`, `sourceRecordId`
+
+## Lead pagination and import bounds
+
+The lead directory has no application-wide total-contact ceiling. It reads
+stable pages of 250 contacts and uses an opaque cursor made from `createdAt`
+plus the document ID. List-scoped pages use the `listIds` array-contains index
+with the same descending timestamp order. Imports are divided into bounded
+200-row API requests and repository writes remain below Firestore batch limits;
+these per-request bounds are operational safety controls, not storage or
+account limits.

@@ -47,7 +47,7 @@ export function LaunchCelebration({
           <p className="font-display text-lg font-bold tracking-[-0.02em] text-foreground">
             {startedNow ? "You are live." : "Campaign is ready."}
           </p>
-          <p className="mt-1 text-sm leading-6 text-foreground/80">
+          <p className="mt-1 text-sm leading-6 text-foreground">
             {startedNow
               ? `${recipientCount.toLocaleString()} personalized email${
                   recipientCount === 1 ? "" : "s"

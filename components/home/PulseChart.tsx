@@ -194,7 +194,7 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
       {/* floating readout / empty hint */}
       {isEmpty ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-muted backdrop-blur">
+          <span className="rounded-full bg-foreground/5 px-3 py-1 text-xs text-muted backdrop-blur">
             Your live activity appears here as you send
           </span>
         </div>
@@ -205,9 +205,9 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
               <span className="font-semibold text-foreground tabular-nums">{active.sent}</span> sent
             </span>
             <span className="text-muted">
-              <span className="font-semibold text-green-600 tabular-nums">{active.replied}</span> replies
+              <span className="font-semibold text-success tabular-nums">{active.replied}</span> replies
             </span>
-            <span className="text-muted/70">{active.day.slice(5)}</span>
+            <span className="text-muted">{active.day.slice(5)}</span>
           </div>
         )
       )}

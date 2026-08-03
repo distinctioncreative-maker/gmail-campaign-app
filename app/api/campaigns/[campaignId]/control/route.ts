@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
-import { getCampaign, ownerFromCtx, updateCampaign } from "@/lib/repositories/campaigns";
+import {
+  getCampaign,
+  ownerFromCtx,
+  restoreDeletedCampaign,
+  updateCampaign,
+} from "@/lib/repositories/campaigns";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
 import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
@@ -48,6 +53,7 @@ const BodySchema = z.object({
     "release_leads",
     "archive",
     "unarchive",
+    "restore_deleted",
   ]),
   recipientId: z.string().optional(),
   pace: PaceSchema.optional(),
@@ -61,6 +67,13 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
 
   const { action, recipientId, pace, acceptPaceRisk } = BodySchema.parse(await req.json());
+
+  if (campaign.deletedAt !== null && action !== "restore_deleted") {
+    return NextResponse.json(
+      { error: "Restore this campaign before using campaign controls." },
+      { status: 400 }
+    );
+  }
 
   switch (action) {
     case "pause":
@@ -127,14 +140,30 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
     case "release_leads":
       return NextResponse.json({ message: await releaseLeads(ctx, campaign) });
     case "archive": {
+      if (campaign.deletedAt !== null)
+        return NextResponse.json({ error: "Restore this campaign before archiving it." }, { status: 400 });
       if (["ACTIVE", "PAUSED"].includes(campaign.status))
         return NextResponse.json({ error: "Stop the campaign before archiving it." }, { status: 400 });
-      await updateCampaign(ownerFromCtx(ctx), campaignId, { archived: true });
+      await updateCampaign(ownerFromCtx(ctx), campaignId, {
+        archived: true,
+        archivedAt: Date.now(),
+      });
       return NextResponse.json({ message: "Campaign archived." });
     }
     case "unarchive": {
-      await updateCampaign(ownerFromCtx(ctx), campaignId, { archived: false });
+      if (campaign.deletedAt !== null)
+        return NextResponse.json({ error: "Use Recently Deleted to restore this campaign." }, { status: 400 });
+      await updateCampaign(ownerFromCtx(ctx), campaignId, {
+        archived: false,
+        archivedAt: null,
+      });
       return NextResponse.json({ message: "Campaign restored." });
+    }
+    case "restore_deleted": {
+      if (campaign.deletedAt === null)
+        return NextResponse.json({ error: "This campaign is not deleted." }, { status: 400 });
+      await restoreDeletedCampaign(ownerFromCtx(ctx), campaignId);
+      return NextResponse.json({ message: "Campaign restored to the active list." });
     }
   }
 });

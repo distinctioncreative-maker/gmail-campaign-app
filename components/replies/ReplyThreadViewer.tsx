@@ -63,7 +63,7 @@ export function ReplyThreadViewer({
       </button>
       {open && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setOpen(false)} aria-hidden />
+          <div className="absolute inset-0 bg-overlay" onClick={() => setOpen(false)} aria-hidden />
           <div
             role="dialog"
             aria-modal="true"
@@ -76,7 +76,7 @@ export function ReplyThreadViewer({
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="shrink-0 rounded-lg p-1.5 text-muted/70 hover:bg-surface-2 hover:text-muted"
+                className="shrink-0 rounded-lg p-1.5 text-muted hover:bg-surface-2 hover:text-muted"
                 aria-label="Close"
               >
                 <Icon name="x" size={18} />
@@ -87,7 +87,7 @@ export function ReplyThreadViewer({
                 <p className="text-sm text-muted">Loading the thread…</p>
               ) : error ? (
                 <div>
-                  <p className="text-sm text-red-600">{error}</p>
+                  <p className="text-sm text-danger">{error}</p>
                   {fallbackSnippet && (
                     <p className="mt-3 rounded-lg bg-surface-2 p-3 text-sm italic text-muted">
                       “{fallbackSnippet}”

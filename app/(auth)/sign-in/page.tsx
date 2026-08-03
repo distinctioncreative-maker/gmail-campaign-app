@@ -117,12 +117,27 @@ export default function SignInPage() {
               )}
             </button>
             {error && (
-              <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+              <p role="alert" className="mt-4 rounded-xl bg-danger-soft p-3 text-sm text-danger">
                 {error}
               </p>
             )}
-            <p className="mt-6 text-xs text-muted/70">
+            <p className="mt-6 text-xs text-muted">
               Sign-in is limited to your company&apos;s Google Workspace accounts.
+            </p>
+            <p className="mt-3 text-xs leading-relaxed text-muted">
+              By continuing, you agree to the{" "}
+              <Link href="/terms" className="font-medium text-primary hover:underline">
+                Managed Pilot Terms
+              </Link>{" "}
+              and acknowledge the{" "}
+              <Link href="/privacy" className="font-medium text-primary hover:underline">
+                Privacy Notice
+              </Link>{" "}
+              and{" "}
+              <Link href="/acceptable-use" className="font-medium text-primary hover:underline">
+                Acceptable Use Policy
+              </Link>
+              .
             </p>
           </div>
 

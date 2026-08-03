@@ -70,9 +70,9 @@ export const CampaignSchema = z.object({
   errorCount: z.number().int().nonnegative().default(0),
   followupsPaused: z.boolean().default(false),
   /** Optional per-campaign open/click tracking (a pixel + link rewriting).
-   * Off by default — tracking pixels/rewritten links are a known
-   * deliverability risk, so this is an explicit opt-in, never a default. */
-  trackingEnabled: z.boolean().default(false),
+   * New campaigns default on, with a clear privacy and deliverability notice;
+   * senders can disable it for sensitive campaigns. */
+  trackingEnabled: z.boolean().default(true),
   createdAt: EpochMillis,
   updatedAt: EpochMillis,
   startedAt: EpochMillis.nullable().default(null),
@@ -85,6 +85,10 @@ export const CampaignSchema = z.object({
   deferredDayKey: z.string().nullable().default(null),
   /** Hidden from the main campaigns list for tidiness (data is kept). */
   archived: z.boolean().default(false),
+  archivedAt: EpochMillis.nullable().default(null),
+  /** Soft-deleted campaigns retain recipients, messages, events, and metrics
+   * until a user explicitly deletes them forever from Recently Deleted. */
+  deletedAt: EpochMillis.nullable().default(null),
   resumedAt: EpochMillis.nullable().default(null),
   stoppedAt: EpochMillis.nullable().default(null),
   completedAt: EpochMillis.nullable().default(null),

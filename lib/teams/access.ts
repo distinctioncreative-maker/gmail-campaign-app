@@ -1,4 +1,5 @@
 import type { Role } from "@/schemas/common";
+import { managedTeamIds } from "@/lib/teams/hierarchy";
 
 /**
  * Pure team-visibility rules: no Firestore access, fully unit-testable.
@@ -12,6 +13,7 @@ import type { Role } from "@/schemas/common";
 export interface TeamLite {
   teamId: string;
   leadUserId: string | null;
+  parentTeamId?: string | null;
 }
 
 export interface MemberLite {
@@ -32,7 +34,7 @@ export function viewableUserIds(
 ): string[] {
   if (viewer.role === "ADMIN") return members.map((m) => m.userId);
   if (viewer.role === "MANAGER") {
-    const led = new Set(ledTeamIds(viewer.userId, teams));
+    const led = managedTeamIds(viewer.userId, teams);
     const ids = new Set<string>([viewer.userId]);
     for (const m of members) if (m.teamId !== null && led.has(m.teamId)) ids.add(m.userId);
     return [...ids];
@@ -57,6 +59,6 @@ export function canManageTeamMembership(
   teams: TeamLite[]
 ): boolean {
   if (viewer.role === "ADMIN") return true;
-  if (viewer.role === "MANAGER") return ledTeamIds(viewer.userId, teams).includes(teamId);
+  if (viewer.role === "MANAGER") return managedTeamIds(viewer.userId, teams).has(teamId);
   return false;
 }

@@ -118,14 +118,14 @@ export default async function ContactDetailPage({
             <dd>{contact.leadSource || "Not available"}</dd>
             <dt className="text-muted">Tags</dt>
             <dd><TagChips tags={contact.tags} /></dd>
-            <dt className="text-muted">First imported</dt>
-            <dd>{fmt(contact.firstSeenAt)}</dd>
+            <dt className="text-muted">Date added</dt>
+            <dd>{fmt(contact.createdAt)}</dd>
             <dt className="text-muted">Last seen in an import</dt>
             <dd>{fmt(contact.lastSeenAt)}</dd>
           </dl>
           {contact.notes && (
             <div className="mt-4 rounded-xl bg-surface-2 p-3">
-              <p className="text-xs font-medium uppercase text-muted/70">Notes</p>
+              <p className="text-xs font-medium uppercase text-muted">Notes</p>
               <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{contact.notes}</p>
             </div>
           )}
@@ -161,7 +161,7 @@ export default async function ContactDetailPage({
                 : `On your do-not-email list (${suppression?.reason.replaceAll("_", " ").toLowerCase()}).`}
             </p>
           )}
-          <p className="mt-4 text-xs text-muted/70">
+          <p className="mt-4 text-xs text-muted">
             Reply counts update on each reply scan. Use “Scan for replies” on the Reports page to
             sync everything now.
           </p>

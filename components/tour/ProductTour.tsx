@@ -3,7 +3,8 @@
 /* This overlay measures live DOM elements and positions itself from effects,
    which inherently sets state after layout: the lint rule doesn't apply. */
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/Icon";
 
 interface Step {
@@ -66,10 +67,23 @@ interface Rect {
   height: number;
 }
 
-export function ProductTour() {
+function TourSignal({ index }: { index: number }) {
+  return (
+    <div className="tour-signal" aria-hidden>
+      <span className="tour-signal-orbit" />
+      <span className="tour-signal-core"><Icon name={STEPS[index]?.icon ?? "sparkles"} size={18} /></span>
+      <span className="tour-signal-pulse" />
+    </div>
+  );
+}
+
+export function ProductTour({ autoStart = true }: { autoStart?: boolean }) {
+  const pathname = usePathname();
   const [active, setActive] = useState(false);
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const step = STEPS[index];
 
@@ -113,7 +127,7 @@ export function ProductTour() {
       setActive(true);
     };
     if (typeof window !== "undefined") {
-      if (!localStorage.getItem(STORAGE_KEY)) {
+      if (autoStart && pathname !== "/onboarding" && !localStorage.getItem(STORAGE_KEY)) {
         // Small delay so the layout has painted.
         const t = setTimeout(start, 700);
         window.addEventListener("outreach:start-tour", start);
@@ -125,7 +139,43 @@ export function ProductTour() {
       window.addEventListener("outreach:start-tour", start);
       return () => window.removeEventListener("outreach:start-tour", start);
     }
-  }, []);
+  }, [autoStart, pathname]);
+
+  useEffect(() => {
+    if (!active) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialogRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        finish();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+      )];
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      previousFocusRef.current?.focus();
+    };
+  }, [active]);
 
   function finish() {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -148,7 +198,7 @@ export function ProductTour() {
   const tooltipStyle: React.CSSProperties = spotlight
     ? {
         top: Math.max(12, Math.min(spotlight.top, window.innerHeight - 240)),
-        left: Math.min(spotlight.left + spotlight.width + 16, window.innerWidth - 340),
+        left: Math.max(12, Math.min(spotlight.left + spotlight.width + 16, window.innerWidth - 340)),
       }
     : {
         top: "50%",
@@ -157,64 +207,72 @@ export function ProductTour() {
       };
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Product tour">
+    <div ref={dialogRef} className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Product tour">
       {/* Dimmed backdrop with an optional spotlight cutout. */}
       {spotlight ? (
         <div
-          className="pointer-events-none absolute rounded-xl transition-all duration-200"
+          className="tour-spotlight pointer-events-none absolute rounded-xl transition-all duration-300"
           style={{
             top: spotlight.top,
             left: spotlight.left,
             width: spotlight.width,
             height: spotlight.height,
-            boxShadow: "0 0 0 9999px rgba(15,23,42,0.55)",
-            border: "2px solid rgba(255,255,255,0.9)",
           }}
         />
       ) : (
-        <div className="absolute inset-0 bg-slate-900/55" />
+        <div className="absolute inset-0 bg-overlay" />
       )}
 
       <div
-        className="absolute w-80 max-w-[calc(100vw-24px)] rounded-xl border border-border bg-surface p-5 shadow-2xl"
+        className="absolute w-80 max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl"
         style={tooltipStyle}
       >
-        <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-primary-soft text-primary" aria-hidden>
-            <Icon name={step.icon} size={20} />
-          </span>
-          <div>
+        <div className="tour-card-accent h-1" aria-hidden />
+        <div className="p-5">
+          <div className="flex items-start gap-4">
+            <TourSignal index={index} />
+            <div>
             <p className="font-semibold text-foreground">{step.title}</p>
-            <p className="mt-1 text-sm text-muted">{step.body}</p>
+            <p className="mt-1 text-sm leading-6 text-muted">{step.body}</p>
+            </div>
           </div>
-        </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <button onClick={finish} className="text-xs text-muted/70 hover:text-muted">
+          <div className="mt-5 flex gap-1" aria-hidden>
+            {STEPS.map((candidate, position) => (
+              <span
+                key={candidate.title}
+                className={`h-1 flex-1 rounded-full transition-colors ${position <= index ? "bg-primary" : "bg-border"}`}
+              />
+            ))}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3">
+          <button onClick={finish} className="min-h-11 rounded-lg px-2 text-xs text-muted hover:bg-surface-2 hover:text-foreground">
             Skip tour
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted/70">
+            <span className="text-xs text-muted">
               {index + 1} / {STEPS.length}
             </span>
             {index > 0 && (
               <button
                 onClick={() => setIndex((i) => i - 1)}
-                className="rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-surface-2"
+                className="min-h-11 rounded-lg px-3 py-2 text-sm text-muted hover:bg-surface-2"
               >
                 Back
               </button>
             )}
             {index < STEPS.length - 1 ? (
-              <button onClick={() => setIndex((i) => i + 1)} className="btn-primary px-4 py-1.5 text-sm">
+              <button onClick={() => setIndex((i) => i + 1)} className="btn-primary min-h-11 px-4 py-2 text-sm">
                 Next
               </button>
             ) : (
-              <button onClick={finish} className="btn-primary px-4 py-1.5 text-sm">
+              <button onClick={finish} className="btn-primary min-h-11 px-4 py-2 text-sm">
                 Done
               </button>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>

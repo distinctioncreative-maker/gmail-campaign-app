@@ -3,15 +3,18 @@
 import { useRef } from "react";
 import { Icon } from "@/components/ui/Icon";
 
-const SECTIONS = [
+const ALL_SECTIONS = [
   { href: "#overview", label: "Overview" },
   { href: "#controls", label: "Controls" },
   { href: "#recipients", label: "Recipients" },
   { href: "#activity", label: "Activity" },
 ] as const;
 
-export function CampaignSectionNav() {
+export function CampaignSectionNav({ showControls = true }: { showControls?: boolean }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const sections = showControls
+    ? ALL_SECTIONS
+    : ALL_SECTIONS.filter((section) => section.href !== "#controls");
 
   function close() {
     dialogRef.current?.close();
@@ -24,7 +27,7 @@ export function CampaignSectionNav() {
         className="mt-5 rounded-xl border border-border bg-surface p-1"
       >
         <div className="hidden gap-1 sm:flex">
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <a
               key={section.href}
               href={section.href}
@@ -35,7 +38,7 @@ export function CampaignSectionNav() {
           ))}
         </div>
         <div className="grid grid-cols-3 gap-1 sm:hidden">
-          {SECTIONS.slice(0, 2).map((section) => (
+          {sections.slice(0, 2).map((section) => (
             <a
               key={section.href}
               href={section.href}
@@ -79,7 +82,7 @@ export function CampaignSectionNav() {
           </button>
         </div>
         <div className="grid gap-1 p-3">
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <a
               key={section.href}
               href={section.href}

@@ -30,7 +30,7 @@ type Params = { params: Promise<{ token: string }> };
 
 /**
  * Optional open-tracking pixel (schemas/campaign.ts CampaignSchema.
- * trackingEnabled: off by default). Public and unauthenticated by nature
+ * trackingEnabled). Public and unauthenticated by nature
  * (email clients load it directly): always returns the pixel regardless of
  * outcome, since a broken image or error page here is worse than a missed
  * open count.

@@ -11,11 +11,13 @@ export function AccountMenu({
   displayName,
   email,
   role,
+  roleLabel: customRoleLabel,
   placement = "side",
 }: {
   displayName: string;
   email: string;
   role: string;
+  roleLabel?: string | null;
   placement?: "side" | "inline" | "sheet";
 }) {
   const router = useRouter();
@@ -49,7 +51,8 @@ export function AccountMenu({
 
   const initial = displayName.trim().charAt(0).toUpperCase() || "U";
   const roleLabel =
-    role === "ADMIN" ? "Administrator" : role === "MANAGER" ? "Team Lead" : "Sales Rep";
+    customRoleLabel ??
+    (role === "ADMIN" ? "Administrator" : role === "MANAGER" ? "Manager" : "Member");
   const menuPosition =
     placement === "inline"
       ? "relative mt-2 w-full origin-top"
@@ -134,7 +137,7 @@ export function AccountMenu({
           <span className="block truncate text-sm font-medium text-foreground">{displayName}</span>
           <span className="block truncate text-xs font-medium text-muted">Switch or sign out</span>
         </span>
-        <span className="flex shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted/70 group-hover:text-foreground">
+        <span className="flex shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted group-hover:text-foreground">
           Account
           <Icon name="chevronDown" size={15} className={`transition ${open ? "rotate-180" : ""}`} />
         </span>
@@ -159,7 +162,7 @@ export function AccountMenu({
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
               <p className="truncate text-xs text-muted">{email}</p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted/70">{roleLabel}</p>
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted">{roleLabel}</p>
             </div>
           </div>
           <div className="p-1.5">
@@ -169,7 +172,7 @@ export function AccountMenu({
               disabled={busy}
               className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition hover:bg-surface-2 disabled:opacity-50"
             >
-              <Icon name="users" size={18} className="text-muted/70" />
+              <Icon name="users" size={18} className="text-muted" />
               {busy ? "Opening Google…" : "Switch account"}
             </button>
             <button

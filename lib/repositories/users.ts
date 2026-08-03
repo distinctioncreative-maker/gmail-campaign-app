@@ -19,6 +19,7 @@ export async function createUser(input: {
   const now = Date.now();
   const user: User = {
     ...input,
+    roleLabel: null,
     active: true,
     onboardingStatus: "NEW",
     timezone: "America/New_York",

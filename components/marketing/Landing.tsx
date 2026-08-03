@@ -1624,11 +1624,15 @@ export function Landing() {
             <a href="#controls">Live demo</a>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
-            <a href="/sign-in">Log in</a>
+            <Link href="/terms">Pilot terms</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/acceptable-use">Anti-spam</Link>
+            <Link href="/compliance">Compliance</Link>
+            <Link href="/sign-in">Log in</Link>
           </div>
           <p className={styles.copyright}>
-            © 2026 Cadence. Private pilot. Legal terms and privacy details are
-            provided before onboarding.
+            © 2026 Cadence. Managed private pilot. Signed pilot documents complete
+            the operating entity, jurisdiction, commercial, and data terms.
           </p>
         </div>
       </footer>

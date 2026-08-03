@@ -75,14 +75,14 @@ export function SendingModeCard() {
         </div>
         <span
           className={`rounded-full px-3 py-1 text-sm font-semibold ${
-            live ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+            live ? "bg-success-soft text-success" : "bg-warning-soft text-warning"
           }`}
         >
           {live ? "● LIVE: real emails" : "● TEST: safe mode"}
         </span>
       </div>
 
-      {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-4 rounded-lg bg-danger-soft p-3 text-sm text-danger">{error}</p>}
 
       {state.lockedByEnv && (
         <div className="mt-4 flex items-start gap-2 rounded-lg bg-surface-2 p-3 text-sm text-muted">
@@ -97,7 +97,7 @@ export function SendingModeCard() {
           <p className="text-sm font-medium text-foreground">Before going live:</p>
           <ul className="mt-2 space-y-1.5 text-sm">
             {checklist.map((c) => (
-              <li key={c.label} className={`flex items-start gap-2 ${c.ok ? "text-foreground" : "text-amber-700"}`}>
+              <li key={c.label} className={`flex items-start gap-2 ${c.ok ? "text-foreground" : "text-warning"}`}>
                 <Icon name={c.ok ? "check" : "alert"} size={16} className="mt-0.5 shrink-0" aria-hidden /> {c.label}
               </li>
             ))}
@@ -131,7 +131,7 @@ export function SendingModeCard() {
                 <button
                   onClick={() => flip("LIVE")}
                   disabled={busy || confirmText !== "GO LIVE"}
-                  className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                  className="rounded-xl bg-danger px-5 py-2.5 text-sm font-semibold text-danger-contrast hover:brightness-95 disabled:opacity-50"
                 >
                   {busy ? "Switching…" : "Turn on real sending"}
                 </button>
@@ -150,7 +150,7 @@ export function SendingModeCard() {
         </div>
       ) : (
         <div className="mt-5">
-          <p className="rounded-lg bg-green-50 p-3 text-sm text-success">
+          <p className="rounded-lg bg-success-soft p-3 text-sm text-success">
             The team is sending real emails. New campaigns go to actual recipients.
           </p>
           <button

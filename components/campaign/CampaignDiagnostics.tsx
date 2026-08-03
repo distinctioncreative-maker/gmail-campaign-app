@@ -15,9 +15,9 @@ interface Diagnosis {
 }
 
 const MARK: Record<Check["status"], { icon: string; className: string }> = {
-  ok: { icon: "✓", className: "bg-green-100 text-green-700" },
-  warn: { icon: "!", className: "bg-amber-100 text-amber-700" },
-  fail: { icon: "✕", className: "bg-red-100 text-red-700" },
+  ok: { icon: "✓", className: "bg-success-soft text-success" },
+  warn: { icon: "!", className: "bg-warning-soft text-warning" },
+  fail: { icon: "✕", className: "bg-danger-soft text-danger" },
 };
 
 export function CampaignDiagnostics({ campaignId }: { campaignId: string }) {
@@ -60,17 +60,17 @@ export function CampaignDiagnostics({ campaignId }: { campaignId: string }) {
         </button>
       </div>
 
-      {error && <p className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-3 rounded-lg bg-danger-soft p-2 text-sm text-danger">{error}</p>}
 
       {open && data && (
         <div className="mt-4">
           <p
             className={`mb-3 rounded-lg p-2 text-sm font-medium ${
               data.overall === "ok"
-                ? "bg-green-50 text-green-700"
+                ? "bg-success-soft text-success"
                 : data.overall === "warn"
-                  ? "bg-amber-50 text-amber-700"
-                  : "bg-red-50 text-red-700"
+                  ? "bg-warning-soft text-warning"
+                  : "bg-danger-soft text-danger"
             }`}
           >
             {summary}

@@ -140,7 +140,7 @@ export function SequenceBuilder({
           }}
         />
       )}
-      {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="mb-4 rounded-lg bg-danger-soft p-3 text-sm text-danger">{error}</p>}
 
       <div className="card p-6">
         <label className="block text-sm font-medium text-foreground">
@@ -177,7 +177,7 @@ export function SequenceBuilder({
                 </label>
                 <button
                   onClick={() => setSteps((prev) => prev.filter((_, idx) => idx !== i))}
-                  className="text-xs text-red-600 hover:underline"
+                  className="text-xs text-danger hover:underline"
                 >
                   Remove
                 </button>

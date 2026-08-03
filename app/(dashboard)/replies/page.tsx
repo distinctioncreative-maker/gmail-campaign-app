@@ -12,6 +12,7 @@ import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import type { IconName } from "@/components/ui/Icon";
+import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 
 // Cap the recipient-level scan so the page stays fast even with many campaigns.
 const MAX_CAMPAIGNS_SCANNED = 60;
@@ -41,7 +42,7 @@ interface ReplyRow {
 
 /** How the triage chip reads and ranks. Interested floats to the top. */
 const INTENT_META: Record<ReplyIntent, { label: string; className: string; rank: number }> = {
-  INTERESTED: { label: "Interested", className: "bg-emerald-100 text-emerald-700", rank: 0 },
+  INTERESTED: { label: "Interested", className: "bg-success-soft text-success", rank: 0 },
   REPLIED: { label: "Needs reply", className: "bg-info-soft text-info", rank: 1 },
   NOT_INTERESTED: { label: "Not interested", className: "bg-surface-2 text-muted", rank: 2 },
 };
@@ -55,7 +56,9 @@ export default async function RepliesPage() {
   const ctx = await requireUser();
   const owner = ownerFromCtx(ctx);
 
-  const campaigns = (await listCampaigns(owner, 200))
+  const campaigns = campaignsIncludedInWorkspaceStats(
+    await listCampaigns(owner, 200)
+  )
     .filter((c) => c.sentCount > 0 || c.replyCount > 0)
     .slice(0, MAX_CAMPAIGNS_SCANNED);
   const lists = await Promise.all(

@@ -55,7 +55,7 @@ export function HomeHero({
           >
             <span aria-hidden className={`live-dot h-1.5 w-1.5 rounded-full ${pill.dot}`} />
             {pill.label}
-            {orgName && <span className="text-muted/70">· {orgName}</span>}
+            {orgName && <span className="text-muted">· {orgName}</span>}
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
             {greeting}, {firstName}.
@@ -84,7 +84,7 @@ export function HomeHero({
           style={{ background: "color-mix(in srgb, var(--surface) 65%, transparent)" }}
         >
           <div className="mb-2 flex items-center justify-between">
-            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted/70">
+            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted">
               Activity · 14 days
             </p>
             {isSendingNow ? (
@@ -156,7 +156,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
         <h2 className="font-medium">
           Get set up: {done} of {steps.length} done
         </h2>
-        <span className="text-xs font-medium text-muted/70">
+        <span className="text-xs font-medium text-muted">
           A few minutes to your first send
         </span>
       </div>
@@ -183,13 +183,13 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
               <span
                 aria-hidden
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                  s.done ? "bg-success text-white" : "border border-border text-muted/70"
+                  s.done ? "bg-success text-success-contrast" : "border border-border text-muted"
                 }`}
               >
                 {s.done ? "✓" : i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className={`text-sm font-medium ${s.done ? "text-muted/70 line-through" : ""}`}>
+                <p className={`text-sm font-medium ${s.done ? "text-muted line-through" : ""}`}>
                   {s.label}
                 </p>
                 {!s.done && <p className="text-xs text-muted">{s.desc}</p>}

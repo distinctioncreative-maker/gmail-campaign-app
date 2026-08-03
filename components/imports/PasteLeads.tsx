@@ -45,7 +45,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
   return (
     <div className="card p-6">
       {importSummary && (
-        <p className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{importSummary}</p>
+        <p className="mb-4 rounded-lg bg-success-soft p-3 text-sm text-success">{importSummary}</p>
       )}
 
       {!leads ? (
@@ -76,7 +76,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
           >
             {busy ? "Reading…" : "Preview leads"}
           </button>
-          {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          {error && <p className="mt-3 text-sm text-danger">{error}</p>}
         </>
       ) : (
         <LeadPreviewTable

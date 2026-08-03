@@ -41,6 +41,13 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
   const campaign = await getCampaign(owner, campaignId);
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
 
+  if (campaign.deletedAt !== null) {
+    return NextResponse.json(
+      { error: "Restore this campaign from Recently Deleted before launching it." },
+      { status: 400 }
+    );
+  }
+
   if (campaign.status !== "DRAFT" && campaign.status !== "READY") {
     return NextResponse.json(
       { error: "This campaign has already been started." },

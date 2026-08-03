@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { badgeFor, defaultSelection, type ClassifiedLead } from "./leadBadges";
+import { batchLeadImport } from "@/lib/leads/importBatching";
 
 export function LeadPreviewTable({
   leads,
@@ -21,6 +22,7 @@ export function LeadPreviewTable({
   const [selected, setSelected] = useState<Set<number>>(() => defaultSelection(leads));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ completed: number; total: number } | null>(null);
 
   function toggle(index: number, selectable: boolean) {
     if (!selectable) return;
@@ -37,26 +39,48 @@ export function LeadPreviewTable({
     setError(null);
     try {
       const chosen = leads.filter((l) => selected.has(l.index));
-      const res = await fetch("/api/leads/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          leads: chosen.map(
-            ({ classification: _c, lastCampaignName: _n, lastCampaignAt: _a, ...lead }) => lead
-          ),
-          ...(listId ? { listId } : {}),
-        }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Import failed.");
+      const prepared = chosen.map(
+        ({ classification: _c, lastCampaignName: _n, lastCampaignAt: _a, ...lead }) => lead
+      );
+      const batches = batchLeadImport(prepared);
+      const totals = {
+        imported: 0,
+        updated: 0,
+        skippedInvalid: 0,
+        optOuts: 0,
+        addedToList: 0,
+        alreadyInList: 0,
+        listName: null as string | null,
+      };
+      setProgress({ completed: 0, total: batches.length });
+      for (let index = 0; index < batches.length; index++) {
+        const res = await fetch("/api/leads/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            leads: batches[index],
+            ...(listId ? { listId } : {}),
+          }),
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.error ?? `Import batch ${index + 1} failed.`);
+        totals.imported += body.imported ?? 0;
+        totals.updated += body.updated ?? 0;
+        totals.skippedInvalid += body.skippedInvalid ?? 0;
+        totals.optOuts += body.optOuts ?? 0;
+        totals.addedToList += body.addedToList ?? 0;
+        totals.alreadyInList += body.alreadyInList ?? 0;
+        totals.listName = body.listName ?? totals.listName;
+        setProgress({ completed: index + 1, total: batches.length });
+      }
       onDone(
         listId
-          ? `Added ${body.addedToList} new lead${body.addedToList === 1 ? "" : "s"} to “${body.listName}”` +
-              (body.alreadyInList ? ` (${body.alreadyInList} already in the list)` : "") +
+          ? `Added ${totals.addedToList} new lead${totals.addedToList === 1 ? "" : "s"} to “${totals.listName}”` +
+              (totals.alreadyInList ? ` (${totals.alreadyInList} already in the list)` : "") +
               "."
-          : `Imported ${body.imported} new contact${body.imported === 1 ? "" : "s"}` +
-              (body.updated ? `, updated ${body.updated} existing` : "") +
-              (body.skippedInvalid ? `, skipped ${body.skippedInvalid} without a valid email` : "") +
+          : `Imported ${totals.imported} new contact${totals.imported === 1 ? "" : "s"}` +
+              (totals.updated ? `, updated ${totals.updated} existing` : "") +
+              (totals.skippedInvalid ? `, skipped ${totals.skippedInvalid} without a valid email` : "") +
               "."
       );
       router.refresh();
@@ -64,6 +88,7 @@ export function LeadPreviewTable({
       setError(err instanceof Error ? err.message : "Import failed.");
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -79,7 +104,7 @@ export function LeadPreviewTable({
       </div>
 
       {globalWarnings.map((w) => (
-        <p key={w} className="mt-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-700">
+        <p key={w} className="mt-2 rounded-lg bg-warning-soft p-2 text-xs text-warning">
           {w}
         </p>
       ))}
@@ -130,7 +155,7 @@ export function LeadPreviewTable({
         </table>
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-danger">{error}</p>}
 
       <button
         onClick={importSelected}
@@ -138,7 +163,9 @@ export function LeadPreviewTable({
         className="mt-5 btn-primary px-5 py-2.5"
       >
         {busy
-          ? "Importing…"
+          ? progress
+            ? `Importing batch ${Math.min(progress.completed + 1, progress.total)} of ${progress.total}…`
+            : "Preparing import…"
           : `Continue with ${selected.size} selected lead${selected.size === 1 ? "" : "s"}`}
       </button>
     </div>

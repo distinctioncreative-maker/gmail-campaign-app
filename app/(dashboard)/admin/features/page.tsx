@@ -8,8 +8,8 @@ import { FEATURE_CATEGORIES, countByStatus, type FeatureStatus } from "@/lib/fea
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
 const STATUS_BADGE: Record<FeatureStatus, { label: string; className: string }> = {
-  shipped: { label: "Shipped", className: "bg-green-50 text-green-700" },
-  beta: { label: "Beta", className: "bg-amber-50 text-amber-700" },
+  shipped: { label: "Shipped", className: "bg-success-soft text-success" },
+  beta: { label: "Beta", className: "bg-warning-soft text-warning" },
   planned: { label: "Planned", className: "bg-surface-2 text-muted" },
 };
 
@@ -67,7 +67,7 @@ export default async function FeaturesPage() {
                     </div>
                     <p className="text-sm text-muted">{f.description}</p>
                     {f.keyFiles?.length ? (
-                      <p className="font-mono text-xs text-muted/70">{f.keyFiles.join(" · ")}</p>
+                      <p className="font-mono text-xs text-muted">{f.keyFiles.join(" · ")}</p>
                     ) : null}
                   </li>
                 );

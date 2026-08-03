@@ -21,11 +21,14 @@ export interface CampaignRow {
   sent: number;
   replies: number;
   bounces: number;
+  unsubscribes: number;
   errors: number;
   progressRate: number;
   replyRate: number;
   updatedAt: number;
   archived: boolean;
+  archivedAt: number | null;
+  deletedAt: number | null;
 }
 
 const TERMINAL = ["DRAFT", "STOPPED", "CANCELLED", "COMPLETED", "ERROR"];
@@ -51,7 +54,13 @@ function belongsToView(campaign: CampaignRow, view: CampaignView): boolean {
   return ["STOPPED", "CANCELLED", "COMPLETED"].includes(campaign.status);
 }
 
-export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
+export function CampaignsTable({
+  campaigns,
+  lifecycleView,
+}: {
+  campaigns: CampaignRow[];
+  lifecycleView: "active" | "archived" | "deleted";
+}) {
   const router = useRouter();
   const toast = useToast();
   const confirm = useConfirm();
@@ -60,20 +69,56 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function removeCampaign(c: CampaignRow) {
+    const permanent = c.deletedAt !== null;
     const ok = await confirm({
-      title: "Delete this campaign?",
-      body: `“${c.name}” and its records will be permanently removed. This can't be undone.`,
+      title: permanent
+        ? "Delete this campaign forever?"
+        : "Move this campaign to Recently Deleted?",
+      body: permanent
+        ? `“${c.name}” and all recipient, message, event, and metric records will be permanently removed. This cannot be undone.`
+        : `“${c.name}” will stop contributing to workspace totals. Its metrics and history will remain recoverable in Recently Deleted.`,
       danger: true,
-      confirmLabel: "Delete",
+      confirmLabel: permanent ? "Delete forever" : "Move to Recently Deleted",
     });
     if (!ok) return;
     setBusyId(c.campaignId);
     try {
-      await fetchJson(`/api/campaigns/${c.campaignId}`, { method: "DELETE" });
-      toast("Campaign deleted.", "success");
+      await fetchJson(
+        `/api/campaigns/${c.campaignId}${permanent ? "?permanent=1" : ""}`,
+        { method: "DELETE" }
+      );
+      toast(
+        permanent
+          ? "Campaign permanently deleted."
+          : "Campaign moved to Recently Deleted.",
+        "success"
+      );
       router.refresh();
     } catch (err) {
       toast(err instanceof Error ? err.message : "Could not delete that campaign.", "error");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function restoreDeleted(c: CampaignRow) {
+    setBusyId(c.campaignId);
+    try {
+      const res = await fetchJson<{ message?: string }>(
+        `/api/campaigns/${c.campaignId}/control`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "restore_deleted" }),
+        }
+      );
+      toast(res.message ?? "Campaign restored.", "success");
+      router.refresh();
+    } catch (err) {
+      toast(
+        err instanceof Error ? err.message : "Could not restore that campaign.",
+        "error"
+      );
     } finally {
       setBusyId(null);
     }
@@ -115,8 +160,8 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
       progress: (c) => c.progressRate,
       sent: (c) => c.sent,
       replyRate: (c) => c.replyRate,
-      problems: (c) => c.errors + c.bounces,
-      updatedAt: (c) => c.updatedAt,
+      problems: (c) => c.errors + c.bounces + c.unsubscribes,
+      updatedAt: (c) => c.deletedAt ?? c.archivedAt ?? c.updatedAt,
     },
     { key: "updatedAt", dir: "desc" }
   );
@@ -126,7 +171,7 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
       <div className="border-b border-border p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="relative w-full max-w-sm">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted/70">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted">
               <Icon name="search" size={16} />
             </span>
             <input
@@ -166,7 +211,13 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
           </div>
         </div>
         <p className="mt-3 text-xs text-muted">
-          Showing {sorted.length} of {campaigns.length} campaigns
+          Showing {sorted.length} of {campaigns.length}{" "}
+          {lifecycleView === "deleted"
+            ? "deleted"
+            : lifecycleView === "archived"
+              ? "archived"
+              : "active"}{" "}
+          campaigns
         </p>
       </div>
       <div className="divide-y divide-border md:hidden">
@@ -185,9 +236,13 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                     {c.statusLabel}
                   </span>
                   <span className="text-xs text-muted">
-                    Updated{" "}
+                    {c.deletedAt !== null
+                      ? "Deleted"
+                      : c.archivedAt !== null
+                        ? "Archived"
+                        : "Updated"}{" "}
                     <LocalTime
-                      value={c.updatedAt}
+                      value={c.deletedAt ?? c.archivedAt ?? c.updatedAt}
                       options={{ dateStyle: "medium" }}
                     />
                   </span>
@@ -247,17 +302,25 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                 </dt>
                 <dd
                   className={`mt-1 text-sm font-semibold tabular-nums ${
-                    c.errors + c.bounces > 0 ? "text-amber-700" : ""
+                    c.errors + c.bounces + c.unsubscribes > 0 ? "text-warning" : ""
                   }`}
                 >
-                  {(c.errors + c.bounces).toLocaleString()}
+                  {(c.errors + c.bounces + c.unsubscribes).toLocaleString()}
                 </dd>
               </div>
             </dl>
 
-            {(TERMINAL.includes(c.status) || c.archived) && (
+            {(TERMINAL.includes(c.status) || c.archived || c.deletedAt !== null) && (
               <div className="mt-3 flex flex-wrap justify-end gap-2 border-t border-border pt-3">
-                {c.archived ? (
+                {c.deletedAt !== null ? (
+                  <button
+                    onClick={() => void restoreDeleted(c)}
+                    disabled={busyId === c.campaignId}
+                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-primary hover:bg-primary-soft disabled:opacity-40"
+                  >
+                    Restore
+                  </button>
+                ) : c.archived ? (
                   <button
                     onClick={() => void setArchived(c, false)}
                     disabled={busyId === c.campaignId}
@@ -280,10 +343,10 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                   <button
                     onClick={() => void removeCampaign(c)}
                     disabled={busyId === c.campaignId}
-                    className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-xs font-medium text-danger hover:bg-red-50 disabled:opacity-40"
+                    className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-40"
                   >
                     <Icon name="trash" size={16} />
-                    Delete
+                    {c.deletedAt !== null ? "Delete forever" : "Delete"}
                   </button>
                 )}
               </div>
@@ -311,7 +374,12 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
               <SortTh label="Sent" sortKey="sent" sort={sort} onToggle={toggle} />
               <SortTh label="Reply rate" sortKey="replyRate" sort={sort} onToggle={toggle} />
               <SortTh label="Problems" sortKey="problems" sort={sort} onToggle={toggle} />
-              <SortTh label="Updated" sortKey="updatedAt" sort={sort} onToggle={toggle} />
+              <SortTh
+                label={lifecycleView === "deleted" ? "Deleted" : lifecycleView === "archived" ? "Archived" : "Updated"}
+                sortKey="updatedAt"
+                sort={sort}
+                onToggle={toggle}
+              />
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -342,41 +410,57 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                       {c.progressRate.toFixed(0)}%
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-muted/70">
+                  <p className="mt-1 text-[11px] text-muted">
                     {Math.min(c.recipients, c.initialSent)} of {c.recipients}
                   </p>
                 </td>
                 <td className="px-4 py-3 tabular-nums">{c.sent.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <p className="font-medium tabular-nums">{c.replyRate.toFixed(1)}%</p>
-                  <p className="text-[11px] text-muted/70">
+                  <p className="text-[11px] text-muted">
                     {c.replies.toLocaleString()} repl{c.replies === 1 ? "y" : "ies"}
                   </p>
                 </td>
                 <td className="px-4 py-3">
-                  {c.errors > 0 || c.bounces > 0 ? (
+                  {c.errors > 0 || c.bounces > 0 || c.unsubscribes > 0 ? (
                     <div className="space-y-0.5 text-xs">
                       {c.errors > 0 ? (
-                        <p className="font-medium text-red-600">
+                        <p className="font-medium text-danger">
                           {c.errors} error{c.errors === 1 ? "" : "s"}
                         </p>
                       ) : null}
                       {c.bounces > 0 ? (
-                        <p className="text-amber-600">
+                        <p className="text-warning">
                           {c.bounces} bounce{c.bounces === 1 ? "" : "s"}
+                        </p>
+                      ) : null}
+                      {c.unsubscribes > 0 ? (
+                        <p className="text-muted">
+                          {c.unsubscribes} opt-out{c.unsubscribes === 1 ? "" : "s"}
                         </p>
                       ) : null}
                     </div>
                   ) : (
-                    <span className="text-xs text-muted/70">None</span>
+                    <span className="text-xs text-muted">None</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-muted">
-                  <LocalTime value={c.updatedAt} options={{ dateStyle: "medium" }} />
+                  <LocalTime
+                    value={c.deletedAt ?? c.archivedAt ?? c.updatedAt}
+                    options={{ dateStyle: "medium" }}
+                  />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    {c.archived ? (
+                    {c.deletedAt !== null ? (
+                      <button
+                        onClick={() => void restoreDeleted(c)}
+                        disabled={busyId === c.campaignId}
+                        className="rounded-lg px-2 py-1 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:opacity-40"
+                      >
+                        Restore
+                      </button>
+                    ) : c.archived ? (
                       <button
                         onClick={() => void setArchived(c, false)}
                         disabled={busyId === c.campaignId}
@@ -401,9 +485,9 @@ export function CampaignsTable({ campaigns }: { campaigns: CampaignRow[] }) {
                       <button
                         onClick={() => void removeCampaign(c)}
                         disabled={busyId === c.campaignId}
-                        aria-label={`Delete ${c.name}`}
-                        title="Delete"
-                        className="rounded-lg p-1.5 text-muted/70 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                        aria-label={`${c.deletedAt !== null ? "Delete forever" : "Delete"} ${c.name}`}
+                        title={c.deletedAt !== null ? "Delete forever" : "Move to Recently Deleted"}
+                        className="rounded-lg p-1.5 text-muted transition hover:bg-danger-soft hover:text-danger disabled:opacity-40"
                       >
                         <Icon name="trash" size={16} />
                       </button>

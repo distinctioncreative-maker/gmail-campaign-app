@@ -69,10 +69,15 @@ and one rationed revenue accent.
 | `--info` | `#456a8d` | Editorial blue. AI, informational states, system guidance. |
 | `--info-hover` | `#355674` | Stronger blue for interactive information. |
 | `--info-soft` | `#eaf1f7` | AI panels, informational badges, contextual guidance. |
-| `--revenue` | `#b07d2e` | Money only: pipeline, replies won, revenue |
-| `--success` | `#0e9f6e` | Positive state |
-| `--warning` | `#cc7a00` | Deliverability risk |
-| `--danger` | `#d94452` | Destructive, failure |
+| `--revenue` | `#99661c` | Money only: pipeline, replies won, revenue. 4.52:1 on paper. |
+| `--success` | `#087a55` | Positive state. 4.92:1 on paper. |
+| `--warning` | `#985700` | Deliverability risk. 5.22:1 on paper. |
+| `--danger` | `#cc3342` | Destructive, failure. 4.68:1 on paper. |
+
+Muted body copy always uses the full `--muted` token. Status and revenue
+colors are measured as normal-size text against both background and surface
+tokens in both themes. Solid fills use dedicated success, warning, and danger
+contrast tokens rather than assuming white text remains readable.
 
 ### Public marketing neutrals
 

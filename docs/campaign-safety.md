@@ -32,6 +32,16 @@ recipient, campaign counter, daily counter, and deterministic user
 suppression, then cancels remaining queued work. Repeated POST requests are
 idempotent.
 
+Real campaign messages also receive a visible signed unsubscribe link after
+open/click instrumentation is applied. That ordering is deliberate: neither
+the visible link nor its destination can be rewritten or counted by click
+tracking. The template editor's default-on Cadence compliance footer is an
+authoring convenience. A user may turn off that helper only when supplying an
+equivalent custom footer with `{{physical_address}}` and
+`{{unsubscribe_text}}`; launch still fails closed when either placeholder or
+the saved sender address is missing. There is no switch that disables the
+underlying address or opt-out requirement.
+
 ## Launch, quota, and delivery idempotency
 
 Deterministic key per intended message:
@@ -54,6 +64,11 @@ the worker re-verifies at execution time: campaign active, Gmail
 connected, recipient included/not suppressed/not replied/not
 bounced/not unsubscribed, queue item not complete, idempotency key
 unused, inside send window, daily cap and quota reserve respected.
+
+A soft-deleted campaign cannot launch, change settings, or run controls. Only
+terminal campaigns can enter Recently Deleted, where their metrics remain
+available for review or restoration. Permanent recursive deletion requires a
+second explicit action against an already soft-deleted campaign.
 
 ## Follow-ups and drafts
 

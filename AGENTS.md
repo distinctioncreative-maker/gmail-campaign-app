@@ -125,34 +125,19 @@ Use the semantic tokens instead, all registered in `app/globals.css`'s
 | `bg-slate-200` (and similar mid-tone fills, e.g. chart tracks) | `bg-border` |
 | `text-slate-700` / `800` / `900` | `text-foreground` |
 | `text-slate-500` / `600` | `text-muted` |
-| `text-slate-300` / `400` (faint hint text) | `text-muted/50` or `text-muted/70` |
+| `text-slate-300` / `400` (faint hint text) | `text-muted`; do not reduce text-token opacity below tested contrast |
 | `border-slate-*`, `divide-slate-*` | `border-border`, `divide-border` |
 
-Status tints (`bg-green-50`/`text-green-700`, `bg-red-100`, `bg-amber-50`,
-etc.) are a separate system — but only the shades actually listed in the
-dark-mode override table in `globals.css` are covered (currently the
-`*-50`/`*-100`/`*-700` shades of red/green/amber). **Darker shades like
-`text-red-800`, `border-red-200`/`border-amber-300`, etc. are NOT covered**
-and render washed out in dark mode — this bit several real components
-(toasts, the site-wide test-mode banner, danger-confirmation panels) before
-being caught in 2026-07. For a tinted panel (border + background), use the
+Status colors also use semantic tokens. For a tinted panel (border + background), use the
 `.alert-danger` / `.alert-success` / `.alert-warning` / `.alert-info` classes in
 `globals.css` instead of hand-picking Tailwind shades; for a solitary danger
 button, use `.btn-danger`; for standalone text/border color, use the
 Tailwind utilities `text-danger`/`text-success`/`text-warning`/
-`border-danger` etc. (auto-generated from the `--color-danger` /
-`--color-success` / `--color-warning` / `--color-info` tokens registered in `@theme inline` —
-these don't need a dark override since the token's hex value already has
-enough contrast on both a near-white and a near-black surface, the same way
-`.btn-danger` has always worked). A fully solid/opaque tint (e.g. a solid
-`bg-red-600` CTA with white text) doesn't need any of this — it's the same
-color in both themes by design, only semi-transparent/light tints on a
-variable surface are the risk. Deliberately theme-invariant elements (modal
-backdrops, always-dark tooltips) may keep `bg-slate-900` on purpose; that's
-not a bug.
+`border-danger` etc. Solid status fills must pair with their dedicated
+`*-contrast` token, such as `bg-danger text-danger-contrast`; do not assume
+white remains readable in the dark theme. Modal backdrops use `bg-overlay`
+and tooltips use `bg-foreground text-background`.
 
-If you introduce a genuinely new hardcoded slate/white class, either replace
-it with an existing token above, or extend `@theme inline` with a new token
-first — do not add another line to the dark-mode override list in
-`globals.css`; that list is a last-resort safety net, not where new styling
-should be added.
+If a new visual role is genuinely needed, extend the light and dark tokens,
+measure contrast, and add regression coverage. Do not add literal palette
+utilities or a compatibility override list.

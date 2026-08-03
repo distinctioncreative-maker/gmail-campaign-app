@@ -89,12 +89,12 @@ breakdown, and [docs/data-model.md](docs/data-model.md) for the Firestore schema
    then move to live keys.
 2. Google OAuth verification + CASA security assessment (required before
    `SIGNUP_MODE=open` for the general public).
-3. ToS / Privacy / DPA pages.
+3. Supply the operating entity, address, jurisdiction, retention schedule,
+   subprocessors, DPA, and counsel approval for the managed-pilot legal pages.
 4. Turn on error alerting (`ERROR_WEBHOOK_URL`) + an uptime monitor on
    `/api/health`.
-5. Generalize copy/onboarding beyond sales for the broader outreach
-   audience (founders, marketers, recruiters, agencies, fundraising,
-   partnerships, newsletters).
+5. Exercise the shipped workspace onboarding, custom-role mapping, team
+   hierarchy, guided tour, and dark/light contrast checks with pilot users.
 6. Later "compete" tier: multi-inbox rotation + inbox warmup, contact
    enrichment, LinkedIn/multichannel, SOC 2.
 

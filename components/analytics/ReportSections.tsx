@@ -215,7 +215,7 @@ export function TimeToReplyPanel({ ttr }: { ttr: ReportData["ttr"] }) {
               <span className="w-8 shrink-0 text-right tabular-nums text-muted">{count}</span>
             </div>
           ))}
-          <p className="pt-1 text-xs text-muted/70">
+          <p className="pt-1 text-xs text-muted">
             Average reply time: {formatDuration(ttr.averageMs)}.
           </p>
         </div>
@@ -278,7 +278,7 @@ export function TrackedEngagementPanel({
               </p>
             </div>
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-muted/70">
+          <p className="mt-3 text-xs leading-relaxed text-muted">
             Email clients can preload images, so an open detection is a directional signal rather
             than proof that a person read the message.
           </p>

@@ -114,7 +114,7 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
                 <span className="font-medium">{i.email}</span>{" "}
                 <span className="text-muted">· {i.role.toLowerCase().replace("_", " ")} · pending</span>
               </span>
-              <button onClick={() => void revoke(i.email)} className="text-xs font-medium text-red-600 hover:underline">
+              <button onClick={() => void revoke(i.email)} className="text-xs font-medium text-danger hover:underline">
                 Revoke
               </button>
             </li>

@@ -49,15 +49,19 @@ export default async function DashboardLayout({
   let displayName: string;
   let email: string;
   let role: string;
+  let roleLabel: string | null;
   let organizationId: string;
   let tenantType: TenantType;
+  let onboardingComplete: boolean;
   try {
     const ctx = await requireUser();
     displayName = ctx.user.displayName;
     email = ctx.email;
     role = ctx.role;
+    roleLabel = ctx.roleLabel;
     organizationId = ctx.organizationId;
     tenantType = ctx.tenantType;
+    onboardingComplete = ctx.user.onboardingStatus === "COMPLETE";
   } catch {
     // Send signed-out visitors (and brand-new users hitting a bookmarked
     // app URL) to the marketing site first, not straight to a bare login
@@ -91,6 +95,7 @@ export default async function DashboardLayout({
         displayName={displayName}
         email={email}
         role={role}
+        roleLabel={roleLabel}
         workspaceName={workspaceName}
       />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -101,7 +106,7 @@ export default async function DashboardLayout({
           <div className="flex min-w-0 items-center gap-2.5">
             <Wordmark />
             {workspaceName && (
-              <span className="max-w-[8rem] truncate border-l border-border pl-2.5 text-[11px] font-medium text-muted/70">
+              <span className="max-w-[8rem] truncate border-l border-border pl-2.5 text-[11px] font-medium text-muted">
                 {workspaceName}
               </span>
             )}
@@ -131,7 +136,7 @@ export default async function DashboardLayout({
           <div className="animate-rise">{children}</div>
         </main>
       </div>
-      <ProductTour />
+      <ProductTour autoStart={onboardingComplete} />
     </div>
     </UIProviders>
   );

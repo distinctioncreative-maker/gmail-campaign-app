@@ -25,7 +25,7 @@ export async function getTeam(organizationId: string, teamId: string): Promise<T
 
 export async function createTeam(
   organizationId: string,
-  input: { name: string; leadUserId: string | null }
+  input: { name: string; leadUserId: string | null; parentTeamId: string | null }
 ): Promise<Team> {
   const now = Date.now();
   const team: Team = TeamSchema.parse({
@@ -33,6 +33,7 @@ export async function createTeam(
     organizationId,
     name: input.name,
     leadUserId: input.leadUserId,
+    parentTeamId: input.parentTeamId,
     createdAt: now,
     updatedAt: now,
   });
@@ -43,7 +44,7 @@ export async function createTeam(
 export async function updateTeam(
   organizationId: string,
   teamId: string,
-  patch: Partial<Pick<Team, "name" | "leadUserId">>
+  patch: Partial<Pick<Team, "name" | "leadUserId" | "parentTeamId">>
 ): Promise<void> {
   await teamsRef(organizationId)
     .doc(teamId)
@@ -52,10 +53,18 @@ export async function updateTeam(
 
 /** Delete a team and unassign all of its members. */
 export async function deleteTeam(organizationId: string, teamId: string): Promise<void> {
-  const assigned = await membersRef(organizationId).where("teamId", "==", teamId).get();
+  const [team, assigned, children] = await Promise.all([
+    teamsRef(organizationId).doc(teamId).get(),
+    membersRef(organizationId).where("teamId", "==", teamId).get(),
+    teamsRef(organizationId).where("parentTeamId", "==", teamId).get(),
+  ]);
   const batch = firestore().batch();
   const now = Date.now();
   for (const doc of assigned.docs) batch.update(doc.ref, { teamId: null, updatedAt: now });
+  const parentTeamId = TeamSchema.parse(team.data()).parentTeamId;
+  for (const doc of children.docs) {
+    batch.update(doc.ref, { parentTeamId, updatedAt: now });
+  }
   batch.delete(teamsRef(organizationId).doc(teamId));
   await batch.commit();
 }

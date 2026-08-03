@@ -8,8 +8,9 @@ primary action color, supported by an editorial blue for AI and information.
 The warm neutral system sits between 32 and 36 degrees of hue. The current
 primary, `#5b47e0`, is a highly saturated 248-degree indigo. That temperature
 and saturation gap is why otherwise cohesive screens can still feel slightly
-disconnected. The gold `--revenue` token remains `#b07d2e` in every option and
-continues to be reserved for replies, interested leads, pipeline, and money.
+disconnected. The revenue lane remains reserved for replies, interested leads,
+pipeline, and money. Its implemented light value was darkened to `#99661c` on
+2026-08-03 so normal-size text reaches AA contrast on warm paper.
 
 ## Candidates
 
@@ -46,8 +47,9 @@ separate `--brand-contrast` token in each theme.
 
 Plum owns calls to action, focus, active navigation, selected controls, and
 primary chart data. Blue owns AI panels, informational badges, previously
-contacted states, and system guidance. Revenue gold remains unchanged and
-reserved for replies, pipeline, and money.
+contacted states, and system guidance. Revenue gold remains visually distinct
+and reserved for replies, pipeline, and money; its final token uses the
+contrast-corrected value documented above.
 
 ## Implementation record
 

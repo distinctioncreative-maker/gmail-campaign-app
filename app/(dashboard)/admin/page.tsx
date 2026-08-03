@@ -8,6 +8,7 @@ import { AiWritingCard } from "@/components/admin/AiWritingCard";
 import { InviteTeamCard } from "@/components/admin/InviteTeamCard";
 import { BillingCard } from "@/components/admin/BillingCard";
 import { WorkspaceNameCard } from "@/components/admin/WorkspaceNameCard";
+import { CustomRolesCard } from "@/components/admin/CustomRolesCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import Link from "next/link";
 
@@ -48,6 +49,9 @@ export default async function AdminPage() {
         <InviteTeamCard />
       </div>
       <div className="mt-6">
+        <CustomRolesCard roles={settings.customRoles} />
+      </div>
+      <div className="mt-6">
         <Link
           href="/admin/waitlist"
           className="card card-hover flex items-center justify-between p-6 no-underline"
@@ -58,7 +62,7 @@ export default async function AdminPage() {
               View and export everyone who signed up from the public landing page.
             </p>
           </div>
-          <span aria-hidden className="text-muted/70">→</span>
+          <span aria-hidden className="text-muted">→</span>
         </Link>
       </div>
       <div className="mt-6">
@@ -72,7 +76,7 @@ export default async function AdminPage() {
               What&apos;s shipped, in beta, or on the roadmap, kept accurate automatically.
             </p>
           </div>
-          <span aria-hidden className="text-muted/70">→</span>
+          <span aria-hidden className="text-muted">→</span>
         </Link>
       </div>
       <div className="mt-6">
@@ -82,9 +86,12 @@ export default async function AdminPage() {
             userId: m.userId,
             email: m.email,
             role: m.role,
+            customRoleId: m.customRoleId,
+            roleLabel: m.roleLabel,
             active: m.active,
           }))}
           settings={settings}
+          customRoles={settings.customRoles}
         />
       </div>
     </div>

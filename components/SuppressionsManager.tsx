@@ -121,9 +121,9 @@ export function SuppressionsManager({
   return (
     <div className="card p-6">
       {notice && (
-        <p className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>
+        <p className="mb-4 rounded-lg bg-success-soft p-3 text-sm text-success">{notice}</p>
       )}
-      {error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="mb-4 rounded-lg bg-danger-soft p-3 text-sm text-danger">{error}</p>}
 
       <div className="flex flex-wrap items-center gap-2">
         <input
@@ -210,7 +210,7 @@ export function SuppressionsManager({
                       <button
                         onClick={() => remove(r)}
                         disabled={busy}
-                        className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                        className="text-xs text-danger hover:underline disabled:opacity-50"
                       >
                         Remove
                       </button>

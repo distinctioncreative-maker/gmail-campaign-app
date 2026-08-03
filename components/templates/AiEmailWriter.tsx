@@ -285,7 +285,7 @@ export function AiEmailWriter({
                       >
                         Delete this brand
                       </button>
-                      <span className="text-[11px] text-muted/70">Applies to your whole team.</span>
+                      <span className="text-[11px] text-muted">Applies to your whole team.</span>
                     </div>
                   )}
                 </div>
@@ -329,7 +329,7 @@ export function AiEmailWriter({
             <button onClick={() => setOpen(false)} className="btn-ghost px-3 py-2 text-sm">
               Close
             </button>
-            <span className="text-xs text-muted/70">
+            <span className="text-xs text-muted">
               Uses {"{{firstName}}"}, {"{{businessName}}"}, {"{{signature}}"}.
             </span>
           </div>

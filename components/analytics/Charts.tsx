@@ -8,7 +8,7 @@ export function ReplyHeatmap({ grid }: { grid: number[][] }) {
   const max = Math.max(1, ...grid.flat());
   const total = grid.flat().reduce((a, b) => a + b, 0);
   if (total === 0) {
-    return <p className="text-sm text-muted/70">No replies in this period yet. The heatmap fills in as people reply.</p>;
+    return <p className="text-sm text-muted">No replies in this period yet. The heatmap fills in as people reply.</p>;
   }
   return (
     <div className="overflow-x-auto">
@@ -16,14 +16,14 @@ export function ReplyHeatmap({ grid }: { grid: number[][] }) {
         <div className="flex">
           <div className="w-9" />
           {Array.from({ length: 24 }, (_, h) => (
-            <div key={h} className="w-[13px] text-center text-[8px] text-muted/70">
+            <div key={h} className="w-[13px] text-center text-[8px] text-muted">
               {h % 6 === 0 ? h : ""}
             </div>
           ))}
         </div>
         {grid.map((row, d) => (
           <div key={d} className="flex items-center">
-            <div className="w-9 pr-1 text-right text-[10px] text-muted/70">{WEEKDAYS[d]}</div>
+            <div className="w-9 pr-1 text-right text-[10px] text-muted">{WEEKDAYS[d]}</div>
             {row.map((count, h) => {
               const intensity = count / max;
               return (
@@ -86,7 +86,7 @@ export function TrendChart({ rows }: { rows: Array<{ day: string; sent: number; 
   const totalSent = rows.reduce((a, r) => a + r.sent, 0);
   const totalReplied = rows.reduce((a, r) => a + r.replied, 0);
   if (totalSent === 0) {
-    return <p className="text-sm text-muted/70">No sends in this period yet.</p>;
+    return <p className="text-sm text-muted">No sends in this period yet.</p>;
   }
 
   const maxSent = Math.max(1, ...rows.map((r) => r.sent));
@@ -211,7 +211,7 @@ export function BestSendTimes({
   rows: Array<{ hour: number; sent: number; replied: number; rate: number }>;
 }) {
   if (rows.length === 0) {
-    return <p className="text-sm text-muted/70">Send some emails to see which hours reply best.</p>;
+    return <p className="text-sm text-muted">Send some emails to see which hours reply best.</p>;
   }
   const maxRate = Math.max(1, ...rows.map((r) => r.rate));
   const fmtHour = (h: number) => `${((h + 11) % 12) + 1}${h < 12 ? "a" : "p"}`;
@@ -219,7 +219,7 @@ export function BestSendTimes({
     <div className="space-y-1.5">
       {rows.map((r) => (
         <div key={r.hour} className="flex items-center gap-2 text-xs">
-          <span className="w-8 shrink-0 text-right text-muted/70">{fmtHour(r.hour)}</span>
+          <span className="w-8 shrink-0 text-right text-muted">{fmtHour(r.hour)}</span>
           <div className="h-3 flex-1 overflow-hidden rounded-full bg-border">
             <div className="h-full rounded-full brand-gradient" style={{ width: `${(r.rate / maxRate) * 100}%` }} />
           </div>

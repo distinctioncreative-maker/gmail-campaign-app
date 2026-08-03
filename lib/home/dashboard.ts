@@ -15,6 +15,7 @@ import { getOrganization } from "@/lib/repositories/orgSettings";
 import { currentDayKey } from "@/lib/scheduling/window";
 import { buildBriefing, type Briefing } from "@/lib/home/briefing";
 import { totalSent, replyRateForCampaign } from "@/lib/analytics/metrics";
+import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 import type { AuthContext } from "@/lib/auth/requireUser";
 import type { Campaign } from "@/schemas/campaign";
 
@@ -169,10 +170,11 @@ export async function loadHome(ctx: AuthContext, range: HomeRangeKey): Promise<H
       listTemplates(ctx),
     ]);
 
+  const visibleCampaigns = campaignsIncludedInWorkspaceStats(campaigns);
   const gmailConnected = connection?.status === "CONNECTED";
-  const activeCampaigns = campaigns.filter((c) => c.status === "ACTIVE");
+  const activeCampaigns = visibleCampaigns.filter((c) => c.status === "ACTIVE");
 
-  const sum = (pick: (c: Campaign) => number) => campaigns.reduce((n, c) => n + pick(c), 0);
+  const sum = (pick: (c: Campaign) => number) => visibleCampaigns.reduce((n, c) => n + pick(c), 0);
   const totals = {
     sent: sum(totalSent),
     replies: sum((c) => c.replyCount),
@@ -190,12 +192,12 @@ export async function loadHome(ctx: AuthContext, range: HomeRangeKey): Promise<H
     gmailConnected,
     totalLeads,
     templateCount: templates.length,
-    hasLaunched: hasEverLaunched(campaigns),
+    hasLaunched: hasEverLaunched(visibleCampaigns),
   });
 
   return {
     gmailConnected,
-    campaigns,
+    campaigns: visibleCampaigns,
     activeCampaigns,
     orgName: org?.name ?? null,
     briefing: buildBriefing({
@@ -205,7 +207,7 @@ export async function loadHome(ctx: AuthContext, range: HomeRangeKey): Promise<H
       repliesThisWeek,
       sentThisWeek,
       totalLeads,
-      hasCampaigns: campaigns.length > 0,
+      hasCampaigns: visibleCampaigns.length > 0,
     }),
     activity,
     setupSteps,
@@ -215,7 +217,7 @@ export async function loadHome(ctx: AuthContext, range: HomeRangeKey): Promise<H
       week: { sent: sentThisWeek, replies: repliesThisWeek },
       all: { sent: totals.sent, replies: totals.replies },
     }),
-    best: bestCampaign(campaigns),
+    best: bestCampaign(visibleCampaigns),
     totals,
     bounceRate: totals.sent > 0 ? (totals.bounces / totals.sent) * 100 : 0,
     sentToday,

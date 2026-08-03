@@ -78,7 +78,7 @@ export function StatTile({
       </p>
       {hint && <p className="mt-2 text-xs leading-5 text-muted">{hint}</p>}
       {href && (
-        <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted/70 opacity-0 transition-[opacity,color] duration-[--dur-base] group-hover:text-primary group-hover:opacity-100">
+        <span className="mt-2 flex items-center gap-1 text-xs font-medium text-muted opacity-0 transition-[opacity,color] duration-[--dur-base] group-hover:text-primary group-hover:opacity-100">
           View
           <span aria-hidden className="transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:translate-x-0.5">
             →

@@ -14,6 +14,7 @@ import {
   type LeadListOption,
   type OrganizeLeadAction,
 } from "@/components/leads/BulkLeadOrganizer";
+import { LocalTime } from "@/components/LocalTime";
 
 export interface ContactRow {
   contactId: string;
@@ -30,6 +31,7 @@ export interface ContactRow {
   lastCampaignAt: number | null;
   tags: string[];
   listIds: string[];
+  createdAt: number;
 }
 
 type Filter = "all" | "ready" | "contacted" | "replied" | "excluded";
@@ -111,7 +113,7 @@ export function ContactsTable({
 
   const { sorted, sort, toggle } = useSort<
     ContactRow,
-    "name" | "business" | "email" | "phone" | "engagement" | "status"
+    "name" | "business" | "email" | "phone" | "engagement" | "status" | "added"
   >(
     visible,
     {
@@ -121,6 +123,7 @@ export function ContactsTable({
       phone: (c) => c.phone,
       engagement: (c) => c.replyCount * 1000 + c.emailsSentCount,
       status: (c) => statusRank(c),
+      added: (c) => c.createdAt,
     },
     { key: "name", dir: "asc" }
   );
@@ -205,7 +208,7 @@ export function ContactsTable({
     <div>
       <div className="card grid gap-3 p-3 xl:grid-cols-[minmax(16rem,1fr)_auto] xl:items-end">
         <div className="relative w-full">
-          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted/70">
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted">
             <Icon name="search" size={16} />
           </span>
           <input
@@ -261,7 +264,7 @@ export function ContactsTable({
             </select>
           </label>
           <div className="flex min-h-11 items-center justify-between gap-2 self-end sm:col-span-2 xl:col-span-1 xl:justify-end">
-            <p className="text-xs text-muted" aria-live="polite">{sorted.length} shown</p>
+            <p className="text-xs text-muted" aria-live="polite">{sorted.length} shown on this page</p>
             {filtersActive ? (
               <button
                 type="button"
@@ -350,8 +353,11 @@ export function ContactsTable({
                       </span>
                     )}
                   </div>
+                  <p className="mt-1.5 text-xs text-muted">
+                    Added <LocalTime value={c.createdAt} options={{ dateStyle: "medium" }} />
+                  </p>
                 </Link>
-                <span aria-hidden className="mt-1 text-muted/50">›</span>
+                <span aria-hidden className="mt-1 text-muted">›</span>
               </li>
             );
           })}
@@ -378,6 +384,7 @@ export function ContactsTable({
                 <SortTh label="Phone" sortKey="phone" sort={sort} onToggle={toggle} />
                 <SortTh label="Engagement" sortKey="engagement" sort={sort} onToggle={toggle} />
                 <SortTh label="Status" sortKey="status" sort={sort} onToggle={toggle} />
+                <SortTh label="Date added" sortKey="added" sort={sort} onToggle={toggle} />
               </tr>
             </thead>
             <tbody>
@@ -408,7 +415,7 @@ export function ContactsTable({
                   <td className="px-4 py-3 text-muted">{c.phone}</td>
                   <td className="px-4 py-3 text-xs text-muted">
                     {c.emailsSentCount === 0 && c.campaignCount === 0 ? (
-                      <span className="text-muted/70">No activity</span>
+                      <span className="text-muted">No activity</span>
                     ) : (
                       <span className="tabular-nums">
                         {c.emailsSentCount} sent
@@ -427,6 +434,9 @@ export function ContactsTable({
                         </span>
                       );
                     })()}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-xs text-muted">
+                    <LocalTime value={c.createdAt} options={{ dateStyle: "medium" }} />
                   </td>
                 </tr>
               ))}

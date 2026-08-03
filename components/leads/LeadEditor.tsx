@@ -189,7 +189,7 @@ export function LeadEditor({
           placeholder="Call notes, context, next steps…"
         />
       </label>
-      <p className="mt-2 text-xs text-muted/70">
+      <p className="mt-2 text-xs text-muted">
         The email address can&apos;t be changed: it identifies this lead across imports and campaigns.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">

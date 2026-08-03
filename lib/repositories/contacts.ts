@@ -1,6 +1,6 @@
 import "server-only";
 import crypto from "node:crypto";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldPath, FieldValue } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
 import { ContactSchema, type Contact } from "@/schemas/contact";
 import type { Scope } from "@/lib/repositories/scope";
@@ -21,6 +21,7 @@ import {
   removeContactTag,
   sameContactTags,
 } from "@/lib/leads/tags";
+import type { ContactCursor } from "@/lib/leads/contactPagination";
 
 /**
  * All contact access is scoped by the verified AuthContext. The owner's
@@ -57,6 +58,33 @@ export async function listContacts(
     .limit(opts.limit ?? 200)
     .get();
   return snap.docs.map((d) => ContactSchema.parse(d.data()));
+}
+
+/** Stable, bounded directory page. The cursor combines createdAt with the
+ * document ID so contacts created in the same millisecond cannot be skipped. */
+export async function listContactsPage(
+  ctx: Scope,
+  options: { pageSize: number; cursor?: ContactCursor | null; listId?: string }
+): Promise<{ contacts: Contact[]; nextCursor: ContactCursor | null }> {
+  let query: FirebaseFirestore.Query = options.listId
+    ? contactsRef(ctx).where("listIds", "array-contains", options.listId)
+    : contactsRef(ctx);
+  query = query
+    .orderBy("createdAt", "desc")
+    .orderBy(FieldPath.documentId(), "desc");
+  if (options.cursor) {
+    query = query.startAfter(options.cursor.createdAt, options.cursor.contactId);
+  }
+
+  const snap = await query.limit(options.pageSize + 1).get();
+  const pageDocs = snap.docs.slice(0, options.pageSize);
+  const contacts = pageDocs.map((doc) => ContactSchema.parse(doc.data()));
+  const last = pageDocs.at(-1);
+  const nextCursor =
+    snap.size > options.pageSize && last
+      ? { createdAt: ContactSchema.parse(last.data()).createdAt, contactId: last.id }
+      : null;
+  return { contacts, nextCursor };
 }
 
 export async function getContact(

@@ -35,7 +35,7 @@ export function ImportChooser({ listId }: { listId?: string }) {
         className="card card-hover p-6 text-left"
       >
         <ImportIcon name="download" />
-        <p className="mt-2 font-medium">Upload CSV <span className="align-middle text-[10px] font-semibold uppercase tracking-wide text-green-600">Recommended</span></p>
+        <p className="mt-2 font-medium">Upload CSV <span className="align-middle text-[10px] font-semibold uppercase tracking-wide text-success">Recommended</span></p>
         <p className="mt-1 text-sm text-muted">
           Export from Salesforce as CSV and drop it here: the most reliable, keeps every column
         </p>

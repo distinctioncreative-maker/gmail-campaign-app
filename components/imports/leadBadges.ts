@@ -7,16 +7,16 @@ export type ClassifiedLead = ParsedLead & {
 };
 
 export const BADGES: Record<string, { label: string; className: string; selectable: boolean }> = {
-  NEW: { label: "Ready", className: "bg-green-100 text-green-700", selectable: true },
-  EXISTING_NOT_CONTACTED: { label: "Ready", className: "bg-green-100 text-green-700", selectable: true },
+  NEW: { label: "Ready", className: "bg-success-soft text-success", selectable: true },
+  EXISTING_NOT_CONTACTED: { label: "Ready", className: "bg-success-soft text-success", selectable: true },
   CONTACTED_BEFORE: { label: "Used before", className: "bg-info-soft text-info", selectable: true },
   REPLIED_BEFORE: { label: "Replied before", className: "bg-info-soft text-info", selectable: true },
-  INVALID: { label: "Missing email", className: "bg-red-100 text-red-700", selectable: false },
-  EMAIL_OPT_OUT: { label: "Opted out", className: "bg-amber-100 text-amber-700", selectable: false },
-  UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-amber-100 text-amber-700", selectable: false },
-  BOUNCED: { label: "Bounced before", className: "bg-amber-100 text-amber-700", selectable: false },
-  SUPPRESSED: { label: "Excluded for safety", className: "bg-amber-100 text-amber-700", selectable: false },
-  TEAM_COLLISION: { label: "Teammate contacted", className: "bg-amber-100 text-amber-700", selectable: false },
+  INVALID: { label: "Missing email", className: "bg-danger-soft text-danger", selectable: false },
+  EMAIL_OPT_OUT: { label: "Opted out", className: "bg-warning-soft text-warning", selectable: false },
+  UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-warning-soft text-warning", selectable: false },
+  BOUNCED: { label: "Bounced before", className: "bg-warning-soft text-warning", selectable: false },
+  SUPPRESSED: { label: "Excluded for safety", className: "bg-warning-soft text-warning", selectable: false },
+  TEAM_COLLISION: { label: "Teammate contacted", className: "bg-warning-soft text-warning", selectable: false },
 };
 
 export function badgeFor(classification: string) {

@@ -9,9 +9,10 @@ import { addSuppression } from "@/lib/repositories/suppressions";
 import { getLeadList, bumpLeadListCount } from "@/lib/repositories/leadLists";
 import { normalizeEmail } from "@/lib/parser/normalize";
 import { firestore } from "@/lib/firebase/admin";
+import { LEAD_IMPORT_BATCH_SIZE } from "@/lib/leads/importBatching";
 
 const ImportRequestSchema = z.object({
-  leads: z.array(ParsedLeadSchema).min(1).max(2000),
+  leads: z.array(ParsedLeadSchema).min(1).max(LEAD_IMPORT_BATCH_SIZE),
   listId: z.string().min(1).optional(),
 });
 

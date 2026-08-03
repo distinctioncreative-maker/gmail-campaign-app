@@ -65,7 +65,7 @@ export default async function ReportsPage({
     <div>
       <PageHeader
         title="Reports"
-        description="Campaign-level performance, reliable reply outcomes, and timing signals in one decision-ready view. Open and click data appears only for campaigns where tracking was enabled."
+        description="Campaign-level performance, reliable reply outcomes, and timing signals in one decision-ready view. Recently deleted campaigns stay recoverable but are excluded from these totals."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <ScanRepliesButton />

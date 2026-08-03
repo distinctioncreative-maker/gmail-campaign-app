@@ -1,5 +1,6 @@
 import "server-only";
 import { listCampaigns } from "@/lib/repositories/campaigns";
+import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 
 export interface RepStats {
   userId: string;
@@ -15,7 +16,9 @@ export interface RepStats {
 /** Roll one rep's campaign counters into leaderboard stats. Uses the cheap
  * per-campaign counters: no recipient-level reads. */
 export async function statsForRep(organizationId: string, userId: string): Promise<RepStats> {
-  const campaigns = await listCampaigns({ userId, organizationId }, 200);
+  const campaigns = campaignsIncludedInWorkspaceStats(
+    await listCampaigns({ userId, organizationId }, 200)
+  );
   let sent = 0;
   let replies = 0;
   let bounces = 0;

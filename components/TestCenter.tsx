@@ -71,8 +71,8 @@ type Status = "idle" | "running" | "pass" | "fail";
 const STATUS_PRESENTATION: Record<Status, { label: string; icon: IconName; className: string }> = {
   idle: { label: "Not run", icon: "pause", className: "bg-surface-2 text-muted" },
   running: { label: "Running", icon: "hourglass", className: "bg-primary-soft text-primary" },
-  pass: { label: "Passed", icon: "check", className: "bg-green-100 text-green-700" },
-  fail: { label: "Failed", icon: "alert", className: "bg-red-100 text-red-700" },
+  pass: { label: "Passed", icon: "check", className: "bg-success-soft text-success" },
+  fail: { label: "Failed", icon: "alert", className: "bg-danger-soft text-danger" },
 };
 
 export function TestCenter() {
@@ -136,7 +136,7 @@ export function TestCenter() {
               {detail[c.id] && (
                 <p
                   className={`mt-2 rounded-lg p-2 text-xs ${
-                    st === "fail" ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
+                    st === "fail" ? "bg-danger-soft text-danger" : "bg-success-soft text-success"
                   }`}
                 >
                   {detail[c.id]}

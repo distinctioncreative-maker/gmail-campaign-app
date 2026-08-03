@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
-import { listMembers, setMemberActive, setMemberRole } from "@/lib/repositories/orgSettings";
-import { getOrgSettings } from "@/lib/repositories/orgSettings";
-import { RoleSchema } from "@/schemas/common";
+import { getOrgSettings, listMembers, setMemberAccess, setMemberActive } from "@/lib/repositories/orgSettings";
 import { purchasedSeatLimit } from "@/lib/billing/plans";
 
 export const GET = handleApiErrors(async () => {
@@ -14,16 +12,34 @@ export const GET = handleApiErrors(async () => {
 
 const PatchSchema = z.object({
   userId: z.string().min(1),
-  role: RoleSchema.optional(),
+  accessRoleId: z.string().min(1).max(120).optional(),
   active: z.boolean().optional(),
 });
 
 export const PATCH = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireRole("ADMIN");
-  const { userId, role, active } = PatchSchema.parse(await req.json());
+  const { userId, accessRoleId, active } = PatchSchema.parse(await req.json());
+
+  const settings = await getOrgSettings(ctx.organizationId);
+  const builtInRole = accessRoleId?.startsWith("builtin:")
+    ? accessRoleId.slice("builtin:".length)
+    : null;
+  const customRole = accessRoleId?.startsWith("custom:")
+    ? settings.customRoles.find((role) => role.id === accessRoleId.slice("custom:".length)) ?? null
+    : null;
+  const resolvedRole =
+    builtInRole === "SALES_REP" || builtInRole === "MANAGER" || builtInRole === "ADMIN"
+      ? builtInRole
+      : customRole?.baseRole;
+  if (accessRoleId && !resolvedRole) {
+    return NextResponse.json({ error: "Choose a valid workspace role." }, { status: 400 });
+  }
 
   // Guard against an admin locking themselves out entirely.
-  if (userId === ctx.userId && (role === "SALES_REP" || active === false)) {
+  if (
+    userId === ctx.userId &&
+    ((resolvedRole !== undefined && resolvedRole !== "ADMIN") || active === false)
+  ) {
     return NextResponse.json(
       { error: "You can't remove your own admin access here." },
       { status: 400 }
@@ -31,7 +47,6 @@ export const PATCH = handleApiErrors(async (req: NextRequest) => {
   }
 
   if (active !== undefined) {
-    const settings = await getOrgSettings(ctx.organizationId);
     const result = await setMemberActive(
       ctx.organizationId,
       userId,
@@ -48,6 +63,8 @@ export const PATCH = handleApiErrors(async (req: NextRequest) => {
       );
     }
   }
-  if (role) await setMemberRole(ctx.organizationId, userId, role);
+  if (resolvedRole) {
+    await setMemberAccess(ctx.organizationId, userId, resolvedRole, customRole);
+  }
   return NextResponse.json({ ok: true });
 });

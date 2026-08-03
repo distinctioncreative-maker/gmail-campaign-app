@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { CustomRoleDefinition } from "@/schemas/user";
 
 interface MemberRow {
   userId: string;
   email: string;
   role: string;
+  customRoleId: string | null;
+  roleLabel: string | null;
   active: boolean;
 }
 
@@ -20,17 +23,19 @@ export function AdminPanel({
   currentUserId,
   members,
   settings: initialSettings,
+  customRoles,
 }: {
   currentUserId: string;
   members: MemberRow[];
   settings: Settings;
+  customRoles: CustomRoleDefinition[];
 }) {
   const router = useRouter();
   const [settings, setSettings] = useState(initialSettings);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  async function updateMember(userId: string, patch: { role?: string; active?: boolean }) {
+  async function updateMember(userId: string, patch: { accessRoleId?: string; active?: boolean }) {
     setBusy(true);
     const res = await fetch("/api/admin/members", {
       method: "PATCH",
@@ -81,24 +86,35 @@ export function AdminPanel({
                   <td className="px-3 py-2 font-medium">{m.email}</td>
                   <td className="px-3 py-2">
                     <select
-                      value={m.role}
+                      value={m.customRoleId ? `custom:${m.customRoleId}` : `builtin:${m.role}`}
                       disabled={busy || m.userId === currentUserId}
-                      onChange={(e) => updateMember(m.userId, { role: e.target.value })}
+                      onChange={(e) => updateMember(m.userId, { accessRoleId: e.target.value })}
                       className={input}
                     >
-                      <option value="SALES_REP">Sales rep</option>
-                      <option value="MANAGER">Team Lead</option>
-                      <option value="ADMIN">Admin</option>
+                      <optgroup label="Built-in access">
+                        <option value="builtin:SALES_REP">Member</option>
+                        <option value="builtin:MANAGER">Manager</option>
+                        <option value="builtin:ADMIN">Administrator</option>
+                      </optgroup>
+                      {customRoles.length > 0 && (
+                        <optgroup label="Custom roles">
+                          {customRoles.map((role) => (
+                            <option key={role.id} value={`custom:${role.id}`}>
+                              {role.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </td>
                   <td className="px-3 py-2">
                     {m.userId === currentUserId ? (
-                      <span className="text-xs text-muted/70">You</span>
+                      <span className="text-xs text-muted">You</span>
                     ) : (
                       <button
                         onClick={() => updateMember(m.userId, { active: !m.active })}
                         disabled={busy}
-                        className={`text-xs hover:underline ${m.active ? "text-red-600" : "text-green-600"}`}
+                        className={`text-xs hover:underline ${m.active ? "text-danger" : "text-success"}`}
                       >
                         {m.active ? "Disable" : "Enable"}
                       </button>

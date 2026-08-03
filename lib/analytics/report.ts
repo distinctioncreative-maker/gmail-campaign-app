@@ -17,6 +17,7 @@ import {
   type OpenClickRates,
 } from "@/lib/analytics/metrics";
 import type { Campaign } from "@/schemas/campaign";
+import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 
 /**
  * Everything the Reports page renders, assembled in one place.
@@ -154,7 +155,9 @@ export async function loadReport(
   timezone: string,
   opts: { campaignId: string; rangeDays: RangeDays }
 ): Promise<ReportData> {
-  const allCampaigns = await listCampaigns(owner, 200);
+  const allCampaigns = campaignsIncludedInWorkspaceStats(
+    await listCampaigns(owner, 200)
+  );
   const selectedCampaign = allCampaigns.find((c) => c.campaignId === opts.campaignId) ?? null;
   const scopeCampaigns = selectedCampaign ? [selectedCampaign] : allCampaigns;
 

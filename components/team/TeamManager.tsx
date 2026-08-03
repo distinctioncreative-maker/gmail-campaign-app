@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
+import { orderTeamsByHierarchy } from "@/lib/teams/hierarchy";
 
 export interface MemberOption {
   userId: string;
@@ -20,7 +21,12 @@ export function TeamManager({
   teams,
   members,
 }: {
-  teams: Array<{ teamId: string; name: string; leadUserId: string | null }>;
+  teams: Array<{
+    teamId: string;
+    name: string;
+    leadUserId: string | null;
+    parentTeamId: string | null;
+  }>;
   members: MemberOption[];
 }) {
   const router = useRouter();
@@ -29,6 +35,7 @@ export function TeamManager({
   const [busy, setBusy] = useState(false);
   const [newName, setNewName] = useState("");
   const [newLead, setNewLead] = useState("");
+  const [newParent, setNewParent] = useState("");
 
   const leadCandidates = members.filter((m) => m.role === "MANAGER" || m.role === "ADMIN");
 
@@ -53,11 +60,16 @@ export function TeamManager({
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName.trim(), leadUserId: newLead || null }),
+        body: JSON.stringify({
+          name: newName.trim(),
+          leadUserId: newLead || null,
+          parentTeamId: newParent || null,
+        }),
       },
       () => {
         setNewName("");
         setNewLead("");
+        setNewParent("");
       }
     );
   }
@@ -67,6 +79,14 @@ export function TeamManager({
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ leadUserId: leadUserId || null }),
+    });
+  }
+
+  function setParent(teamId: string, parentTeamId: string) {
+    void call(`/api/teams/${teamId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ parentTeamId: parentTeamId || null }),
     });
   }
 
@@ -84,14 +104,34 @@ export function TeamManager({
     <div className="card p-5">
       <h2 className="font-medium">Teams</h2>
       <p className="mt-1 text-xs text-muted">
-        Create teams and pick each Team Lead. Leads add or remove their own reps below.
+        Build your organization chart, choose each team&apos;s manager, and place members below.
+        Managers inherit visibility and roster control for descendant teams.
       </p>
 
       {teams.length > 0 && (
         <div className="mt-4 space-y-2">
-          {teams.map((t) => (
+          {orderTeamsByHierarchy(teams).map(({ team: t, depth }) => (
             <div key={t.teamId} className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-2 p-2.5">
-              <span className="flex-1 text-sm font-medium">{t.name}</span>
+              <span className="min-w-40 flex-1 text-sm font-medium" style={{ paddingLeft: `${depth * 18}px` }}>
+                {depth > 0 && <span aria-hidden className="mr-2 text-muted">↳</span>}
+                {t.name}
+              </span>
+              <label className="flex items-center gap-1.5 text-xs text-muted">
+                Reports under
+                <select
+                  value={t.parentTeamId ?? ""}
+                  onChange={(e) => setParent(t.teamId, e.target.value)}
+                  disabled={busy}
+                  className={field}
+                >
+                  <option value="">Top level</option>
+                  {teams.filter((candidate) => candidate.teamId !== t.teamId).map((candidate) => (
+                    <option key={candidate.teamId} value={candidate.teamId}>
+                      {candidate.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label className="flex items-center gap-1.5 text-xs text-muted">
                 Lead
                 <select
@@ -111,7 +151,7 @@ export function TeamManager({
               <button
                 onClick={() => void removeTeam(t.teamId, t.name)}
                 disabled={busy}
-                className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                className="text-xs font-medium text-danger hover:underline disabled:opacity-50"
               >
                 Delete
               </button>
@@ -135,12 +175,20 @@ export function TeamManager({
             </option>
           ))}
         </select>
+        <select value={newParent} onChange={(e) => setNewParent(e.target.value)} className={field}>
+          <option value="">Top-level team</option>
+          {teams.map((team) => (
+            <option key={team.teamId} value={team.teamId}>
+              Under {team.name}
+            </option>
+          ))}
+        </select>
         <button onClick={createTeam} disabled={busy || !newName.trim()} className="btn-primary px-4 py-2 text-sm">
           Create team
         </button>
       </div>
-      <p className="mt-2 text-xs text-muted/70">
-        Team Leads need the Manager role: set roles in Administration.
+      <p className="mt-2 text-xs text-muted">
+        Team managers need Manager or Administrator access. Custom role names can map to either level in Administration.
       </p>
     </div>
   );
@@ -239,7 +287,7 @@ export function RemoveFromTeamButton({
     <button
       onClick={() => void remove()}
       disabled={busy}
-      className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+      className="text-xs font-medium text-danger hover:underline disabled:opacity-50"
     >
       Remove
     </button>

@@ -75,7 +75,7 @@ export function LeadListHeaderActions({ listId, name }: { listId: string; name: 
   return (
     <div className="flex items-center gap-2">
       <button onClick={() => setEditing(true)} className="btn-secondary px-4 py-2 text-sm">Rename</button>
-      <button onClick={() => void remove()} disabled={busy} className="btn-ghost px-4 py-2 text-sm text-red-600">Delete</button>
+      <button onClick={() => void remove()} disabled={busy} className="btn-ghost px-4 py-2 text-sm text-danger">Delete</button>
     </div>
   );
 }

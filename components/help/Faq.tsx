@@ -122,7 +122,7 @@ export function Faq({ query = "" }: { query?: string }) {
             {section.items.map((item) => (
               <details key={item.q} className="group p-4" open={q ? true : undefined}>
                 <summary className="flex cursor-pointer list-none items-start gap-2 font-medium text-foreground marker:content-none">
-                  <span className="mt-0.5 text-muted/70 transition group-open:rotate-45">＋</span>
+                  <span className="mt-0.5 text-muted transition group-open:rotate-45">＋</span>
                   <span>{item.q}</span>
                 </summary>
                 <p className="mt-2 pl-6 text-sm leading-relaxed text-muted">{item.a}</p>
