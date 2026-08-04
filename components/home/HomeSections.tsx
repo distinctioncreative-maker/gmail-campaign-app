@@ -162,7 +162,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
       </div>
       <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
         <div
-          className="bg-foreground/70 h-full rounded-full transition-all duration-500"
+          className="bg-success h-full rounded-full transition-all duration-500"
           style={{ width: `${(done / steps.length) * 100}%` }}
         />
       </div>
@@ -243,7 +243,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2">
                 <div
-                  className="bg-foreground/70 h-full rounded-full transition-all"
+                  className="bg-success h-full rounded-full transition-all"
                   style={{ width: `${pct}%` }}
                 />
               </div>

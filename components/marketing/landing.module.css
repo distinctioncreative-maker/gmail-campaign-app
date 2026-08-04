@@ -1,5 +1,5 @@
 .root {
-  /* The public page uses one semantic, warm palette from globals.css. Text
+  /* The public page uses one semantic, cool palette from globals.css. Text
      tokens are deliberately limited to combinations that pass WCAG AA on
      their intended surface. Component rules below never introduce literal
      colors, which keeps future palette changes reviewable. */
@@ -16,7 +16,7 @@
   --landing-on-ink: var(--marketing-on-ink);
   --landing-on-ink-muted: var(--marketing-on-ink-muted);
   --landing-on-ink-subtle: var(--marketing-on-ink-subtle);
-  /* Historical internal name, now the theme-invariant plum action lane. */
+  /* The action lane. The internal name is finally accurate again. */
   --landing-blue: var(--marketing-primary);
   --landing-blue-deep: var(--marketing-primary-hover);
   --landing-blue-soft: var(--marketing-primary-soft);
@@ -32,6 +32,8 @@
   --landing-green-soft: var(--success-soft);
   --landing-green-border: color-mix(in srgb, var(--landing-green) 32%, var(--landing-line));
   --landing-green-on-ink: color-mix(in srgb, var(--landing-on-ink) 56%, var(--landing-green));
+  /* Historical internal name. Money reads as the outcome green, not as a
+     third hue: see the accent rule in docs/brand.md. */
   --landing-gold: var(--revenue);
   --landing-gold-strong: color-mix(in srgb, var(--landing-gold) 68%, var(--landing-copy));
   --landing-gold-soft: var(--revenue-soft);
@@ -40,7 +42,7 @@
   --landing-ease: var(--ease-out);
   --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --landing-stage-duration: 2300ms;
-  --landing-shadow-premium: 0 34px 90px -46px rgb(40 32 24 / 42%);
+  --landing-shadow-premium: 0 34px 90px -46px rgb(15 23 41 / 42%);
   min-width: 0;
   overflow: clip;
   background: var(--landing-paper);
@@ -93,7 +95,7 @@
   top: 0;
   z-index: 50;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
-  background: rgb(40 32 24 / 86%);
+  background: rgb(15 23 41 / 86%);
   color: var(--landing-on-ink);
   backdrop-filter: saturate(1.2) blur(20px);
 }
@@ -869,7 +871,7 @@
   border: 1px solid var(--landing-line-strong);
   border-radius: 9px;
   background: var(--landing-surface);
-  box-shadow: 0 5px 14px rgb(40 32 24 / 6%);
+  box-shadow: 0 5px 14px rgb(15 23 41 / 6%);
   transition:
     border-color 280ms var(--landing-ease),
     background 280ms var(--landing-ease),
@@ -1417,7 +1419,7 @@
   border-radius: 14px;
   background: var(--landing-surface);
   padding: 26px;
-  box-shadow: 0 16px 38px -34px rgb(40 32 24 / 38%);
+  box-shadow: 0 16px 38px -34px rgb(15 23 41 / 38%);
   transition:
     border-color 220ms ease,
     box-shadow 220ms ease,
@@ -1502,7 +1504,7 @@
   background:
     radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--landing-blue) 7%, transparent), transparent 15rem),
     var(--landing-surface-soft);
-  box-shadow: 0 30px 80px -44px rgb(40 32 24 / 48%);
+  box-shadow: 0 30px 80px -44px rgb(15 23 41 / 48%);
   transition:
     border-color 260ms ease,
     box-shadow 260ms ease,
@@ -1702,7 +1704,7 @@
   border-radius: 13px;
   background: rgb(255 255 255 / 94%);
   padding: 10px 11px;
-  box-shadow: 0 18px 42px rgb(40 32 24 / 14%);
+  box-shadow: 0 18px 42px rgb(15 23 41 / 14%);
   opacity: 0;
   transform: translateY(10px) scale(0.98);
   animation: assistAppear 5.2s 900ms ease-in-out infinite;
@@ -1857,7 +1859,7 @@
   border: 1px solid var(--landing-line-strong);
   border-radius: 16px;
   background: var(--landing-surface);
-  box-shadow: 0 30px 80px -48px rgb(40 32 24 / 48%);
+  box-shadow: 0 30px 80px -48px rgb(15 23 41 / 48%);
 }
 
 .operationsDemo::after {
@@ -1897,7 +1899,7 @@
   border-color: var(--landing-line-strong);
   background: var(--landing-surface);
   color: var(--landing-blue-deep);
-  box-shadow: 0 6px 16px rgb(40 32 24 / 8%);
+  box-shadow: 0 6px 16px rgb(15 23 41 / 8%);
 }
 
 .pacingDemo {
@@ -1960,7 +1962,7 @@
   border: 1px solid var(--landing-line-strong);
   border-radius: 16px;
   background: var(--landing-surface-soft);
-  box-shadow: 0 18px 50px -36px rgb(40 32 24 / 48%);
+  box-shadow: 0 18px 50px -36px rgb(15 23 41 / 48%);
 }
 
 .controlBoardTop {
@@ -2191,7 +2193,7 @@
     radial-gradient(circle at 100% 0, color-mix(in srgb, var(--landing-green) 10%, transparent), transparent 14rem),
     var(--landing-surface);
   padding: 21px;
-  box-shadow: 0 18px 44px -34px rgb(40 32 24 / 46%);
+  box-shadow: 0 18px 44px -34px rgb(15 23 41 / 46%);
 }
 
 .pipelineCard::after {
@@ -2360,7 +2362,7 @@
   border-radius: 14px;
   background: var(--landing-surface);
   padding: 30px;
-  box-shadow: 0 18px 44px -38px rgb(40 32 24 / 42%);
+  box-shadow: 0 18px 44px -38px rgb(15 23 41 / 42%);
   transition:
     border-color 240ms var(--landing-ease),
     box-shadow 240ms var(--landing-ease),
@@ -2604,7 +2606,7 @@
 @media (hover: hover) and (pointer: fine) {
   .featureGrid article:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 24px 54px -34px rgb(40 32 24 / 36%);
+    box-shadow: 0 24px 54px -34px rgb(15 23 41 / 36%);
     transform: translateY(-3px);
   }
 
@@ -2616,7 +2618,7 @@
 
   .composeMock:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 36px 86px -42px rgb(40 32 24 / 50%);
+    box-shadow: 0 36px 86px -42px rgb(15 23 41 / 50%);
     transform: translateY(-2px);
   }
 
@@ -2626,19 +2628,19 @@
 
   .pricingGrid article:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 28px 66px -38px rgb(40 32 24 / 42%);
+    box-shadow: 0 28px 66px -38px rgb(15 23 41 / 42%);
     transform: translateY(-4px);
   }
 
   .pricingGrid article > a:hover {
     border-color: var(--landing-blue-border);
-    box-shadow: 0 10px 22px rgb(40 32 24 / 12%);
+    box-shadow: 0 10px 22px rgb(15 23 41 / 12%);
     transform: translateY(-1px);
   }
 
   .faq details:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 18px 42px -34px rgb(40 32 24 / 34%);
+    box-shadow: 0 18px 42px -34px rgb(15 23 41 / 34%);
     transform: translateY(-2px);
   }
 }

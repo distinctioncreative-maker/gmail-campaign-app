@@ -264,9 +264,11 @@ export function CampaignsTable({
                   {c.progressRate.toFixed(0)}%
                 </span>
               </div>
+              {/* Fill and track must never share a token. This bar shipped as
+                  bg-surface-2 on bg-surface-2, which is 1.00:1: invisible. */}
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
                 <div
-                  className="h-full rounded-full bg-surface-2"
+                  className="h-full rounded-full bg-success"
                   style={{ width: `${c.progressRate}%` }}
                 />
               </div>
@@ -402,7 +404,7 @@ export function CampaignsTable({
                   <div className="flex min-w-36 items-center gap-2">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
                       <div
-                        className="h-full rounded-full bg-surface-2"
+                        className="h-full rounded-full bg-success"
                         style={{ width: `${c.progressRate}%` }}
                       />
                     </div>

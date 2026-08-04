@@ -416,7 +416,7 @@ export function CampaignWizard() {
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
         <div
-          className="h-full rounded-full bg-foreground/75 transition-all duration-300"
+          className="h-full rounded-full bg-success transition-all duration-300"
           style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
         />
       </div>

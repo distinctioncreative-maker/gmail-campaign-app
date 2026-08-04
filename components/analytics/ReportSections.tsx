@@ -175,7 +175,7 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
               <div
-                className="bg-foreground/70 h-full rounded-full"
+                className="bg-primary h-full rounded-full"
                 style={{ width: `${Math.max(step.value > 0 ? 3 : 0, (step.value / max) * 100)}%` }}
               />
             </div>
@@ -366,7 +366,7 @@ export function CampaignLeaderboard({
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
                           <div
-                            className="h-full rounded-full bg-success"
+                            className="h-full rounded-full bg-primary"
                             style={{ width: `${Math.min(100, performance.replyRate)}%` }}
                           />
                         </div>

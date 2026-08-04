@@ -199,7 +199,7 @@ export default async function CampaignDetailPage({
           </div>
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-surface-2">
             <div
-              className="h-full rounded-full bg-foreground/75 transition-all"
+              className="h-full rounded-full bg-success transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -345,7 +345,7 @@ export default async function CampaignDetailPage({
                       <td className="py-2">
                         <div className="flex items-center gap-2">
                           <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
-                            <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, rate)}%` }} />
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, rate)}%` }} />
                           </div>
                           <span className="tabular-nums text-xs text-muted">
                             {r.sent > 0 ? `${rate.toFixed(1)}%` : "Not available"}

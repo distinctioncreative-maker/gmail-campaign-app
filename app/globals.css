@@ -4,92 +4,95 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* ── Brand foundation (see BRAND.md) ──────────────────────────
-     Warm paper neutrals rather than cold grey, so long working sessions
-     feel considered instead of clinical. One confident action colour,
-     plus a rationed revenue accent used only where money is the subject. */
+  /* ── Brand foundation (see docs/brand.md) ─────────────────────
+     Cool, high-contrast neutrals. The previous ivory ramp read yellow on
+     most screens and its surfaces did not separate: a card sat 1.06:1
+     against the page and the hairline measured 1.29:1, so nothing had an
+     edge. Every value below was measured, not estimated, and the ratios
+     are recorded beside them so a future edit cannot quietly regress one.
 
-  /* Ivory neutral ramp. Warmer and lower in chroma than plain white, so a
-     full working day in the product does not feel clinical. */
-  --background: #faf9f7;
+     Two accents, two meanings, nothing else:
+       blue  = clickable, or the product speaking
+       green = finished, or working right now
+     A third hue is what turned the old palette into noise. */
+
+  --background: #f1f4f8; /* card separates at 1.10:1 */
   --surface: #ffffff;
-  --surface-2: #f2f0ec;
-  --foreground: #14130f;
-  --muted: #5c574e;
-  --border: #e5e2da;
+  --surface-2: #e7eaef; /* progress-bar tracks and inset panels */
+  --foreground: #0f1729; /* 16.20:1 on page, 17.87:1 on card */
+  --muted: #5a6478; /* 5.39:1 on page, 4.93:1 on surface-2 */
+  --border: #c7cfdd; /* 1.57:1 on white, up from 1.29 */
 
-  /* One identity colour. Brass owns the single primary action on a view and
-     anything to do with money, and appears nowhere else. An accent applied
-     to everything stops being a signal, which is exactly what went wrong
-     with the plum it replaces. Aim for at most three brass marks per screen. */
-  --primary: #856428;
-  --primary-hover: #6f5426;
-  --primary-soft: #f5eee0;
+  /* The single action colour. Blue is legible as a link at small sizes and
+     sits 100+ RGB units off the neutral ramp, which is what the plum it
+     replaces failed at: it was 28 units from grey and read as disabled. */
+  --primary: #2354c7; /* 6.64:1 on card; white on fill also 6.64:1 */
+  --primary-hover: #1b429e; /* 9.05:1 */
+  --primary-soft: #e6ecfa;
   --primary-contrast: #ffffff;
-  --brand-from: #856428;
-  --brand-to: #2b2419;
+  --brand-from: #2354c7;
+  --brand-to: #0f1729;
   --brand-contrast: #ffffff;
-  --accent: #856428;
+  --accent: #2354c7;
 
-  /* Not a second brand colour. `info` is a warm stone neutral that marks AI
-     and system guidance without competing with brass. Premium products do
-     not give every feature its own hue; they typeset it well and move on. */
-  --info: #4a4034;
-  --info-hover: #383025;
-  --info-soft: #f2f0ec;
+  /* Not a third hue. `info` is a cool slate neutral that marks AI and system
+     guidance without competing with the action colour. */
+  --info: #3e4a5c;
+  --info-hover: #2c3646;
+  --info-soft: #e7eaef;
   --info-contrast: #ffffff;
 
-  /* Revenue is the same brass. Money and the primary action are the only two
-     things allowed to carry it, so they never compete. */
-  --revenue: #856428;
-  --revenue-soft: #f5eee0;
+  /* Money and positive outcomes share the green. Replies are the thing a
+     customer is paying for, so they read as the same "good" as progress. */
+  --revenue: #167c52;
+  --revenue-soft: #e2f0e9;
 
-  /* Espresso bands, used instead of near-black so dark sections stay in the
-     same warm family as the paper. */
-  --ink: #2b2419;
-  --ink-soft: #3a3122;
-  --on-ink: #f7f4ed;
-  --on-ink-muted: #c0b7a6;
-  --brass-on-ink: #c9a45c;
+  /* Deep navy bands, used instead of pure black so dark sections stay in the
+     same cool family as the paper. */
+  --ink: #0f1729;
+  --ink-soft: #1b2331;
+  --on-ink: #e8edf5;
+  --on-ink-muted: #a3afc2;
+  --brass-on-ink: #8fb3ff;
 
-  --success: #1f6b4f;
-  --success-soft: #e4f0ea;
-  --warning: #8a5a12;
-  --warning-soft: #f7eedd;
-  --danger: #a83232;
-  --danger-soft: #f7e7e7;
+  --success: #167c52; /* 5.20:1 on card; 4.31:1 as a bar on surface-2 */
+  --success-soft: #e2f0e9;
+  --warning: #92510a; /* 6.17:1 */
+  --warning-soft: #f7edde;
+  --danger: #b3261e; /* 6.54:1 */
+  --danger-soft: #fae7e6;
   --danger-contrast: #ffffff;
   --success-contrast: #ffffff;
   --warning-contrast: #ffffff;
-  --overlay: rgba(20, 19, 15, 0.6);
-  --ring: rgba(133, 100, 40, 0.42);
+  --overlay: rgba(11, 15, 23, 0.6);
+  --ring: rgba(35, 84, 199, 0.45);
 
   /* Theme-invariant public-site neutrals. The authenticated app can switch
-     themes, but the public landing page always renders the same warm brand
-     palette. Keeping this ramp here prevents its component stylesheet from
-     drifting back into one-off cool greys. */
-  --marketing-paper: #faf9f7;
+     themes, but the public landing page always renders the light palette.
+     Keeping this ramp here prevents its component stylesheet from drifting
+     back into one-off literal colours. */
+  --marketing-paper: #f1f4f8;
   --marketing-surface: #ffffff;
-  --marketing-surface-2: #f2f0ec;
-  --marketing-copy: #14130f;
-  --marketing-muted: #5c574e;
-  --marketing-border: #e5e2da;
-  --marketing-ink: #2b2419;
-  --marketing-ink-soft: #3a3122;
-  --marketing-on-ink: #f7f4ed;
-  --marketing-on-ink-muted: #c0b7a6;
-  --marketing-on-ink-subtle: #a89f8e;
-  --marketing-primary: #856428;
-  --marketing-primary-hover: #6f5426;
-  --marketing-primary-soft: #f5eee0;
+  --marketing-surface-2: #e7eaef;
+  --marketing-copy: #0f1729;
+  --marketing-muted: #5a6478;
+  --marketing-border: #c7cfdd;
+  --marketing-ink: #0f1729;
+  --marketing-ink-soft: #1b2331;
+  --marketing-on-ink: #e8edf5;
+  --marketing-on-ink-muted: #a3afc2;
+  --marketing-on-ink-subtle: #8794a8;
+  --marketing-primary: #2354c7;
+  --marketing-primary-hover: #1b429e;
+  --marketing-primary-soft: #e6ecfa;
   --marketing-primary-contrast: #ffffff;
-  --marketing-brass-on-ink: #c9a45c;
-  /* Warm stone, matching --info. The public stylesheet references these in
+  --marketing-brass-on-ink: #8fb3ff;
+  /* Cool slate, matching --info. The public stylesheet references these in
      several `color-mix()` calls; dropping them silently invalidates the whole
      shorthand those calls sit in, which is how the hero once lost its
      background entirely and rendered light text on light paper. */
-  --marketing-info: #4a4034;
-  --marketing-info-soft: #f2f0ec;
+  --marketing-info: #3e4a5c;
+  --marketing-info-soft: #e7eaef;
 
   /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
   --radius-sm: 3px;
@@ -103,7 +106,7 @@
      considered. Definition comes from --border, not from blur. */
   --shadow-sm: none;
   --shadow-md: none;
-  --shadow-lg: 0 8px 28px -18px rgba(22, 20, 15, 0.18);
+  --shadow-lg: 0 8px 28px -18px rgba(15, 23, 41, 0.18);
   --shadow-brand: none;
 
   /* Motion tokens, so every transition shares one curve and tempo. */
@@ -119,47 +122,47 @@
    handful of literal Tailwind color utilities the app uses so every
    surface adapts without editing each component. */
 :root[data-theme="dark"] {
-  /* Midnight blue ground with the same brass accent. Gold on navy is the
-     oldest luxury pairing there is, and keeping one brand colour across both
-     themes is what stops light and dark reading as two products. */
+  /* Midnight navy ground. The same two accents as light, lifted to stay
+     legible on a dark field. Keeping one accent pair across both themes is
+     what stops light and dark reading as two different products. */
   --background: #0b0f17;
-  --surface: #121721;
-  --surface-2: #1a202c;
-  --foreground: #e9edf4;
-  --muted: #98a3b5;
-  --border: #232b39;
-  --primary: #d2a961;
-  --primary-hover: #e3be7c;
-  --primary-soft: #241e13;
-  --primary-contrast: #0e1219;
-  --brand-from: #d2a961;
-  /* Both ends of the gradient must carry --brand-contrast, so the dark end
-     stays light enough for near-black text (a deeper brass measured 2.57:1). */
-  --brand-to: #b8904a;
-  --brand-contrast: #0e1219;
-  --accent: #d2a961;
-  --info: #9fb0c6;
-  --info-hover: #b6c4d6;
-  --info-soft: #1a202c;
+  --surface: #131a26; /* 1.10:1 against the page, same separation as light */
+  --surface-2: #1b2331;
+  --foreground: #e8edf5; /* 16.31:1 on page, 14.84:1 on card */
+  --muted: #98a3b5; /* 7.53:1 on page, 6.19:1 on surface-2 */
+  --border: #374557; /* 1.79:1 on card, up from 1.33 */
+  --primary: #6e9bff; /* 6.48:1 on card */
+  --primary-hover: #92b4ff;
+  --primary-soft: #17223a;
+  --primary-contrast: #0b1220; /* 6.95:1 on the fill */
+  --brand-from: #6e9bff;
+  /* Both ends of the gradient must carry --brand-contrast, so the far end
+     stays light enough for near-black text (a deeper blue measured 2.5:1). */
+  --brand-to: #4f7fe8;
+  --brand-contrast: #0b1220;
+  --accent: #6e9bff;
+  --info: #a9b6c8;
+  --info-hover: #c1cbd9;
+  --info-soft: #1b2331;
   --info-contrast: #0b0f17;
-  --revenue: #d2a961;
-  --revenue-soft: #241e13;
-  --ink: #070a10;
-  --ink-soft: #121721;
-  --on-ink: #e9edf4;
+  --revenue: #3dbe8b;
+  --revenue-soft: #10261d;
+  --ink: #070b12;
+  --ink-soft: #131a26;
+  --on-ink: #e8edf5;
   --on-ink-muted: #98a3b5;
-  --brass-on-ink: #d2a961;
-  --success: #4fb88c;
-  --success-soft: #0e2119;
-  --warning: #d9a44a;
-  --warning-soft: #241c10;
-  --danger: #e8737c;
-  --danger-soft: #2a1417;
-  --danger-contrast: #2a0f12;
-  --success-contrast: #08140f;
-  --warning-contrast: #171004;
+  --brass-on-ink: #8fb3ff;
+  --success: #3dbe8b; /* 7.43:1 on card; 6.71:1 as a bar on surface-2 */
+  --success-soft: #10261d;
+  --warning: #e0a64a;
+  --warning-soft: #2a1f0e;
+  --danger: #f2777f;
+  --danger-soft: #2c1418;
+  --danger-contrast: #2c0f12;
+  --success-contrast: #06140e;
+  --warning-contrast: #1a1104;
   --overlay: rgba(4, 6, 10, 0.7);
-  --ring: rgba(210, 169, 97, 0.5);
+  --ring: rgba(110, 155, 255, 0.5);
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: 0 10px 30px -20px rgba(0, 0, 0, 0.7);
@@ -218,12 +221,11 @@
 }
 
 body {
-  /* Whisper-subtle plum and blue bloom over the warm paper base. */
-  background:
-    radial-gradient(1100px 620px at 88% -12%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 60%),
-    radial-gradient(900px 560px at 4% 18%, color-mix(in srgb, var(--info) 5%, transparent), transparent 62%),
-    var(--background);
-  background-attachment: fixed;
+  /* Flat. The page used to carry two large radial blooms tinted with the
+     accent, which is what gave the old ivory its yellow cast and made every
+     card sit on a slightly different shade depending on where it scrolled
+     to. Separation now comes from the surface step and the hairline. */
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans-base), system-ui, -apple-system, "SF Pro Text", sans-serif;
   transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
@@ -232,10 +234,9 @@ body {
   letter-spacing: -0.011em;
 }
 
-/* Headings carry the brand voice. A serif needs the opposite treatment to the
-   geometric sans it replaces: near-neutral tracking rather than tight, and
-   restraint in weight. Fraunces above 600 turns decorative, and negative
-   tracking collapses its serifs into each other. */
+/* Headings carry the brand voice. Inter Tight is a narrower optical size of
+   the body face, so it holds tight tracking at large sizes without the two
+   faces reading as two different typefaces. */
 h1, h2, h3, h4 {
   font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
   letter-spacing: -0.021em;
@@ -247,8 +248,8 @@ h1 { letter-spacing: -0.032em; font-weight: 620; }
 h2 { letter-spacing: -0.026em; }
 
 /* The figure a customer screenshots for their boss, and the short display
-   titles beside it. One class owns the serif numeral treatment so the eight
-   places that render a headline number cannot drift apart again. Tabular
+   titles beside it. One class owns the headline numeral treatment so the
+   eight places that render a big number cannot drift apart again. Tabular
    figures keep digits from jittering as live values tick up. */
 .display-figure {
   font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
@@ -310,14 +311,6 @@ a.card-hover:focus-visible {
 .glass {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: saturate(1.25) blur(16px);
-}
-
-/* Dark: a single deep, subtle bloom. */
-:root[data-theme="dark"] body {
-  background:
-    radial-gradient(1100px 620px at 88% -12%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
-    radial-gradient(900px 560px at 4% 18%, color-mix(in srgb, var(--info) 8%, transparent), transparent 62%),
-    var(--background);
 }
 
 /* ── Brand bits ──────────────────────────────────────────── */
@@ -462,8 +455,8 @@ a.card-hover:focus-visible {
   12%, 20% { transform: translateY(-3px); }
 }
 .tour-spotlight {
-  border: 2px solid color-mix(in srgb, var(--primary) 38%, white);
-  box-shadow: 0 0 0 9999px var(--overlay), var(--shadow-brand);
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 0 9999px var(--overlay);
 }
 .tour-card-accent { background: linear-gradient(90deg, var(--brand-from), var(--brand-to)); }
 .tour-signal {

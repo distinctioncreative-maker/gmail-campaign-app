@@ -124,7 +124,7 @@ function Leaderboard({
               <div className="mt-2 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
                   <div
-                    className="bg-foreground/70 h-full rounded-full"
+                    className="bg-primary h-full rounded-full"
                     style={{ width: `${s.sent > 0 ? Math.max(4, (s.replyRate / topRate) * 100) : 0}%` }}
                   />
                 </div>

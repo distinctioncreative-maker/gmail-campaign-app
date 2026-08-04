@@ -10,8 +10,11 @@ export default function OpenGraphImage() {
     <div
       style={{
         alignItems: "center",
-        background: "linear-gradient(135deg, #0f0d0c 0%, #211820 55%, #14202b 100%)",
-        color: "#f9f7f4",
+        /* Hex rather than tokens: satori renders this off-DOM, so CSS custom
+           properties are not available. Values mirror --ink, --on-ink,
+           --primary, and --on-ink-muted from app/globals.css. */
+        background: "linear-gradient(135deg, #0b0f17 0%, #131a26 55%, #1b2331 100%)",
+        color: "#e8edf5",
         display: "flex",
         height: "100%",
         justifyContent: "center",
@@ -22,7 +25,7 @@ export default function OpenGraphImage() {
       <div style={{ display: "flex", flexDirection: "column", maxWidth: 980 }}>
         <div
           style={{
-            color: "#c9a45c",
+            color: "#8fb3ff",
             display: "flex",
             fontSize: 30,
             fontWeight: 650,
@@ -45,7 +48,7 @@ export default function OpenGraphImage() {
         </div>
         <div
           style={{
-            color: "#c4bdb5",
+            color: "#a3afc2",
             display: "flex",
             fontSize: 30,
             lineHeight: 1.35,

@@ -31,7 +31,9 @@ function page(title: string, message: string, action = ""): NextResponse {
       </form>`
     : "";
   return new NextResponse(
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{margin:0;background:#f5f2ec;color:#16140f;font:16px/1.55 system-ui,sans-serif}main{box-sizing:border-box;max-width:560px;margin:12vh auto;padding:32px;border:1px solid #e3ddd1;border-radius:18px;background:#fff;box-shadow:0 18px 50px rgba(40,32,24,.10)}h1{margin:0 0 12px;font-size:28px}p{color:#5a544a}button{min-height:44px;margin-top:12px;padding:0 20px;border:0;border-radius:10px;background:#856428;color:#fff;font:inherit;font-weight:650;cursor:pointer}button:hover{background:#6f5426}button:focus-visible{outline:3px solid #c9a45c;outline-offset:3px}</style></head><body><main><h1>${title}</h1><p>${message}</p>${form}</main></body></html>`,
+    // Standalone document with no access to the app stylesheet, so the brand
+    // neutrals are inlined here. Values mirror app/globals.css.
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{margin:0;background:#f1f4f8;color:#0f1729;font:16px/1.55 system-ui,sans-serif}main{box-sizing:border-box;max-width:560px;margin:12vh auto;padding:32px;border:1px solid #c7cfdd;border-radius:10px;background:#fff}h1{margin:0 0 12px;font-size:28px}p{color:#5a6478}button{min-height:44px;margin-top:12px;padding:0 20px;border:0;border-radius:8px;background:#2354c7;color:#fff;font:inherit;font-weight:650;cursor:pointer}button:hover{background:#1b429e}button:focus-visible{outline:3px solid #2354c7;outline-offset:3px}</style></head><body><main><h1>${title}</h1><p>${message}</p>${form}</main></body></html>`,
     { status: 200, headers: pageHeaders }
   );
 }

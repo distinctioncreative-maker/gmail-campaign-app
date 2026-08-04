@@ -202,7 +202,7 @@ export function OnboardingWizard({
 
       <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
         <div
-          className="bg-foreground/70 h-full rounded-full transition-[width] duration-500"
+          className="bg-success h-full rounded-full transition-[width] duration-500"
           style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
         />
       </div>

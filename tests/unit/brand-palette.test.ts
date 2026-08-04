@@ -37,25 +37,25 @@ function sourceFiles(root: string): string[] {
   });
 }
 
-describe("ivory and brass brand palette", () => {
+describe("cool neutral brand palette", () => {
   it("records the selected semantic roles and identity gradient", () => {
-    expect(token(lightBlock, "primary")).toBe("#856428");
-    expect(token(lightBlock, "primary-hover")).toBe("#6f5426");
-    expect(token(lightBlock, "primary-soft")).toBe("#f5eee0");
-    // Money and the single primary action share one colour on purpose, so
-    // they can never compete for the eye.
-    expect(token(lightBlock, "revenue")).toBe(token(lightBlock, "primary"));
-    // `info` is a warm stone neutral, not a second brand colour.
-    expect(token(lightBlock, "info")).toBe("#4a4034");
-    expect(token(lightBlock, "info-soft")).toBe("#f2f0ec");
-    expect(token(lightBlock, "brand-from")).toBe("#856428");
-    expect(token(lightBlock, "brand-to")).toBe("#2b2419");
+    expect(token(lightBlock, "primary")).toBe("#2354c7");
+    expect(token(lightBlock, "primary-hover")).toBe("#1b429e");
+    expect(token(lightBlock, "primary-soft")).toBe("#e6ecfa");
+    // Two accents, two meanings: blue is clickable, green is finished or
+    // working. Money is an outcome, so it shares the green rather than
+    // introducing a third hue that would dilute both signals.
+    expect(token(lightBlock, "revenue")).toBe(token(lightBlock, "success"));
+    expect(token(darkBlock, "revenue")).toBe(token(darkBlock, "success"));
+    // `info` is a cool slate neutral, not a second brand colour.
+    expect(token(lightBlock, "info")).toBe("#3e4a5c");
+    expect(token(lightBlock, "info-soft")).toBe("#e7eaef");
+    expect(token(lightBlock, "brand-from")).toBe("#2354c7");
+    expect(token(lightBlock, "brand-to")).toBe("#0f1729");
   });
 
-  it("keeps one accent across two grounds: bone in light, midnight in dark", () => {
-    // Light is a warm bone paper, dark is a blue-black. Both carry the same
-    // brass, which is what stops the themes reading as two different products.
-    expect(token(lightBlock, "background")).toBe("#faf9f7");
+  it("keeps one accent across two grounds: near-white in light, navy in dark", () => {
+    expect(token(lightBlock, "background")).toBe("#f1f4f8");
     expect(token(darkBlock, "background")).toBe("#0b0f17");
     for (const block of [lightBlock, darkBlock]) {
       // The accent must stay clearly separable from body and muted text, which
@@ -67,7 +67,17 @@ describe("ivory and brass brand palette", () => {
     }
   });
 
-  it("keeps espresso bands readable and in the warm family", () => {
+  it("separates the card from the page and gives the hairline an edge", () => {
+    // The previous ivory ramp sat a card 1.06:1 against the page with a
+    // 1.29:1 hairline, which is why nothing on screen looked like an object.
+    for (const block of [lightBlock, darkBlock]) {
+      const surface = token(block, "surface");
+      expect(contrast(surface, token(block, "background"))).toBeGreaterThanOrEqual(1.08);
+      expect(contrast(token(block, "border"), surface)).toBeGreaterThanOrEqual(1.4);
+    }
+  });
+
+  it("keeps navy bands readable and in the cool family", () => {
     for (const block of [lightBlock, darkBlock]) {
       const ink = token(block, "ink");
       expect(contrast(token(block, "on-ink"), ink)).toBeGreaterThanOrEqual(4.5);
@@ -151,7 +161,47 @@ describe("ivory and brass brand palette", () => {
     }
   });
 
-  it("keeps direct palette utilities and retired electric indigo out of product source", () => {
+  it("keeps every progress-bar fill visible against its own track", () => {
+    // Three bars shipped with the fill and the track set to the same token.
+    // Two of them measured 1.00:1, which is not a subtle bar: it is no bar at
+    // all. A green test suite proved they compiled, not that they were
+    // legible, so the rule is encoded here instead.
+    //
+    // Rule: the track is always --surface-2; the fill is always a status or
+    // action colour. Green means progress toward completion, blue means the
+    // magnitude of a value next to its peers.
+    const allowedFills = new Set(["bg-success", "bg-primary", "bg-revenue", "bg-danger", "bg-warning"]);
+    const bars: Array<{ path: string; track: string; fill: string }> = [];
+
+    for (const path of sourceFiles("app").concat(sourceFiles("components"))) {
+      if (!path.endsWith(".tsx")) continue;
+      const source = readFileSync(path, "utf8");
+      for (const match of source.matchAll(/style=\{\{\s*width:/g)) {
+        const preceding = source.slice(Math.max(0, match.index - 400), match.index);
+        const backgrounds = [...preceding.matchAll(/\bbg-[a-z0-9/[\]-]+/g)].map((m) => m[0]);
+        if (backgrounds.length < 2) continue;
+        bars.push({
+          path,
+          track: backgrounds[backgrounds.length - 2],
+          fill: backgrounds[backgrounds.length - 1],
+        });
+      }
+    }
+
+    // Guard the guard: if the markup shape changes so nothing matches, this
+    // test must fail loudly rather than pass vacuously.
+    expect(bars.length).toBeGreaterThanOrEqual(12);
+    for (const bar of bars) {
+      expect(`${bar.path}: ${bar.fill} on ${bar.track}`).toBe(
+        `${bar.path}: ${bar.fill} on bg-surface-2`
+      );
+      expect(`${bar.path}: ${bar.fill}`).toBe(
+        `${bar.path}: ${allowedFills.has(bar.fill) ? bar.fill : "an allowed status or action fill"}`
+      );
+    }
+  });
+
+  it("keeps direct palette utilities and retired identity colours out of product source", () => {
     const sources = sourceFiles("app")
       .concat(sourceFiles("components"), sourceFiles("lib"))
       .map((path) => readFileSync(path, "utf8"))
@@ -161,15 +211,16 @@ describe("ivory and brass brand palette", () => {
       /\b(?:bg|text|border|from|to|ring)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|purple|indigo|violet|fuchsia|pink|rose|white|black)-\d+\b/
     );
     expect(sources).not.toMatch(/\btext-muted\/(?:50|60|70)\b/);
-    // Retired identity colours: electric indigo, then the plum that replaced it.
+    // Retired identity colours, newest first: the ivory-and-brass pair, the
+    // plum before it, and the electric indigo before that.
     expect(sources).not.toMatch(
-      /#(?:5b47e0|4a37cc|6c55ea|9b5cd6|8b78ff|a394ff|7c5cff|72506f|5e405b|c7a8c4|456a8d|8eb4d2)\b/i
+      /#(?:856428|6f5426|f5eee0|c9a45c|d2a961|e3be7c|b8904a|2b2419|3a3122|f7f4ed|faf9f7|f2f0ec|e5e2da|5c574e|14130f|4a4034|5b47e0|4a37cc|6c55ea|9b5cd6|8b78ff|a394ff|7c5cff|72506f|5e405b|c7a8c4|456a8d|8eb4d2)\b/i
     );
     expect(sources).not.toMatch(/bg-primary[^"\n]*text-white/);
     expect(sources).not.toMatch(/brand-gradient[^"\n]*text-white/);
   });
 
-  it("keeps AI on the neutral stone lane while brass owns actions", () => {
+  it("keeps AI on the neutral slate lane while blue owns actions", () => {
     const aiSources = [
       "components/templates/AiEmailWriter.tsx",
       "components/templates/AiEmailTools.tsx",
@@ -189,11 +240,10 @@ describe("ivory and brass brand palette", () => {
     expect(landing).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     // A hex ban alone let ~50 cold-blue and green rgb() literals survive the
     // last migration, hidden inside shadows, glows, and gradients. Any
-    // non-neutral rgb() is a colour the palette does not control.
-    // Neutral scrims (equal channels) and the one canonical warm shadow are
-    // allowed; anything else is a colour the palette does not control.
+    // non-neutral rgb() is a colour the palette does not control. Neutral
+    // scrims (equal channels) and the one canonical shadow are allowed.
     const colouredRgb = [...landing.matchAll(/rgb\(\s*(\d+)\s+(\d+)\s+(\d+)/g)].filter(
-      ([, r, g, b]) => !(r === g && g === b) && !(r === "40" && g === "32" && b === "24")
+      ([, r, g, b]) => !(r === g && g === b) && !(r === "15" && g === "23" && b === "41")
     );
     expect(colouredRgb).toHaveLength(0);
   });

@@ -53,7 +53,7 @@ export default function DemoCampaignsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
-                        <div className="h-full rounded-full bg-foreground/70" style={{ width: `${pct}%` }} />
+                        <div className="h-full rounded-full bg-success" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-xs tabular-nums text-muted">{pct.toFixed(0)}%</span>
                     </div>
