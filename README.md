@@ -81,21 +81,25 @@ breakdown, and [docs/data-model.md](docs/data-model.md) for the Firestore schema
 | Billing | Stripe Checkout + portal, plan catalog, plan-based send caps (test-mode keys wired; live wiring in progress) |
 | Admin & ops | Admin console, sending-mode go-live gate, system health page, Help/Test Center, waitlist admin, in-app feature checklist |
 | Observability | Structured error reporting + webhook alerts, `/api/health` |
-| Public site | Outcome-led landing page with interactive product demos, responsive pilot CTAs, pricing, and waitlist capture |
+| Public site | Outcome-led landing page with interactive product demos, Get started CTAs into sign-in, pricing, and Talk to sales capture |
 
 ## Roadmap to public launch
 
 1. Validate Stripe Checkout → webhook → plan flip end to end (test mode),
-   then move to live keys.
+   then move to live keys. Until then the landing page must keep saying that
+   no card is taken, because none is.
 2. Google OAuth verification + CASA security assessment (required before
    `SIGNUP_MODE=open` for the general public).
 3. Supply the operating entity, address, jurisdiction, retention schedule,
-   subprocessors, DPA, and counsel approval for the managed-pilot legal pages.
-4. Turn on error alerting (`ERROR_WEBHOOK_URL`) + an uptime monitor on
+   subprocessors, DPA, and counsel approval for the public legal pages.
+4. Build the three surfaces a paying customer will expect and that do not
+   exist yet: a support contact path, self-service account and workspace
+   deletion, and a data export.
+5. Turn on error alerting (`ERROR_WEBHOOK_URL`) + an uptime monitor on
    `/api/health`.
-5. Exercise the shipped workspace onboarding, custom-role mapping, team
-   hierarchy, guided tour, and dark/light contrast checks with pilot users.
-6. Later "compete" tier: multi-inbox rotation + inbox warmup, contact
+6. Exercise the shipped workspace onboarding, custom-role mapping, team
+   hierarchy, guided tour, and dark/light contrast checks with real users.
+7. Later "compete" tier: multi-inbox rotation + inbox warmup, contact
    enrichment, LinkedIn/multichannel, SOC 2.
 
 ## Quick start

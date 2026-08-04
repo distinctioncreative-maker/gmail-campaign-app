@@ -42,11 +42,11 @@ in `Sidebar`, `UIProviders` (toast/confirm), `ProductTour`, `NotificationBell`,
 ## Public legal and trust routes
 
 `/terms`, `/privacy`, `/acceptable-use`, and `/compliance` are public,
-indexable managed-pilot disclosures composed through
+indexable early-access disclosures composed through
 `components/legal/LegalPage.tsx`. They describe the controls that exist in
 source and explicitly defer unresolved legal identity, jurisdiction, retention,
-subprocessor, DPA, deletion/export, and counsel decisions to a signed pilot
-agreement. They are a launch baseline, not a substitute for legal approval.
+subprocessor, DPA, deletion/export, and counsel decisions to a signed order
+form. They are a launch baseline, not a substitute for legal approval.
 
 ### The admin console specifically
 

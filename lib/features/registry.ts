@@ -647,10 +647,10 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["app/globals.css", "components/marketing/landing.module.css", "docs/brand.md", "tests/unit/landing-experience.test.ts"],
       },
       {
-        id: "plum-blue-brand-system",
-        name: "Restrained plum and editorial blue brand system",
+        id: "cool-neutral-brand-system",
+        name: "Cool neutral brand system",
         status: "shipped",
-        description: "Cadence uses restrained plum for primary actions and selection, editorial blue for AI and informational states, and a plum-to-blue identity gradient. Light and dark themes have separate foreground-on-fill tokens, measured AA contrast pairs, semantic status colors, coordinated ambient light, and regression coverage that prevents the retired electric indigo and direct palette utilities from returning.",
+        description: "One cool, high-contrast neutral system across the product and the public site. Two accents carry two meanings: blue is clickable, green is finished or working, and money shares the green rather than adding a third hue. Light and dark themes have separate foreground-on-fill tokens and measured AA contrast pairs, surfaces separate from the page at 1.10:1 under a visible hairline, and elevation is gone in favour of rules and space. Regression coverage pins every ratio, bans direct palette utilities and retired identity colours, requires the landing stylesheet to be free of literal hex and non-neutral rgb(), and fails if any progress-bar fill ever shares its track token again.",
         keyFiles: ["app/globals.css", "components/marketing/landing.module.css", "components/templates/AiEmailWriter.tsx", "components/sequences/AiSequenceWriter.tsx", "components/home/PulseChart.tsx", "docs/brand.md", "tests/unit/brand-palette.test.ts"],
       },
     ],

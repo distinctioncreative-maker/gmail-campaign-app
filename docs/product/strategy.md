@@ -239,7 +239,7 @@ P1:
 
 Business:
 
-- Pilot activation: Gmail connected, leads imported, template tested, and first test campaign launched.
+- Activation: Gmail connected, leads imported, template tested, and first test campaign launched.
 - Weekly retained senders.
 - Reply-positive campaigns per active sender.
 - Conversion from Solo to paid team without increased safety incidents.

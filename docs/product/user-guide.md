@@ -5,8 +5,8 @@ Gmail**, with your leads and campaigns kept private to you.
 
 ## Signing in
 
-Open the app link and click **Sign in with Google**. During the private
-pilot, use an account on a domain that an administrator has approved.
+Open the app link and click **Sign in with Google**. During early access,
+use an account on a domain that an administrator has approved.
 Consumer Gmail accounts remain blocked until public OAuth verification is
 complete and production signup is deliberately switched to open mode.
 

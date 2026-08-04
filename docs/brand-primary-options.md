@@ -1,7 +1,19 @@
 # Cadence primary color options
 
-Decision status: **option B selected on 2026-08-01**. Restrained plum is the
-primary action color, supported by an editorial blue for AI and information.
+> **Superseded on 2026-08-04. This is a historical record, not the current
+> system.** See [brand.md](brand.md) for what actually ships.
+>
+> Plum was selected here and then measured badly in use: it sat about 28 RGB
+> units from muted grey, so it read as a disabled control rather than as an
+> action. It was replaced by brass on ivory, which read yellow and whose
+> surfaces did not separate, and then by the cool neutral system with a
+> `#2354c7` action blue documented in brand.md. The reasoning below is kept
+> because the failure it describes, an accent too close to the neutrals to
+> function as an action, is the one worth not repeating.
+
+Decision status: **option B selected on 2026-08-01, superseded 2026-08-04.**
+Restrained plum was the primary action color, supported by an editorial blue
+for AI and information.
 
 ## Why a choice is needed
 
