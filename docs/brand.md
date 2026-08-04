@@ -10,9 +10,9 @@ Marketing and sales teams. They are commercially motivated, allergic to fluff,
 and judge software on whether it makes them money. They are not engineers, so
 nothing should require technical vocabulary to understand.
 
-The feel we are aiming for: **warm, premium, and confident**. Closer to Notion
-than to a bank dashboard. Serious enough for procurement, human enough to enjoy
-using every day.
+The feel we are aiming for: **calm, precise, and expensive**. Closer to Notion
+than to a bank dashboard. Serious enough for procurement, pleasant enough to
+stare at all day.
 
 ## Voice
 
@@ -44,98 +44,107 @@ That is a spec sheet. Instead:
 
 | Role | Face | Where |
 |---|---|---|
-| Display | Plus Jakarta Sans (700/800) | Headings, hero, numbers that matter |
+| Display | Inter Tight (600/620) | Headings, hero, numbers that matter |
 | Text | Inter | Body, UI, tables, forms |
 | Mono | JetBrains Mono | Data, tokens, technical labels |
 
-Headings are set tight (`-0.028em`, `-0.034em` at h1). Tight tracking on a
-geometric face is most of what makes type look designed rather than default.
+One superfamily, two optical sizes. A single family across the whole product
+is what makes an interface feel seamless rather than assembled. This replaced
+a display serif (Fraunces), which had character but read as editorial and
+slightly quirky rather than as enterprise software.
+
+Headings are set tight (`-0.021em`, `-0.032em` at h1). `.display-figure` owns
+the headline-number treatment, with tabular figures so digits do not jitter as
+live values tick. Do not reimplement it per component.
 
 ## Colour
 
-Warm neutrals, restrained plum for action, editorial blue for intelligence,
-and one rationed revenue accent.
+Cool, high-contrast neutrals. Two accents, two meanings, nothing else:
 
-| Token | Light | Meaning |
-|---|---|---|
-| `--background` | `#f7f5f2` | Warm paper. Never cold grey. |
-| `--surface` | `#ffffff` | Cards, panels |
-| `--foreground` | `#1d1b18` | Warm near-black. Never pure black. |
-| `--muted` | `#6b655e` | Secondary text |
-| `--border` | `#e8e3dc` | Hairlines |
-| `--primary` | `#72506f` | Restrained plum. Primary actions, focus, selection. |
-| `--primary-hover` | `#5e405b` | Stronger plum for active actions. |
-| `--primary-soft` | `#f4edf3` | Selected navigation, primary chips, quiet emphasis. |
-| `--info` | `#456a8d` | Editorial blue. AI, informational states, system guidance. |
-| `--info-hover` | `#355674` | Stronger blue for interactive information. |
-| `--info-soft` | `#eaf1f7` | AI panels, informational badges, contextual guidance. |
-| `--revenue` | `#99661c` | Money only: pipeline, replies won, revenue. 4.52:1 on paper. |
-| `--success` | `#087a55` | Positive state. 4.92:1 on paper. |
-| `--warning` | `#985700` | Deliverability risk. 5.22:1 on paper. |
-| `--danger` | `#cc3342` | Destructive, failure. 4.68:1 on paper. |
+- **Blue** means clickable, or the product speaking.
+- **Green** means finished, or working right now.
 
-Muted body copy always uses the full `--muted` token. Status and revenue
-colors are measured as normal-size text against both background and surface
-tokens in both themes. Solid fills use dedicated success, warning, and danger
-contrast tokens rather than assuming white text remains readable.
+A third hue is what turned an earlier palette into noise. Money shares the
+green, because a reply is an outcome and should read as the same "good" as a
+completed send.
+
+| Token | Light | Dark | Meaning |
+|---|---|---|---|
+| `--background` | `#f1f4f8` | `#0b0f17` | Page. A card separates at 1.10:1. |
+| `--surface` | `#ffffff` | `#131a26` | Cards, panels |
+| `--surface-2` | `#e7eaef` | `#1b2331` | Inset panels, progress-bar tracks |
+| `--foreground` | `#0f1729` | `#e8edf5` | 16.20:1 and 16.31:1 on the page |
+| `--muted` | `#5a6478` | `#98a3b5` | Secondary text, 5.39:1 and 7.53:1 |
+| `--border` | `#c7cfdd` | `#374557` | Hairlines, 1.57:1 and 1.79:1 on a card |
+| `--primary` | `#2354c7` | `#6e9bff` | The action colour, 6.64:1 and 6.48:1 |
+| `--info` | `#3e4a5c` | `#a9b6c8` | Cool slate for AI and system guidance. Not a hue. |
+| `--success` / `--revenue` | `#167c52` | `#3dbe8b` | Progress, positive state, money |
+| `--warning` | `#92510a` | `#e0a64a` | Deliverability risk |
+| `--danger` | `#b3261e` | `#f2777f` | Destructive, failure |
+
+This replaced a warm ivory-and-brass ramp, which read yellow on most screens
+and whose surfaces did not separate: a card sat 1.06:1 against the page under
+a 1.29:1 hairline, so nothing on screen looked like an object.
+
+Muted body copy always uses the full `--muted` token. Status colours are
+measured as normal-size text against both background and surface in both
+themes. Solid fills use dedicated success, warning, and danger contrast tokens
+rather than assuming white text stays readable.
+
+**Progress bars have one rule.** The track is always `--surface-2`. The fill is
+always a status or action colour: green for progress toward completion, blue
+for the magnitude of a value beside its peers. A fill must never share its
+track's token. Three bars once shipped that way, two of them at 1.00:1, and
+`tests/unit/brand-palette.test.ts` now walks every width-styled fill in `app/`
+and `components/` to keep it from happening again.
+
+**Accent placement is rationed on purpose.** If blue appears everywhere it
+stops meaning "click this". Aim for one primary action per view.
 
 ### Public marketing neutrals
 
-The public landing page is intentionally theme-invariant. A visitor should
-see the same warm Cadence palette whether or not a saved dashboard theme is
-present in the browser. The `--marketing-*` tokens in `app/globals.css` own
-that ramp:
+The public landing page is intentionally theme-invariant. A visitor should see
+the same palette whether or not a saved dashboard theme is in the browser. The
+`--marketing-*` tokens in `app/globals.css` own that ramp and mirror the light
+theme, plus a navy ink band:
 
 | Token | Value | Use |
 |---|---|---|
-| `--marketing-paper` | `#f7f5f2` | Main page background |
+| `--marketing-paper` | `#f1f4f8` | Main page background |
 | `--marketing-surface` | `#ffffff` | Product frames and cards |
-| `--marketing-copy` | `#1d1b18` | Headings and primary text |
-| `--marketing-muted` | `#6b655e` | Secondary text, 5.29:1 on paper |
-| `--marketing-border` | `#e8e3dc` | Hairlines and resting borders |
-| `--marketing-ink` | `#0f0d0c` | Hero, trust, CTA, and footer bands |
-| `--marketing-on-ink` | `#f9f7f4` | Primary text on ink, 18.13:1 |
-| `--marketing-on-ink-muted` | `#c4bdb5` | Secondary text on ink, 10.43:1 |
-| `--marketing-on-ink-subtle` | `#a9a199` | Tertiary text on ink, 7.61:1 |
-| `--marketing-primary` | `#72506f` | Theme-invariant plum actions and selection |
-| `--marketing-primary-soft` | `#f4edf3` | Theme-invariant selected surfaces |
-| `--marketing-info` | `#456a8d` | Theme-invariant blue signals and AI atmosphere |
-| `--marketing-info-soft` | `#eaf1f7` | Theme-invariant informational surfaces |
+| `--marketing-copy` | `#0f1729` | Headings and primary text |
+| `--marketing-muted` | `#5a6478` | Secondary text |
+| `--marketing-border` | `#c7cfdd` | Hairlines and resting borders |
+| `--marketing-ink` | `#0f1729` | Hero, trust, CTA, and footer bands |
+| `--marketing-on-ink` | `#e8edf5` | Primary text on ink |
+| `--marketing-on-ink-muted` | `#a3afc2` | Secondary text on ink |
+| `--marketing-on-ink-subtle` | `#8794a8` | Tertiary text on ink |
+| `--marketing-primary` | `#2354c7` | Theme-invariant actions and selection |
+| `--marketing-info` | `#3e4a5c` | Theme-invariant slate for AI atmosphere |
 
-`components/marketing/landing.module.css` must contain no literal hex colors.
-Use these tokens, a semantic product token, or `color-mix()` derived from
-them. Body text must reach at least 4.5:1 against its actual surface. Large
-text and meaningful graphical controls must reach at least 3:1.
-
-### Selected brand direction
-
-The founder selected option B, restrained plum, with editorial blue as the
-supporting color. Plum owns primary action and selection. Blue identifies AI,
-information, and system guidance. The logo, identity gradients, ambient light,
-and the activity chart may blend both colors; ordinary controls should not.
-That separation prevents every screen from becoming purple while keeping the
-system recognizably Cadence.
-
-The decision history and measured contrast pairs are recorded in
-[brand-primary-options.md](brand-primary-options.md).
-
-**The revenue accent is rationed on purpose.** If it appears everywhere it stops
-meaning money. Use it for the numbers a customer would screenshot for their boss.
-
-Dark mode is warm-toned charcoal (`#0e0d0c`, `#191716`) with lifted plum
-(`#c7a8c4`) and blue (`#8eb4d2`). Filled controls use theme-specific contrast
-tokens, so text remains readable on the lighter dark-theme accents.
+`components/marketing/landing.module.css` must contain no literal hex colours
+and no non-neutral `rgb()`. Use these tokens, a semantic product token, or
+`color-mix()` derived from them. A hex-only ban once let roughly fifty cold
+blue and green `rgb()` literals survive a migration, hidden inside shadows,
+glows, and gradients. Body text must reach at least 4.5:1 against its actual
+surface; large text and meaningful graphical controls at least 3:1.
 
 ## Shape, depth, motion
 
-- **Radius**: `--radius-sm` 8px controls, `--radius-md` 12px inputs and chips,
-  `--radius-lg` 16px cards, `--radius-xl` 22px feature surfaces. Do not invent
-  new values inline.
-- **Elevation**: `--shadow-sm` resting, `--shadow-md` raised, `--shadow-lg`
-  floating, `--shadow-brand` for primary emphasis only.
+- **Radius**: `--radius-sm` 3px, `--radius-md` 5px, `--radius-lg` 8px cards,
+  `--radius-xl` 10px feature surfaces. Do not invent new values inline. The
+  landing page bridges the same ladder through `--landing-r-*`.
+- **Elevation**: there is none. `--shadow-sm`, `--shadow-md`, and
+  `--shadow-brand` are `none`, and definition comes from `--border` and from
+  the space around a panel. A large soft shadow reads cheap; a hairline reads
+  considered. Inset focus and selection rings are the one exception.
 - **Motion**: `--dur-fast` 140ms for hovers, `--dur-base` 220ms for most
   transitions, `--dur-slow` 420ms for entrances. Always `--ease-out`.
   Everything must respect `prefers-reduced-motion`.
+- **Nothing loops in peripheral vision.** Motion is allowed when it responds to
+  the reader or reports something real: a walkthrough advancing, a live status
+  dot, a light following the pointer. Orbiting halos, drifting glow dots, and
+  sheens sweeping across a frame on a timer are not.
 
 Restraint is the point. Luxury reads as a few well-crafted moments plus calm
 everywhere else, not as motion on every element.
