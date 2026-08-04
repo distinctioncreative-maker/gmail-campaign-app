@@ -2,22 +2,22 @@ import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Managed Pilot Terms",
-  description: "Terms for the Cadence managed private pilot.",
+  title: "Terms of Service",
+  description: "Terms for using Cadence during early access.",
 };
 
 export default function TermsPage() {
   return (
     <LegalPage
-      eyebrow="Managed pilot terms"
+      eyebrow="Terms of service"
       title="Clear terms for using Cadence responsibly."
-      summary="These terms describe the baseline rules for a Cadence private pilot. Your signed order form completes the legal and commercial details for your organization."
+      summary="These terms describe the baseline rules for using Cadence during early access. Your signed order form completes the legal and commercial details for your organization."
     >
-      <LegalSection title="1. The pilot service">
+      <LegalSection title="1. The service">
         <p>
           Cadence provides Gmail-connected outreach preparation, sending controls, campaign
-          reporting, reply workflows, and optional AI-assisted writing. The pilot may change as
-          we learn from participating customers. Features marked beta, planned, or unavailable
+          reporting, reply workflows, and optional AI-assisted writing. The service may change as
+          we learn from early-access customers. Features marked beta, planned, or unavailable
           are not guaranteed deliverables.
         </p>
       </LegalSection>
@@ -26,7 +26,8 @@ export default function TermsPage() {
         <p>
           You must be authorized to act for your organization and use Cadence for legitimate
           business purposes. Keep access limited to approved users, protect connected Google
-          accounts, and notify the pilot contact promptly if you suspect unauthorized access.
+          accounts, and notify the contact named in your order form promptly if you suspect
+          unauthorized access.
         </p>
       </LegalSection>
 
@@ -57,15 +58,15 @@ export default function TermsPage() {
       <LegalSection title="5. AI-assisted features">
         <p>
           AI output may be incomplete, inaccurate, or unsuitable. Review messages and researched
-          claims before use. Do not submit sensitive information unless the signed pilot agreement
+          claims before use. Do not submit sensitive information unless the signed agreement
           expressly permits it. You remain responsible for the content you approve and send.
         </p>
       </LegalSection>
 
       <LegalSection title="6. Fees, changes, and cancellation">
         <p>
-          Pilot fees, included usage, payment timing, renewal, cancellation, refunds, and support
-          are stated in the signed order form. Public pricing is an indicative pilot model and is
+          Fees, included usage, payment timing, renewal, cancellation, refunds, and support are
+          stated in the signed order form. Public pricing is an indicative monthly model and is
           not a charge authorization. Cadence will not activate live billing without a separate,
           approved billing setup.
         </p>
@@ -74,9 +75,9 @@ export default function TermsPage() {
       <LegalSection title="7. Data, confidentiality, and security">
         <p>
           Each party will protect the other party&apos;s confidential information using reasonable
-          care. Cadence processes customer data to provide, secure, support, and improve the pilot
-          as described in the Privacy Notice and signed data terms. Customers must not use the
-          service to store secrets or regulated data outside the agreed pilot scope.
+          care. Cadence processes customer data to provide, secure, support, and improve the
+          service as described in the Privacy Notice and signed data terms. Customers must not
+          use the service to store secrets or regulated data outside the agreed scope.
         </p>
       </LegalSection>
 
@@ -92,9 +93,9 @@ export default function TermsPage() {
       <LegalSection title="9. Contact and changes">
         <p>
           Use the contact identified in your order form for legal, privacy, security, and support
-          notices. Prospective pilot customers can use the Request a pilot form. Material changes
-          to these public terms will be dated on this page and communicated to active pilot
-          customers when appropriate.
+          notices. If you do not have an order form yet, use the Talk to sales form on the home
+          page. Material changes to these public terms will be dated on this page and
+          communicated to active customers when appropriate.
         </p>
       </LegalSection>
     </LegalPage>

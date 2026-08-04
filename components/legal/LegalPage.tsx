@@ -42,9 +42,9 @@ export function LegalPage({
           {summary}
         </p>
         <div className="alert-warning mt-8 rounded-xl border p-4 text-sm leading-6 text-foreground">
-          Cadence is currently offered as a managed private pilot. The signed pilot order form
+          Cadence is currently in early access. The signed order form
           identifies the operating entity, legal contact, governing law, commercial terms, and
-          any negotiated data terms. If an order form conflicts with these public pilot terms,
+          any negotiated data terms. If an order form conflicts with these public terms,
           the signed order form controls.
         </div>
         <article className="mt-10 space-y-10 text-[15px] leading-7 text-muted">
@@ -55,11 +55,11 @@ export function LegalPage({
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-8 text-xs text-muted sm:px-8">
           <div className="flex flex-wrap gap-x-5 gap-y-3">
-            <Link href="/terms" className="hover:text-foreground">Pilot terms</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms</Link>
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <Link href="/acceptable-use" className="hover:text-foreground">Acceptable use</Link>
             <Link href="/compliance" className="hover:text-foreground">Compliance</Link>
-            <Link href="/#pilot" className="hover:text-foreground">Contact</Link>
+            <Link href="/#contact" className="hover:text-foreground">Contact</Link>
           </div>
           <p>Last updated August 3, 2026.</p>
         </div>

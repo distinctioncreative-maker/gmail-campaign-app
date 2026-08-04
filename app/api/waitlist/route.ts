@@ -5,7 +5,7 @@ import { handleApiErrors } from "@/lib/api";
 import { firestore } from "@/lib/firebase/admin";
 import { enforceRateLimit, requestRateLimitKey } from "@/lib/util/rateLimit";
 
-// Public, unauthenticated: the landing page captures private-pilot requests
+// Public, unauthenticated: the landing page captures Talk to sales enquiries
 // here. No account is created; only a contact email is recorded.
 const BodySchema = z.object({
   email: z.string().trim().email().max(200),
@@ -56,5 +56,5 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       { merge: true }
     );
 
-  return NextResponse.json({ ok: true, message: "Your pilot request is in." });
+  return NextResponse.json({ ok: true, message: "Your message is in." });
 });

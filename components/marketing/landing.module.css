@@ -155,7 +155,7 @@
   color: var(--landing-on-ink-muted);
 }
 
-.root .navPilot {
+.root .navStart {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -176,7 +176,7 @@
     transform 180ms ease;
 }
 
-.root .navPilot:hover {
+.root .navStart:hover {
   background: var(--landing-surface);
   color: var(--landing-copy);
   box-shadow:
@@ -185,20 +185,20 @@
   transform: translateY(-1px);
 }
 
-.root .navPilot:visited {
+.root .navStart:visited {
   color: var(--landing-copy);
 }
 
-.navPilot svg {
+.navStart svg {
   flex: 0 0 auto;
   transition: transform 180ms ease;
 }
 
-.navPilot:hover svg {
+.navStart:hover svg {
   transform: translateX(2px);
 }
 
-.navPilot:focus-visible,
+.navStart:focus-visible,
 .login:focus-visible,
 .navLinks a:focus-visible,
 .heroFoot a:focus-visible,
@@ -322,19 +322,103 @@
   animation: heroReveal 780ms 220ms ease-out both;
 }
 
-.pilotAnchor {
+.contactAnchor {
   scroll-margin-top: 96px;
 }
 
+/* Hero calls to action. The hero used to lead with an email-capture field,
+   which asked a stranger to hand over a work email before they had seen
+   anything. The product is something you can start using, so the primary
+   action is a real sign-in and the conversation is the secondary path. */
+.heroCtas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 34px;
+  animation: heroReveal 780ms 220ms ease-out both;
+}
+
+.root .heroPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  border: 1px solid var(--landing-blue);
+  border-radius: 10px;
+  background: var(--landing-blue);
+  padding: 0 26px;
+  color: var(--landing-blue-contrast);
+  font-size: 15px;
+  font-weight: 650;
+  transition:
+    background 180ms var(--landing-ease),
+    border-color 180ms var(--landing-ease);
+}
+
+.root .heroPrimary:hover {
+  border-color: var(--landing-blue-deep);
+  background: var(--landing-blue-deep);
+  color: var(--landing-blue-contrast);
+}
+
+.root .heroSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  border: 1px solid var(--landing-on-ink-subtle);
+  border-radius: 10px;
+  padding: 0 24px;
+  color: var(--landing-on-ink);
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    border-color 180ms var(--landing-ease),
+    background 180ms var(--landing-ease);
+}
+
+.root .heroSecondary:hover {
+  border-color: var(--landing-on-ink);
+  background: rgb(255 255 255 / 6%);
+  color: var(--landing-on-ink);
+}
+
+.heroPrimary svg {
+  flex: 0 0 auto;
+  transition: transform 180ms var(--landing-ease);
+}
+
+.heroPrimary:hover svg {
+  transform: translateX(3px);
+}
+
+.heroPrimary:focus-visible,
+.heroSecondary:focus-visible {
+  outline: 3px solid var(--landing-blue-on-ink);
+  outline-offset: 4px;
+}
+
+.heroNote {
+  margin-top: 14px;
+  color: var(--landing-on-ink-subtle);
+  font-size: 13px;
+  animation: heroReveal 780ms 260ms ease-out both;
+}
+
+/* The contact form. It used to sit in the dark hero, so every colour here
+   was an on-ink value. It now lives in the final section on light paper,
+   where those values rendered light text on light ground. */
 .waitForm {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 9px;
-  border: 1px solid rgb(255 255 255 / 13%);
-  border-radius: 12px;
-  background: rgb(255 255 255 / 6%);
+  border: 1px solid var(--landing-line);
+  border-radius: 10px;
+  background: var(--landing-surface);
   padding: 7px;
-  box-shadow: 0 18px 55px rgb(0 0 0 / 22%);
 }
 
 .waitForm input {
@@ -344,17 +428,17 @@
   outline: 0;
   background: transparent;
   padding: 0 13px;
-  color: var(--landing-on-ink);
+  color: var(--landing-copy);
   font-size: 15px;
 }
 
 .waitForm input::placeholder {
-  color: var(--landing-on-ink-subtle);
+  color: var(--landing-muted);
 }
 
 .waitForm input:focus-visible {
-  border-radius: 8px;
-  box-shadow: inset 0 0 0 2px var(--landing-blue-on-ink);
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 2px var(--landing-blue);
 }
 
 .waitForm button {
@@ -364,22 +448,17 @@
   min-height: 48px;
   gap: 8px;
   border: 0;
-  border-radius: 9px;
-  background: var(--landing-surface-soft);
+  border-radius: 8px;
+  background: var(--landing-blue);
   padding: 0 19px;
-  color: var(--landing-copy);
-  font-weight: 700;
+  color: var(--landing-blue-contrast);
+  font-weight: 650;
   cursor: pointer;
-  transition:
-    background 180ms ease,
-    box-shadow 180ms var(--landing-ease),
-    transform 180ms var(--landing-ease);
+  transition: background 180ms var(--landing-ease);
 }
 
 .waitForm button:hover {
-  background: var(--landing-surface);
-  box-shadow: 0 10px 24px rgb(0 0 0 / 16%);
-  transform: translateY(-1px);
+  background: var(--landing-blue-deep);
 }
 
 .waitForm button:disabled {
@@ -390,13 +469,13 @@
 .formNote,
 .formError {
   margin: 10px 0 0;
-  color: var(--landing-on-ink-subtle);
+  color: var(--landing-muted);
   font-size: 12px;
   line-height: 1.5;
 }
 
 .formError {
-  color: var(--landing-danger-on-ink);
+  color: var(--landing-danger-strong);
 }
 
 .waitSuccess {
@@ -405,10 +484,11 @@
   align-items: center;
   gap: 13px;
   margin: 34px auto 0;
-  border: 1px solid color-mix(in srgb, var(--landing-green) 28%, transparent);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--landing-green) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--landing-green) 32%, var(--landing-line));
+  border-radius: 10px;
+  background: var(--landing-green-soft);
   padding: 14px 16px;
+  color: var(--landing-copy);
   text-align: left;
 }
 
@@ -418,9 +498,9 @@
   height: 38px;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--landing-green) 16%, transparent);
-  color: var(--landing-green-on-ink);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--landing-green) 16%, var(--landing-surface));
+  color: var(--landing-green-strong);
 }
 
 .waitSuccess strong,
@@ -434,7 +514,7 @@
 
 .waitSuccess small {
   margin-top: 2px;
-  color: var(--landing-on-ink-muted);
+  color: var(--landing-muted);
   font-size: 12px;
 }
 
@@ -3208,7 +3288,7 @@
     min-width: 44px;
   }
 
-  .root .navPilot {
+  .root .navStart {
     min-height: 44px;
     padding-inline: 12px;
     font-size: 12px;

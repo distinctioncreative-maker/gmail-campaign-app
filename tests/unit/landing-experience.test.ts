@@ -65,12 +65,12 @@ describe("landing-page experience", () => {
     expect(navigation).not.toContain("<LogoMark");
   });
 
-  it("keeps the top-right pilot action readable above the global link rule", () => {
+  it("keeps the top-right action readable above the global link rule", () => {
     // The colour now comes from the shared brand token rather than a literal,
     // so this asserts the intent (dark ink on the light pill) and checks the
     // resolved --foreground value for contrast.
     expect(landingStyles).toMatch(
-      /\.root \.navPilot \{[\s\S]*?color: var\(--landing-copy\);/
+      /\.root \.navStart \{[\s\S]*?color: var\(--landing-copy\);/
     );
     expect(
       contrastRatio(
@@ -78,7 +78,7 @@ describe("landing-page experience", () => {
         tokenHex("marketing-surface-2")
       )
     ).toBeGreaterThanOrEqual(4.5);
-    expect(landingSource).toContain("Request a pilot <Arrow />");
+    expect(landingSource).toContain("Get started <Arrow />");
   });
 
   it("keeps Log in visible and touchable when zoom creates a narrow viewport", () => {
@@ -139,17 +139,41 @@ describe("landing-page experience", () => {
     }
   });
 
-  it("centers and focuses the pilot email field from every shared CTA", () => {
-    expect(landingSource).toContain("function PilotLink");
+  it("sends every primary call to action to the real sign-in", () => {
+    // The site used to gate itself behind an email-capture field labelled
+    // "Request a pilot". The product is something you can start using, so
+    // Get started is a link to /sign-in everywhere it appears, and no CTA
+    // implies that billing or plan selection happens on this page.
+    expect(landingSource).toContain("function StartLink");
+    expect(landingSource).toContain('<Link className={className} href="/sign-in">');
+    expect(landingSource.match(/<StartLink/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(landingStyles).not.toMatch(/pilot/i);
+  });
+
+  it("centers and focuses the contact field from the secondary CTA", () => {
+    expect(landingSource).toContain("function ContactLink");
     expect(landingSource).toContain('block: "center"');
     expect(landingSource).toContain('"scrollend"');
     expect(landingSource).toContain("fallback = window.setTimeout");
     expect(landingSource).toContain("input.focus()");
-    expect(landingSource).toContain("aria-controls={PILOT_EMAIL_ID}");
-    expect(landingSource.match(/<PilotLink/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(landingSource).toContain("aria-controls={CONTACT_EMAIL_ID}");
+    expect(landingSource.match(/<ContactLink/g)?.length).toBeGreaterThanOrEqual(2);
     expect(landingStyles).toMatch(
-      /\.pilotAnchor \{[\s\S]*?scroll-margin-top: 96px;/
+      /\.contactAnchor \{[\s\S]*?scroll-margin-top: 96px;/
     );
+  });
+
+  it("keeps the contact form legible on the light section it now sits in", () => {
+    // It was authored for the dark hero, so every colour in it was an on-ink
+    // value. Moved to the final section on paper, those rendered light text
+    // on a light ground.
+    const form = landingStyles.match(/\.waitForm \{[\s\S]*?\n\}/)?.[0] ?? "";
+    const input = landingStyles.match(/\.waitForm input \{[\s\S]*?\n\}/)?.[0] ?? "";
+    expect(form).toContain("background: var(--landing-surface)");
+    expect(input).toContain("color: var(--landing-copy)");
+    expect(
+      contrastRatio(tokenHex("marketing-copy"), tokenHex("marketing-surface"))
+    ).toBeGreaterThanOrEqual(4.5);
   });
 
   it("makes the hero walkthrough user controlled and keyboard operable", () => {
@@ -236,7 +260,7 @@ describe("landing-page experience", () => {
       /\.operationsTabs button \{[\s\S]*?min-height: 44px;/
     );
     expect(landingStyles).toMatch(
-      /@media \(max-width: 720px\) \{[\s\S]*?\.root \.navPilot \{[\s\S]*?min-height: 44px;/
+      /@media \(max-width: 720px\) \{[\s\S]*?\.root \.navStart \{[\s\S]*?min-height: 44px;/
     );
   });
 });

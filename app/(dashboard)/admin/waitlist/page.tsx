@@ -10,7 +10,7 @@ import { StatTile } from "@/components/ui/StatTile";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 
-/** Admin-only view of private-pilot requests, with CSV export. */
+/** Admin-only view of Talk to sales enquiries, with CSV export. */
 export default async function WaitlistPage() {
   const ctx = await requireUser();
   const settings = await getOrgSettings(ctx.organizationId);
@@ -31,12 +31,12 @@ export default async function WaitlistPage() {
   return (
     <div>
       <PageHeader
-        title="Pilot requests"
-        description="Everyone who requested a private Cadence pilot from the public landing page."
+        title="Sales enquiries"
+        description="Everyone who asked to talk to sales from the public landing page."
         actions={
           entries.length > 0 ? (
             <ExportCsvButton
-              filename="cadence-pilot-requests.csv"
+              filename="cadence-sales-enquiries.csv"
               headers={["Email", "Source", "Joined (UTC)"]}
               rows={rows}
             />
@@ -64,7 +64,7 @@ export default async function WaitlistPage() {
           <EmptyState
             variant="inline"
             icon="users"
-            title="No pilot requests yet"
+            title="No enquiries yet"
             description="Requests appear here as soon as someone submits the form on the public landing page."
           />
         </div>

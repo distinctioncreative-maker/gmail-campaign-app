@@ -53,26 +53,51 @@ function Arrow() {
   );
 }
 
-const PILOT_TARGET_ID = "pilot";
-const PILOT_EMAIL_ID = "pilot-email-hero";
+const CONTACT_TARGET_ID = "contact";
+const CONTACT_EMAIL_ID = "contact-email-contact";
 
-function PilotLink({
+/**
+ * The primary call to action. It goes to the real sign-in, because the product
+ * is something you can now start using rather than something to be admitted
+ * to. Everything that used to say "request a pilot" says "Get started" and
+ * lands here.
+ */
+function StartLink({
   children,
   className,
 }: {
   children: ReactNode;
   className?: string;
 }) {
-  function focusPilotRequest(event: MouseEvent<HTMLAnchorElement>) {
-    const target = document.getElementById(PILOT_TARGET_ID);
-    const input = document.getElementById(PILOT_EMAIL_ID);
+  return (
+    <Link className={className} href="/sign-in">
+      {children}
+    </Link>
+  );
+}
+
+/**
+ * The secondary path, for teams that want a conversation before they connect
+ * an inbox. It centres and focuses the contact field rather than jumping, so
+ * the cursor lands where the next keystroke should go.
+ */
+function ContactLink({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  function focusContactRequest(event: MouseEvent<HTMLAnchorElement>) {
+    const target = document.getElementById(CONTACT_TARGET_ID);
+    const input = document.getElementById(CONTACT_EMAIL_ID);
     if (!target || !(input instanceof HTMLInputElement)) return;
 
     event.preventDefault();
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    window.history.replaceState(null, "", `#${PILOT_TARGET_ID}`);
+    window.history.replaceState(null, "", `#${CONTACT_TARGET_ID}`);
     target.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
       block: "center",
@@ -95,9 +120,9 @@ function PilotLink({
   return (
     <a
       className={className}
-      href={`#${PILOT_TARGET_ID}`}
-      aria-controls={PILOT_EMAIL_ID}
-      onClick={focusPilotRequest}
+      href={`#${CONTACT_TARGET_ID}`}
+      aria-controls={CONTACT_EMAIL_ID}
+      onClick={focusContactRequest}
     >
       {children}
     </a>
@@ -204,7 +229,7 @@ function WaitField({
         throw new Error(body.error ?? "We could not record your request.");
       }
       setStatus("done");
-      setMessage(body.message ?? "Your pilot request is in.");
+      setMessage(body.message ?? "Your message is in.");
     } catch (error) {
       setStatus("error");
       setMessage(
@@ -223,7 +248,7 @@ function WaitField({
         </span>
         <span>
           <strong>{message}</strong>
-          <small>We will follow up with fit and onboarding details.</small>
+          <small>We will follow up with rollout and onboarding details.</small>
         </span>
       </div>
     );
@@ -232,27 +257,27 @@ function WaitField({
   return (
     <div className={styles.waitField}>
       <form className={styles.waitForm} onSubmit={submit} noValidate>
-        <label className={styles.srOnly} htmlFor={`pilot-email-${source}`}>
+        <label className={styles.srOnly} htmlFor={`contact-email-${source}`}>
           Work email
         </label>
         <input
-          id={`pilot-email-${source}`}
+          id={`contact-email-${source}`}
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@company.com"
           autoComplete="email"
           inputMode="email"
-          aria-describedby={`pilot-note-${source}`}
+          aria-describedby={`contact-note-${source}`}
           required
         />
         <button type="submit" disabled={status === "busy"}>
-          {status === "busy" ? "Sending request..." : "Request a pilot"}
+          {status === "busy" ? "Sending..." : "Talk to sales"}
           {status !== "busy" && <Arrow />}
         </button>
       </form>
       <p
-        id={`pilot-note-${source}`}
+        id={`contact-note-${source}`}
         className={status === "error" ? styles.formError : styles.formNote}
         role={status === "error" ? "alert" : undefined}
       >
@@ -454,8 +479,8 @@ const FEATURES = [
 
 const FAQ = [
   [
-    "Who is the private pilot for?",
-    "Cadence is currently best suited to founders, focused sales teams, and agencies that use Gmail or Google Workspace and want a more controlled outreach workflow. We confirm fit before onboarding.",
+    "How do I start?",
+    "Choose Get started, sign in with your Google account, and connect the Gmail you send from. Cadence is built for founders, focused sales teams, and agencies on Gmail or Google Workspace. Access is granted per workspace while we are in early access, so if yours is not enabled yet the sign-in page will say so and we will follow up.",
   ],
   [
     "Does Cadence guarantee replies or inbox placement?",
@@ -463,7 +488,7 @@ const FAQ = [
   ],
   [
     "What Gmail access does Cadence need?",
-    "Cadence uses Google authorization for the product features you approve. Access is revocable, tokens are encrypted at rest, and pilot onboarding explains the requested scopes before connection.",
+    "Two scopes: permission to compose and send as you, and read access so replies and bounces can be matched back to the right campaign. Google shows both on the consent screen before anything is connected. Cadence sends through the Gmail API as your account, not through a relay, so replies land in your own thread. Access is revocable from your Google account at any time and the connection tokens are encrypted at rest.",
   ],
   [
     "How many emails should I send each day?",
@@ -475,7 +500,7 @@ const FAQ = [
   ],
   [
     "When am I charged?",
-    "In-app billing is not active during the managed pilot. We confirm the plan, limits, support, and payment terms with you before any charge. The displayed prices are the current monthly pilot model.",
+    "Not on signup. There is no card field anywhere on this site and none in the product yet, so creating a workspace costs nothing. The prices above are the current monthly model, and we confirm the plan, limits, support, and payment terms with you before any charge is ever raised.",
   ],
 ] as const;
 
@@ -1306,9 +1331,9 @@ export function Landing() {
             <a className={styles.login} href="/sign-in">
               Log in
             </a>
-            <PilotLink className={styles.navPilot}>
-              Request a pilot <Arrow />
-            </PilotLink>
+            <StartLink className={styles.navStart}>
+              Get started <Arrow />
+            </StartLink>
           </div>
         </div>
       </nav>
@@ -1330,16 +1355,17 @@ export function Landing() {
                 from your own Gmail, with human-reviewed AI, measured pacing,
                 and every reply organized for the next step.
               </p>
-              <div
-                className={styles.pilotAnchor}
-                id={PILOT_TARGET_ID}
-                data-pilot-request
-              >
-                <WaitField
-                  source="hero"
-                  note="Request a managed pilot. No credit card and no open signup."
-                />
+              <div className={styles.heroCtas}>
+                <StartLink className={styles.heroPrimary}>
+                  Get started <Arrow />
+                </StartLink>
+                <ContactLink className={styles.heroSecondary}>
+                  Talk to sales
+                </ContactLink>
               </div>
+              <p className={styles.heroNote}>
+                Connect your own Gmail. Nothing sends until you review it.
+              </p>
               <div className={styles.heroFoot}>
                 <a href="#workflow">
                   Explore the workflow <Arrow />
@@ -1487,9 +1513,9 @@ export function Landing() {
                   consent, access, duplicate-send prevention, and campaign
                   review so avoidable risk is harder to ignore.
                 </p>
-                <PilotLink>
-                  Discuss a managed pilot <Arrow />
-                </PilotLink>
+                <ContactLink>
+                  Talk to sales <Arrow />
+                </ContactLink>
               </div>
               <div className={styles.trustGrid}>
                 {[
@@ -1526,12 +1552,13 @@ export function Landing() {
         <section className={styles.pricingSection} id="pricing">
           <div className={styles.shell}>
             <div className={styles.sectionHeading} data-reveal>
-              <span className={styles.eyebrow}>Managed pilot pricing</span>
-              <h2>A focused pilot, priced for real use.</h2>
+              <span className={styles.eyebrow}>Pricing</span>
+              <h2>Priced for real use, not for a demo.</h2>
               <p>
                 Choose a focused solo workflow or a shared team operating
-                view. We confirm fit, limits, onboarding, and payment terms
-                before billing is activated.
+                view. Card details are never taken on this page: we confirm
+                limits, onboarding, and payment terms with you before any
+                charge.
               </p>
             </div>
             <div className={styles.pricingGrid} data-reveal>
@@ -1558,9 +1585,17 @@ export function Landing() {
                       </li>
                     ))}
                   </ul>
-                  <PilotLink>
-                    {tier.cta} <Arrow />
-                  </PilotLink>
+                  {/* Enterprise is a conversation; the other two are a
+                      sign-in. Neither takes card details on this page. */}
+                  {tier.id === "ENTERPRISE" ? (
+                    <ContactLink>
+                      {tier.cta} <Arrow />
+                    </ContactLink>
+                  ) : (
+                    <StartLink>
+                      {tier.cta} <Arrow />
+                    </StartLink>
+                  )}
                 </article>
               ))}
             </div>
@@ -1568,8 +1603,7 @@ export function Landing() {
               Daily limits are product ceilings, not a promise that every
               inbox should use the maximum. Recommended pacing depends on
               provider rules, sender history, audience quality, and campaign
-              behavior. Annual billing and overages are not active in the
-              private pilot.
+              behavior. Annual billing and overages are not active yet.
             </p>
           </div>
         </section>
@@ -1593,17 +1627,21 @@ export function Landing() {
 
         <section className={styles.finalCta}>
           <div className={styles.shell}>
-            <div className={styles.finalPanel} data-reveal>
-              <span className={styles.eyebrow}>Private pilot</span>
+            <div
+              className={`${styles.finalPanel} ${styles.contactAnchor}`}
+              id={CONTACT_TARGET_ID}
+              data-reveal
+            >
+              <span className={styles.eyebrow}>Talk to us</span>
               <h2>Give your next campaign a clearer path to conversation.</h2>
               <p>
-                Bring a real audience and goal. We will review fit, explain
-                the safety model, and help your team build a responsible path
-                from first draft to qualified conversation.
+                You can start on your own with Get started above. If you would
+                rather talk through rollout, security review, or how this fits
+                your team first, leave a work email and we will reply.
               </p>
               <WaitField
-                source="footer"
-                note="No mailing list. We only use your email to discuss a Cadence pilot."
+                source="contact"
+                note="No mailing list. We only use your email to answer you."
               />
             </div>
           </div>
@@ -1627,15 +1665,15 @@ export function Landing() {
             <a href="#controls">Live demo</a>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
-            <Link href="/terms">Pilot terms</Link>
+            <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/acceptable-use">Anti-spam</Link>
             <Link href="/compliance">Compliance</Link>
             <Link href="/sign-in">Log in</Link>
           </div>
           <p className={styles.copyright}>
-            © 2026 Cadence. Managed private pilot. Signed pilot documents complete
-            the operating entity, jurisdiction, commercial, and data terms.
+            © 2026 Cadence. Early access. A signed order form completes the
+            operating entity, jurisdiction, commercial, and data terms.
           </p>
         </div>
       </footer>

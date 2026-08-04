@@ -143,7 +143,7 @@ export default function HelpPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Trust and responsible use
           </p>
-          <h2 className="mt-1 font-semibold">Compliance and pilot policies</h2>
+          <h2 className="mt-1 font-semibold">Compliance and policies</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
             Review how Cadence handles commercial email footers, opt-outs, tracking,
             privacy, and acceptable use before launching a campaign.
@@ -153,7 +153,7 @@ export default function HelpPage() {
               ["/compliance", "Email compliance"],
               ["/acceptable-use", "Acceptable use"],
               ["/privacy", "Privacy notice"],
-              ["/terms", "Pilot terms"],
+              ["/terms", "Terms of service"],
             ].map(([href, label]) => (
               <Link key={href} href={href} className="btn-secondary min-h-11 px-4 py-2.5 text-sm">
                 {label}

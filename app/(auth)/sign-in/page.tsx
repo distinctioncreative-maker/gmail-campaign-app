@@ -127,7 +127,7 @@ export default function SignInPage() {
             <p className="mt-3 text-xs leading-relaxed text-muted">
               By continuing, you agree to the{" "}
               <Link href="/terms" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
-                Managed Pilot Terms
+                Terms of Service
               </Link>{" "}
               and acknowledge the{" "}
               <Link href="/privacy" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">

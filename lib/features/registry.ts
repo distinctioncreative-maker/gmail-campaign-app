@@ -447,9 +447,9 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         id: "waitlist-admin",
-        name: "Pilot-request admin view",
+        name: "Sales-enquiry admin view",
         status: "shipped",
-        description: "Admin view of public landing-page pilot requests with CSV export.",
+        description: "Admin view of public landing-page Talk to sales enquiries with CSV export.",
         keyFiles: ["app/(dashboard)/admin/waitlist"],
       },
       {
@@ -516,7 +516,7 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "landing-page",
         name: "Public landing page",
         status: "shipped",
-        description: "Conversion-focused, responsive public site for founders, focused sales teams, and agencies. Typography-first navigation, a calmer editorial layout, sharper outcome-led copy, restrained surfaces, and clearer section hierarchy make the offer feel more credible without sacrificing speed. A premium motion system makes the lead-to-reply workflow visible immediately through a stage clock, live action rail, coordinated product feedback, pointer-responsive lighting, and progressive section reveals without adding a motion dependency. User-controlled examples retain keyboard, touch, reduced-motion, browser-visibility, and off-screen pause behavior. Every pilot call to action centers and focuses the request field, and shared pricing, consent, tracking, safety, and deliverability limits remain explicit without unsupported performance claims.",
+        description: "Conversion-focused, responsive public site for founders, focused sales teams, and agencies. Typography-first navigation, a calmer editorial layout, sharper outcome-led copy, restrained surfaces, and clearer section hierarchy make the offer feel more credible without sacrificing speed. A premium motion system makes the lead-to-reply workflow visible immediately through a stage clock, live action rail, coordinated product feedback, pointer-responsive lighting, and progressive section reveals without adding a motion dependency. User-controlled examples retain keyboard, touch, reduced-motion, browser-visibility, and off-screen pause behavior. The primary call to action is Get started and goes to sign-in, the secondary centers and focuses the contact field, and shared pricing, consent, tracking, safety, and deliverability limits remain explicit without unsupported performance claims.",
         keyFiles: ["components/marketing/Landing.tsx", "components/marketing/landing.module.css", "app/layout.tsx", "app/opengraph-image.tsx"],
       },
       {
@@ -528,9 +528,9 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         id: "waitlist-capture",
-        name: "Private-pilot capture",
+        name: "Sales-enquiry capture",
         status: "shipped",
-        description: "Public, unauthenticated, rate-limited endpoint that records private-pilot requests from the landing page.",
+        description: "Public, unauthenticated, rate-limited endpoint that records Talk to sales enquiries from the landing page.",
         keyFiles: ["app/api/waitlist"],
       },
       {
@@ -541,9 +541,9 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         id: "legal-pages",
-        name: "Managed-pilot legal and compliance center",
+        name: "Legal and compliance center",
         status: "beta",
-        description: "Public Terms, Privacy, Acceptable Use and Anti-Spam, and Compliance pages explain current product controls, customer duties, tracking limitations, opt-out handling, and the managed-pilot posture. They are an implementation baseline, not final legal clearance: the operating entity, postal address, jurisdiction, retention schedule, subprocessor list, DPA, deletion/export workflow, and counsel approval remain required before self-service launch.",
+        description: "Public Terms, Privacy, Acceptable Use and Anti-Spam, and Compliance pages explain current product controls, customer duties, tracking limitations, opt-out handling, and the early-access posture. They are an implementation baseline, not final legal clearance: the operating entity, postal address, jurisdiction, retention schedule, subprocessor list, DPA, deletion/export workflow, and counsel approval remain required before self-service launch.",
         keyFiles: ["app/terms", "app/privacy", "app/acceptable-use", "app/compliance", "components/legal/LegalPage.tsx"],
       },
       {
