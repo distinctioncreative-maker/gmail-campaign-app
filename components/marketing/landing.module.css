@@ -39,10 +39,22 @@
   --landing-gold-soft: var(--revenue-soft);
   --landing-danger-strong: color-mix(in srgb, var(--danger) 72%, var(--landing-copy));
   --landing-danger-on-ink: color-mix(in srgb, var(--landing-on-ink) 54%, var(--danger));
+  /* Radius ladder, bridged to the app's own scale. The public page carried
+     seventeen ad-hoc radii, twelve of them pill-shaped, which is the single
+     biggest reason the site read softer and cheaper than the product it
+     advertises. Pills and circles elsewhere in this file are shapes rather
+     than radii, and they stay. */
+  --landing-r-sm: var(--radius-sm);
+  --landing-r-md: var(--radius-md);
+  --landing-r-lg: var(--radius-lg);
+  --landing-r-xl: var(--radius-xl);
   --landing-ease: var(--ease-out);
   --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --landing-stage-duration: 2300ms;
-  --landing-shadow-premium: 0 34px 90px -46px rgb(15 23 41 / 42%);
+  /* Kept as a token so the 60-odd rules that referenced a shadow do not need
+     touching, but the page no longer lifts anything off the paper. Definition
+     comes from the hairline and from the space around it. */
+  --landing-shadow-premium: none;
   min-width: 0;
   overflow: clip;
   background: var(--landing-paper);
@@ -72,11 +84,11 @@
   left: 10px;
   z-index: 100;
   transform: translateY(-150%);
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-surface);
   padding: 10px 14px;
   color: var(--landing-copy);
-  box-shadow: 0 8px 30px rgb(0 0 0 / 18%);
+  box-shadow: none;
 }
 
 .skipLink:focus {
@@ -162,14 +174,12 @@
   min-height: 42px;
   gap: 7px;
   border: 1px solid rgb(255 255 255 / 18%);
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-surface-soft);
   padding: 0 16px;
   color: var(--landing-copy);
   font-weight: 700;
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 75%) inset,
-    0 8px 22px rgb(0 0 0 / 18%);
+  box-shadow: none;
   transition:
     background 180ms ease,
     box-shadow 180ms ease,
@@ -179,9 +189,7 @@
 .root .navStart:hover {
   background: var(--landing-surface);
   color: var(--landing-copy);
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 90%) inset,
-    0 12px 30px rgb(0 0 0 / 28%);
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
@@ -208,16 +216,20 @@
   outline-offset: 4px;
 }
 
+/* Flat navy. The hero used to stack two tinted radial washes over a
+   three-stop vertical gradient, which is what gave it a mottled, backlit
+   look. One quiet gradient is enough to keep the fold from reading as a
+   flat rectangle. */
 .hero {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 72% 10%, color-mix(in srgb, var(--landing-info) 32%, transparent), transparent 36rem),
-    radial-gradient(circle at 22% 6%, color-mix(in srgb, var(--landing-blue) 22%, transparent), transparent 30rem),
-    linear-gradient(180deg, var(--landing-ink), var(--landing-ink-soft) 72%, var(--landing-ink));
+  background: linear-gradient(180deg, var(--landing-ink), var(--landing-ink-soft));
   color: var(--landing-on-ink);
 }
 
+/* A static engineering grid, fading out toward the product mock. It used to
+   drift back and forth on a permanent 18 second loop, which is motion in
+   peripheral vision that carries no information. */
 .heroGlow {
   position: absolute;
   inset: 0;
@@ -227,38 +239,11 @@
   background-size: 72px 72px;
   mask-image: linear-gradient(to bottom, black, transparent 72%);
   pointer-events: none;
-  animation: gridDrift 18s ease-in-out infinite alternate;
 }
 
-.heroGlow::before,
-.heroGlow::after {
-  position: absolute;
-  border-radius: 50%;
-  content: "";
-  filter: blur(2px);
-}
-
-.heroGlow::before {
-  top: 17%;
-  right: 8%;
-  width: 280px;
-  height: 280px;
-  border: 1px solid color-mix(in srgb, var(--landing-info-on-ink) 18%, transparent);
-  box-shadow:
-    0 0 100px color-mix(in srgb, var(--landing-info) 16%, transparent),
-    inset 0 0 80px color-mix(in srgb, var(--landing-blue) 10%, transparent);
-  animation: orbitHalo 16s ease-in-out infinite;
-}
-
-.heroGlow::after {
-  top: 31%;
-  left: 7%;
-  width: 9px;
-  height: 9px;
-  background: var(--landing-info-on-ink);
-  box-shadow: 0 0 28px 10px color-mix(in srgb, var(--landing-info) 24%, transparent);
-  animation: signalDrift 12s ease-in-out infinite;
-}
+/* The orbiting blurred halo and the drifting glow dot that used to sit on
+   top of the grid are gone. They were the visual language of a gaming
+   peripheral, not of enterprise software. */
 
 .hero .shell {
   position: relative;
@@ -276,7 +261,7 @@
   align-items: center;
   gap: 9px;
   border: 1px solid color-mix(in srgb, var(--landing-blue) 28%, transparent);
-  border-radius: 8px;
+  border-radius: var(--landing-r-lg);
   background: color-mix(in srgb, var(--landing-blue) 12%, transparent);
   padding: 8px 11px;
   color: var(--landing-on-ink);
@@ -292,7 +277,7 @@
   height: 7px;
   border-radius: 50%;
   background: var(--landing-green-on-ink);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--landing-green) 12%, transparent);
+  box-shadow: none;
 }
 
 .hero h1 {
@@ -347,7 +332,7 @@
   gap: 9px;
   min-height: 50px;
   border: 1px solid var(--landing-blue);
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-blue);
   padding: 0 26px;
   color: var(--landing-blue-contrast);
@@ -370,7 +355,7 @@
   justify-content: center;
   min-height: 50px;
   border: 1px solid var(--landing-on-ink-subtle);
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   padding: 0 24px;
   color: var(--landing-on-ink);
   font-size: 15px;
@@ -408,15 +393,17 @@
   animation: heroReveal 780ms 260ms ease-out both;
 }
 
-/* The contact form. It used to sit in the dark hero, so every colour here
-   was an on-ink value. It now lives in the final section on light paper,
-   where those values rendered light text on light ground. */
+/* The contact form. It used to be a translucent white-on-white sliver that
+   only worked on the dark hero, and it broke the moment it moved. It is now a
+   solid white card with a real border and a blue submit, which reads the same
+   on the navy closing panel and on paper. The helper text below it sits
+   directly on the panel, so that takes the on-ink neutral. */
 .waitForm {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 9px;
   border: 1px solid var(--landing-line);
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 7px;
 }
@@ -437,7 +424,7 @@
 }
 
 .waitForm input:focus-visible {
-  border-radius: 7px;
+  border-radius: var(--landing-r-md);
   box-shadow: inset 0 0 0 2px var(--landing-blue);
 }
 
@@ -448,7 +435,7 @@
   min-height: 48px;
   gap: 8px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-blue);
   padding: 0 19px;
   color: var(--landing-blue-contrast);
@@ -469,13 +456,13 @@
 .formNote,
 .formError {
   margin: 10px 0 0;
-  color: var(--landing-muted);
+  color: var(--landing-on-ink-muted);
   font-size: 12px;
   line-height: 1.5;
 }
 
 .formError {
-  color: var(--landing-danger-strong);
+  color: var(--landing-danger-on-ink);
 }
 
 .waitSuccess {
@@ -485,7 +472,7 @@
   gap: 13px;
   margin: 34px auto 0;
   border: 1px solid color-mix(in srgb, var(--landing-green) 32%, var(--landing-line));
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-green-soft);
   padding: 14px 16px;
   color: var(--landing-copy);
@@ -498,7 +485,7 @@
   height: 38px;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: 8px;
+  border-radius: var(--landing-r-lg);
   background: color-mix(in srgb, var(--landing-green) 16%, var(--landing-surface));
   color: var(--landing-green-strong);
 }
@@ -559,47 +546,33 @@
   margin: 74px auto 0;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 18px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
   color: var(--landing-copy);
-  box-shadow: 0 44px 110px rgb(0 0 0 / 40%);
+  box-shadow: none;
   text-align: left;
   animation: frameReveal 900ms 340ms ease-out both;
   contain: paint;
 }
 
+/* A soft light that follows the pointer across the product mock. This is the
+   one piece of lighting worth keeping: it responds to the reader rather than
+   looping at them, so it reads as material rather than as an effect. The
+   white sheen that used to sweep across the same frame every eleven seconds
+   is gone. */
 .productFrame::before {
   position: absolute;
   z-index: 3;
   inset: 0;
   background: radial-gradient(
     circle 260px at var(--spotlight-x) var(--spotlight-y),
-    color-mix(in srgb, var(--landing-info) 18%, transparent),
+    color-mix(in srgb, var(--landing-info) 12%, transparent),
     transparent 72%
   );
   content: "";
-  opacity: 0.72;
+  opacity: 0.6;
   pointer-events: none;
   transition: opacity 260ms var(--landing-ease);
-}
-
-.productFrame::after {
-  position: absolute;
-  z-index: 4;
-  top: -45%;
-  bottom: -45%;
-  left: -42%;
-  width: 26%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(255 255 255 / 30%),
-    transparent
-  );
-  content: "";
-  pointer-events: none;
-  transform: rotate(13deg);
-  animation: frameSheen 11s 1.5s ease-in-out infinite;
 }
 
 .productFrame > * {
@@ -649,16 +622,14 @@
   height: 6px;
   border-radius: 50%;
   background: var(--landing-green);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--landing-green) 10%, transparent);
+  box-shadow: none;
   animation: liveDot 1.8s ease-out infinite;
 }
 
 .frameBody {
   position: relative;
   padding: 25px;
-  background:
-    radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--landing-info) 10%, transparent), transparent 20rem),
-    var(--landing-surface-soft);
+  background: var(--landing-surface-soft);
 }
 
 .panelHeading,
@@ -697,7 +668,7 @@
   height: 7px;
   border-radius: 50%;
   background: var(--landing-green);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--landing-green) 30%, transparent);
+  box-shadow: none;
   animation: healthPulse 2.4s ease-out infinite;
 }
 
@@ -746,7 +717,7 @@
   height: 7px;
   border-radius: 50%;
   background: var(--landing-green);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--landing-green) 10%, transparent);
+  box-shadow: none;
   animation: liveDot 1.8s ease-out infinite;
 }
 
@@ -759,7 +730,7 @@
 .demoToolbar button {
   min-height: 44px;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-surface);
   padding: 0 12px;
   color: var(--landing-copy);
@@ -789,7 +760,7 @@
   justify-content: center;
   gap: 7px;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 11px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 7px;
   color: var(--landing-muted);
@@ -811,7 +782,7 @@
   left: 0;
   height: 2px;
   border-radius: 999px 999px 0 0;
-  background: linear-gradient(90deg, var(--landing-blue-deep), var(--landing-blue), var(--landing-green));
+  background: var(--landing-blue);
   transform: scaleX(0);
   transform-origin: left center;
   animation: activeStageClock var(--landing-stage-duration) linear forwards;
@@ -823,7 +794,7 @@
   height: 26px;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: 8px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-surface-soft);
 }
 
@@ -831,7 +802,7 @@
   border-color: var(--landing-blue-border);
   background: var(--landing-blue-soft);
   color: var(--landing-blue-deep);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--landing-blue) 10%, transparent);
+  box-shadow: none;
 }
 
 .productFrame[data-playing="false"] .stageClock {
@@ -870,7 +841,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--landing-blue), var(--landing-green));
+  background: var(--landing-blue);
   transition: width 380ms var(--landing-ease);
 }
 
@@ -879,10 +850,8 @@
   margin-top: 12px;
   overflow: hidden;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 14px;
-  background:
-    radial-gradient(circle at 50% 0, color-mix(in srgb, var(--landing-blue) 8%, transparent), transparent 15rem),
-    var(--landing-blue-soft);
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-blue-soft);
   padding: 16px 20px 11px;
 }
 
@@ -900,8 +869,8 @@
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--landing-blue-deep), var(--landing-blue), var(--landing-green));
-  box-shadow: 0 0 14px color-mix(in srgb, var(--landing-blue) 20%, transparent);
+  background: var(--landing-blue);
+  box-shadow: none;
   transition: width 480ms var(--landing-ease);
 }
 
@@ -914,9 +883,7 @@
   border: 2px solid var(--landing-surface);
   border-radius: 50%;
   background: var(--landing-blue-deep);
-  box-shadow:
-    0 0 0 5px color-mix(in srgb, var(--landing-blue) 10%, transparent),
-    0 0 20px color-mix(in srgb, var(--landing-blue) 42%, transparent);
+  box-shadow: none;
   transform: translate(-50%, -50%);
   transition:
     left 480ms var(--landing-ease),
@@ -949,9 +916,9 @@
   height: 30px;
   place-items: center;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-surface);
-  box-shadow: 0 5px 14px rgb(15 23 41 / 6%);
+  box-shadow: none;
   transition:
     border-color 280ms var(--landing-ease),
     background 280ms var(--landing-ease),
@@ -982,9 +949,7 @@
   border-color: var(--landing-blue-border);
   background: var(--landing-surface);
   color: var(--landing-blue);
-  box-shadow:
-    0 0 0 5px color-mix(in srgb, var(--landing-blue) 9%, transparent),
-    0 10px 22px color-mix(in srgb, var(--landing-blue) 13%, transparent);
+  box-shadow: none;
   transform: translateY(-2px) scale(1.04);
 }
 
@@ -1000,10 +965,8 @@
   gap: 28px;
   margin-top: 16px;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 14px;
-  background:
-    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--landing-blue) 10%, transparent), transparent 16rem),
-    var(--landing-surface);
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-surface);
   padding: 18px;
   animation: stageReveal 280ms ease-out both;
 }
@@ -1041,8 +1004,8 @@
   margin-top: 10px;
   overflow: hidden;
   border: 1px solid var(--landing-blue-border);
-  border-radius: 12px;
-  background: linear-gradient(105deg, var(--landing-blue-soft), var(--landing-blue-soft) 62%, var(--landing-green-soft));
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-blue-soft);
   padding: 11px 13px;
   animation: signalArrive 360ms var(--landing-ease) both;
 }
@@ -1052,10 +1015,10 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   color: var(--landing-blue);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--landing-blue) 10%, transparent);
+  box-shadow: none;
 }
 
 .stageSignal small,
@@ -1128,7 +1091,7 @@
   position: relative;
   overflow: hidden;
   border: 1px solid var(--landing-line);
-  border-radius: 13px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 15px;
 }
@@ -1140,7 +1103,7 @@
   left: 12px;
   height: 2px;
   border-radius: 999px 999px 0 0;
-  background: linear-gradient(90deg, var(--landing-blue), var(--landing-green));
+  background: var(--landing-blue);
   content: "";
   opacity: 0;
   transform: scaleX(0.35);
@@ -1204,7 +1167,7 @@
 .safetyPanel {
   overflow: hidden;
   border: 1px solid var(--landing-line);
-  border-radius: 13px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
 }
 
@@ -1257,7 +1220,7 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
   color: var(--landing-muted);
   font-size: 10px;
@@ -1324,7 +1287,7 @@
 }
 
 .safetyRowActive {
-  background: linear-gradient(90deg, var(--landing-blue-soft), var(--landing-blue-soft));
+  background: var(--landing-blue-soft);
   color: var(--landing-copy);
   transform: translateX(2px);
 }
@@ -1347,7 +1310,7 @@
   width: 20px;
   height: 20px;
   place-items: center;
-  border-radius: 7px;
+  border-radius: var(--landing-r-md);
   background: var(--landing-green-soft);
   color: var(--landing-green);
 }
@@ -1371,21 +1334,7 @@
   height: 100%;
   overflow: hidden;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--landing-blue), var(--landing-blue-deep));
-}
-
-.paceLine > span::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(255 255 255 / 78%),
-    transparent
-  );
-  content: "";
-  transform: translateX(-100%);
-  animation: paceSheen 3.8s ease-in-out infinite;
+  background: var(--landing-blue);
 }
 
 .proofBar {
@@ -1395,7 +1344,7 @@
   margin: 18px auto 0;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 15px;
+  border-radius: var(--landing-r-xl);
   background: rgb(255 255 255 / 4%);
   animation: heroReveal 820ms 520ms ease-out both;
 }
@@ -1496,10 +1445,10 @@
 .featureGrid article,
 .trustGrid article {
   border: 1px solid var(--landing-line);
-  border-radius: 14px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 26px;
-  box-shadow: 0 16px 38px -34px rgb(15 23 41 / 38%);
+  box-shadow: none;
   transition:
     border-color 220ms ease,
     box-shadow 220ms ease,
@@ -1580,11 +1529,9 @@
   isolation: isolate;
   overflow: hidden;
   border: 1px solid var(--landing-line);
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--landing-blue) 7%, transparent), transparent 15rem),
-    var(--landing-surface-soft);
-  box-shadow: 0 30px 80px -44px rgb(15 23 41 / 48%);
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-surface-soft);
+  box-shadow: none;
   transition:
     border-color 260ms ease,
     box-shadow 260ms ease,
@@ -1644,7 +1591,7 @@
 .reportControls button {
   min-height: 44px;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-surface);
   padding: 0 10px;
   color: var(--landing-muted);
@@ -1686,7 +1633,7 @@
 
 .mockMeta {
   margin-top: 21px;
-  border-radius: 12px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-blue-soft);
   padding: 13px;
 }
@@ -1719,7 +1666,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--landing-green);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--landing-green) 25%, transparent);
+  box-shadow: none;
   animation: aiStatusPulse 2.7s ease-out infinite;
 }
 
@@ -1743,9 +1690,9 @@
 }
 
 .personalizedSubject {
-  border-radius: 3px;
+  border-radius: var(--landing-r-sm);
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--landing-blue) 14%, transparent), color-mix(in srgb, var(--landing-green) 12%, transparent))
+    linear-gradient(90deg, color-mix(in srgb, var(--landing-blue) 14%, transparent), color-mix(in srgb, var(--landing-blue) 6%, transparent))
       no-repeat;
   background-size: 100% 100%;
   padding-inline: 2px;
@@ -1763,10 +1710,10 @@
 }
 
 .personalizedField {
-  border-radius: 2px;
+  border-radius: var(--landing-r-sm);
   background: transparent;
   color: inherit;
-  box-shadow: inset 0 -0.42em color-mix(in srgb, var(--landing-blue) 14%, transparent);
+  box-shadow: none;
   animation: fieldHighlight 5.2s 720ms ease-in-out infinite;
 }
 
@@ -1781,10 +1728,10 @@
   align-items: center;
   gap: 10px;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 13px;
+  border-radius: var(--landing-r-xl);
   background: rgb(255 255 255 / 94%);
   padding: 10px 11px;
-  box-shadow: 0 18px 42px rgb(15 23 41 / 14%);
+  box-shadow: none;
   opacity: 0;
   transform: translateY(10px) scale(0.98);
   animation: assistAppear 5.2s 900ms ease-in-out infinite;
@@ -1797,7 +1744,7 @@
   width: 30px;
   height: 30px;
   place-items: center;
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
 }
 
 .assistIcon {
@@ -1871,7 +1818,7 @@
   min-height: 44px;
   margin-left: auto;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-blue);
   padding: 0 14px;
   color: var(--landing-blue-contrast);
@@ -1885,7 +1832,7 @@
 
 .variantBar > button:hover {
   background: var(--landing-blue-deep);
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--landing-blue) 20%, transparent);
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
@@ -1926,9 +1873,7 @@
 .controlsSection {
   position: relative;
   padding-block: 120px;
-  background:
-    radial-gradient(circle at 82% 8%, color-mix(in srgb, var(--landing-blue) 7%, transparent), transparent 30rem),
-    var(--landing-surface-soft);
+  background: var(--landing-surface-soft);
 }
 
 .operationsDemo {
@@ -1937,9 +1882,9 @@
   margin-top: 52px;
   overflow: hidden;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 16px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
-  box-shadow: 0 30px 80px -48px rgb(15 23 41 / 48%);
+  box-shadow: none;
 }
 
 .operationsDemo::after {
@@ -1966,7 +1911,7 @@
 .operationsTabs button {
   min-height: 44px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: transparent;
   padding: 0 16px;
   color: var(--landing-muted);
@@ -1979,7 +1924,7 @@
   border-color: var(--landing-line-strong);
   background: var(--landing-surface);
   color: var(--landing-blue-deep);
-  box-shadow: 0 6px 16px rgb(15 23 41 / 8%);
+  box-shadow: none;
 }
 
 .pacingDemo {
@@ -2040,9 +1985,9 @@
 .controlBoard {
   overflow: hidden;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 16px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
-  box-shadow: 0 18px 50px -36px rgb(15 23 41 / 48%);
+  box-shadow: none;
 }
 
 .controlBoardTop {
@@ -2126,7 +2071,7 @@
   width: 27px;
   height: 27px;
   place-items: center;
-  border-radius: 8px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-green-soft);
   color: var(--landing-green);
 }
@@ -2184,7 +2129,7 @@
   border: 2px solid var(--landing-surface);
   border-radius: 50%;
   background: var(--landing-blue);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--landing-blue) 10%, transparent);
+  box-shadow: none;
   transform: translate(-50%, -50%);
   animation: launchTravel 3.6s var(--landing-ease-soft) infinite;
 }
@@ -2224,7 +2169,7 @@
 
 .reportMetricGrid > div {
   border: 1px solid var(--landing-line-strong);
-  border-radius: 12px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
   padding: 13px;
   animation: reportMetricArrive 380ms var(--landing-ease) both;
@@ -2268,12 +2213,10 @@
   position: relative;
   overflow: hidden;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 15px;
-  background:
-    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--landing-green) 10%, transparent), transparent 14rem),
-    var(--landing-surface);
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-surface);
   padding: 21px;
-  box-shadow: 0 18px 44px -34px rgb(15 23 41 / 46%);
+  box-shadow: none;
 }
 
 .pipelineCard::after {
@@ -2284,7 +2227,7 @@
   height: 150px;
   border: 1px solid color-mix(in srgb, var(--landing-green) 12%, transparent);
   border-radius: 50%;
-  box-shadow: 0 0 45px color-mix(in srgb, var(--landing-green) 8%, transparent);
+  box-shadow: none;
   content: "";
   animation: pipelineOrbit 5.8s ease-in-out infinite;
   pointer-events: none;
@@ -2338,7 +2281,7 @@
   min-height: 44px;
   margin-top: 18px;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: var(--landing-surface);
   color: var(--landing-copy);
   font-size: 10px;
@@ -2348,7 +2291,7 @@
 
 .replyDraft {
   margin-top: 12px;
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
   padding: 12px;
 }
@@ -2409,7 +2352,7 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 9px;
+  border-radius: var(--landing-r-lg);
   background: color-mix(in srgb, var(--landing-blue) 15%, transparent);
   color: var(--landing-blue-on-ink);
 }
@@ -2439,10 +2382,10 @@
   min-width: 0;
   flex-direction: column;
   border: 1px solid var(--landing-line);
-  border-radius: 14px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 30px;
-  box-shadow: 0 18px 44px -38px rgb(15 23 41 / 42%);
+  box-shadow: none;
   transition:
     border-color 240ms var(--landing-ease),
     box-shadow 240ms var(--landing-ease),
@@ -2451,7 +2394,7 @@
 
 .pricingGrid .featuredPrice {
   border-color: var(--landing-blue-border);
-  box-shadow: 0 25px 60px -36px color-mix(in srgb, var(--landing-blue) 55%, transparent);
+  box-shadow: none;
 }
 
 .recommended {
@@ -2528,7 +2471,7 @@
   gap: 8px;
   margin-top: auto;
   border: 1px solid var(--landing-line-strong);
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   color: var(--landing-copy);
   font-size: 12px;
   font-weight: 700;
@@ -2567,7 +2510,7 @@
 
 .faq details {
   border: 1px solid var(--landing-line);
-  border-radius: 10px;
+  border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 0 20px;
   transition:
@@ -2618,10 +2561,8 @@
 
 .finalPanel {
   overflow: hidden;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 76% 15%, color-mix(in srgb, var(--landing-blue) 34%, transparent), transparent 25rem),
-    var(--landing-ink);
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-ink);
   padding: 80px 40px;
   color: var(--landing-on-ink);
   text-align: center;
@@ -2686,7 +2627,7 @@
 @media (hover: hover) and (pointer: fine) {
   .featureGrid article:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 24px 54px -34px rgb(15 23 41 / 36%);
+    box-shadow: none;
     transform: translateY(-3px);
   }
 
@@ -2698,7 +2639,7 @@
 
   .composeMock:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 36px 86px -42px rgb(15 23 41 / 50%);
+    box-shadow: none;
     transform: translateY(-2px);
   }
 
@@ -2708,19 +2649,19 @@
 
   .pricingGrid article:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 28px 66px -38px rgb(15 23 41 / 42%);
+    box-shadow: none;
     transform: translateY(-4px);
   }
 
   .pricingGrid article > a:hover {
     border-color: var(--landing-blue-border);
-    box-shadow: 0 10px 22px rgb(15 23 41 / 12%);
+    box-shadow: none;
     transform: translateY(-1px);
   }
 
   .faq details:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 18px 42px -34px rgb(15 23 41 / 34%);
+    box-shadow: none;
     transform: translateY(-2px);
   }
 }
@@ -2730,42 +2671,6 @@
     animation: sectionReveal 1ms var(--landing-ease) both;
     animation-range: entry 5% cover 28%;
     animation-timeline: view();
-  }
-}
-
-@keyframes gridDrift {
-  from {
-    background-position: 0 0;
-  }
-
-  to {
-    background-position: 28px 18px;
-  }
-}
-
-@keyframes orbitHalo {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: translate3d(0, 0, 0) scale(0.96);
-  }
-
-  50% {
-    opacity: 0.88;
-    transform: translate3d(-28px, 22px, 0) scale(1.06);
-  }
-}
-
-@keyframes signalDrift {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: translate3d(0, 22px, 0);
-  }
-
-  48% {
-    opacity: 0.82;
-    transform: translate3d(80px, -34px, 0);
   }
 }
 
@@ -2818,7 +2723,7 @@
 @keyframes liveDot {
   0% {
     opacity: 0.72;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--landing-green) 22%, transparent);
+    box-shadow: none;
   }
 
   55% {
@@ -2827,23 +2732,19 @@
 
   100% {
     opacity: 0.72;
-    box-shadow: 0 0 0 7px color-mix(in srgb, var(--landing-green) 0%, transparent);
+    box-shadow: none;
   }
 }
 
 @keyframes railSignal {
   0%,
   100% {
-    box-shadow:
-      0 0 0 4px color-mix(in srgb, var(--landing-blue) 9%, transparent),
-      0 0 13px color-mix(in srgb, var(--landing-blue) 30%, transparent);
+    box-shadow: none;
     transform: translate(-50%, -50%) scale(0.94);
   }
 
   50% {
-    box-shadow:
-      0 0 0 7px color-mix(in srgb, var(--landing-blue) 5%, transparent),
-      0 0 24px color-mix(in srgb, var(--landing-blue) 48%, transparent);
+    box-shadow: none;
     transform: translate(-50%, -50%) scale(1.08);
   }
 }
@@ -3012,36 +2913,14 @@
   }
 }
 
-@keyframes frameSheen {
-  0%,
-  68% {
-    opacity: 0;
-    transform: translateX(0) rotate(13deg);
-  }
-
-  76% {
-    opacity: 0.45;
-  }
-
-  88% {
-    opacity: 0;
-    transform: translateX(560%) rotate(13deg);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(560%) rotate(13deg);
-  }
-}
-
 @keyframes healthPulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--landing-green) 32%, transparent);
+    box-shadow: none;
   }
 
   70%,
   100% {
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--landing-green) 0%, transparent);
+    box-shadow: none;
   }
 }
 
@@ -3049,7 +2928,7 @@
   0%,
   8% {
     border-color: var(--landing-line-strong);
-    box-shadow: 0 10px 24px color-mix(in srgb, var(--landing-blue) 10%, transparent);
+    box-shadow: none;
     transform: translateY(-2px);
   }
 
@@ -3108,7 +2987,7 @@
 @keyframes intentPulse {
   0%,
   11% {
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--landing-green) 10%, transparent);
+    box-shadow: none;
     transform: scale(1.03);
   }
 
@@ -3119,26 +2998,14 @@
   }
 }
 
-@keyframes paceSheen {
-  0%,
-  18% {
-    transform: translateX(-100%);
-  }
-
-  58%,
-  100% {
-    transform: translateX(100%);
-  }
-}
-
 @keyframes aiStatusPulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--landing-green) 28%, transparent);
+    box-shadow: none;
   }
 
   70%,
   100% {
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--landing-green) 0%, transparent);
+    box-shadow: none;
   }
 }
 
@@ -3161,16 +3028,16 @@
 @keyframes fieldHighlight {
   0%,
   13% {
-    box-shadow: inset 0 -0.08em color-mix(in srgb, var(--landing-blue) 0%, transparent);
+    box-shadow: none;
   }
 
   30%,
   76% {
-    box-shadow: inset 0 -0.42em color-mix(in srgb, var(--landing-blue) 14%, transparent);
+    box-shadow: none;
   }
 
   100% {
-    box-shadow: inset 0 -0.08em color-mix(in srgb, var(--landing-blue) 0%, transparent);
+    box-shadow: none;
   }
 }
 
@@ -3442,7 +3309,7 @@
 
   .productFrame {
     margin-top: 52px;
-    border-radius: 16px;
+    border-radius: var(--landing-r-xl);
   }
 
   .demoToolbar {
@@ -3507,7 +3374,7 @@
   }
 
   .composeMock {
-    border-radius: 15px;
+    border-radius: var(--landing-r-xl);
   }
 
   .messageDemoControls {
@@ -3605,7 +3472,9 @@
     transition-duration: 0.01ms !important;
   }
 
-  .productFrame::after {
+  /* The pointer light on the product mock is the only lighting left on the
+     page, and it goes too when someone has asked for less movement. */
+  .productFrame::before {
     display: none;
   }
 

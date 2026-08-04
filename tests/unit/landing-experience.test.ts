@@ -163,17 +163,43 @@ describe("landing-page experience", () => {
     );
   });
 
-  it("keeps the contact form legible on the light section it now sits in", () => {
-    // It was authored for the dark hero, so every colour in it was an on-ink
-    // value. Moved to the final section on paper, those rendered light text
-    // on a light ground.
+  it("keeps the contact form legible wherever the section puts it", () => {
+    // It was a translucent white-on-white sliver that only worked on the dark
+    // hero. It is now a solid card, so it reads the same on either ground,
+    // while the helper text beneath it stays an on-ink neutral because it
+    // sits directly on the closing panel.
     const form = landingStyles.match(/\.waitForm \{[\s\S]*?\n\}/)?.[0] ?? "";
     const input = landingStyles.match(/\.waitForm input \{[\s\S]*?\n\}/)?.[0] ?? "";
+    const note = landingStyles.match(/\.formNote,\n\.formError \{[\s\S]*?\n\}/)?.[0] ?? "";
     expect(form).toContain("background: var(--landing-surface)");
     expect(input).toContain("color: var(--landing-copy)");
+    expect(note).toContain("color: var(--landing-on-ink-muted)");
     expect(
       contrastRatio(tokenHex("marketing-copy"), tokenHex("marketing-surface"))
     ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(tokenHex("marketing-on-ink-muted"), tokenHex("marketing-ink"))
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps the public page flat: one radius ladder, no lift, no tinted washes", () => {
+    // Seventeen ad-hoc radii and sixty-two shadows are what made the site read
+    // softer and cheaper than the product it advertises.
+    // 999px is a pill and 50% is a circle: both are shapes, not radii.
+    const literalRadii = (landingStyles.match(/border-radius: \d+px/g) ?? []).filter(
+      (declaration) => !declaration.endsWith("999px")
+    );
+    expect(literalRadii).toHaveLength(0);
+    for (const token of ["--landing-r-sm", "--landing-r-lg", "--landing-r-xl"]) {
+      expect(landingStyles).toContain(`${token}: var(--radius-`);
+    }
+    // The only surviving shadows are inset focus and selection rings.
+    const shadows = (landingStyles.match(/box-shadow: (?!none)[^;]+;/g) ?? []);
+    for (const shadow of shadows) {
+      expect(shadow).toContain("inset 0 0 0");
+    }
+    // Tinted radial washes behind sections and panels are gone.
+    expect(landingStyles).not.toContain("radial-gradient(circle at");
   });
 
   it("makes the hero walkthrough user controlled and keyboard operable", () => {
