@@ -46,7 +46,9 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
           workspaceName="Northwind Partners"
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="glass sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-2.5 sm:px-6">
+          {/* Same 56px rule as the real dashboard, so the tour reads as the
+              product rather than as a mock of it. */}
+          <header className="glass sticky top-0 z-30 flex h-14 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 sm:px-6">
             <span className="flex items-center gap-2 text-xs font-medium text-muted">
               <Icon name="sparkles" size={14} aria-hidden />
               Product tour with sample data. Nothing here sends email.

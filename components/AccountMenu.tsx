@@ -12,13 +12,23 @@ export function AccountMenu({
   email,
   role,
   roleLabel: customRoleLabel,
-  placement = "side",
+  placement = "bar",
 }: {
   displayName: string;
   email: string;
   role: string;
   roleLabel?: string | null;
-  placement?: "side" | "inline" | "sheet";
+  /**
+   * `bar` is the dashboard top bar: a compact chip whose panel drops down and
+   * right-aligns. `sheet` is the mobile More sheet, `inline` expands in flow.
+   *
+   * There used to be a `side` variant for the sidebar footer, which anchored
+   * the panel outside the aside at `left-[calc(100%+0.75rem)]`. The aside sets
+   * `overflow-hidden`, so the panel was clipped and opening the menu looked
+   * like it had eaten the navigation. The fix was to move the menu, not to
+   * chase the clipping.
+   */
+  placement?: "bar" | "inline" | "sheet";
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -53,12 +63,13 @@ export function AccountMenu({
   const roleLabel =
     customRoleLabel ??
     (role === "ADMIN" ? "Administrator" : role === "MANAGER" ? "Manager" : "Member");
+  const compact = placement === "bar";
   const menuPosition =
     placement === "inline"
       ? "relative mt-2 w-full origin-top"
       : placement === "sheet"
         ? "absolute bottom-[calc(100%+0.5rem)] left-0 w-full origin-bottom"
-        : "absolute bottom-0 left-[calc(100%+0.75rem)] w-72 max-w-[calc(100vw-18rem)] origin-bottom-left";
+        : "absolute right-0 top-[calc(100%+0.5rem)] w-72 max-w-[calc(100vw-2rem)] origin-top-right";
 
   function handleMenuKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
@@ -121,7 +132,11 @@ export function AccountMenu({
       <button
         ref={triggerRef}
         onClick={() => setOpen((o) => !o)}
-        className="group flex min-h-14 w-full items-center gap-3 rounded-md border border-border bg-surface p-3 text-left transition hover:bg-surface-2"
+        className={
+          compact
+            ? "group flex min-h-10 items-center gap-2 rounded-md border border-border bg-surface py-1 pl-1 pr-1.5 text-left transition hover:bg-surface-2"
+            : "group flex min-h-14 w-full items-center gap-3 rounded-md border border-border bg-surface p-3 text-left transition hover:bg-surface-2"
+        }
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
@@ -129,15 +144,19 @@ export function AccountMenu({
       >
         <span
           aria-hidden
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-foreground text-xs font-semibold text-surface"
+          className={`flex shrink-0 items-center justify-center rounded-sm bg-foreground text-xs font-semibold text-surface ${
+            compact ? "h-7 w-7" : "h-8 w-8"
+          }`}
         >
           {initial}
         </span>
         {/* The "Account" caption used to sit beside the name and squeezed both
             into ellipses at sidebar width. The chevron alone says it opens. */}
-        <span className="min-w-0 flex-1">
+        <span className={compact ? "hidden min-w-0 max-w-36 lg:block" : "min-w-0 flex-1"}>
           <span className="block truncate text-sm font-medium text-foreground">{displayName}</span>
-          <span className="block truncate text-xs text-muted">Switch or sign out</span>
+          {!compact && (
+            <span className="block truncate text-xs text-muted">Switch or sign out</span>
+          )}
         </span>
         <Icon
           name="chevronDown"
@@ -153,12 +172,14 @@ export function AccountMenu({
           role="menu"
           aria-label="Account actions"
           onKeyDown={handleMenuKeyDown}
-          className={`glass z-50 max-h-[calc(100dvh-2rem)] animate-rise overflow-y-auto rounded-xl border border-border shadow-lg ${menuPosition}`}
+          /* Opaque, not frosted. A translucent panel over a chart reads as a
+             toy overlay; a solid card with a hairline reads as a menu. */
+          className={`z-50 max-h-[calc(100dvh-2rem)] animate-rise overflow-y-auto rounded-lg border border-border bg-surface shadow-lg ${menuPosition}`}
         >
           <div className="flex items-center gap-3 border-b border-border p-4">
             <span
               aria-hidden
-              className="bg-surface-2 text-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-brand-contrast"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-sm font-bold text-foreground"
             >
               {initial}
             </span>

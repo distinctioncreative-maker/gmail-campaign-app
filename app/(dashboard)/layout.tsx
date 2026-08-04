@@ -4,6 +4,7 @@ import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import type { TenantType } from "@/schemas/user";
 import { getOrganization, getOrgSettings } from "@/lib/repositories/orgSettings";
 import { resolveSendingState } from "@/lib/sending/mode";
+import { AccountMenu } from "@/components/AccountMenu";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ProductTour } from "@/components/tour/ProductTour";
@@ -99,39 +100,79 @@ export default async function DashboardLayout({
         workspaceName={workspaceName}
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Mobile top bar: full-width identity + theme + notifications.
-            Lives inside the content column (not the flex row) so it never
-            steals horizontal space from the page. */}
-        <header className="glass sticky top-0 z-20 flex items-center justify-between border-b border-border px-4 py-3 sm:hidden">
+        {/* One bar. This used to be three stacked strips: a mobile identity
+            header, a full-width coloured sending-mode band, and a desktop
+            toolbar that held nothing but a toggle and a bell. Together they
+            ate close to a fifth of a laptop viewport before the page began.
+            Everything now sits on a single 56px rule.
+
+            The account menu lives here too. It used to sit in the sidebar
+            footer, where the aside's `overflow-hidden` clipped a popover
+            positioned outside it, so opening the menu appeared to swallow
+            the navigation. Moving it removes the conflict rather than
+            patching the clipping. */}
+        <header className="glass sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5">
-            <Wordmark />
+            <span className="sm:hidden">
+              <Wordmark />
+            </span>
             {workspaceName && (
-              <span className="max-w-[8rem] truncate border-l border-border pl-2.5 text-[11px] font-medium text-muted">
+              <span className="truncate text-sm font-medium text-foreground max-sm:max-w-[7rem] max-sm:border-l max-sm:border-border max-sm:pl-2.5 max-sm:text-[11px] max-sm:text-muted">
                 {workspaceName}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1">
-            <ThemeToggle />
+
+          <div className="ml-auto flex items-center gap-1.5">
+            {/* Sending mode stays on screen at all times: no one should ever
+                have to guess whether a send reaches real people. It is a pill
+                rather than a coloured band, and it keeps the full sentence in
+                its title and screen-reader label. */}
+            {sending.testMode ? (
+              <span
+                className="badge alert-warning shrink-0 border text-warning"
+                title="Test mode: emails only go to your test address, never real recipients."
+              >
+                <Icon name="shield" size={13} aria-hidden />
+                <span aria-hidden className="hidden sm:inline">
+                  Test mode
+                </span>
+                <span className="sr-only">
+                  Test mode: emails only go to your test address, never real recipients.
+                </span>
+              </span>
+            ) : (
+              <span
+                className="badge alert-success shrink-0 border text-success"
+                title="Live: campaigns send real emails to real recipients."
+              >
+                <span aria-hidden>●</span>
+                <span aria-hidden className="hidden sm:inline">
+                  Live
+                </span>
+                <span className="sr-only">
+                  Live: campaigns send real emails to real recipients.
+                </span>
+              </span>
+            )}
+            <span className="hidden sm:block">
+              <ThemeToggle />
+            </span>
             <NotificationBell />
+            {/* Below sm the account actions live in the mobile More sheet,
+                which already carries them along with the theme control. */}
+            <span className="hidden sm:block">
+              <AccountMenu
+                displayName={displayName}
+                email={email}
+                role={role}
+                roleLabel={roleLabel}
+                placement="bar"
+              />
+            </span>
           </div>
         </header>
-        {/* Always-visible sending-mode banner so no one is ever unsure. */}
-        {sending.testMode ? (
-          <div className="alert-warning flex items-center justify-center gap-2 border-y px-4 py-1.5 text-center text-xs font-medium text-warning">
-            <Icon name="shield" size={14} />
-            Test mode: emails only go to your test address, never real recipients.
-          </div>
-        ) : (
-          <div className="alert-success flex items-center justify-center gap-2 border-y px-4 py-1.5 text-center text-xs font-semibold text-success">
-            <span aria-hidden>●</span>
-            Live: campaigns send real emails to real recipients.
-          </div>
-        )}
-        <div className="glass sticky top-0 z-10 hidden items-center justify-end gap-1 border-b border-border px-6 py-2.5 sm:flex">
-          <ThemeToggle />
-          <NotificationBell />
-        </div>
+
         <main id="dashboard-main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] flex-1 p-4 pb-28 outline-none sm:p-6 sm:pb-6 md:p-10">
           <div className="animate-rise">{children}</div>
         </main>

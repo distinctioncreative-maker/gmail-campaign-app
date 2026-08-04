@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { AccountMenu } from "@/components/AccountMenu";
 import { Wordmark } from "@/components/ui/Logo";
 import { MobileNav } from "@/components/MobileNav";
 
@@ -93,15 +92,14 @@ export function Sidebar({
 }) {
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="glass sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col overflow-hidden border-r border-border p-4 sm:flex">
+      {/* Desktop sidebar. Navigation only: the account menu now lives in the
+          top bar, because a popover anchored outside this aside was clipped
+          by the overflow rule that keeps the nav scrolling inside it. */}
+      <aside className="glass sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col border-r border-border p-4 sm:flex">
         <div className="mb-3 mt-1 shrink-0 border-b border-border/70 pb-4">
           <Brand workspaceName={workspaceName} />
         </div>
         <NavLinks items={items} />
-        <div className="shrink-0 border-t border-border/70 pt-3">
-          <AccountMenu displayName={displayName} email={email} role={role} roleLabel={roleLabel} placement="side" />
-        </div>
       </aside>
 
       {/* Mobile bottom tab bar + More sheet */}
