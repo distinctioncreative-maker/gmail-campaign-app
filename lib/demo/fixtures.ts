@@ -1,4 +1,4 @@
-import type { Campaign } from "@/schemas/campaign";
+import type { Campaign, DealStatus } from "@/schemas/campaign";
 import type { HomeData } from "@/lib/home/dashboard";
 import { statsForRange, buildSetupSteps, type HomeRangeKey } from "@/lib/home/dashboard";
 import { buildFunnel, buildLeaderboard, sumTotals, type ReportData } from "@/lib/analytics/report";
@@ -69,6 +69,10 @@ function campaign(over: Partial<Campaign> & { campaignId: string; name: string }
     unsubscribeCount: 0,
     followupSentCount: 0,
     errorCount: 0,
+    meetingCount: 0,
+    wonCount: 0,
+    lostCount: 0,
+    wonValueCents: 0,
     followupsPaused: false,
     trackingEnabled: false,
     createdAt: NOW - 30 * DAY,
@@ -78,16 +82,22 @@ function campaign(over: Partial<Campaign> & { campaignId: string; name: string }
     pausedAt: null,
     deferredDayKey: null,
     archived: false,
+    archivedAt: null,
+    deletedAt: null,
     resumedAt: null,
     stoppedAt: null,
     completedAt: null,
     ...over,
-  } as Campaign;
+  };
 }
 
 export const DEMO_CAMPAIGNS: Campaign[] = [
   campaign({
     campaignId: "c-founders",
+    meetingCount: 71,
+    wonCount: 24,
+    lostCount: 31,
+    wonValueCents: 48600000,
     name: "Series A founders, Q3",
     description: "Warm intro angle, two follow-ups",
     status: "ACTIVE",
@@ -104,6 +114,10 @@ export const DEMO_CAMPAIGNS: Campaign[] = [
   }),
   campaign({
     campaignId: "c-agency",
+    meetingCount: 29,
+    wonCount: 11,
+    lostCount: 14,
+    wonValueCents: 17250000,
     name: "Agency partnerships",
     status: "ACTIVE",
     eligibleRecipients: 920,
@@ -118,6 +132,10 @@ export const DEMO_CAMPAIGNS: Campaign[] = [
   }),
   campaign({
     campaignId: "c-renewals",
+    meetingCount: 22,
+    wonCount: 9,
+    lostCount: 10,
+    wonValueCents: 9600000,
     name: "Lapsed accounts, win-back",
     status: "COMPLETED",
     eligibleRecipients: 640,
@@ -218,6 +236,8 @@ export function demoHome(range: HomeRangeKey): HomeData {
     bounceRate: (TOTALS.bounces / TOTALS.sent) * 100,
     sentToday: today.sent,
     dailyLimit: 220,
+    wonCount: DEMO_CAMPAIGNS.reduce((n, c) => n + c.wonCount, 0),
+    wonValueCents: DEMO_CAMPAIGNS.reduce((n, c) => n + c.wonValueCents, 0),
     sentThisWeek,
     repliesThisWeek,
   };
@@ -273,12 +293,18 @@ export interface DemoReply {
   intent: "INTERESTED" | "REPLIED" | "NOT_INTERESTED";
   snippet: string;
   repliedAt: number;
+  /** Shown so the tour demonstrates the whole loop, including a win with a
+   * recorded value and one still waiting on the rep. */
+  dealStatus: DealStatus | null;
+  dealValueCents: number | null;
 }
 
 export const DEMO_REPLIES: DemoReply[] = [
   {
     name: "Priya Raman",
     email: "priya@lumenworks.io",
+    dealStatus: "WON",
+    dealValueCents: 48_000_00,
     campaign: "Series A founders, Q3",
     intent: "INTERESTED",
     snippet: "This is timely. We are reviewing tooling next month, can you send times for a call?",
@@ -287,6 +313,8 @@ export const DEMO_REPLIES: DemoReply[] = [
   {
     name: "Daniel Osei",
     email: "d.osei@harborlane.com",
+    dealStatus: "MEETING_BOOKED",
+    dealValueCents: null,
     campaign: "Agency partnerships",
     intent: "INTERESTED",
     snippet: "Interested. What does pricing look like for a team of nine?",
@@ -295,6 +323,8 @@ export const DEMO_REPLIES: DemoReply[] = [
   {
     name: "Marta Kowalski",
     email: "marta@brightfield.co",
+    dealStatus: null,
+    dealValueCents: null,
     campaign: "Series A founders, Q3",
     intent: "REPLIED",
     snippet: "Can you send over the deliverability details before we go further?",
@@ -303,6 +333,8 @@ export const DEMO_REPLIES: DemoReply[] = [
   {
     name: "Tom Whitfield",
     email: "tom@axlepoint.com",
+    dealStatus: null,
+    dealValueCents: null,
     campaign: "Lapsed accounts, win-back",
     intent: "REPLIED",
     snippet: "Forwarding to our ops lead, she owns this decision.",
@@ -311,6 +343,8 @@ export const DEMO_REPLIES: DemoReply[] = [
   {
     name: "Sofia Marino",
     email: "sofia@velacraft.io",
+    dealStatus: null,
+    dealValueCents: null,
     campaign: "Conference follow-up, list B",
     intent: "NOT_INTERESTED",
     snippet: "We just signed with someone else, thanks for reaching out.",

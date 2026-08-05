@@ -311,7 +311,7 @@ const WORKFLOW = [
   {
     number: "05",
     title: "Turn replies into booked revenue",
-    copy: "Every reply is sorted by intent, so your team works the hot ones first inside the real Gmail thread. Follow-ups stop the moment someone answers.",
+    copy: "Every reply is sorted by intent, so your team works the hot ones first inside the real Gmail thread. Mark what each one became, meeting booked, won, or lost, and reports show the revenue the campaign actually produced. Follow-ups stop the moment someone answers.",
   },
 ] as const;
 

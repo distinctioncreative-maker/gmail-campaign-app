@@ -139,6 +139,10 @@ export interface HomeData {
   rangeStats: RangeStats;
   best: { c: Campaign; rate: number } | null;
   totals: { sent: number; replies: number; bounces: number; unsubscribes: number; leads: number };
+  /** Closed business across every campaign in the workspace. The one number
+   * on this page that answers whether any of the activity was worth doing. */
+  wonCount: number;
+  wonValueCents: number;
   bounceRate: number;
   sentToday: number;
   dailyLimit: number;
@@ -174,7 +178,12 @@ export async function loadHome(ctx: AuthContext, range: HomeRangeKey): Promise<H
   const gmailConnected = connection?.status === "CONNECTED";
   const activeCampaigns = visibleCampaigns.filter((c) => c.status === "ACTIVE");
 
-  const sum = (pick: (c: Campaign) => number) => visibleCampaigns.reduce((n, c) => n + pick(c), 0);
+  // Coerced for the same reason as sumTotals in lib/analytics/report.ts: a
+  // campaign written before a counter existed has no such field, and one
+  // undefined makes the whole figure NaN on every existing customer's home
+  // page the day the counter ships.
+  const sum = (pick: (c: Campaign) => number) =>
+    visibleCampaigns.reduce((n, c) => n + (Number(pick(c)) || 0), 0);
   const totals = {
     sent: sum(totalSent),
     replies: sum((c) => c.replyCount),
@@ -220,6 +229,8 @@ export async function loadHome(ctx: AuthContext, range: HomeRangeKey): Promise<H
     best: bestCampaign(visibleCampaigns),
     totals,
     bounceRate: totals.sent > 0 ? (totals.bounces / totals.sent) * 100 : 0,
+    wonCount: sum((c) => c.wonCount),
+    wonValueCents: sum((c) => c.wonValueCents),
     sentToday,
     dailyLimit: profile.sendingDefaults.dailySendLimit,
     sentThisWeek,

@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { LocalTime } from "@/components/LocalTime";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
 import { DraftReplyButton } from "@/components/replies/DraftReplyButton";
+import { OutcomeControl } from "@/components/replies/OutcomeControl";
 import { ReplyThreadViewer } from "@/components/replies/ReplyThreadViewer";
 import { formatDuration } from "@/lib/analytics/metrics";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
@@ -13,6 +14,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import type { IconName } from "@/components/ui/Icon";
 import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
+import { formatDealValue } from "@/lib/campaigns/outcomes";
+import type { DealStatus } from "@/schemas/campaign";
 
 // Cap the recipient-level scan so the page stays fast even with many campaigns.
 const MAX_CAMPAIGNS_SCANNED = 60;
@@ -38,6 +41,8 @@ interface ReplyRow {
   gmailThreadId: string | null;
   intent: ReplyIntent;
   snippet: string;
+  dealStatus: DealStatus | null;
+  dealValueCents: number | null;
 }
 
 /** How the triage chip reads and ranks. Interested floats to the top. */
@@ -84,13 +89,16 @@ export default async function RepliesPage() {
         gmailThreadId: r.gmailThreadId,
         intent: (r.replyIntent as ReplyIntent | null) ?? "REPLIED",
         snippet: r.lastReplySnippet,
+        dealStatus: r.dealStatus,
+        dealValueCents: r.dealValueCents,
       });
     }
   }
-  // Hot-first: Interested, then Needs-reply, then Not-interested; newest within each.
-  rows.sort(
-    (a, b) => INTENT_META[a.intent].rank - INTENT_META[b.intent].rank || b.repliedAt - a.repliedAt
-  );
+  // Hot-first, and anything already actioned sinks: a reply the rep has
+  // recorded an outcome for is not work waiting to be done.
+  const workRank = (r: ReplyRow) =>
+    (r.dealStatus !== null ? 10 : 0) + INTENT_META[r.intent].rank;
+  rows.sort((a, b) => workRank(a) - workRank(b) || b.repliedAt - a.repliedAt);
 
   const thisWeek = countThisWeek(rows);
   const withTimes = rows.map((r) => r.timeToReplyMs).filter((v): v is number => v !== null).sort((a, b) => a - b);
@@ -98,6 +106,9 @@ export default async function RepliesPage() {
 
   const aiEnabled = aiWritingEnabled(await getOrgSettings(ctx.organizationId));
   const interested = rows.filter((r) => r.intent === "INTERESTED").length;
+  const won = rows.filter((r) => r.dealStatus === "WON");
+  const wonValueCents = won.reduce((sum, r) => sum + (r.dealValueCents ?? 0), 0);
+  const awaiting = rows.filter((r) => r.dealStatus === null && r.intent !== "NOT_INTERESTED").length;
   const kpis: Array<{ label: string; value: string; icon: IconName; tone: StatTone; hint: string }> = [
     {
       label: "Interested",
@@ -127,6 +138,25 @@ export default async function RepliesPage() {
       tone: "default",
       hint: "How fast your list responds",
     },
+    {
+      label: "Won",
+      // The count is the honest headline: a rep can record a win without
+      // knowing the number, so value would understate it.
+      value: won.length > 0 ? `${won.length}` : "0",
+      icon: "check",
+      tone: won.length > 0 ? "revenue" : "default",
+      hint:
+        wonValueCents > 0
+          ? `${formatDealValue(wonValueCents)} recorded`
+          : "Mark a reply won to track revenue",
+    },
+    {
+      label: "Waiting on you",
+      value: String(awaiting),
+      icon: "alert",
+      tone: awaiting > 0 ? "warning" : "default",
+      hint: "Replies with no outcome yet",
+    },
   ];
 
   return (
@@ -137,7 +167,7 @@ export default async function RepliesPage() {
         actions={<ScanRepliesButton />}
       />
 
-      <StatGrid columns={4}>
+      <StatGrid columns={3}>
         {kpis.map((k) => (
           <StatTile
             key={k.label}
@@ -181,6 +211,14 @@ export default async function RepliesPage() {
                   </p>
                 )}
                 <p className="mt-1.5 truncate text-xs text-muted">{r.campaignName}</p>
+                <div className="mt-2.5 border-t border-border pt-2.5">
+                  <OutcomeControl
+                    campaignId={r.campaignId}
+                    recipientId={r.recipientId}
+                    status={r.dealStatus}
+                    valueCents={r.dealValueCents}
+                  />
+                </div>
                 <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted">
                   <span><LocalTime value={r.repliedAt} /> · {formatDuration(r.timeToReplyMs)}</span>
                   <div className="flex items-center gap-2">
@@ -222,7 +260,7 @@ export default async function RepliesPage() {
                   <th className="px-4 py-3">Intent</th>
                   <th className="px-4 py-3">Campaign</th>
                   <th className="px-4 py-3">Replied</th>
-                  <th className="px-4 py-3">Took</th>
+                  <th className="px-4 py-3">Outcome</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -249,8 +287,16 @@ export default async function RepliesPage() {
                     <td className="px-4 py-3 text-muted">{r.campaignName}</td>
                     <td className="px-4 py-3 text-xs text-muted">
                       <LocalTime value={r.repliedAt} />
+                      <p className="mt-0.5">{formatDuration(r.timeToReplyMs)}</p>
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted">{formatDuration(r.timeToReplyMs)}</td>
+                    <td className="px-4 py-3">
+                      <OutcomeControl
+                        campaignId={r.campaignId}
+                        recipientId={r.recipientId}
+                        status={r.dealStatus}
+                        valueCents={r.dealValueCents}
+                      />
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-3">
                         {r.gmailThreadId && (

@@ -55,11 +55,30 @@ export interface ReportTotals {
   unsubscribes: number;
   eligible: number;
   excluded: number;
+  /** Deal outcomes. These are the only numbers on this page a customer can
+   * take to their own manager, so they are exact campaign counters rather
+   * than anything sampled from the capped recipient scan. */
+  meetings: number;
+  won: number;
+  lost: number;
+  wonValueCents: number;
 }
 
-/** All-time counters summed across the campaigns in scope. */
+/**
+ * All-time counters summed across the campaigns in scope.
+ *
+ * `add` coerces because a Firestore document written before a counter existed
+ * has no such field, and a schema default only applies on parse, not to a raw
+ * read. One undefined turns the sum into NaN, and NaN spreads: it poisons
+ * Math.max in the funnel, every bar width becomes "NaN%", the browser discards
+ * the invalid declaration, and the chart renders every stage full, quietly
+ * reporting 100% everywhere. So a missing counter has to read as zero at the
+ * point of summing. This matters most on the release that introduces a
+ * counter, when every campaign already in the database is missing it.
+ */
 export function sumTotals(campaigns: Campaign[]): ReportTotals {
-  const add = (pick: (c: Campaign) => number) => campaigns.reduce((sum, c) => sum + pick(c), 0);
+  const add = (pick: (c: Campaign) => number) =>
+    campaigns.reduce((sum, c) => sum + (Number(pick(c)) || 0), 0);
   return {
     sent: add(totalSent),
     initialSent: add((c) => c.sentCount),
@@ -69,6 +88,10 @@ export function sumTotals(campaigns: Campaign[]): ReportTotals {
     unsubscribes: add((c) => c.unsubscribeCount),
     eligible: add((c) => c.eligibleRecipients),
     excluded: add((c) => c.excludedRecipients),
+    meetings: add((c) => c.meetingCount),
+    won: add((c) => c.wonCount),
+    lost: add((c) => c.lostCount),
+    wonValueCents: add((c) => c.wonValueCents),
   };
 }
 
@@ -78,9 +101,16 @@ export interface FunnelStep {
   detail: string;
 }
 
-/** Eligible leads, to emails sent, to replies: the three numbers that matter. */
+/**
+ * Eligible leads, to emails sent, to replies, to meetings, to closed business.
+ *
+ * The funnel used to stop at replies, which meant this page could never
+ * answer whether any of it was worth doing. The last two steps only appear
+ * once a workspace has recorded an outcome, so a customer who does not use
+ * the feature is not shown two permanent zeroes.
+ */
 export function buildFunnel(t: ReportTotals): FunnelStep[] {
-  return [
+  const steps: FunnelStep[] = [
     {
       label: "Eligible leads",
       value: t.eligible,
@@ -103,6 +133,33 @@ export function buildFunnel(t: ReportTotals): FunnelStep[] {
           : "No initial sends yet",
     },
   ];
+
+  if (t.meetings + t.won + t.lost === 0) return steps;
+
+  steps.push({
+    label: "Meetings",
+    value: t.meetings,
+    detail:
+      t.replies > 0
+        ? `${((t.meetings / t.replies) * 100).toFixed(1)}% of replies`
+        : "No replies yet",
+  });
+  steps.push({
+    label: "Won",
+    value: t.won,
+    detail:
+      t.meetings > 0
+        ? `${((t.won / t.meetings) * 100).toFixed(1)}% of meetings`
+        : "No meetings recorded yet",
+  });
+  return steps;
+}
+
+/** Revenue divided by initial sends, in minor units. The number a customer
+ * compares against what they pay. Null when nothing has been sent, because a
+ * per-email figure with no emails is not a small number, it is no number. */
+export function revenuePerEmailCents(t: ReportTotals): number | null {
+  return t.initialSent > 0 ? Math.round(t.wonValueCents / t.initialSent) : null;
 }
 
 export interface LeaderboardRow {

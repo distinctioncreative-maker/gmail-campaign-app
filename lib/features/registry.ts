@@ -284,6 +284,19 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/gmail/classifyReply.ts", "app/(dashboard)/replies"],
       },
       {
+        id: "deal-outcomes",
+        name: "Deal outcomes and revenue reporting",
+        status: "shipped",
+        description:
+          "Mark a reply Meeting booked, Won, or Lost from the inbox, with an optional deal value, and the reports funnel extends from Sent and Replied through Meetings to Won with revenue, close rate, and revenue per email. Outcomes are only ever set by a human: nothing is inferred from message text, because a wrong revenue number is worse than a missing one. Campaign rollups are kept correct by a read-then-delta transaction, so correcting a value, moving a win to a loss, or undoing a mis-click unwinds exactly what the previous state contributed. A win with an unknown value stays countable, and the outcome sections stay hidden until a workspace records one.",
+        keyFiles: [
+          "lib/campaigns/outcomes.ts",
+          "app/api/campaigns/[campaignId]/recipients/[recipientId]/outcome/route.ts",
+          "components/replies/OutcomeControl.tsx",
+          "tests/unit/deal-outcomes.test.ts",
+        ],
+      },
+      {
         id: "ai-reply-drafts",
         name: "AI reply drafts",
         status: "shipped",

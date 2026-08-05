@@ -73,6 +73,22 @@ See `schemas/*.ts` for authoritative field lists:
   - A campaign with `deletedAt` set is excluded from workspace and rep totals,
     reports, replies, and launch/control paths until restored. Permanent
     recursive deletion is a separate explicit action available only afterward.
+  - Recipient `dealStatus` (MEETING_BOOKED / WON / LOST), `dealValueCents`,
+    and `dealNote` record what a conversation became. Distinct from
+    `replyIntent`, which is how the reply read; this is what the rep did about
+    it, and it is only ever set by a human. `dealValueCents` is null when a
+    win was recorded without a known amount, which is not the same as zero.
+  - Recipient `meetingBookedAt` is sticky: set by either a booked meeting or a
+    win, preserved through a later loss, and removed only by clearing the
+    outcome. Without it the funnel could report fewer meetings than wins.
+  - Campaign `meetingCount`, `wonCount`, `lostCount`, and `wonValueCents` are
+    rollups maintained by a read-then-delta transaction
+    (`lib/campaigns/outcomes.ts`). Never increment them on write: correcting a
+    deal value or reversing a win has to unwind the prior contribution.
+  - **Reading a counter added after a document was written returns undefined,
+    not the schema default.** Sum counters through a coercing helper, as
+    `sumTotals` and `loadHome` do. One undefined makes the total NaN, and a
+    NaN width renders a progress bar full rather than empty.
 - `suppression.ts` — Suppression (USER / ORGANIZATION scope)
 - `parsedLead.ts` — pre-import parsed lead + warnings + confidence
 

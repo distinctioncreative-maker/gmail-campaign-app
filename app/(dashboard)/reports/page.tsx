@@ -12,6 +12,7 @@ import {
 import {
   ReportScopeBar,
   ReportKpis,
+  OutcomesPanel,
   BestCampaignCallout,
   CampaignFunnel,
   TimeToReplyPanel,
@@ -104,6 +105,8 @@ export default async function ReportsPage({
       />
 
       <ReportKpis totals={report.totals} ttr={report.ttr} rangeDays={rangeDays} />
+
+      <OutcomesPanel totals={report.totals} />
 
       {report.best ? <BestCampaignCallout best={report.best} /> : null}
 

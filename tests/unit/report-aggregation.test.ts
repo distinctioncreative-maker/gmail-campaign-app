@@ -66,6 +66,10 @@ describe("sumTotals", () => {
         unsubscribeCount: 1,
         eligibleRecipients: 120,
         excludedRecipients: 30,
+        meetingCount: 4,
+        wonCount: 2,
+        lostCount: 1,
+        wonValueCents: 250_000,
       }),
       campaign({
         campaignId: "b",
@@ -76,6 +80,10 @@ describe("sumTotals", () => {
         unsubscribeCount: 0,
         eligibleRecipients: 60,
         excludedRecipients: 5,
+        meetingCount: 3,
+        wonCount: 1,
+        lostCount: 2,
+        wonValueCents: 90_000,
       }),
     ]);
 
@@ -88,6 +96,10 @@ describe("sumTotals", () => {
     expect(t.unsubscribes).toBe(1);
     expect(t.eligible).toBe(180);
     expect(t.excluded).toBe(35);
+    expect(t.meetings).toBe(7);
+    expect(t.won).toBe(3);
+    expect(t.lost).toBe(3);
+    expect(t.wonValueCents).toBe(340_000);
   });
 
   it("is all zeroes for an empty scope", () => {
@@ -100,6 +112,10 @@ describe("sumTotals", () => {
       unsubscribes: 0,
       eligible: 0,
       excluded: 0,
+      meetings: 0,
+      won: 0,
+      lost: 0,
+      wonValueCents: 0,
     });
   });
 });
@@ -131,6 +147,58 @@ describe("buildFunnel", () => {
     // 5 replies of 50 contacted leads.
     expect(steps[2].value).toBe(5);
     expect(steps[2].detail).toContain("10.0%");
+  });
+
+  it("never produces a non-finite step value", () => {
+    // A single undefined counter used to make sumTotals return NaN, which
+    // Math.max then spread across every funnel bar as "NaN%". The browser
+    // discarded the invalid width and rendered all five bars full, so the
+    // chart confidently reported 100% at every stage. Nothing in the suite
+    // caught it, because every assertion was on numbers that were fine.
+    const partial = { ...campaign({ sentCount: 10, replyCount: 2 }) } as Record<string, unknown>;
+    delete partial.meetingCount;
+    const steps = buildFunnel(sumTotals([partial as never]));
+    for (const step of steps) expect(Number.isFinite(step.value)).toBe(true);
+  });
+
+  it("stops at replies for a workspace that records no outcomes", () => {
+    // Two permanent zeroes teach a new customer that the section is broken
+    // rather than that it is empty.
+    const steps = buildFunnel(
+      sumTotals([campaign({ sentCount: 50, replyCount: 5, eligibleRecipients: 200 })])
+    );
+    expect(steps).toHaveLength(3);
+  });
+
+  it("extends to meetings and wins once outcomes exist", () => {
+    const steps = buildFunnel(
+      sumTotals([
+        campaign({
+          sentCount: 50,
+          replyCount: 20,
+          eligibleRecipients: 200,
+          meetingCount: 8,
+          wonCount: 3,
+          lostCount: 4,
+          wonValueCents: 500_000,
+        }),
+      ])
+    );
+
+    expect(steps.map((s) => s.label)).toEqual([
+      "Eligible leads",
+      "Initial emails sent",
+      "Replies",
+      "Meetings",
+      "Won",
+    ]);
+    // 8 meetings of 20 replies.
+    expect(steps[3].value).toBe(8);
+    expect(steps[3].detail).toContain("40.0%");
+    // 3 wins of 8 meetings: each step is measured against the one above it,
+    // not against the top of the funnel.
+    expect(steps[4].value).toBe(3);
+    expect(steps[4].detail).toContain("37.5%");
   });
 
   it("never divides by zero and never exceeds 100%", () => {

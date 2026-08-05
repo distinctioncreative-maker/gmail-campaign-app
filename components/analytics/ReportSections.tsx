@@ -5,6 +5,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { formatDuration, formatPercent } from "@/lib/analytics/metrics";
+import { formatDealValue } from "@/lib/campaigns/outcomes";
+import { revenuePerEmailCents } from "@/lib/analytics/report";
 import type {
   FunnelStep,
   LeaderboardRow,
@@ -130,6 +132,87 @@ export function ReportKpis({
   );
 }
 
+/**
+ * What the outreach produced.
+ *
+ * Every other number on this page measures activity. These measure the thing
+ * a customer is actually buying, and they sit above the engagement tables for
+ * that reason. The block hides itself until a workspace records an outcome,
+ * because three permanent zeroes teach a new customer that the section is
+ * broken rather than that it is empty.
+ */
+export function OutcomesPanel({
+  totals,
+  currency = "USD",
+}: {
+  totals: ReportTotals;
+  currency?: string;
+}) {
+  if (totals.meetings + totals.won + totals.lost === 0) return null;
+
+  const perEmail = revenuePerEmailCents(totals);
+  const closeRate = totals.meetings > 0 ? (totals.won / totals.meetings) * 100 : null;
+
+  return (
+    <section className="mt-6">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted">
+        What it produced
+      </h2>
+      <StatGrid columns={4}>
+        <StatTile
+          label="Revenue won"
+          value={
+            <span className="display-figure">{formatDealValue(totals.wonValueCents, currency)}</span>
+          }
+          hint={`${totals.won.toLocaleString()} deal${totals.won === 1 ? "" : "s"} closed`}
+          icon="chart"
+          tone={totals.wonValueCents > 0 ? "revenue" : "default"}
+          size="sm"
+        />
+        <StatTile
+          label="Meetings booked"
+          value={<CountUp value={totals.meetings} />}
+          hint={
+            totals.replies > 0
+              ? `${formatPercent((totals.meetings / totals.replies) * 100)} of replies`
+              : "No replies yet"
+          }
+          icon="clock"
+          tone={totals.meetings > 0 ? "primary" : "default"}
+          size="sm"
+        />
+        <StatTile
+          label="Close rate"
+          value={
+            closeRate === null ? (
+              <span className="text-xl text-muted">Not available</span>
+            ) : (
+              <CountUp value={closeRate} decimals={1} suffix="%" />
+            )
+          }
+          hint={`${totals.lost.toLocaleString()} marked lost`}
+          icon="check"
+          tone="success"
+          size="sm"
+        />
+        <StatTile
+          label="Revenue per email"
+          value={
+            perEmail === null ? (
+              <span className="text-xl text-muted">Not available</span>
+            ) : (
+              <span className="display-figure">{formatDealValue(perEmail, currency)}</span>
+            )
+          }
+          hint="Won revenue divided by initial sends"
+          icon="mail"
+          size="sm"
+        />
+      </StatGrid>
+    </section>
+  );
+}
+
 export function BestCampaignCallout({ best }: { best: LeaderboardRow }) {
   return (
     <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border bg-surface-2 p-4 text-sm text-foreground">
@@ -154,7 +237,13 @@ export function BestCampaignCallout({ best }: { best: LeaderboardRow }) {
 }
 
 export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
-  const max = Math.max(1, ...steps.map((s) => s.value));
+  // One non-finite value used to poison the whole chart: Math.max returns NaN,
+  // every width becomes "NaN%", the browser discards the invalid declaration,
+  // and every bar renders full. A funnel that silently reads 100% across the
+  // board is worse than one that renders nothing, so bad values are dropped
+  // here rather than trusted.
+  const values = steps.map((s) => (Number.isFinite(s.value) ? s.value : 0));
+  const max = Math.max(1, ...values);
   return (
     <section className="card p-5 sm:p-6">
       <h2 className="font-semibold">Campaign funnel</h2>
@@ -162,21 +251,19 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
         Initial-send progress and reply outcomes. Follow-ups stay in the total sends KPI above.
       </p>
       <div className="mt-5 space-y-4">
-        {steps.map((step) => (
+        {steps.map((step, i) => (
           <div key={step.label}>
             <div className="flex items-end justify-between gap-3">
               <div>
                 <p className="text-sm font-medium">{step.label}</p>
                 <p className="text-xs text-muted">{step.detail}</p>
               </div>
-              <p className="display-figure text-xl">
-                {step.value.toLocaleString()}
-              </p>
+              <p className="display-figure text-xl">{values[i].toLocaleString()}</p>
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
               <div
                 className="bg-primary h-full rounded-full"
-                style={{ width: `${Math.max(step.value > 0 ? 3 : 0, (step.value / max) * 100)}%` }}
+                style={{ width: `${Math.max(values[i] > 0 ? 3 : 0, (values[i] / max) * 100)}%` }}
               />
             </div>
           </div>

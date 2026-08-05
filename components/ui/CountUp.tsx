@@ -9,11 +9,15 @@ import { useEffect, useRef, useState } from "react";
 export function CountUp({
   value,
   decimals = 0,
+  prefix = "",
   suffix = "",
   duration = 1100,
 }: {
   value: number;
   decimals?: number;
+  /** Leading unit, for currency. Kept inside the tabular-nums span so a
+   * ticking figure does not shift the symbol along with it. */
+  prefix?: string;
   suffix?: string;
   duration?: number;
 }) {
@@ -44,6 +48,7 @@ export function CountUp({
     decimals > 0 ? n.toFixed(decimals) : Math.round(n).toLocaleString();
   return (
     <span className="tabular-nums">
+      {prefix}
       {text}
       {suffix}
     </span>

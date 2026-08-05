@@ -3,6 +3,7 @@ import { ReplyHeatmap, TrendChart, BestSendTimes } from "@/components/analytics/
 import {
   ReportScopeBar,
   ReportKpis,
+  OutcomesPanel,
   BestCampaignCallout,
   CampaignFunnel,
   TimeToReplyPanel,
@@ -28,6 +29,8 @@ export default function DemoReportsPage() {
       />
 
       <ReportKpis totals={report.totals} ttr={report.ttr} rangeDays={report.rangeDays} />
+
+      <OutcomesPanel totals={report.totals} />
 
       {report.best ? <BestCampaignCallout best={report.best} /> : null}
 

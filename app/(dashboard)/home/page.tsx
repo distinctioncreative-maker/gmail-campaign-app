@@ -37,6 +37,7 @@ export default async function HomePage({
     value: number;
     decimals?: number;
     suffix?: string;
+    prefix?: string;
     /** No denominator yet, so a percentage would be a lie. */
     dash?: boolean;
     icon: IconName;
@@ -100,6 +101,20 @@ export default async function HomePage({
     },
   ];
 
+  // Only once there is something to show. A new workspace greeted by a
+  // permanent $0 learns that the number is decoration.
+  if (home.wonCount > 0) {
+    orbs.splice(3, 0, {
+      label: "Revenue won",
+      value: home.wonValueCents / 100,
+      decimals: 0,
+      prefix: "$",
+      icon: "chart",
+      tone: "revenue",
+      href: "/reports",
+    });
+  }
+
   return (
     <div className="space-y-6">
       <HomeHero
@@ -152,7 +167,12 @@ export default async function HomePage({
               o.dash ? (
                 <span className="text-xl text-muted">Not available</span>
               ) : (
-                <CountUp value={o.value} decimals={o.decimals} suffix={o.suffix} />
+                <CountUp
+                  value={o.value}
+                  decimals={o.decimals}
+                  prefix={o.prefix}
+                  suffix={o.suffix}
+                />
               )
             }
           />
