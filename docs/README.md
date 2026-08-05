@@ -20,6 +20,7 @@ Everything below is the deeper reference.
 
 | Doc | What it covers |
 |---|---|
+| [operations/go-live.md](operations/go-live.md) | **The ordered checklist from closed allowlist to taking payments.** Start here for launch |
 | [operations/setup.md](operations/setup.md) | First-time local and cloud setup |
 | [operations/deployment.md](operations/deployment.md) | Deploying to Cloud Run, plus queues, scheduler, and KMS |
 | [operations/runbook.md](operations/runbook.md) | Day-to-day operational tasks |

@@ -85,6 +85,9 @@ breakdown, and [docs/data-model.md](docs/data-model.md) for the Firestore schema
 
 ## Roadmap to public launch
 
+The ordered, tickable version lives in
+[docs/operations/go-live.md](docs/operations/go-live.md). Summary:
+
 1. Validate Stripe Checkout → webhook → plan flip end to end (test mode),
    then move to live keys. Until then the landing page must keep saying that
    no card is taken, because none is.
