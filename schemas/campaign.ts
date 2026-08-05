@@ -68,6 +68,15 @@ export const CampaignSchema = z.object({
   unsubscribeCount: z.number().int().nonnegative().default(0),
   followupSentCount: z.number().int().nonnegative().default(0),
   errorCount: z.number().int().nonnegative().default(0),
+  /** Deal outcomes rolled up from recipients, so a campaign list or report can
+   * show what the campaign produced without reading every recipient. Kept in
+   * sync by a read-then-delta transaction (lib/campaigns/outcomes.ts); a
+   * naive increment would double-count a corrected deal value. */
+  meetingCount: z.number().int().nonnegative().default(0),
+  wonCount: z.number().int().nonnegative().default(0),
+  lostCount: z.number().int().nonnegative().default(0),
+  /** Minor units. Sum of dealValueCents across recipients marked WON. */
+  wonValueCents: z.number().int().nonnegative().default(0),
   followupsPaused: z.boolean().default(false),
   /** Optional per-campaign open/click tracking (a pixel + link rewriting).
    * New campaigns default on, with a clear privacy and deliverability notice;
@@ -94,6 +103,14 @@ export const CampaignSchema = z.object({
   completedAt: EpochMillis.nullable().default(null),
 });
 export type Campaign = z.infer<typeof CampaignSchema>;
+
+/** The three states a conversation can land in after someone replies.
+ *
+ * Deliberately not a pipeline. A rep already owns a CRM; what they do not
+ * have is a way to tell this product that the email worked. Three states and
+ * an optional number is the smallest thing that makes reporting honest. */
+export const DealStatusSchema = z.enum(["MEETING_BOOKED", "WON", "LOST"]);
+export type DealStatus = z.infer<typeof DealStatusSchema>;
 
 export const RecipientStatusSchema = z.enum([
   "PENDING",
@@ -141,6 +158,23 @@ export const RecipientSchema = z.object({
   /** First chars of what the person actually typed (quoted history stripped)
    * — shown in the inbox and used to seed AI reply drafts. */
   lastReplySnippet: z.string().default(""),
+  /** What the conversation actually became.
+   *
+   * Distinct from `replyIntent`, which is how the reply *read*. This is what
+   * the rep *did* about it, and it is the only place the product records
+   * whether outreach earned anything. Null until a human sets it: nothing
+   * here is ever inferred from message text, because a wrong revenue number
+   * is worse than a missing one. */
+  dealStatus: DealStatusSchema.nullable().default(null),
+  /** Minor units (cents), to avoid float drift on money. Null when the rep
+   * marked a win without knowing the number, which must stay possible. */
+  dealValueCents: z.number().int().nonnegative().nullable().default(null),
+  dealNote: z.string().max(500).default(""),
+  dealUpdatedAt: EpochMillis.nullable().default(null),
+  /** Sticky once a meeting is reached, and preserved through a later loss:
+   * a deal lost after a meeting still had one. Only clearing the outcome
+   * removes it. Without this the funnel could show fewer meetings than wins. */
+  meetingBookedAt: EpochMillis.nullable().default(null),
   /** Optional AI-personalized opening line for this recipient's initial email
    * (empty unless the campaign opted into personalization). */
   aiOpenerSnapshot: z.string().default(""),

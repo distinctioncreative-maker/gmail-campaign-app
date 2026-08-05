@@ -12,9 +12,17 @@ import {
   type Campaign,
   type CampaignEvent,
   type CampaignStatus,
+  type DealStatus,
   type QueueItem,
   type Recipient,
 } from "@/schemas/campaign";
+import {
+  counterDelta,
+  isNoopDelta,
+  nextMeetingBookedAt,
+  nonZeroCounters,
+  type OutcomeState,
+} from "@/lib/campaigns/outcomes";
 import { setNotificationOnce } from "@/lib/repositories/notifications";
 import { buildUnsubscribeSuppression } from "@/lib/unsubscribe/suppression";
 
@@ -212,6 +220,72 @@ export async function incrementCampaignCounters(
   const update: Record<string, unknown> = { updatedAt: Date.now() };
   for (const [k, v] of Object.entries(counters)) update[k] = FieldValue.increment(v);
   await campaignRef(owner, campaignId).update(update);
+}
+
+/**
+ * Record what a conversation became, and keep the campaign's rolled-up
+ * counters consistent with it.
+ *
+ * Read-then-delta inside a transaction, not increment-on-write. A rep will
+ * correct a deal value, move a win to a loss, and undo a mis-click, and a
+ * naive increment turns each of those into permanently wrong revenue. The
+ * arithmetic lives in lib/campaigns/outcomes.ts so it can be tested without
+ * a database; this function only supplies the prior state and applies the
+ * result.
+ *
+ * Returns false when the recipient is gone, so a stale tab cannot resurrect
+ * counters for a deleted campaign.
+ */
+export async function setDealOutcome(
+  owner: OwnerRef,
+  campaignId: string,
+  recipientId: string,
+  input: { dealStatus: DealStatus | null; dealValueCents: number | null; dealNote: string }
+): Promise<boolean> {
+  const recipient = recipientsRef(owner, campaignId).doc(recipientId);
+  const campaign = campaignRef(owner, campaignId);
+  const now = Date.now();
+
+  return firestore().runTransaction(async (tx: Transaction) => {
+    const snap = await tx.get(recipient);
+    if (!snap.exists) return false;
+    const data = snap.data() as Partial<Recipient>;
+
+    const prior: OutcomeState = {
+      dealStatus: data.dealStatus ?? null,
+      dealValueCents: data.dealValueCents ?? null,
+      meetingBookedAt: data.meetingBookedAt ?? null,
+    };
+    // A value only means anything on a win. Carrying one onto a loss would
+    // let a corrected status silently keep money in the rollup.
+    const nextValue = input.dealStatus === "WON" ? input.dealValueCents : null;
+    const next: OutcomeState = {
+      dealStatus: input.dealStatus,
+      dealValueCents: nextValue,
+      meetingBookedAt: nextMeetingBookedAt(prior, input.dealStatus, now),
+    };
+
+    tx.update(recipient, {
+      dealStatus: next.dealStatus,
+      dealValueCents: next.dealValueCents,
+      dealNote: input.dealNote,
+      // Clearing the outcome clears its history too, so an accidental mark
+      // leaves nothing behind.
+      dealUpdatedAt: input.dealStatus === null ? null : now,
+      meetingBookedAt: next.meetingBookedAt,
+      updatedAt: now,
+    });
+
+    const delta = counterDelta(prior, next);
+    if (!isNoopDelta(delta)) {
+      const update: Record<string, unknown> = { updatedAt: now };
+      for (const [key, value] of Object.entries(nonZeroCounters(delta))) {
+        update[key] = FieldValue.increment(value);
+      }
+      tx.update(campaign, update);
+    }
+    return true;
+  });
 }
 
 // ── Recipients ───────────────────────────────────────────────────

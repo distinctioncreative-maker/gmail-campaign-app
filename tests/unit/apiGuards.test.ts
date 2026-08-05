@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it, expect } from "vitest";
 import { NextResponse } from "next/server";
 import { handleApiErrors } from "@/lib/api";
@@ -7,6 +9,20 @@ import { ZodError } from "zod";
 import { verifyTaskRequest, TaskAuthError } from "@/lib/tasks/verifyOidc";
 import { assertAiWritingEnabled } from "@/lib/ai/enabled";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
+
+/** Every route handler in the tree, keyed by its URL-shaped path. */
+function* findRoutes(dir: string): Generator<{ id: string; source: string }> {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) yield* findRoutes(path);
+    else if (entry.name === "route.ts") {
+      yield {
+        id: dir.replace(/^app\//, "").replace(/\\/g, "/"),
+        source: readFileSync(path, "utf8"),
+      };
+    }
+  }
+}
 
 async function statusFor(err: unknown): Promise<number> {
   const wrapped = handleApiErrors(async () => {
@@ -52,5 +68,49 @@ describe("verifyTaskRequest — worker auth guard", () => {
 describe("assertAiWritingEnabled — AI gate", () => {
   it("throws when AI is off for the org", () => {
     expect(() => assertAiWritingEnabled({ aiEnabled: false })).toThrow(AiNotConfiguredError);
+  });
+});
+
+describe("route guards — every authenticated route is scoped", () => {
+  /** Routes that legitimately have no session: public pages, webhooks with
+   * their own signature check, tracking pixels, and the OIDC worker. Each
+   * entry is an exemption someone has to justify, which is the point. */
+  const UNAUTHENTICATED = new Set([
+    "api/auth/session", // establishes the session
+    "api/billing/webhook", // Stripe HMAC
+    "api/cron/sweep", // scheduler OIDC
+    "api/gmail/callback", // OAuth redirect, verifies its own state
+    "api/health",
+    "api/t/c/[token]/[index]", // click redirect
+    "api/t/o/[token]", // open pixel
+    "api/tasks/send-message", // Cloud Tasks OIDC
+    "api/u/[token]", // one-click unsubscribe
+    "api/waitlist", // public contact form
+  ]);
+
+  const routes = [...findRoutes("app")];
+
+  it("finds the route tree (guards against a vacuous pass)", () => {
+    expect(routes.length).toBeGreaterThan(40);
+  });
+
+  it("authenticates every route that is not explicitly public", () => {
+    // requireRole wraps requireUser (lib/auth/requireUser.ts:163), so either
+    // one establishes a session.
+    const missing = routes
+      .filter(({ id }) => !UNAUTHENTICATED.has(id))
+      .filter(({ source }) => !/\brequire(?:User|Role)\(/.test(source))
+      .map(({ id }) => id);
+    expect(missing).toEqual([]);
+  });
+
+  it("scopes every campaign route to the signed-in owner", () => {
+    // A campaign route that reads or writes without ownerFromCtx would be
+    // addressing another workspace's documents by ID.
+    const missing = routes
+      .filter(({ id }) => id.startsWith("api/campaigns/"))
+      .filter(({ source }) => !source.includes("ownerFromCtx("))
+      .map(({ id }) => id);
+    expect(missing).toEqual([]);
   });
 });

@@ -100,6 +100,12 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     unsubscribeCount: 0,
     followupSentCount: 0,
     errorCount: 0,
+    // Deal outcomes start empty: a clone inherits a campaign's setup, never
+    // the results someone else earned with it.
+    meetingCount: 0,
+    wonCount: 0,
+    lostCount: 0,
+    wonValueCents: 0,
     followupsPaused: false,
     trackingEnabled: input.trackingEnabled,
     startedAt: null,

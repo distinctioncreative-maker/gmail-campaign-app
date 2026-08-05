@@ -221,6 +221,12 @@ export async function launchCampaign(
       templateIdSnapshot: null,
       replyIntent: null,
       lastReplySnippet: "",
+      // Outcomes are only ever set by a human, so every recipient starts blank.
+      dealStatus: null,
+      dealValueCents: null,
+      dealNote: "",
+      dealUpdatedAt: null,
+      meetingBookedAt: null,
       aiOpenerSnapshot: "",
       initialDraftId: null,
       initialMessageId: null,
