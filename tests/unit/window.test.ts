@@ -72,6 +72,8 @@ describe("computeSendTimestamps", () => {
     minDelaySeconds: 5,
     maxDelaySeconds: 10,
     interBatchDelayMinutes: 2,
+    dailySendLimit: 100,
+    pacingMode: "BURST" as const,
   };
 
   it("spaces emails 5–10s apart within a batch and ~2min between batches", () => {
@@ -102,5 +104,57 @@ describe("addBusinessDays", () => {
     // Fri 2026-07-17 + 2 business days = Tue 2026-07-21.
     const result = addBusinessDays(eastern(10, 0, 17), 2, CFG);
     expect(localDayKey(result, CFG.timezone)).toBe("2026-07-21");
+  });
+});
+
+describe("SPREAD pacing", () => {
+  const cfg = {
+    timezone: "America/New_York",
+    allowedWeekdays: [1, 2, 3, 4, 5],
+    sendWindowStart: "09:00",
+    sendWindowEnd: "20:00",
+    emailsPerBatch: 5,
+    minDelaySeconds: 5,
+    maxDelaySeconds: 10,
+    interBatchDelayMinutes: 2,
+    dailySendLimit: 100,
+    pacingMode: "SPREAD" as const,
+  };
+  // A Monday at 09:00 America/New_York.
+  const start = Date.UTC(2026, 7, 3, 13, 0, 0);
+  const HOUR = 3600_000;
+
+  it("fills the window instead of emptying into the first hour", () => {
+    // The shipped BURST default put all 100 out in 48 minutes at ~125/hour.
+    const burst = computeSendTimestamps(start, 100, { ...cfg, pacingMode: "BURST" }, () => 0.5);
+    const burstSpanMin = (burst[99] - burst[0]) / 60_000;
+    expect(burstSpanMin).toBeLessThan(60);
+
+    const spread = computeSendTimestamps(start, 100, cfg, () => 0.5);
+    const spreadSpanMin = (spread[99] - spread[0]) / 60_000;
+    // 100 sends across an 11 hour window, so the day should genuinely fill it.
+    expect(spreadSpanMin).toBeGreaterThan(9 * 60);
+  });
+
+  it("keeps the hourly rate in single digits at the default limit", () => {
+    const ts = computeSendTimestamps(start, 100, cfg, () => 0.5);
+    const firstHour = ts.filter((t) => t - ts[0] < HOUR).length;
+    expect(firstHour).toBeLessThanOrEqual(12);
+  });
+
+  it("jitters, so consecutive sends are not on a metronome", () => {
+    let seed = 0;
+    const ts = computeSendTimestamps(start, 12, cfg, () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    });
+    const gaps = ts.slice(1).map((t, i) => t - ts[i]);
+    expect(new Set(gaps).size).toBeGreaterThan(1);
+  });
+
+  it("stays inside the window and rolls to the next allowed day", () => {
+    const ts = computeSendTimestamps(start, 260, cfg, () => 0.5);
+    for (const t of ts) expect(isInWindow(t, cfg)).toBe(true);
+    expect(ts[259]).toBeGreaterThan(ts[0] + 24 * HOUR);
   });
 });

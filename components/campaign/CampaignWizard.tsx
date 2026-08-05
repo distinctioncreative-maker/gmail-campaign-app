@@ -13,7 +13,12 @@ import { SpamCheck } from "@/components/spam/SpamCheck";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import { Icon } from "@/components/ui/Icon";
 import { useConfirm } from "@/components/ui/UIProviders";
-import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
+import {
+  assessPaceRisk,
+  PACE_PRESETS,
+  type PacePreset,
+  type PaceInput,
+} from "@/lib/campaigns/paceSafety";
 import { buildLaunchSelections, computeListScopedCounts } from "@/lib/campaigns/wizardSelections";
 import { TagChips } from "@/components/leads/TagChips";
 
@@ -50,25 +55,18 @@ interface WizardSequence {
   steps: unknown[];
 }
 
-const PRESETS = {
-  conservative: {
-    label: "Conservative",
-    detail: "3 per batch · 10 to 20s apart · 5 min between batches · 50/day",
-    schedule: { emailsPerBatch: 3, minDelaySeconds: 10, maxDelaySeconds: 20, interBatchDelayMinutes: 5, dailySendLimit: 50 },
-  },
-  balanced: {
-    label: "Balanced",
-    detail: "5 per batch · 5 to 10s apart · 2 min between batches · 100/day",
-    schedule: { emailsPerBatch: 5, minDelaySeconds: 5, maxDelaySeconds: 10, interBatchDelayMinutes: 2, dailySendLimit: 100 },
-  },
-  faster: {
-    label: "Faster",
-    detail: "10 per batch · 3 to 6s apart · 1 min between batches · 200/day",
-    schedule: { emailsPerBatch: 10, minDelaySeconds: 3, maxDelaySeconds: 6, interBatchDelayMinutes: 1, dailySendLimit: 200 },
-  },
-} as const;
+/** Sourced from lib/campaigns/paceSafety.ts so the wizard, the pace editor,
+ * and the server launch check all agree on what a safe pace is. The local
+ * copy this replaces described batch mechanics and topped out at a 200/day
+ * "Faster" option, which is roughly 250 emails an hour. */
+const PRESETS = Object.fromEntries(
+  PACE_PRESETS.map((preset) => [
+    preset.id,
+    { label: preset.label, detail: preset.description, schedule: preset.schedule },
+  ])
+) as Record<PacePreset["id"], { label: string; detail: string; schedule: PaceInput }>;
 
-type PresetKey = keyof typeof PRESETS | "custom";
+type PresetKey = PacePreset["id"] | "custom";
 
 export function CampaignWizard() {
   const router = useRouter();
@@ -140,13 +138,9 @@ export function CampaignWizard() {
   const [sequences, setSequences] = useState<WizardSequence[]>([]);
   const [sequenceId, setSequenceId] = useState<string | null>(null);
 
-  const [preset, setPreset] = useState<PresetKey>("balanced");
-  const [customPace, setCustomPace] = useState({
-    emailsPerBatch: 5,
-    minDelaySeconds: 5,
-    maxDelaySeconds: 10,
-    interBatchDelayMinutes: 2,
-    dailySendLimit: 100,
+  const [preset, setPreset] = useState<PresetKey>("steady");
+  const [customPace, setCustomPace] = useState<PaceInput>({
+    ...PACE_PRESETS[1].schedule,
   });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
   const [trackingEnabled, setTrackingEnabled] = useState(true);
@@ -804,14 +798,59 @@ export function CampaignWizard() {
             {preset === "custom" && (
               <div className="mt-4 rounded-xl border border-border bg-surface-2/60 p-4">
                 <p className="text-sm font-semibold text-foreground">Your sending rules</p>
+
+                {/* Pacing shape first, because it decides which of the fields
+                    below actually do anything. */}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {([
+                    ["SPREAD", "Spread evenly", "Fills the whole window"],
+                    ["BURST", "Send in bursts", "Batches, then quiet"],
+                  ] as Array<["SPREAD" | "BURST", string, string]>).map(([mode, label, hint]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setCustomPace((c) => ({ ...c, pacingMode: mode }))}
+                      aria-pressed={(customPace.pacingMode ?? "SPREAD") === mode}
+                      className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
+                        (customPace.pacingMode ?? "SPREAD") === mode
+                          ? "border-primary bg-primary-soft text-primary"
+                          : "border-border text-muted hover:bg-surface-2"
+                      }`}
+                    >
+                      <span className="block font-semibold">{label}</span>
+                      <span className="block font-normal">{hint}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {([
+                    ["sendWindowStart", "Window opens", "Local time"],
+                    ["sendWindowEnd", "Window closes", "Local time"],
+                  ] as Array<[keyof PaceInput, string, string]>).map(([k, label, hint]) => (
+                    <label key={k} className="block text-xs font-medium text-muted">
+                      {label}
+                      <input
+                        type="time"
+                        value={String(customPace[k])}
+                        onChange={(e) =>
+                          setCustomPace((c) => ({ ...c, [k]: e.target.value }))
+                        }
+                        className="mt-1 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                      />
+                      <span className="mt-0.5 block text-[11px] font-normal text-muted">{hint}</span>
+                    </label>
+                  ))}
+                </div>
+
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                   {([
                     ["dailySendLimit", "Emails per day", "Cap for one day", 1, 2000],
-                    ["emailsPerBatch", "Per batch", "Emails per burst", 1, 50],
-                    ["minDelaySeconds", "Min gap (sec)", "Between emails", 1, 600],
-                    ["maxDelaySeconds", "Max gap (sec)", "Between emails", 1, 600],
-                    ["interBatchDelayMinutes", "Batch gap (min)", "Between batches", 0, 240],
-                  ] as Array<[keyof typeof customPace, string, string, number, number]>).map(
+                    ["emailsPerBatch", "Per batch", "Burst mode only", 1, 50],
+                    ["minDelaySeconds", "Min gap (sec)", "Burst mode only", 1, 600],
+                    ["maxDelaySeconds", "Max gap (sec)", "Burst mode only", 1, 600],
+                    ["interBatchDelayMinutes", "Batch gap (min)", "Burst mode only", 0, 240],
+                  ] as Array<[keyof PaceInput, string, string, number, number]>).map(
                     ([k, label, hint, min, max]) => (
                       <label key={k} className="block text-xs font-medium text-muted">
                         {label}
@@ -819,7 +858,8 @@ export function CampaignWizard() {
                           type="number"
                           min={min}
                           max={max}
-                          value={customPace[k]}
+                          value={Number(customPace[k])}
+                          disabled={k !== "dailySendLimit" && (customPace.pacingMode ?? "SPREAD") === "SPREAD"}
                           onChange={(e) =>
                             setCustomPace((c) => ({ ...c, [k]: Math.max(0, Number(e.target.value) || 0) }))
                           }
@@ -831,8 +871,14 @@ export function CampaignWizard() {
                   )}
                 </div>
                 <p className="mt-2 text-xs text-muted">
-                  Higher numbers send faster but can hurt deliverability: Gmail limits how much you
-                  can send per day. You can change all of this later on the campaign page.
+                  Spread pacing divides the window by your daily limit, so the batch fields above
+                  only apply in burst mode. This works out to about{" "}
+                  <strong className="text-foreground">
+                    {paceRisk.sendsPerHour < 1
+                      ? "less than one email an hour"
+                      : `${Math.round(paceRisk.sendsPerHour)} emails an hour`}
+                  </strong>{" "}
+                  while the window is open. You can change all of this later on the campaign page.
                 </p>
               </div>
             )}
@@ -959,7 +1005,7 @@ export function CampaignWizard() {
                 <Icon name={paceRisk.risky ? "alert" : "check"} size={17} className={`mt-0.5 shrink-0 ${paceRisk.risky ? "text-warning" : "text-success"}`} aria-hidden />
                 <span>Pace:{" "}
                 {preset === "custom"
-                  ? `${customPace.emailsPerBatch} per batch · ${customPace.minDelaySeconds} to ${customPace.maxDelaySeconds}s apart · ${customPace.interBatchDelayMinutes} min between batches · ${customPace.dailySendLimit}/day`
+                  ? `${customPace.dailySendLimit}/day · ${customPace.sendWindowStart} to ${customPace.sendWindowEnd} · about ${Math.round(paceRisk.sendsPerHour)} an hour`
                   : PRESETS[preset].detail}
                 {paceRisk.risky && <span className="ml-1 font-medium text-warning">: risky, see above</span>}
                 </span>

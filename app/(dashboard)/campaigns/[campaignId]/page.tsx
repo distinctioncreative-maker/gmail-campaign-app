@@ -303,6 +303,9 @@ export default async function CampaignDetailPage({
                 minDelaySeconds: campaign.schedule.minDelaySeconds,
                 maxDelaySeconds: campaign.schedule.maxDelaySeconds,
                 interBatchDelayMinutes: campaign.schedule.interBatchDelayMinutes,
+                sendWindowStart: campaign.schedule.sendWindowStart,
+                sendWindowEnd: campaign.schedule.sendWindowEnd,
+                pacingMode: campaign.schedule.pacingMode,
               }}
             />
           </div>

@@ -35,6 +35,18 @@ export const CampaignScheduleSchema = z.object({
   maxDelaySeconds: z.number().int().min(1).max(600).default(10),
   interBatchDelayMinutes: z.number().min(0).max(240).default(2),
   dailySendLimit: z.number().int().min(1).max(2000).default(100),
+  /** How the day's allowance is laid out across the window.
+   *
+   * SPREAD divides the window by the daily limit so a hundred emails occupy
+   * eleven hours. BURST is the original behaviour, sending as fast as the
+   * batch settings allow until the cap stops it, kept because some senders
+   * genuinely want a tight morning block.
+   *
+   * Already-running campaigns are unaffected either way: their send times are
+   * computed once at launch, so nothing reshapes underneath an owner. A
+   * campaign document written before this field existed reads as undefined
+   * and is treated as SPREAD. See lib/scheduling/window.ts. */
+  pacingMode: z.enum(["SPREAD", "BURST"]).default("SPREAD"),
 });
 export type CampaignSchedule = z.infer<typeof CampaignScheduleSchema>;
 

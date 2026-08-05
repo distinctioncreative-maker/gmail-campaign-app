@@ -20,6 +20,7 @@ function base(): EligibilityInput {
         maxDelaySeconds: 10,
         interBatchDelayMinutes: 2,
         dailySendLimit: 100,
+        pacingMode: "BURST" as const,
       },
     },
     recipient: {

@@ -92,12 +92,72 @@ export interface SpacingConfig {
   minDelaySeconds: number;
   maxDelaySeconds: number;
   interBatchDelayMinutes: number;
+  dailySendLimit: number;
+  pacingMode?: PacingMode;
 }
 
 /**
- * Precompute one randomized send timestamp per recipient: batches of
- * `emailsPerBatch`, random per-email spacing, a longer gap between batches,
- * each timestamp rolled forward to the next valid window.
+ * How the day's allowance is laid out across the sending window.
+ *
+ * SPREAD divides the window by the daily limit and sends on that interval
+ * with jitter, so a hundred emails occupy eleven hours rather than the first
+ * forty-eight minutes of them.
+ *
+ * BURST is the original behaviour: send as fast as the batch settings allow
+ * until the daily cap stops you. It is kept because some senders genuinely
+ * want a tight morning block, and because changing an existing campaign's
+ * shape underneath its owner would be worse than letting them choose.
+ */
+export type PacingMode = "SPREAD" | "BURST";
+
+/** Just the clock edges. Narrower than WindowConfig on purpose, so the pace
+ * helpers below can be called from the wizard without inventing a timezone
+ * and a weekday list they do not use. */
+export interface WindowHours {
+  sendWindowStart: string;
+  sendWindowEnd: string;
+}
+
+/** Usable minutes between the window's open and close. */
+export function windowMinutes(cfg: WindowHours): number {
+  return Math.max(1, parseHm(cfg.sendWindowEnd) - parseHm(cfg.sendWindowStart));
+}
+
+/**
+ * Average minutes between sends when the day's allowance is spread evenly
+ * across the window. Shown in the wizard so the pace is a number a person
+ * can sanity-check, not a shape they discover after launch.
+ */
+export function spreadIntervalMinutes(cfg: WindowHours & { dailySendLimit: number }): number {
+  // Coerced because a non-finite limit here does not merely render wrong, it
+  // throws: the interval becomes NaN, the cursor becomes NaN, and new Date(NaN)
+  // raises RangeError in the middle of a launch.
+  const perDay = Number(cfg.dailySendLimit);
+  return windowMinutes(cfg) / Math.max(1, Number.isFinite(perDay) ? perDay : 1);
+}
+
+/** Sends per hour while the window is open. The number a spam filter sees. */
+export function effectiveSendsPerHour(cfg: WindowHours & SpacingConfig): number {
+  if ((cfg.pacingMode ?? "SPREAD") === "SPREAD") {
+    return cfg.dailySendLimit / (windowMinutes(cfg) / 60);
+  }
+  // BURST: a batch takes (batch-1) short gaps plus one inter-batch gap.
+  const avgGap = cfg.minDelaySeconds + Math.max(0, cfg.maxDelaySeconds - cfg.minDelaySeconds) / 2;
+  const perBatchSeconds =
+    Math.max(0, cfg.emailsPerBatch - 1) * avgGap + cfg.interBatchDelayMinutes * 60;
+  if (perBatchSeconds <= 0) return cfg.dailySendLimit;
+  return (cfg.emailsPerBatch * 3600) / perBatchSeconds;
+}
+
+/**
+ * Precompute one randomized send timestamp per recipient.
+ *
+ * The shipped default used to put a full day's allowance out in forty-eight
+ * minutes of an eleven-hour window, at roughly 125 an hour, and then go
+ * silent. That is the exact shape the product's own guidance warns against,
+ * and the pace-risk check could not see it because it only ever looked at
+ * batch size and delays, never at how the volume landed across the day.
+ * SPREAD sizes the gap from the window itself so the allowance fills it.
  */
 export function computeSendTimestamps(
   startAt: number,
@@ -106,15 +166,31 @@ export function computeSendTimestamps(
   random: () => number = Math.random
 ): number[] {
   const out: number[] = [];
+  const mode = cfg.pacingMode ?? "SPREAD";
+  // Sized so exactly `dailySendLimit` sends fill the window. Running past the
+  // close rolls to the next allowed day through nextValidTime, which is what
+  // enforces the daily cap in this mode.
+  const spreadBaseMs = spreadIntervalMinutes(cfg) * 60_000;
+
   let cursor = nextValidTime(startAt, cfg);
   for (let i = 0; i < count; i++) {
     if (i > 0) {
-      const endOfBatch = i % cfg.emailsPerBatch === 0;
-      const gapSeconds = endOfBatch
-        ? cfg.interBatchDelayMinutes * 60
-        : cfg.minDelaySeconds +
-          random() * Math.max(0, cfg.maxDelaySeconds - cfg.minDelaySeconds);
-      cursor += Math.round(gapSeconds * 1000);
+      let gapMs: number;
+      if (mode === "SPREAD") {
+        // Jitter 0.6x to 1.4x. Enough that consecutive sends are not on a
+        // metronome, bounded so the day still fits the window.
+        gapMs = spreadBaseMs * (0.6 + random() * 0.8);
+      } else {
+        const endOfBatch = i % cfg.emailsPerBatch === 0;
+        const gapSeconds = endOfBatch
+          ? cfg.interBatchDelayMinutes * 60
+          : cfg.minDelaySeconds +
+            random() * Math.max(0, cfg.maxDelaySeconds - cfg.minDelaySeconds);
+        gapMs = gapSeconds * 1000;
+      }
+      // Last line of defence before the cursor feeds Intl. A non-finite gap
+      // would throw rather than schedule badly.
+      cursor += Number.isFinite(gapMs) ? Math.round(gapMs) : 60_000;
     }
     cursor = nextValidTime(cursor, cfg);
     out.push(cursor);

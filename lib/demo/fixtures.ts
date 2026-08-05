@@ -54,6 +54,7 @@ function campaign(over: Partial<Campaign> & { campaignId: string; name: string }
       maxDelaySeconds: 45,
       interBatchDelayMinutes: 18,
       dailySendLimit: 220,
+      pacingMode: "SPREAD",
     },
     gmailQuotaReserve: 50,
     priorContactPolicy: "ONLY_NEW",

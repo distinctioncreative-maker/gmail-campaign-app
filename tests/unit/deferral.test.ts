@@ -7,6 +7,7 @@ const schedule = {
   allowedWeekdays: [1, 2, 3, 4, 5],
   startAt: null,
   dailySendLimit: 100,
+  pacingMode: "BURST" as const,
   sendWindowStart: "09:00",
   sendWindowEnd: "17:00",
   emailsPerBatch: 5,

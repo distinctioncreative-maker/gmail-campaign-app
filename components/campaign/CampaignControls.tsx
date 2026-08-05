@@ -14,6 +14,11 @@ interface Pace {
   minDelaySeconds: number;
   maxDelaySeconds: number;
   interBatchDelayMinutes: number;
+  // The pace risk check reads rate, not just batch mechanics, so it needs the
+  // window the volume lands in. See lib/campaigns/paceSafety.ts.
+  sendWindowStart: string;
+  sendWindowEnd: string;
+  pacingMode?: "SPREAD" | "BURST";
 }
 
 export function CampaignControls({
