@@ -497,6 +497,20 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["components/TestCenter.tsx", "components/help/HelpGuides.tsx", "components/help/Faq.tsx", "app/(dashboard)/help"],
       },
       {
+        id: "support-contact",
+        name: "Support contact path",
+        status: "shipped",
+        description: "Two ways to reach a human, because they fail at different moments. Signed in, /help/contact takes a category, a subject, and what happened, and attaches the workspace, plan, subscription status, sending mode, Gmail connection status, and the running Cloud Run revision from the session, so the first reply can be an answer rather than a question about the customer's setup. Nothing from the mailbox, no lead data, and never the Gmail refresh token travels with it. Signed out or locked out, the public /support page carries a plain address, since someone who cannot authenticate cannot use an authenticated form and that is exactly when they most need help; the page renders per request and states plainly that no address is published yet rather than showing a mailto that goes nowhere. Requests are written to a server-only collection with a CDN-XXXXXX reference built on an alphabet without I, L, O, or U, so a reference read aloud or retyped stays the same reference, and are rate limited per user. An optional webhook pings a chat channel so a request is not waiting to be noticed.",
+        keyFiles: [
+          "lib/support/contact.ts",
+          "lib/support/requests.ts",
+          "app/api/support/route.ts",
+          "app/(dashboard)/help/contact/page.tsx",
+          "app/support/page.tsx",
+          "components/support/ContactSupportForm.tsx",
+        ],
+      },
+      {
         id: "waitlist-admin",
         name: "Sales-enquiry admin view",
         status: "shipped",

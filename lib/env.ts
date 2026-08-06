@@ -16,6 +16,16 @@ const EnvSchema = z.object({
   // Optional alerting sink for unexpected server errors (Slack incoming
   // webhook, Sentry ingest, etc.). Unset = structured console logs only.
   ERROR_WEBHOOK_URL: z.string().default(""),
+  // Where customers reach a human. Shown on the public /support page, which is
+  // the only path open to someone who cannot sign in, and in the legal footer.
+  // Unset is honest rather than broken: the page says the address is not
+  // published yet instead of rendering a mailto that goes nowhere.
+  SUPPORT_EMAIL: z.union([z.literal(""), z.string().trim().email()]).default(""),
+  // Optional notification sink for new support requests (Slack incoming
+  // webhook or similar). Unset means requests are recorded in Firestore only,
+  // which is fine while someone watches the collection and not fine once
+  // customers are paying.
+  SUPPORT_WEBHOOK_URL: z.string().default(""),
   // Stripe billing. All optional: when STRIPE_SECRET_KEY is unset, billing
   // is a no-op and the pricing UI stays "coming soon".
   STRIPE_SECRET_KEY: z.string().default(""),

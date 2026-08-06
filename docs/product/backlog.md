@@ -224,11 +224,28 @@ once the reputation being spent is the customer's own.
 Unchanged from the go-live checklist. All code, none waiting on Stripe or
 Google.
 
-### 4.1 Support contact path — **S**
+### 4.1 Support contact path — **DONE**
 
-No `support@`, no route, no form. A customer whose campaign breaks has nowhere
-to go. Plan: a contact route reusing the existing waitlist endpoint shape,
-plus a real address in the help centre and the legal footer.
+**Was.** No `support@`, no route, no form. A customer whose campaign broke had
+nowhere to go.
+
+**Shipped.** Two paths, because they fail at different moments. `/help/contact`
+is the in-app form: it asks for a category, a subject, and what happened, and
+attaches workspace, plan, sending mode, Gmail connection status, and the Cloud
+Run revision server-side, so most of the usual first round trip is skipped. No
+lead data and nothing from the mailbox goes with it. `/support` is public and
+carries a plain address, because someone who cannot sign in cannot use an
+authenticated form, and that is exactly when they most need to reach a human.
+
+Requests land in a server-only `supportRequests` collection with a
+`CDN-XXXXXX` reference the customer can quote back, built on an alphabet with
+no I, L, O, or U so a reference read down a phone stays the same reference.
+Rate limited at 10 an hour per user. `SUPPORT_WEBHOOK_URL` optionally pings a
+chat channel.
+
+**Remaining, configuration not code:** set `SUPPORT_EMAIL` on the Cloud Run
+service. Until then `/support` says no address is published yet rather than
+rendering a mailto that goes nowhere.
 
 ### 4.2 Account and workspace deletion — **M**
 
@@ -294,6 +311,7 @@ Skeletons on the slowest three pages rather than a spinner.
 1. ~~**2.1 rate limiting**~~ — done.
 2. ~~**3.4 tracking default**~~ — done.
 3. **4.1–4.3 support, deletion, export** — the actual blockers on charging.
+   4.1 is done; 4.2 and 4.3 remain.
 4. **5.1 command palette** — the feel gap, and it makes demos better.
 5. **1.3 spintax** — S, deliverability, cheap.
 6. **1.1 multi-inbox** — L, and the one that changes what you can charge.

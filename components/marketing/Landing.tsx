@@ -1669,6 +1669,7 @@ export function Landing() {
             <Link href="/privacy">Privacy</Link>
             <Link href="/acceptable-use">Anti-spam</Link>
             <Link href="/compliance">Compliance</Link>
+            <Link href="/support">Support</Link>
             <Link href="/sign-in">Log in</Link>
           </div>
           <p className={styles.copyright}>

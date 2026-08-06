@@ -71,11 +71,20 @@ which is honest but not sufficient for self-service.
 
 ## 3. The three surfaces a paying customer expects **[code]**
 
-None of these exist. Each is a genuine blocker for charging money, not polish.
+Each is a genuine blocker for charging money, not polish.
 
-- [ ] **Support contact path.** There is no `support@`, no contact route, no
-      form anywhere in the app. A customer whose campaign breaks has nowhere
-      to go.
+- [x] **Support contact path.** Built. `/help/contact` is the in-app form,
+      which attaches workspace, plan, sending mode, Gmail status, and the
+      running revision so the first reply can be an answer. `/support` is
+      public, for the customer who cannot sign in and therefore cannot use the
+      form. Requests land in the `supportRequests` collection with a quotable
+      `CDN-XXXXXX` reference.
+- [ ] **Set `SUPPORT_EMAIL`** on the Cloud Run service to a real monitored
+      mailbox **[cfg]**. Until it is set, `/support` tells a locked-out
+      customer that no address is published yet, which is honest but is not a
+      support path. This is the one remaining piece of item 3's first surface.
+      Optionally set `SUPPORT_WEBHOOK_URL` so a request pings a chat channel
+      instead of waiting to be noticed in Firestore.
 - [ ] **Account and workspace deletion.** No `deleteAccount`, no `deleteOrg`.
       This is a GDPR obligation, and it is the one most likely to become a
       complaint rather than a feature request.

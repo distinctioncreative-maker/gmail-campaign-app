@@ -59,6 +59,7 @@ export function LegalPage({
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <Link href="/acceptable-use" className="hover:text-foreground">Acceptable use</Link>
             <Link href="/compliance" className="hover:text-foreground">Compliance</Link>
+            <Link href="/support" className="hover:text-foreground">Support</Link>
             <Link href="/#contact" className="hover:text-foreground">Contact</Link>
           </div>
           <p>Last updated August 3, 2026.</p>

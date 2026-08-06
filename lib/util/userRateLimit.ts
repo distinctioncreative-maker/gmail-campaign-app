@@ -68,6 +68,17 @@ export const RATE_LIMITS = {
     windowMs: HOUR,
     message: "Too many campaign launches in a short time. Wait a while and try again.",
   },
+  /** Support requests are cheap to store and expensive to bury: a flood of
+   * them hides the real one. Set high enough that nobody with a genuine
+   * problem meets it, since the person hitting this limit is by definition
+   * someone already having a bad time. */
+  supportRequest: {
+    bucket: "support-request",
+    limit: 10,
+    windowMs: HOUR,
+    message:
+      "That is a lot of support requests at once. Reply to the one you already sent and we will pick it up there.",
+  },
   /** Each scan walks Gmail threads for every active campaign. */
   replyScan: {
     bucket: "reply-scan",

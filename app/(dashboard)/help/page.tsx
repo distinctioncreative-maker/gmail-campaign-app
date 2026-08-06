@@ -163,6 +163,32 @@ export default function HelpPage() {
         </div>
       ) : null}
 
+      {/* Contact support. Deliberately below the self-serve material, and
+          deliberately not hidden behind the search filter: someone who has
+          given up on finding the answer should not then have to hunt for the
+          way to ask. */}
+      {!query ? (
+        <div id="contact" className="card mt-10 scroll-mt-24 p-5 sm:p-6">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground">
+            Still stuck
+          </p>
+          <h2 className="mt-1 font-semibold">Talk to a human</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            Send us what is going wrong and we reply within one business day. Your workspace, plan,
+            sending mode, and Gmail status come along automatically, so you can skip describing
+            your setup. Nothing from your mailbox and no lead data is attached.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/help/contact" className="btn-primary min-h-11 px-4 py-2.5 text-sm">
+              Contact support
+            </Link>
+            <Link href="/support" className="btn-secondary min-h-11 px-4 py-2.5 text-sm">
+              If you get locked out
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
       {/* Feature suggestions */}
       {!query && (
         <div className="mt-10">
