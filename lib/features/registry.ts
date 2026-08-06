@@ -497,6 +497,19 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["components/TestCenter.tsx", "components/help/HelpGuides.tsx", "components/help/Faq.tsx", "app/(dashboard)/help"],
       },
       {
+        id: "command-palette",
+        name: "Command palette (Cmd-K)",
+        status: "shipped",
+        description: "Cmd-K, or Ctrl-K, opens search over campaigns, leads, templates, and follow-ups, plus commands like New campaign and Import leads. Built on a plain dialog and listbox rather than a palette dependency, since the whole feature is a filtered list and a keydown handler. Ranking is explicit and tested because a palette lives or dies on its first result: exact match beats whole-string prefix beats word prefix beats substring, word boundaries include the separators that appear in real names, a match in secondary text never outranks one in the name, and multi-term queries match terms that are all present but not adjacent. Recency only breaks ties, so the three most recently touched campaigns cannot bury an exact name match on an older one. Actions and each entity type are capped separately, so one crowded group cannot push the others off the list. Commands carry search keywords, so the words people already have in their head (csv, upload, dkim, unsubscribe, gdpr, broken) find the right screen without anyone learning the product's vocabulary, and nothing gated by role or plan is ever offered. Campaigns, templates, and follow-ups are bounded collections and are ranked in memory for real substring matching; leads use Firestore prefix queries because a workspace holds tens of thousands, and that prefix-only limit is stated in the interface rather than left to be discovered. Arrow keys wrap and follow the drawn order across group headings, the highlight scrolls into view, a resting mouse cannot steal it from the keyboard, and every in-flight request is discarded when a newer one starts so a slow response cannot overwrite fresher results.",
+        keyFiles: [
+          "lib/search/rank.ts",
+          "lib/search/actions.ts",
+          "lib/search/workspace.ts",
+          "app/api/search/route.ts",
+          "components/palette/CommandPalette.tsx",
+        ],
+      },
+      {
         id: "support-contact",
         name: "Support contact path",
         status: "shipped",

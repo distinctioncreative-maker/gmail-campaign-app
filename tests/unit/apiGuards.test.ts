@@ -131,6 +131,8 @@ describe("rate limiting — the expensive routes are bounded", () => {
     "api/support",
     // Walks every contact, campaign, and recipient the user owns.
     "api/account/export",
+    // Four collection reads per keystroke, debounced on the client only.
+    "api/search",
   ];
 
   const routes = new Map([...findRoutes("app")].map((r) => [r.id, r.source]));

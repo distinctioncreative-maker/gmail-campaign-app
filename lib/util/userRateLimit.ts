@@ -68,6 +68,16 @@ export const RATE_LIMITS = {
     windowMs: HOUR,
     message: "Too many campaign launches in a short time. Wait a while and try again.",
   },
+  /** The palette reads four collections per query. Debouncing on the client
+   * keeps ordinary typing far below this; the ceiling exists for a script, and
+   * has to stay high enough that fast typing in a long session never trips it
+   * and makes search look broken. */
+  search: {
+    bucket: "palette-search",
+    limit: 300,
+    windowMs: 10 * MINUTE,
+    message: "Search is busy. Give it a moment and try again.",
+  },
   /** Each export walks every contact, campaign, and recipient the user owns.
    * Generous because a customer taking their data out may reasonably pull all
    * six datasets twice while working out which one they wanted. */

@@ -306,17 +306,35 @@ rather than stripped, so `-50` stays `-50` instead of quietly becoming `50`.
 
 ## 5. UI, UX, and how expensive it feels
 
-### 5.1 No command palette or global search — **M** — the biggest feel gap
+### 5.1 No command palette or global search — **DONE**
 
-**Missing.** `grep -rni "cmdk\|command palette"` returns nothing, across 20
-pages.
+**Was.** Nothing, across 20 pages. The clearest single signal separating
+software people pay a lot for from software they tolerate.
 
-**Why.** It is the single clearest signal that separates software people pay a
-lot for from software they tolerate. Also genuinely faster.
+**Shipped.** Cmd-K (Ctrl-K) over campaigns, leads, templates, and follow-ups,
+plus commands and page navigation. No palette dependency: the whole feature is
+a filtered list and a keydown handler.
 
-**Plan.** Cmd-K over campaigns, leads, templates, and sequences, plus actions
-("new campaign", "pause all", "switch to dark"). Server-side search route with
-a debounced client. Keyboard-first, mouse optional.
+The ranking is the part that took the thinking, because a palette lives or
+dies on its first result. Exact beats whole-string prefix beats word prefix
+beats substring; word boundaries include the separators real names use
+(`acme-corp`, `welcome_email`, `sales/EU`); a hit in secondary text never
+outranks one in the name; multi-term queries match terms that are all present
+but not adjacent, which is how people type when they half-remember something.
+Recency only breaks ties, so the three most recently touched campaigns cannot
+bury an exact name match on an older one.
+
+Commands carry search keywords, so `csv`, `upload`, `dkim`, `unsubscribe`, and
+`gdpr` all land on the right screen without anyone learning our vocabulary.
+Nothing gated by role or plan is ever offered.
+
+**One honest limit.** Campaigns, templates, and follow-ups are bounded and are
+ranked in memory, so they get true substring matching. Leads cannot be: a
+workspace holds tens of thousands, so those use Firestore prefix queries and
+match the *start* of an email or company name. That is stated in the palette
+rather than left to be discovered. Real substring search over a collection that
+size needs a search index; loading five thousand documents per keystroke to
+fake one would be worse than the stated limit.
 
 ### 5.2 No saved views or filters — **M**
 
@@ -356,7 +374,7 @@ Skeletons on the slowest three pages rather than a spinner.
 3. ~~**4.1–4.3 support, deletion, export**~~ — done. The three blockers on
    charging money are code-complete; what remains is configuration, tracked in
    the go-live checklist.
-4. **5.1 command palette** — the feel gap, and it makes demos better.
+4. ~~**5.1 command palette**~~ — done.
 5. **1.3 spintax** — S, deliverability, cheap.
 6. **1.1 multi-inbox** — L, and the one that changes what you can charge.
 7. **1.5 API and webhooks** — M, unlocks enterprise conversations.

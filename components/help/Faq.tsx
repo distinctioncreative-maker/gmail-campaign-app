@@ -98,6 +98,14 @@ const SECTIONS: Array<{ heading: string; items: QA[] }> = [
         q: "How do I switch accounts or sign out?",
         a: "On a computer, use the account control at the bottom of the left sidebar. On a phone, open More and use the account control at the bottom of the sheet. Choose Switch account to open Google's account chooser, or Sign out to end both your Cadence server session and browser session. Disconnect Gmail in Settings only revokes campaign access; it does not sign you out of Cadence.",
       },
+      {
+        q: "Is there a faster way to get around than clicking?",
+        a: "Press Cmd-K (Ctrl-K on Windows and Linux) anywhere in the app to open search. Type a few letters of a campaign, template, or follow-up name and press Enter to jump straight there, or type what you want to do (“new campaign”, “import”, “csv”, “dkim”) and it finds the right screen. Arrow keys move, Enter opens, Escape closes, so you never need the mouse. Leads match from the start of an email address or company name rather than anywhere inside it.",
+      },
+      {
+        q: "How do I export or delete my data?",
+        a: "Both are in Settings and neither needs a request to us. Export downloads your leads, campaigns, sending history, Do Not Email list, templates, and follow-ups as CSV, plus your campaign settings as JSON. Delete schedules your account (or, if you are an admin, the whole workspace) for removal after 30 days, and you can cancel any time inside that window. When it runs it also revokes Cadence's access to your Gmail with Google.",
+      },
     ],
   },
 ];

@@ -8,6 +8,7 @@ import { AccountMenu } from "@/components/AccountMenu";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ProductTour } from "@/components/tour/ProductTour";
+import { CommandPalette } from "@/components/palette/CommandPalette";
 import { UIProviders } from "@/components/ui/UIProviders";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/ui/Logo";
@@ -76,10 +77,8 @@ export default async function DashboardLayout({
     getOrganization(organizationId),
     getOrgSettings(organizationId),
   ]);
-  const nav = navFor(
-    role,
-    capabilitiesFor(tenantType, settings.billing.plan)
-  );
+  const capabilities = capabilitiesFor(tenantType, settings.billing.plan);
+  const nav = navFor(role, capabilities);
   const workspaceName = org?.name ?? "";
 
   return (
@@ -121,6 +120,20 @@ export default async function DashboardLayout({
                 {workspaceName}
               </span>
             )}
+          </div>
+
+          {/* The palette trigger sits with the workspace identity rather than
+              in the ml-auto cluster, so search reads as part of the workspace
+              instead of as another status control. The dialog is rendered by
+              the same component, so Cmd-K works on every page in this group
+              without each one mounting anything. */}
+          <div className="ml-3 min-w-0">
+            <CommandPalette
+              actionContext={{
+                isAdmin: role === "ADMIN" && capabilities.adminConsole,
+                hasTeams: capabilities.teams,
+              }}
+            />
           </div>
 
           <div className="ml-auto flex items-center gap-1.5">
