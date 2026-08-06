@@ -221,6 +221,9 @@ export async function launchCampaign(
       templateIdSnapshot: null,
       replyIntent: null,
       lastReplySnippet: "",
+      // Set when the initial email actually leaves, so a threaded follow-up
+      // can be pinned to the same inbox.
+      sentFromConnectionId: null,
       // Outcomes are only ever set by a human, so every recipient starts blank.
       dealStatus: null,
       dealValueCents: null,

@@ -1,15 +1,35 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
-import { getConnection, markDisconnected } from "@/lib/repositories/gmailConnections";
+import {
+  getConnection,
+  getConnectionById,
+  listConnections,
+  markDisconnected,
+} from "@/lib/repositories/gmailConnections";
 import { decryptSecret } from "@/lib/kms/crypto";
 import { oauthClient } from "@/lib/google/oauth";
 import { handleApiErrors } from "@/lib/api";
 
 /** Disconnect Gmail: revoke the Google grant, then mark the stored
  * connection revoked (token is overwritten, never returned). */
-export const POST = handleApiErrors(async () => {
+const BodySchema = z.object({ connectionId: z.string().min(1).optional() });
+
+export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
-  const connection = await getConnection(ctx.userId);
+  // Which inbox. Omitted means the default one, so an older client that posts
+  // an empty body keeps working exactly as it did.
+  const body = await req.json().catch(() => ({}));
+  const { connectionId } = BodySchema.parse(body);
+  if (connectionId) {
+    const owned = await listConnections(ctx.userId);
+    if (!owned.some((c) => c.connectionId === connectionId)) {
+      return NextResponse.json({ error: "That inbox is not connected." }, { status: 404 });
+    }
+  }
+  const connection = connectionId
+    ? await getConnectionById(ctx.userId, connectionId)
+    : await getConnection(ctx.userId);
   if (!connection || connection.status === "REVOKED") {
     return NextResponse.json({ ok: true, alreadyDisconnected: true });
   }
@@ -21,6 +41,6 @@ export const POST = handleApiErrors(async () => {
     // Grant may already be revoked on Google's side; proceed with local cleanup.
   }
 
-  await markDisconnected(ctx.userId);
+  await markDisconnected(ctx.userId, connection.connectionId);
   return NextResponse.json({ ok: true });
 });

@@ -1,5 +1,6 @@
 import "server-only";
 import { tracksAnything } from "@/lib/tracking/settings";
+import { listConnections } from "@/lib/repositories/gmailConnections";
 
 import { listCampaigns, listRecipients, type OwnerRef } from "@/lib/repositories/campaigns";
 import {
@@ -201,6 +202,9 @@ export interface ReportData {
   trend: ReturnType<typeof dailyTrend>;
   trackedCampaignCount: number;
   tracking: OpenClickRates;
+  /** Per-sending-inbox volume and bounce rate. Empty or single-entry for a
+   * one-inbox account, and the section that renders it hides itself then. */
+  inboxes: InboxBreakdownRow[];
 }
 
 /**
@@ -274,5 +278,60 @@ export async function loadReport(
     trend: dailyTrend(periodPoints, timezone, opts.rangeDays, window.now),
     trackedCampaignCount: scanned.filter((c) => tracksAnything(c)).length,
     tracking: openClickRates(trackedPoints),
+    // Only meaningful with more than one inbox; the section hides itself below.
+    inboxes: buildInboxBreakdown(await listConnections(owner.userId).catch(() => [])),
   };
+}
+
+/** One row per sending inbox: volume, and the bounce rate it is spending. */
+export interface InboxBreakdownRow {
+  connectionId: string;
+  connectedEmail: string;
+  label: string;
+  status: string;
+  sent: number;
+  bounced: number;
+  bounceRate: number;
+  lifetimeSends: number;
+}
+
+/**
+ * Which inbox is carrying the reputation.
+ *
+ * The number a customer with several inboxes actually needs is not the
+ * workspace bounce rate: it is which address is producing it. A pooled 3% can
+ * be three healthy inboxes, or two clean ones and one that is on fire, and
+ * those call for completely different actions.
+ *
+ * Pure, and sorted by volume so the inbox doing the most work leads.
+ */
+export function buildInboxBreakdown(
+  inboxes: readonly {
+    connectionId: string;
+    connectedEmail: string;
+    label: string;
+    status: string;
+    sentCount: number;
+    bounceCount: number;
+    lifetimeSends: number;
+  }[]
+): InboxBreakdownRow[] {
+  return inboxes
+    .map((inbox) => {
+      // Coerced: a counter absent from a connection written before rotation
+      // reads as undefined, and NaN here would render as "NaN%" on the page.
+      const sent = Number(inbox.sentCount) || 0;
+      const bounced = Number(inbox.bounceCount) || 0;
+      return {
+        connectionId: inbox.connectionId,
+        connectedEmail: inbox.connectedEmail,
+        label: inbox.label,
+        status: inbox.status,
+        sent,
+        bounced,
+        bounceRate: sent > 0 ? (bounced / sent) * 100 : 0,
+        lifetimeSends: Number(inbox.lifetimeSends) || 0,
+      };
+    })
+    .sort((a, b) => b.sent - a.sent || a.connectedEmail.localeCompare(b.connectedEmail));
 }

@@ -11,7 +11,7 @@ import {
   updateQueueItem,
   updateRecipient,
 } from "@/lib/repositories/campaigns";
-import { getConnection } from "@/lib/repositories/gmailConnections";
+import { getConnection, recordInboxBounce } from "@/lib/repositories/gmailConnections";
 import { recordEngagementByEmail } from "@/lib/repositories/contacts";
 import { addSuppression } from "@/lib/repositories/suppressions";
 import { addNotification } from "@/lib/repositories/notifications";
@@ -418,6 +418,16 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
       )
     );
     if (!applied) continue;
+
+    // Attribute the bounce to the inbox that actually sent the message, not
+    // to whichever inbox happens to be primary now. The reputation a bounce
+    // rate spends belongs to the sending address, so the per-inbox brake in
+    // lib/sending/inboxPool.ts has to be counting the right one.
+    if (match.recipient.sentFromConnectionId) {
+      await recordInboxBounce(owner.userId, match.recipient.sentFromConnectionId).catch(() => {
+        /* Attribution is not worth failing a bounce sweep over. */
+      });
+    }
 
     if (type === "HARD") {
       const open = await listQueueItems(owner, match.campaignId, [...OPEN]);

@@ -90,6 +90,13 @@ export const CampaignSchema = z.object({
   /** Minor units. Sum of dealValueCents across recipients marked WON. */
   wonValueCents: z.number().int().nonnegative().default(0),
   followupsPaused: z.boolean().default(false),
+  /** Which connected inboxes this campaign may send from.
+   *
+   * Empty means every healthy inbox, which is what a single-inbox account has
+   * always effectively done. When it is set, it is honoured strictly: an
+   * unavailable chosen sender makes the campaign wait rather than quietly
+   * sending from an address the customer excluded. See lib/sending/inboxPool.ts. */
+  senderConnectionIds: z.array(z.string()).default([]),
   /** Open and click tracking are separate trades and are now separate flags.
    * See lib/tracking/settings.ts for why both default off: the pixel is a
    * remote image in a cold email in exchange for a number Apple MPP has made
@@ -185,6 +192,13 @@ export const RecipientSchema = z.object({
   /** First chars of what the person actually typed (quoted history stripped)
    * — shown in the inbox and used to seed AI reply drafts. */
   lastReplySnippet: z.string().default(""),
+  /** The inbox this recipient's initial email actually left from.
+   *
+   * Null for anything sent before rotation existed. A threaded follow-up has to
+   * leave from the same inbox or the recipient sees a stranger replying inside
+   * their conversation and Gmail will not thread it, so this is read before
+   * every follow-up rather than treated as reporting metadata. */
+  sentFromConnectionId: z.string().nullable().default(null),
   /** What the conversation actually became.
    *
    * Distinct from `replyIntent`, which is how the reply *read*. This is what

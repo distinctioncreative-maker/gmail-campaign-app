@@ -527,6 +527,9 @@ export async function cloneCampaign(ctx: AuthContext, campaign: Campaign): Promi
     lostCount: 0,
     wonValueCents: 0,
     followupsPaused: false,
+    // A clone keeps the senders it was set up with: they are configuration,
+    // not results.
+    senderConnectionIds: campaign.senderConnectionIds,
     openTrackingEnabled: clonedTracking.opens,
     clickTrackingEnabled: clonedTracking.clicks,
     trackingEnabled: clonedTracking.opens || clonedTracking.clicks,

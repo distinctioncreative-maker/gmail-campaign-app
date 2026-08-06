@@ -4,6 +4,9 @@ import { applySendSafety } from "./safety";
 
 export interface SendEmailInput {
   userId: string;
+  /** Which connected inbox sends this. Omitted uses the default inbox, which
+   * preserves every existing caller's behaviour exactly. */
+  connectionId?: string;
   to: string;
   subject: string;
   htmlBody: string;
@@ -111,7 +114,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
     input.testMode,
     input.verifiedTestDestination
   );
-  const gmail = await gmailForUser(input.userId);
+  const gmail = await gmailForUser(input.userId, input.connectionId);
 
   const res = await gmail.users.messages.send({
     userId: "me",
@@ -155,7 +158,7 @@ export async function createEmailDraft(input: SendEmailInput): Promise<GmailDeli
     input.testMode,
     input.verifiedTestDestination
   );
-  const gmail = await gmailForUser(input.userId);
+  const gmail = await gmailForUser(input.userId, input.connectionId);
 
   const res = await gmail.users.drafts.create({
     userId: "me",

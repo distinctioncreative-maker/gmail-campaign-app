@@ -16,6 +16,7 @@ import {
   BestCampaignCallout,
   CampaignFunnel,
   TimeToReplyPanel,
+  InboxBreakdownPanel,
   TrackedEngagementPanel,
   CampaignLeaderboard,
 } from "@/components/analytics/ReportSections";
@@ -154,6 +155,7 @@ export default async function ReportsPage({
       </div>
 
       <div className="mt-6">
+        <InboxBreakdownPanel inboxes={report.inboxes} />
         <TrackedEngagementPanel
           trackedCampaignCount={report.trackedCampaignCount}
           tracking={report.tracking}

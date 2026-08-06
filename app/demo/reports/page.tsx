@@ -7,6 +7,7 @@ import {
   BestCampaignCallout,
   CampaignFunnel,
   TimeToReplyPanel,
+  InboxBreakdownPanel,
   TrackedEngagementPanel,
 } from "@/components/analytics/ReportSections";
 import { demoReport } from "@/lib/demo/fixtures";
@@ -68,6 +69,7 @@ export default function DemoReportsPage() {
       </div>
 
       <div className="mt-6">
+        <InboxBreakdownPanel inboxes={report.inboxes} />
         <TrackedEngagementPanel
           trackedCampaignCount={report.trackedCampaignCount}
           tracking={report.tracking}

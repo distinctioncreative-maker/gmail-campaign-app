@@ -6,11 +6,13 @@ import {
   commitDeliveryResult,
   getCampaign,
   getDailyCount,
+  getInboxDailyCount,
   getRecipient,
   incrementCampaignCounters,
   isIdempotencyKeyUsed,
   recordEvent,
   reserveDailySend,
+  reserveInboxSend,
   reserveIdempotencyKey,
   setCampaignStatus,
   updateQueueItem,
@@ -20,7 +22,18 @@ import {
 import { checkEligibility } from "@/lib/campaigns/eligibility";
 import { deferCampaignToNextDay } from "@/lib/campaigns/deferral";
 import { markContacted, recordEmailSent } from "@/lib/repositories/contacts";
-import { getConnection } from "@/lib/repositories/gmailConnections";
+import {
+  getConnection,
+  listConnections,
+  recordInboxSend,
+} from "@/lib/repositories/gmailConnections";
+import {
+  inboxForFollowUp,
+  selectInbox,
+  type InboxCandidate,
+  type InboxSelection,
+} from "@/lib/sending/inboxPool";
+import { clampThresholds } from "@/lib/campaigns/bounceGuard";
 import { isSuppressed } from "@/lib/repositories/suppressions";
 import { getTemplate } from "@/lib/repositories/templates";
 import { getSequence } from "@/lib/repositories/sequences";
@@ -134,19 +147,59 @@ export async function POST(req: NextRequest) {
   };
   try {
     // 2. Load state.
-    const [campaign, recipient, connection, settings] = await Promise.all([
+    const [campaign, recipient, connection, settings, connections] = await Promise.all([
       getCampaign(owner, campaignId),
       getRecipient(owner, campaignId, item.recipientId),
       getConnection(ownerUserId),
       getOrgSettings(organizationId),
+      listConnections(ownerUserId),
     ]);
     if (!campaign || !recipient) return fail("MISSING_RECORDS", false);
-    // Three ceilings, lowest wins: what the customer chose, what their plan
-    // allows, and what a new inbox should be doing while it builds a history.
+
+    // Which inbox sends this one. A threaded follow-up is pinned to the inbox
+    // that started the thread; anything else rotates across the healthy pool.
+    // See lib/sending/inboxPool.ts for why each rule is what it is.
+    const dayKeyNow = localDayKey(Date.now(), campaign.schedule.timezone);
+    const bounceThresholds = clampThresholds({});
+    const inboxCandidates: InboxCandidate[] = await Promise.all(
+      connections.map(async (c) => ({
+        connectionId: c.connectionId,
+        connectedEmail: c.connectedEmail,
+        label: c.label,
+        status: c.status,
+        paused: c.paused,
+        primary: c.primary,
+        connectedAt: c.createdAt,
+        lifetimeSends: c.lifetimeSends,
+        sentToday: await getInboxDailyCount(owner, c.connectionId, dayKeyNow),
+        sentCount: c.sentCount,
+        bounceCount: c.bounceCount,
+        dailyLimit: c.dailyLimit,
+      }))
+    );
+    const isThreadedFollowUp = item.sequenceStep > 0 && recipient.gmailThreadId !== null;
+    const selection: InboxSelection = isThreadedFollowUp
+      ? inboxForFollowUp(inboxCandidates, recipient.sentFromConnectionId, {
+          now: Date.now(),
+          thresholds: bounceThresholds,
+        })
+      : selectInbox(inboxCandidates, {
+          now: Date.now(),
+          thresholds: bounceThresholds,
+          allowed: campaign.senderConnectionIds,
+        });
+    const chosenInbox = selection.chosen;
+
+    // Ceilings, lowest wins: what the customer chose for the campaign, what
+    // their plan allows, and what this specific inbox may send today. The first
+    // two bound the campaign total; the third protects the address. Rotation
+    // raises what a customer can achieve by adding inboxes, and never by
+    // quietly multiplying the limit they set.
+    const inboxCap = chosenInbox?.dailyCap ?? warmupDailyCap(connection?.createdAt);
     const effectiveDailyLimit = Math.min(
       campaign.schedule.dailySendLimit,
       PLANS[settings.billing.plan].maxDailySends,
-      warmupDailyCap(connection?.createdAt)
+      inboxCap
     );
     const effectiveCampaign = {
       ...campaign,
@@ -164,7 +217,10 @@ export async function POST(req: NextRequest) {
       campaign: effectiveCampaign,
       recipient,
       queueItem: { status: "PROCESSING", type: item.type },
-      gmailConnected: connection?.status === "CONNECTED",
+      // The pool, not one connection. A campaign with three inboxes where the
+      // primary has expired is still perfectly able to send, and reporting it
+      // as "Gmail not connected" would pause a healthy campaign.
+      gmailConnected: chosenInbox !== null || connection?.status === "CONNECTED",
       suppressed: suppression !== null,
       emailOptOut: false, // opt-outs are stored as suppressions at import
       idempotencyKeyUsed: keyUsed,
@@ -420,6 +476,37 @@ export async function POST(req: NextRequest) {
       return fail(finalBlock, false);
     }
 
+    // No inbox can send this right now. Every reason the pool reports is
+    // either self-resolving (a cap that resets at midnight) or needs the
+    // customer to act (a reconnect), and neither is a reason to burn the queue
+    // item: it waits and tries again.
+    if (!isDraft && !chosenInbox) {
+      const reason = selection.blockedReason ?? "NO_INBOXES";
+      const retryAt = Math.max(
+        nextValidTime(Date.now() + 60 * 60 * 1000, effectiveCampaign.schedule),
+        Date.now() + 60_000
+      );
+      await updateQueueItem(owner, campaignId, queueItemId, {
+        status: "SCHEDULED",
+        scheduledAt: retryAt,
+        lastError: `NO_SENDING_INBOX:${reason}`,
+      });
+      await enqueueCurrentItem(retryAt);
+      // Worth telling someone about only when they can do something about it.
+      if (reason === "NEEDS_RECONNECT" || reason === "REVOKED" || reason === "NO_INBOXES") {
+        await recordEvent(owner, campaignId, {
+          type: "PAUSED",
+          message:
+            reason === "NO_INBOXES"
+              ? "No Gmail inbox is connected, so sending is waiting. Connect one in Settings."
+              : "Every sending inbox for this campaign needs reconnecting. Sending is waiting until one is available.",
+          severity: "WARNING",
+          recipientEmail: null,
+        }).catch((err) => reportError(err, { scope: "inbox-block-event" }));
+      }
+      return NextResponse.json({ ok: true, reason: "NO_SENDING_INBOX", blockedReason: reason });
+    }
+
     // Atomically reserve today's allowance immediately before a real send.
     // Draft creation never consumes send quota.
     if (!isDraft) {
@@ -430,7 +517,22 @@ export async function POST(req: NextRequest) {
         effectiveDailyLimit,
         item.idempotencyKey
       );
-      if (!quota.reserved) {
+      // Second, independent reservation against the chosen inbox. The campaign
+      // counter above enforces what the customer asked to send today; this one
+      // enforces what a single mailbox may safely send. Without it, three
+      // inboxes would share one pooled allowance and all of it could still
+      // leave from whichever inbox a race happened to pick.
+      const inboxQuota =
+        quota.reserved && chosenInbox
+          ? await reserveInboxSend(
+              owner,
+              chosenInbox.candidate.connectionId,
+              dayKey,
+              chosenInbox.dailyCap,
+              item.idempotencyKey
+            )
+          : { reserved: true, count: 0 };
+      if (!quota.reserved || !inboxQuota.reserved) {
         await updateQueueItem(owner, campaignId, queueItemId, {
           status: "SCHEDULED",
           lastError: "DAILY_LIMIT_REACHED",
@@ -505,6 +607,9 @@ export async function POST(req: NextRequest) {
     reachedDeliveryAttempt = true;
     const deliveryInput = {
       userId: ownerUserId,
+      // The inbox chosen above, named explicitly. Falling back to the default
+      // here would silently undo both the rotation and the thread pinning.
+      connectionId: chosenInbox?.candidate.connectionId,
       to: recipient.emailSnapshot,
       subject: subjectOutput,
       htmlBody: finalHtml,
@@ -589,6 +694,13 @@ export async function POST(req: NextRequest) {
         gmailThreadId: recipient.gmailThreadId ?? result.gmailThreadId,
         initialSentAt: item.sequenceStep === 0 ? now : recipient.initialSentAt,
         lastSentAt: now,
+        // Recorded on the initial send only. Every later step in this thread
+        // has to leave from the same inbox, and overwriting it on a follow-up
+        // would let the pin drift to whichever inbox sent last.
+        sentFromConnectionId:
+          item.sequenceStep === 0
+            ? chosenInbox?.candidate.connectionId ?? null
+            : recipient.sentFromConnectionId,
         currentStep: item.sequenceStep,
         ...(trackingLinkUrls
           ? {
@@ -651,6 +763,15 @@ export async function POST(req: NextRequest) {
     }).catch((err) => reportError(err, { scope: "send-event" }));
 
     if (!followupScheduleFailed) {
+      // Attribute the send to the inbox. lifetimeSends feeds the warmup ramp
+      // and sentCount feeds the per-inbox brake, and an undercounted brake is a
+      // brake that fails to engage. Never allowed to fail the request: the
+      // email has already gone, and throwing here would retry a delivered send.
+      if (chosenInbox) {
+        await recordInboxSend(ownerUserId, chosenInbox.candidate.connectionId).catch((err) =>
+          reportError(err, { scope: "inbox-send-attribution" })
+        );
+      }
       await maybeMarkCompleted(owner, campaignId).catch((err) =>
         reportError(err, { scope: "campaign-completion-check" })
       );

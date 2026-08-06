@@ -486,3 +486,78 @@ export function CampaignLeaderboard({
     </section>
   );
 }
+
+/**
+ * Which inbox is carrying the reputation.
+ *
+ * Hidden below two inboxes, because with one the answer is trivially "that
+ * one" and the section would be a table with a single row restating a number
+ * already on the page.
+ *
+ * The bounce rate per inbox is the figure worth surfacing. A pooled 3% can be
+ * three healthy inboxes or two clean ones and one that is on fire, and those
+ * call for completely different actions.
+ */
+export function InboxBreakdownPanel({ inboxes }: { inboxes: ReportData["inboxes"] }) {
+  if (inboxes.length < 2) return null;
+  const worst = Math.max(...inboxes.map((i) => i.bounceRate));
+
+  return (
+    <section className="card p-5 sm:p-6">
+      <h2 className="font-semibold">Sending inboxes</h2>
+      <p className="mt-1 text-xs text-muted">
+        Volume and bounce rate per address. A pooled rate hides which inbox is producing it.
+      </p>
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[30rem] text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
+              <th className="py-2 pr-3 font-medium">Inbox</th>
+              <th className="py-2 pr-3 text-right font-medium">Sent</th>
+              <th className="py-2 pr-3 text-right font-medium">Bounced</th>
+              <th className="py-2 text-right font-medium">Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inboxes.map((inbox) => {
+              // Flagged only when it is both the worst and genuinely high, so a
+              // pool of three healthy inboxes gets no red herring.
+              const concerning = inbox.bounceRate >= 2 && inbox.bounceRate === worst;
+              return (
+                <tr key={inbox.connectionId} className="border-b border-border last:border-0">
+                  <td className="py-2.5 pr-3">
+                    <span className="block truncate font-medium">
+                      {inbox.label || inbox.connectedEmail}
+                    </span>
+                    {inbox.label ? (
+                      <span className="block truncate text-xs text-muted">
+                        {inbox.connectedEmail}
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums">
+                    {inbox.sent.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums">
+                    {inbox.bounced.toLocaleString()}
+                  </td>
+                  <td
+                    className={`py-2.5 text-right tabular-nums ${concerning ? "font-medium text-warning" : ""}`}
+                  >
+                    {inbox.sent === 0 ? "None yet" : `${inbox.bounceRate.toFixed(1)}%`}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {worst >= 2 ? (
+        <p className="mt-3 text-xs text-warning">
+          The highlighted inbox is bouncing more than the others. Cadence brakes a single inbox
+          automatically at 5%, but the list it is sending is worth checking before then.
+        </p>
+      ) : null}
+    </section>
+  );
+}

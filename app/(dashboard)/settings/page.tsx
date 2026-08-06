@@ -1,9 +1,8 @@
 import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { InviteTeamCard } from "@/components/admin/InviteTeamCard";
-import { getConnectionPublic } from "@/lib/repositories/gmailConnections";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
-import { GmailConnectionCard } from "@/components/GmailConnectionCard";
+import { InboxPoolCard } from "@/components/inboxes/InboxPoolCard";
 import { ProfileForm } from "@/components/ProfileForm";
 import { DisplayNameForm } from "@/components/DisplayNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -22,8 +21,7 @@ export default async function SettingsPage({
   searchParams: Promise<{ gmail?: string }>;
 }) {
   const ctx = await requireUser();
-  const [connection, profile, settings, deletion, exportCounts] = await Promise.all([
-    getConnectionPublic(ctx.userId),
+  const [profile, settings, deletion, exportCounts] = await Promise.all([
     getSenderProfile(ctx),
     getOrgSettings(ctx.organizationId),
     deletionState(ctx, "ACCOUNT"),
@@ -79,11 +77,11 @@ export default async function SettingsPage({
             <DisplayNameForm initial={ctx.user.displayName} />
           </div>
         </div>
+        {/* The pool replaces the single-connection card. A customer with one
+            inbox sees one row and the same actions they always had; a customer
+            with several sees where their capacity actually comes from. */}
         <div className="animate-rise" style={{ animationDelay: "35ms" }}>
-          <GmailConnectionCard
-            connectedEmail={connection?.status === "CONNECTED" ? connection.connectedEmail : null}
-            lastRefreshAt={connection?.status === "CONNECTED" ? connection.lastRefreshAt : null}
-          />
+          <InboxPoolCard />
         </div>
         <div className="animate-rise" style={{ animationDelay: "70ms" }}>
           <CollapsibleCard

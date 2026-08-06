@@ -798,6 +798,85 @@ export async function reserveDailySend(
   });
 }
 
+/**
+ * Reserve one send from a specific inbox, on top of the campaign-wide
+ * reservation above.
+ *
+ * Two levels, both required, and they answer different questions. The
+ * campaign-wide counter enforces what the customer asked to send today. This
+ * one enforces what a single mailbox may safely send, which is the number that
+ * protects the address. Rotation without this would let three inboxes share one
+ * pooled limit and still allow all of it to leave from whichever inbox a race
+ * happened to pick.
+ *
+ * Same idempotency key as the campaign reservation, so a retried task consumes
+ * neither allowance twice.
+ */
+export async function reserveInboxSend(
+  owner: OwnerRef,
+  connectionId: string,
+  dayKey: string,
+  limit: number,
+  idempotencyKey: string
+): Promise<{ reserved: boolean; count: number }> {
+  // Infinity is the honest value for a warm inbox with no override, and a
+  // transaction that compares against it works fine, but there is no point
+  // paying for one when the answer cannot be no.
+  if (!Number.isFinite(limit)) {
+    const counter = inboxCounterRef(owner, connectionId, dayKey);
+    await counter.set({ sent: FieldValue.increment(1), updatedAt: Date.now() }, { merge: true });
+    return { reserved: true, count: 0 };
+  }
+  const counter = inboxCounterRef(owner, connectionId, dayKey);
+  const reservation = counter
+    .collection("sendReservations")
+    .doc(idempotencyKey.replaceAll("/", "_"));
+  return firestore().runTransaction(async (tx: Transaction) => {
+    const [counterSnap, reservationSnap] = await Promise.all([
+      tx.get(counter),
+      tx.get(reservation),
+    ]);
+    const current = (counterSnap.data()?.sent as number | undefined) ?? 0;
+    if (reservationSnap.exists) return { reserved: true, count: current };
+    if (current >= limit) return { reserved: false, count: current };
+    tx.set(counter, { sent: current + 1, updatedAt: Date.now() }, { merge: true });
+    tx.create(reservation, { idempotencyKey, connectionId, reservedAt: Date.now() });
+    return { reserved: true, count: current + 1 };
+  });
+}
+
+/** Today's real sends from one inbox. Absent counter reads as zero. */
+export async function getInboxDailyCount(
+  owner: OwnerRef,
+  connectionId: string,
+  dayKey: string
+): Promise<number> {
+  const snap = await inboxCounterRef(owner, connectionId, dayKey).get();
+  return Number(snap.data()?.sent) || 0;
+}
+
+/** Today's sends for every inbox at once, for the pool assessment. */
+export async function getInboxDailyCounts(
+  owner: OwnerRef,
+  connectionIds: readonly string[],
+  dayKey: string
+): Promise<Record<string, number>> {
+  const entries = await Promise.all(
+    connectionIds.map(async (id) => [id, await getInboxDailyCount(owner, id, dayKey)] as const)
+  );
+  return Object.fromEntries(entries);
+}
+
+function inboxCounterRef(owner: OwnerRef, connectionId: string, dayKey: string) {
+  // Under the inbox rather than under the day, so removing an inbox takes its
+  // counters with it and a recursive delete of the connection is complete.
+  return userRef(owner)
+    .collection("gmailConnections")
+    .doc(connectionId)
+    .collection("counters")
+    .doc(dayKey);
+}
+
 // ── Events (friendly activity feed) ──────────────────────────────
 
 export async function recordEvent(

@@ -40,6 +40,10 @@ const CreateSchema = z.object({
    * the safe direction to fail. See lib/tracking/settings.ts. */
   openTrackingEnabled: z.boolean().default(false),
   clickTrackingEnabled: z.boolean().default(false),
+  /** Which connected inboxes may send this campaign. Empty means every healthy
+   * one, which is both the default and what a single-inbox account has always
+   * done. See lib/sending/inboxPool.ts. */
+  senderConnectionIds: z.array(z.string()).max(20).default([]),
   acceptPaceRisk: z.boolean().default(false),
 });
 
@@ -110,6 +114,9 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     lostCount: 0,
     wonValueCents: 0,
     followupsPaused: false,
+    // Empty means every healthy inbox, which is what the wizard offers by
+    // default and what a single-inbox account has always done.
+    senderConnectionIds: input.senderConnectionIds,
     openTrackingEnabled: input.openTrackingEnabled,
     clickTrackingEnabled: input.clickTrackingEnabled,
     trackingEnabled: input.openTrackingEnabled || input.clickTrackingEnabled,

@@ -31,28 +31,55 @@ Worth stating, because the gaps below read worse without it. Verified present:
 
 ## 1. Functionality: what competitors have that we do not
 
-### 1.1 Multi-inbox rotation — **L** — the ceiling on account value
+### 1.1 Multi-inbox rotation — **DONE**
 
-**Missing.** `grep -rn "inboxRotation\|senderPool" lib app` returns nothing.
-One user has one Gmail connection (`schemas/gmailConnection.ts`), and the
-worker resolves it with `getConnection(ownerUserId)`.
+**Was.** One connection per user at a fixed document id, resolved with
+`getConnection(ownerUserId)`. A single warmed inbox tops out near 150 real
+sends a day, so that was the hard ceiling on what any customer could achieve,
+which made it the ceiling on what the product could charge.
 
-**Why it decides pricing.** A single warmed inbox tops out near 150 a day.
-That is the hard cap on what any customer can achieve, which caps what they
-will pay. Every competitor at the $99+ tier sells volume through inbox count.
-This is the single biggest revenue-limiting gap in the product.
+**Shipped.** Connections are one-to-many. The existing document keeps its
+`primary` id rather than being migrated, so every account that connected an
+inbox before this keeps its connection, its token, and its warmup history and
+simply becomes an account with one connection in a collection that allows
+several.
 
-**Plan.** Connection becomes one-to-many per user: `gmailConnections` keyed by
-`connectionId` with a `primary` flag rather than one doc per user. A campaign
-gains `senderConnectionIds`. The scheduler round-robins across healthy
-connections and skips any that are disconnected, warming, or braked. Warmup
-and the bounce brake become per-connection rather than per-campaign, which is
-the correct scope for both anyway. Reporting gains a per-inbox breakdown so a
-customer can see which sender is carrying the reputation.
+Selection lives in `lib/sending/inboxPool.ts`, pure and covered by 43 tests,
+because the rules decide which real mailbox a real email leaves from:
 
-**Risk.** Touches the send path, the warmup ramp, and the brake at once. Do it
-behind a flag, keep single-inbox as the default path until the rotation path
-has sent real volume.
+- **Least-used-today wins.** Filling one inbox to its ceiling before touching
+  the next produces exactly the spiky per-address pattern rotation exists to
+  avoid, and would make a three-inbox account behave like a one-inbox account
+  until lunchtime. Ties break toward primary then by id, so a bug here is
+  reproducible from a customer's report.
+- **A threaded follow-up is pinned to the inbox that started the thread.** A
+  follow-up from a different address is not a follow-up: the recipient sees a
+  stranger replying inside their conversation and Gmail will not thread it. If
+  that inbox cannot send, the follow-up waits. Switching mid-thread is not
+  recoverable once the mail has gone.
+- **A campaign that names its senders means it.** An unavailable chosen sender
+  makes the campaign wait rather than quietly using an address the customer
+  excluded.
+- **Warmup and the bounce brake moved to the inbox**, which is the scope that
+  was always correct for both: the reputation a bounce rate spends belongs to
+  the sending address, so a bad list run from one inbox no longer brakes the
+  others.
+
+**Rotation is not a volume multiplier.** Connecting a third inbox does not
+silently triple sending. The campaign limit and the plan cap still bound the
+total; what rotation buys is the ability to *raise* that limit without any
+single address exceeding a safe rate. Reservation is two-level and both are
+required: the campaign counter enforces what the customer asked for, the
+per-inbox counter enforces what a mailbox may safely send.
+
+**Also closed 3.2 and 3.3 on the way.** The warmup ramp now uses lifetime sends
+as well as connection age, so an inbox connected five weeks ago and never used
+is no longer treated as warm; and the brake is per inbox, which was blocked on
+this item.
+
+**Reporting** gained a per-inbox breakdown. A pooled 3% bounce rate can be
+three healthy inboxes or two clean ones and one on fire, and those call for
+completely different actions.
 
 ### 1.2 Lead sourcing — **L** — the reason accounts go quiet
 
@@ -200,7 +227,7 @@ alongside campaign limit, plan cap, and warmup, bounded so it can raise volume
 by at most 50% and lower it by at most 50%. Same `Math.min` composition, one
 more input.
 
-### 3.2 Warmup anchored on first send, not connection date — **S**
+### 3.2 Warmup anchored on first send, not connection date — **DONE**
 
 Known simplification, recorded in `lib/campaigns/warmup.ts`. An inbox
 connected a month ago and never used counts as warm.
@@ -208,7 +235,7 @@ connected a month ago and never used counts as warm.
 **Plan.** Lifetime send counter per connection, incremented where
 `reserveDailySend` already writes. One field, one write, removes the caveat.
 
-### 3.3 Bounce brake per inbox — **S**, blocked on 1.1
+### 3.3 Bounce brake per inbox — **DONE**
 
 Currently per campaign. The reputation being spent is the inbox's, so once
 rotation lands the brake belongs there.
@@ -414,7 +441,7 @@ Skeletons on the slowest three pages rather than a spinner.
    the go-live checklist.
 4. ~~**5.1 command palette**~~ — done.
 5. ~~**1.3 spintax**~~ — done.
-6. **1.1 multi-inbox** — L, and the one that changes what you can charge.
+6. ~~**1.1 multi-inbox**~~ — done. Also closed 3.2 and 3.3.
 7. **1.5 API and webhooks** — M, unlocks enterprise conversations.
 8. Everything else as it earns priority.
 

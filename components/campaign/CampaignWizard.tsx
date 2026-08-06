@@ -21,6 +21,7 @@ import {
 } from "@/lib/campaigns/paceSafety";
 import { buildLaunchSelections, computeListScopedCounts } from "@/lib/campaigns/wizardSelections";
 import { describeTracking } from "@/lib/tracking/settings";
+import { SenderPicker } from "@/components/campaign/SenderPicker";
 import { TagChips } from "@/components/leads/TagChips";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
@@ -144,6 +145,9 @@ export function CampaignWizard() {
     ...PACE_PRESETS[1].schedule,
   });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
+  // Empty means every ready inbox, including any connected later. See
+  // components/campaign/SenderPicker.tsx for why that is not a snapshot of ids.
+  const [senderConnectionIds, setSenderConnectionIds] = useState<string[]>([]);
   // Two flags, both off. See lib/tracking/settings.ts for the trade.
   const [openTracking, setOpenTracking] = useState(false);
   const [clickTracking, setClickTracking] = useState(false);
@@ -176,6 +180,7 @@ export function CampaignWizard() {
       draftStrategy,
       openTracking,
       clickTracking,
+      senderConnectionIds,
       priorPolicy,
       listFilter,
       tagFilter,
@@ -193,6 +198,9 @@ export function CampaignWizard() {
     setPreset(restored.preset);
     if (restored.customPace) setCustomPace(restored.customPace);
     setDraftStrategy(restored.draftStrategy);
+    if (Array.isArray(restored.senderConnectionIds)) {
+      setSenderConnectionIds(restored.senderConnectionIds);
+    }
     if (typeof restored.openTracking === "boolean") setOpenTracking(restored.openTracking);
     if (typeof restored.clickTracking === "boolean") setClickTracking(restored.clickTracking);
     setPriorPolicy(restored.priorPolicy);
@@ -298,6 +306,7 @@ export function CampaignWizard() {
             schedule: preset === "custom" ? customPace : PRESETS[preset].schedule,
             priorContactPolicy: priorPolicy,
             draftStrategy,
+            senderConnectionIds,
             openTrackingEnabled: openTracking,
             clickTrackingEnabled: clickTracking,
             sourceListId: listFilter || null,
@@ -943,6 +952,8 @@ export function CampaignWizard() {
                 <HelpTip text="Instead of sending automatically, the app prepares each email as a draft in your Gmail. You open and send them yourself. Good for extra control on important lists." />
               </label>
             </div>
+
+            <SenderPicker value={senderConnectionIds} onChange={setSenderConnectionIds} />
 
             {/* Two separate trades, so two separate choices. Both off by
                 default: the pixel costs more than it returns, and rewritten

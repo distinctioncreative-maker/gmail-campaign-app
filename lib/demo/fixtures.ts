@@ -75,6 +75,7 @@ function campaign(over: Partial<Campaign> & { campaignId: string; name: string }
     lostCount: 0,
     wonValueCents: 0,
     followupsPaused: false,
+    senderConnectionIds: [],
     openTrackingEnabled: false,
     clickTrackingEnabled: false,
     trackingEnabled: false,
@@ -287,6 +288,41 @@ export function demoReport(rangeDays: 30 | 90 | 365): ReportData {
     bestHours: bestSendTimes(DEMO_POINTS, tz).filter((r) => r.sent >= 2),
     trend: dailyTrend(DEMO_POINTS, tz, rangeDays, NOW),
     trackedCampaignCount: 1,
+    // Three inboxes, one of them visibly worse: the whole point of the
+    // breakdown is that a pooled bounce rate hides which address is the
+    // problem, so the tour should show a pool where one clearly is.
+    inboxes: [
+      {
+        connectionId: "demo-a",
+        connectedEmail: "alex@northwindpartners.com",
+        label: "Alex, outbound",
+        status: "CONNECTED",
+        sent: 1840,
+        bounced: 21,
+        bounceRate: (21 / 1840) * 100,
+        lifetimeSends: 12400,
+      },
+      {
+        connectionId: "demo-b",
+        connectedEmail: "sam@northwindpartners.com",
+        label: "Sam, partnerships",
+        status: "CONNECTED",
+        sent: 1120,
+        bounced: 9,
+        bounceRate: (9 / 1120) * 100,
+        lifetimeSends: 7300,
+      },
+      {
+        connectionId: "demo-c",
+        connectedEmail: "hello@northwindpartners.com",
+        label: "Shared inbox",
+        status: "CONNECTED",
+        sent: 420,
+        bounced: 17,
+        bounceRate: (17 / 420) * 100,
+        lifetimeSends: 980,
+      },
+    ],
     tracking: openClickRates(DEMO_POINTS),
   };
 }

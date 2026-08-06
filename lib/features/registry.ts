@@ -390,6 +390,20 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/spam/score.ts"],
       },
       {
+        id: "multi-inbox-rotation",
+        name: "Multi-inbox rotation",
+        status: "shipped",
+        description: "Several Gmail accounts per user, with sends rotating across them. One warmed inbox tops out near 150 real sends a day, so that was the hard ceiling on what any customer could achieve. The existing single connection keeps its document id rather than being migrated, so an account that connected an inbox before this keeps its token, its history, and its warmup progress. Selection always picks the inbox that has sent least today, because filling one to its ceiling before touching the next produces exactly the spiky per-address pattern rotation exists to avoid; ties break toward the default inbox and then by id so the choice is reproducible from a bug report. A threaded follow-up is pinned to the inbox that started the thread and waits rather than switching, since a follow-up from another address is one the recipient sees as a stranger replying inside their conversation and Gmail will not thread it. A campaign may name its senders, and an unavailable chosen sender makes it wait rather than quietly using an address the customer excluded. Rotation is not a volume multiplier: the campaign limit and plan cap still bound the total, and reservation is two-level so the campaign counter enforces what the customer asked for while a per-inbox counter enforces what one mailbox may safely send. Warmup now requires lifetime volume as well as connection age, closing the case where an inbox connected weeks ago and never used read as fully warm, and the bounce brake moved to the inbox, which is the scope that always owned the reputation being spent. Each inbox can be labelled, paused, given its own lower daily limit, made the default, or removed, and reporting breaks volume and bounce rate down per address because a pooled rate hides which inbox is producing it.",
+        keyFiles: [
+          "lib/sending/inboxPool.ts",
+          "lib/repositories/gmailConnections.ts",
+          "app/api/gmail/inboxes/route.ts",
+          "components/inboxes/InboxPoolCard.tsx",
+          "components/campaign/SenderPicker.tsx",
+          "app/api/tasks/send-message/route.ts",
+        ],
+      },
+      {
         id: "spintax-variation",
         name: "Per-recipient message variation (spintax)",
         status: "shipped",
