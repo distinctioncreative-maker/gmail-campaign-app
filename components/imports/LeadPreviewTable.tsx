@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { badgeFor, defaultSelection, type ClassifiedLead } from "./leadBadges";
+import {
+  badgeFor,
+  defaultSelection,
+  isSelectable,
+  VERDICT_BADGES,
+  type ClassifiedLead,
+} from "./leadBadges";
 import { batchLeadImport } from "@/lib/leads/importBatching";
 
 export function LeadPreviewTable({
@@ -20,6 +26,13 @@ export function LeadPreviewTable({
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<number>>(() => defaultSelection(leads));
+  const verificationCounts = leads.some((l) => l.verification)
+    ? {
+        deliverable: leads.filter((l) => l.verification?.verdict === "DELIVERABLE").length,
+        risky: leads.filter((l) => l.verification?.verdict === "RISKY").length,
+        undeliverable: leads.filter((l) => l.verification?.verdict === "UNDELIVERABLE").length,
+      }
+    : null;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ completed: number; total: number } | null>(null);
@@ -109,6 +122,30 @@ export function LeadPreviewTable({
         </p>
       ))}
 
+      {/* Checked before anything is saved, so a dead domain or a typo is
+          something you see now rather than a bounce next week. */}
+      {verificationCounts && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-medium text-foreground">Address check:</span>
+          <span className="badge bg-success-soft text-success">
+            {verificationCounts.deliverable} verified
+          </span>
+          {verificationCounts.risky > 0 && (
+            <span className="badge bg-warning-soft text-warning">
+              {verificationCounts.risky} risky
+            </span>
+          )}
+          {verificationCounts.undeliverable > 0 && (
+            <span className="badge bg-danger-soft text-danger">
+              {verificationCounts.undeliverable} undeliverable
+            </span>
+          )}
+          <span className="text-muted">
+            Undeliverable rows cannot be imported. Risky ones are left unticked.
+          </span>
+        </div>
+      )}
+
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border text-xs uppercase text-muted">
@@ -117,6 +154,7 @@ export function LeadPreviewTable({
               <th className="px-3 py-2">Name</th>
               <th className="px-3 py-2">Business</th>
               <th className="px-3 py-2">Email</th>
+              <th className="px-3 py-2">Address</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Notes</th>
             </tr>
@@ -124,6 +162,10 @@ export function LeadPreviewTable({
           <tbody>
             {leads.map((lead) => {
               const badge = badgeFor(lead.classification);
+              const selectable = isSelectable(lead);
+              const verdict = lead.verification
+                ? VERDICT_BADGES[lead.verification.verdict]
+                : null;
               return (
                 <tr key={lead.index} className="border-b border-border last:border-0">
                   <td className="px-3 py-2">
@@ -131,22 +173,29 @@ export function LeadPreviewTable({
                       type="checkbox"
                       aria-label={`Include ${lead.fullName || "lead " + (lead.index + 1)}`}
                       checked={selected.has(lead.index)}
-                      disabled={!badge.selectable}
-                      onChange={() => toggle(lead.index, badge.selectable)}
+                      disabled={!selectable}
+                      onChange={() => toggle(lead.index, selectable)}
                     />
                   </td>
                   <td className="px-3 py-2 font-medium">{lead.fullName || "Not available"}</td>
                   <td className="px-3 py-2 text-muted">{lead.businessName || "Not available"}</td>
                   <td className="px-3 py-2 text-muted">{lead.email ?? "Not available"}</td>
                   <td className="px-3 py-2">
+                    {verdict && (
+                      <span className={`badge ${verdict.className}`}>{verdict.label}</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
                       {badge.label}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-xs text-muted">
-                    {lead.classification === "CONTACTED_BEFORE" && lead.lastCampaignAt
-                      ? `Last contacted ${new Date(lead.lastCampaignAt).toLocaleDateString()}`
-                      : lead.warnings.slice(0, 2).join("; ")}
+                    {lead.verification && lead.verification.findings.length > 0
+                      ? lead.verification.findings.map((f) => f.detail).join(" ")
+                      : lead.classification === "CONTACTED_BEFORE" && lead.lastCampaignAt
+                        ? `Last contacted ${new Date(lead.lastCampaignAt).toLocaleDateString()}`
+                        : lead.warnings.slice(0, 2).join("; ")}
                   </td>
                 </tr>
               );

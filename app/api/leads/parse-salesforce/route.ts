@@ -4,6 +4,7 @@ import { handleApiErrors } from "@/lib/api";
 import { parseSalesforceText } from "@/lib/parser/salesforce";
 import { ParseRequestSchema } from "@/schemas/parsedLead";
 import { classifyLead } from "@/lib/leads/classify";
+import { verifyLeadBatch } from "@/lib/leads/verifyBatch";
 
 /**
  * Preview endpoint for pasted Salesforce list text. Parses, then
@@ -24,9 +25,12 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     }))
   );
 
+  const { verified, counts } = await verifyLeadBatch(classified);
+
   return NextResponse.json({
-    leads: classified,
+    leads: verified,
     totalRecords: result.totalRecords,
     globalWarnings: result.globalWarnings,
+    verification: counts,
   });
 });

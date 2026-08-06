@@ -338,6 +338,19 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/deliverability/dnsLookup.ts", "app/(dashboard)/deliverability"],
       },
       {
+        id: "address-verification",
+        name: "Address verification at import",
+        status: "shipped",
+        description:
+          "Every imported address is checked before it is saved: an MX lookup proves the domain can receive mail at all, a typo check offers a correction for the domains people actually mistype, throwaway providers are rejected, and role inboxes are flagged rather than dropped. Import previously validated syntax and nothing else, so dead domains and typos were invisible until the bounces arrived. This is the preventive half of the bounce problem and the bounce brake is the reactive half; an address never sent to cannot damage a reputation. Undeliverable rows cannot be selected, risky rows import but arrive unticked. One DNS query per distinct domain rather than per address, cached, bounded in concurrency, and with a timeout that returns unknown rather than failure, because treating a slow resolver as a dead domain would quietly delete good leads. No paid verification service and no address leaves the server.",
+        keyFiles: [
+          "lib/leads/verify.ts",
+          "lib/leads/mx.ts",
+          "lib/leads/verifyBatch.ts",
+          "tests/unit/lead-verify.test.ts",
+        ],
+      },
+      {
         id: "inbox-warmup",
         name: "Inbox warmup ramp",
         status: "shipped",

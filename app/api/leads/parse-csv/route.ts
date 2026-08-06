@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { parseCsvLeads, CSV_FIELDS, type CsvMapping } from "@/lib/leads/csv";
 import { classifyLead } from "@/lib/leads/classify";
+import { verifyLeadBatch } from "@/lib/leads/verifyBatch";
 import { getSavedCsvMapping, saveCsvMapping } from "@/lib/repositories/userSettings";
 
 const BodySchema = z.object({
@@ -50,12 +51,17 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     }))
   );
 
+  // Verified before anything is written, so a dead domain or a typo is
+  // something the customer sees in the preview rather than a bounce later.
+  const { verified, counts } = await verifyLeadBatch(classified);
+
   return NextResponse.json({
     headers: result.headers,
     mapping: result.mapping,
     fields: CSV_FIELDS,
-    leads: classified,
-    totalRecords: classified.length,
+    leads: verified,
+    totalRecords: verified.length,
     globalWarnings: result.globalWarnings,
+    verification: counts,
   });
 });
