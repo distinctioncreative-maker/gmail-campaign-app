@@ -26,6 +26,7 @@ export async function createUser(input: {
     createdAt: now,
     updatedAt: now,
     lastLoginAt: now,
+    startersSeededAt: null,
   };
   const ref = firestore().collection("users").doc(user.userId);
   return firestore().runTransaction(async (tx) => {

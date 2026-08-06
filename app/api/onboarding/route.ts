@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { updateOnboardingStatus } from "@/lib/repositories/users";
 import { OnboardingStatusSchema } from "@/schemas/user";
+import { seedStarterTemplates } from "@/lib/onboarding/seed";
 
 const ORDER = [
   "NEW",
@@ -25,5 +26,10 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   const next = ORDER.indexOf(status);
   if (next > current) await updateOnboardingStatus(ctx.userId, status);
 
-  return NextResponse.json({ ok: true });
+  // Also here, not only in the workspace step: an invited member joins an
+  // existing workspace and never sees that step, and templates are per-user,
+  // so without this they would land on an empty Templates page.
+  const seeded = await seedStarterTemplates(ctx);
+
+  return NextResponse.json({ ok: true, seededTemplates: seeded });
 });

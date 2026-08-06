@@ -64,6 +64,11 @@ export const UserSchema = z.object({
   createdAt: EpochMillis,
   updatedAt: EpochMillis,
   lastLoginAt: EpochMillis.nullable(),
+  /** When starter templates were seeded, so a user who deletes them keeps them
+   * deleted. Null on every user written before this field existed, which is why
+   * lib/onboarding/seed.ts also requires an empty template list: this default
+   * alone would hand three templates to every established account. */
+  startersSeededAt: EpochMillis.nullable().default(null),
 });
 export type User = z.infer<typeof UserSchema>;
 

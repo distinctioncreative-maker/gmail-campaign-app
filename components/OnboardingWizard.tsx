@@ -8,15 +8,19 @@ import type { SenderProfile } from "@/schemas/userSettings";
 import type { WorkspaceProfile } from "@/schemas/user";
 import { Icon, type IconName } from "@/components/ui/Icon";
 
-const STEPS = [
-  "Welcome",
-  "Workspace",
-  "Connect Gmail",
-  "Your details",
-  "Sending defaults",
-  "Test",
-  "Ready",
-];
+/**
+ * Five steps, down from seven.
+ *
+ * "Your details" and "Sending defaults" both rendered the same ProfileForm,
+ * once compact and once full, so the second was a second pass over a form the
+ * user had just filled in. They are one step now.
+ *
+ * The test send stopped being a gate. It is genuinely worth doing, but it sat
+ * between a new user and a working app, and Home already carries a first-win
+ * checklist that tracks exactly this. Offering it and letting them move on
+ * respects that the checklist will ask again.
+ */
+const STEPS = ["Welcome", "Workspace", "Connect Gmail", "Your details", "Ready"];
 
 const USE_CASES: Array<{
   value: WorkspaceProfile["primaryUseCase"];
@@ -33,14 +37,20 @@ const USE_CASES: Array<{
   { value: "OTHER", label: "Another workflow", detail: "Adapt Cadence to your process", icon: "sparkles" },
 ];
 
+/**
+ * The persisted onboarding status keeps its old six values, because they are
+ * written to Firestore and half-finished accounts already carry them. Only the
+ * mapping to a screen changed: PROFILE_COMPLETE and DEFAULTS_SET both land on
+ * the single details step, and anyone who had reached the old test step is
+ * already done.
+ */
 function initialStep(
   status: string,
   gmailConnected: boolean,
   workspaceConfigured: boolean
 ): number {
-  if (status === "COMPLETE" || status === "TEST_PASSED") return 6;
-  if (status === "DEFAULTS_SET") return 5;
-  if (status === "PROFILE_COMPLETE") return 4;
+  if (status === "COMPLETE" || status === "TEST_PASSED" || status === "DEFAULTS_SET") return 4;
+  if (status === "PROFILE_COMPLETE") return 3;
   if (gmailConnected || status === "GMAIL_CONNECTED") return 3;
   if (workspaceConfigured) return 2;
   return 0;
@@ -393,53 +403,23 @@ export function OnboardingWizard({
             <>
               <h1 className="text-3xl font-semibold tracking-tight">Set your sender identity.</h1>
               <p className="mt-2 text-sm leading-6 text-muted">
-                These details personalize messages and provide the required business-address footer.
+                These details personalize your messages and provide the business-address footer that
+                campaign launch requires. Sending defaults are set here too, and every one of them
+                can be changed per campaign later.
               </p>
+              {/* One pass over the full form. This used to be two steps, both
+                  rendering this same component, so the second asked a user to
+                  look again at a form they had just completed. */}
               <div className="mt-5">
-                <ProfileForm initial={profile} compact onSaved={() => void advance("PROFILE_COMPLETE", 4)} />
+                {/* Straight to COMPLETE. The test send used to be the step
+                    that set it, and it is optional now, so gating completion on
+                    it would leave every account permanently mid-onboarding. */}
+                <ProfileForm initial={profile} onSaved={() => void advance("COMPLETE", 4)} />
               </div>
             </>
           )}
 
           {step === 4 && (
-            <>
-              <h1 className="text-3xl font-semibold tracking-tight">Choose responsible defaults.</h1>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Start conservatively. Cadence still validates every campaign against current plan and safety limits.
-              </p>
-              <div className="mt-5">
-                <ProfileForm initial={profile} onSaved={() => void advance("DEFAULTS_SET", 5)} />
-              </div>
-            </>
-          )}
-
-          {step === 5 && (
-            <>
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-info-soft text-info" aria-hidden>
-                <Icon name="send" size={20} />
-              </span>
-              <h1 className="mt-5 text-3xl font-semibold tracking-tight">Send yourself one safe test.</h1>
-              <p className="mt-3 max-w-2xl leading-7 text-muted">
-                The setup test goes only to your verified account so you can confirm the Gmail connection and message rendering.
-              </p>
-              {!testSent ? (
-                <button onClick={() => void sendTest()} disabled={busy} className="btn-primary mt-5 min-h-11 px-5 py-2.5 disabled:opacity-50">
-                  {busy ? "Sending..." : "Send my test email"}
-                </button>
-              ) : (
-                <>
-                  <p className="alert-success mt-5 rounded-xl border p-4 text-sm text-success">
-                    Test sent. Check your inbox, links, signature, and footer before continuing.
-                  </p>
-                  <button onClick={() => void advance("COMPLETE", 6)} disabled={busy} className="btn-primary mt-4 min-h-11 px-5 py-2.5 disabled:opacity-50">
-                    {busy ? "Finishing..." : "It looks right. Finish setup"}
-                  </button>
-                </>
-              )}
-            </>
-          )}
-
-          {step === 6 && (
             <div className="grid items-center gap-8 lg:grid-cols-[1fr_0.9fr]">
               <div>
                 <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-success-soft text-success" aria-hidden>
@@ -447,20 +427,39 @@ export function OnboardingWizard({
                 </span>
                 <h1 className="mt-5 text-3xl font-semibold tracking-tight">Your workspace is ready.</h1>
                 <p className="mt-3 max-w-xl leading-7 text-muted">
-                  Take the interactive tour, then import a small, relevant audience and build your first test campaign.
+                  Three starter templates are already waiting in Templates, written to pass the
+                  spam check and the launch requirements. Edit one, bring in a small list, and send
+                  a test campaign to yourself.
                 </p>
+                {/* The test send used to be a step of its own, standing between
+                    a new user and a working app. It is offered here and the
+                    first-win checklist on Home asks again, so nobody is held up
+                    and nobody forgets. */}
+                {!testSent ? (
+                  <button
+                    onClick={() => void sendTest()}
+                    disabled={busy}
+                    className="btn-secondary mt-5 min-h-11 px-5 py-2.5 text-sm disabled:opacity-50"
+                  >
+                    {busy ? "Sending..." : "Send yourself a test email now"}
+                  </button>
+                ) : (
+                  <p className="alert-success mt-5 rounded-xl border p-3 text-sm text-success">
+                    Test sent. Check your inbox, links, signature, and footer.
+                  </p>
+                )}
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button onClick={startTour} className="btn-primary min-h-11 px-5 py-2.5">Start interactive tour</button>
-                  <Link href="/leads" className="btn-secondary min-h-11 px-5 py-2.5">Import leads</Link>
-                  <Link href="/templates" className="btn-ghost min-h-11 px-4 py-2.5">Create a template</Link>
+                  <Link href="/templates" className="btn-secondary min-h-11 px-5 py-2.5">See my templates</Link>
+                  <Link href="/leads" className="btn-ghost min-h-11 px-4 py-2.5">Import leads</Link>
                 </div>
               </div>
               <div className="rounded-2xl border border-border bg-surface-2 p-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-info">First success milestone</p>
                 <ol className="mt-4 space-y-4 text-sm">
                   {[
+                    "Edit one of your three starter templates",
                     "Import and review a relevant lead list",
-                    "Create one human-reviewed message",
                     "Run a test-mode campaign",
                     "Review results before requesting live sending",
                   ].map((item, index) => (

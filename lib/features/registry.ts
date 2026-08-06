@@ -509,6 +509,18 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["components/TestCenter.tsx", "components/help/HelpGuides.tsx", "components/help/Faq.tsx", "app/(dashboard)/help"],
       },
       {
+        id: "first-run-activation",
+        name: "First-run activation",
+        status: "shipped",
+        description: "Setup is five steps rather than seven, and two of the removed ones were never features: Your details and Sending defaults both rendered the same sender-profile form, once compact and once full, so the second asked a user to look again at a form they had just completed, and the test send sat as a gate between a new user and a working app. The test is now offered on the final step while the first-win checklist on Home asks again, so nobody is held up and nobody forgets. Three starter templates are seeded per user, two universal and one matched to the workflow the workspace step already asked about. Each carries the opt-out and physical-address placeholders that campaign launch requires, uses per-recipient variation so the first template anyone opens demonstrates the feature, and scores an A on the product own spam checker; all of those are asserted in tests, because a starter that fails the product own checks teaches a new user on day one that the product is broken. Each one also prompts the writer to replace its generic paragraph, so a scaffold is not mistaken for finished copy, and leaves the reader an easy way to decline, since complaints are the signal that actually costs a sending domain. Seeding is guarded both by a timestamp on the user, so deleted starters stay deleted, and by an empty-template check, so an established account is never handed templates it did not ask for.",
+        keyFiles: [
+          "lib/onboarding/starterTemplates.ts",
+          "lib/onboarding/seed.ts",
+          "components/OnboardingWizard.tsx",
+          "lib/home/dashboard.ts",
+        ],
+      },
+      {
         id: "command-palette",
         name: "Command palette (Cmd-K)",
         status: "shipped",

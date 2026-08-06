@@ -358,15 +358,39 @@ to Leads or Campaigns starts from the default filter.
 **Plan.** Named filter sets per user, stored on user settings, surfaced as
 tabs above the table.
 
-### 5.3 First-run emptiness — **M**
+### 5.3 First-run emptiness — **DONE**
 
-No seeded template, no sample list, nothing. Fourteen steps from sign-in to a
-sent email: seven onboarding, seven wizard.
+**Was.** No seeded template, no sample list, nothing. Fourteen steps from
+sign-in to a sent email: seven onboarding, seven wizard.
 
-**Plan.** Seed three starter templates on workspace creation. Collapse
-onboarding to Gmail connect plus sender details, deferring the rest to the
-checklist that already exists on Home. Target under three minutes to a real
-test send.
+**Shipped.** Onboarding is five steps, not seven. Two of the removed ones were
+not features:
+
+- "Your details" and "Sending defaults" both rendered the same `ProfileForm`,
+  once compact and once full, so the second step asked a user to look again at
+  a form they had just filled in. They are one step.
+- The test send was a gate between a new user and a working app. It is offered
+  on the final step and the first-win checklist on Home asks again, so nobody
+  is held up and nobody forgets.
+
+Three starter templates are seeded per user: two universal, one matched to the
+workflow they picked in the workspace step, which the step already collected.
+Each one carries `{{unsubscribe_text}}` and `{{physical_address}}` so it passes
+the product's own launch check, uses spintax so the first template anyone opens
+demonstrates variation, and scores an A on the spam checker. All four
+properties are asserted in tests, because a starter that fails the product's
+own checks teaches a new user on day one that the product is broken.
+
+Seeding is guarded twice. `startersSeededAt` on the user means someone who
+deletes the starters keeps them deleted; the empty-template-list check means an
+established account is never handed three templates it did not ask for, which
+is what the Zod default alone would have done to every existing user. It is
+also seeded from the generic onboarding advance, not only the workspace step,
+because an invited member never sees that step and templates are per-user.
+
+**Not done:** no sample lead list. Seeding fake contacts into a real workspace
+risks someone launching a campaign at them, and the CSV import path is already
+short. The empty state points at import instead.
 
 ### 5.4 Bulk actions — **present**, corrected
 

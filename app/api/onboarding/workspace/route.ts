@@ -5,6 +5,7 @@ import { renameOrganization } from "@/lib/repositories/organizations";
 import { saveWorkspaceProfile } from "@/lib/repositories/orgSettings";
 import { WorkspaceProfileSchema } from "@/schemas/user";
 import { z } from "zod";
+import { seedStarterTemplates } from "@/lib/onboarding/seed";
 
 const BodySchema = z.object({
   workspaceName: z.string().trim().min(1).max(80),
@@ -32,5 +33,14 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       })
     ),
   ]);
-  return NextResponse.json({ ok: true, message: "Workspace preferences saved." });
+  // After the profile is saved, so the starters can match what they told us
+  // they do. Never blocks the response it rides along with.
+  const seeded = await seedStarterTemplates(ctx);
+  return NextResponse.json({
+    ok: true,
+    seededTemplates: seeded,
+    message: seeded
+      ? `Workspace saved. ${seeded} starter templates are waiting for you.`
+      : "Workspace preferences saved.",
+  });
 });
