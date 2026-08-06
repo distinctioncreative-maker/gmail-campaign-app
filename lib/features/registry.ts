@@ -338,6 +338,18 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/deliverability/dnsLookup.ts", "app/(dashboard)/deliverability"],
       },
       {
+        id: "bounce-brake",
+        name: "Automatic stop on a high bounce rate",
+        status: "shipped",
+        description:
+          "A campaign pauses itself when its bounce rate crosses 5% over at least 20 sends, with a warning from 2%. Bounces were previously counted and displayed and acted on by nothing, so a campaign built from a stale list hard-bounced its way to completion at full speed. The sample floor matters as much as the rate: one bounce in three is 33% and means nothing, and a brake that fires on noise is one customers learn to ignore. Thresholds are customizable, and clamped: a customer can make the brake tighter than default but never looser than a hard ceiling, because a brake that can be switched off is not a safety feature and the sending reputation at stake is partly the platform's. Checked once per bounce batch, so one pause and one notification rather than one per address.",
+        keyFiles: [
+          "lib/campaigns/bounceGuard.ts",
+          "lib/campaigns/monitoring.ts",
+          "tests/unit/bounce-guard.test.ts",
+        ],
+      },
+      {
         id: "postmaster-integration",
         name: "Gmail Postmaster Tools integration",
         status: "shipped",

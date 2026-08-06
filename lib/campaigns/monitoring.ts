@@ -2,10 +2,12 @@ import "server-only";
 import type { OwnerRef } from "@/lib/repositories/campaigns";
 import {
   commitRecipientOutcome,
+  getCampaign,
   listCampaigns,
   listQueueItems,
   listRecipients,
   recordEvent,
+  setCampaignStatus,
   updateQueueItem,
   updateRecipient,
 } from "@/lib/repositories/campaigns";
@@ -13,6 +15,7 @@ import { getConnection } from "@/lib/repositories/gmailConnections";
 import { recordEngagementByEmail } from "@/lib/repositories/contacts";
 import { addSuppression } from "@/lib/repositories/suppressions";
 import { addNotification } from "@/lib/repositories/notifications";
+import { assessBounces, shouldPause } from "@/lib/campaigns/bounceGuard";
 import {
   getInboundAfter,
   findRecentBounces,
@@ -376,6 +379,7 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
   }
 
   let bounces = 0;
+  const touched = new Set<string>();
   for (const msg of bounceMessages) {
     const failed = parseFailedRecipient(msg.bodyText);
     if (!failed) continue;
@@ -446,6 +450,33 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
     });
     bounces++;
     byEmail.delete(failed.toLowerCase());
+    if (bouncedCampaign) touched.add(bouncedCampaign.campaignId);
+  }
+
+  // The brake. Bounces were counted and displayed and acted on by nothing, so
+  // a campaign built from a stale list hard-bounced its way to completion at
+  // full speed. Checked after the batch rather than per bounce: one pause and
+  // one notification, not one per address.
+  for (const campaignId of touched) {
+    const campaign = await getCampaign(owner, campaignId);
+    if (!campaign || campaign.status !== "ACTIVE") continue;
+    const assessment = assessBounces(campaign);
+    if (!shouldPause(assessment)) continue;
+
+    await setCampaignStatus(owner, campaignId, "PAUSED", { pausedAt: Date.now() });
+    await recordEvent(owner, campaignId, {
+      type: "AUTO_PAUSE",
+      message: assessment.message ?? "Paused automatically: bounce rate too high.",
+      severity: "ERROR",
+      recipientEmail: null,
+    });
+    await addNotification(owner, {
+      type: "CAMPAIGN_PAUSED",
+      title: `${campaign.name} paused: too many bounces`,
+      body: assessment.message ?? "",
+      severity: "WARNING",
+      campaignId,
+    });
   }
 
   return { bounces };

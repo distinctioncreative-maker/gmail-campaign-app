@@ -7,6 +7,7 @@ import { getTemplate } from "@/lib/repositories/templates";
 import { getDailyCount, listQueueItems, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { tasksConfigured } from "@/lib/tasks/enqueue";
 import { isInWindow, localDayKey } from "@/lib/scheduling/window";
+import { assessBounces, DEFAULT_BOUNCE_GUARD } from "@/lib/campaigns/bounceGuard";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 
 export type DiagnosticStatus = "ok" | "warn" | "fail";
@@ -110,7 +111,33 @@ export async function diagnoseCampaign(
       : { label: "Daily limit", status: "ok", detail: `${sentToday} of ${campaign.schedule.dailySendLimit} sent today.` }
   );
 
-  // 8. Queue health
+  // 8. Bounce rate. Sending stops itself above the stop threshold, so this
+  // exists to show the number climbing before it trips rather than after.
+  const bounce = assessBounces(campaign);
+  checks.push(
+    bounce.verdict === "STOP"
+      ? {
+          label: "Bounce rate",
+          status: "fail",
+          detail: bounce.message ?? "Bounce rate is above the automatic stop threshold.",
+        }
+      : bounce.verdict === "WARN"
+        ? {
+            label: "Bounce rate",
+            status: "warn",
+            detail: bounce.message ?? "Bounce rate is climbing.",
+          }
+        : {
+            label: "Bounce rate",
+            status: "ok",
+            detail:
+              bounce.sent < DEFAULT_BOUNCE_GUARD.minimumSends
+                ? `${bounce.bounced} bounce${bounce.bounced === 1 ? "" : "s"} so far. Too few sends yet to judge a rate.`
+                : `${(bounce.rate * 100).toFixed(1)}% (${bounce.bounced} of ${bounce.sent}). Healthy.`,
+          }
+  );
+
+  // 9. Queue health
   const byStatus = (s: string) => queue.filter((q) => q.status === s).length;
   const errored = queue.filter((q) => q.status === "ERROR");
   const scheduled = byStatus("SCHEDULED") + byStatus("PENDING") + byStatus("RETRY_SCHEDULED");
