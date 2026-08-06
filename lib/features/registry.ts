@@ -386,8 +386,20 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         id: "spam-checker",
         name: "Built-in spam-risk checker",
         status: "shipped",
-        description: "Scores template content for common spam triggers before it ever gets sent.",
+        description: "Scores template content for common spam triggers before it ever gets sent, including whether the email varies at all between recipients and whether its variation syntax is well formed.",
         keyFiles: ["lib/spam/score.ts"],
+      },
+      {
+        id: "spintax-variation",
+        name: "Per-recipient message variation (spintax)",
+        status: "shipped",
+        description: "Alternatives written as {option one|option two}, including nested groups, resolved to one version per recipient. Five hundred byte-identical bodies is a fingerprint, providers cluster on message similarity, and varying the wording is one of the very few deliverability levers that costs nothing and needs no infrastructure. The template editor shows the live variant count, so a writer learns immediately whether the syntax took, and the spam scorer warns both when an email has no variation and when a group is malformed. It is a recursive parser rather than a regex, because a regex handles nesting by silently mangling it and corrupting an email is worse than refusing to send it. Double-brace placeholders are recognised and skipped whole, since the two syntaxes share a brace and a naive parser would strip one from every placeholder in the product. Expansion runs before placeholder substitution, so a lead whose company name genuinely contains braces is treated as data and can never become template syntax that decides what the email says. The choice is seeded from the recipient and the follow-up step rather than random, so a retry after an ambiguous delivery sends the byte-identical email instead of a second differently worded one, and the preview shows exactly what will go out.",
+        keyFiles: [
+          "lib/personalization/spintax.ts",
+          "lib/personalization/preview.ts",
+          "components/templates/VariationHint.tsx",
+          "app/api/tasks/send-message/route.ts",
+        ],
       },
       {
         id: "deliverability-benchmarks",

@@ -42,6 +42,7 @@ import { recordCollisionContact } from "@/lib/campaigns/collision";
 import { isTestModeForOrg } from "@/lib/sending/mode";
 import { reportError } from "@/lib/observability/report";
 import { warmupDailyCap } from "@/lib/campaigns/warmup";
+import { expandSpintax } from "@/lib/personalization/spintax";
 import { resolveTracking, tracksAnything } from "@/lib/tracking/settings";
 import { injectTracking } from "@/lib/tracking/inject";
 import { env } from "@/lib/env";
@@ -314,7 +315,16 @@ export async function POST(req: NextRequest) {
         subjectTemplate = step.customSubject;
       }
     }
-    const subjectRender = renderTemplate(subjectTemplate, values);
+    // Spintax is resolved before placeholders, never after: a lead whose
+    // company is literally "Foo {Bar|Baz}" is data, and substituting first
+    // would let a contact field decide what the email says.
+    //
+    // The seed is the recipient plus the step, so two leads get different
+    // wording and one lead gets the same wording on every attempt. A random
+    // choice per attempt would mean a retry after an ambiguous delivery sends
+    // a visibly different email to someone who may already have the first one.
+    const spinSeed = `${item.recipientId}:${item.sequenceStep}`;
+    const subjectRender = renderTemplate(expandSpintax(subjectTemplate, spinSeed), values);
     const subjectOutput =
       step?.subjectMode === "RE" && !/^re:/i.test(subjectRender.output)
         ? `Re: ${subjectRender.output}`
@@ -325,9 +335,9 @@ export async function POST(req: NextRequest) {
     if (!step && recipient.aiOpenerSnapshot && !/\{\{\s*ai_opener\s*\}\}/.test(effectiveBody)) {
       effectiveBody = `<p>{{ai_opener}}</p>\n${effectiveBody}`;
     }
-    const body = renderHtmlTemplate(effectiveBody, values);
+    const body = renderHtmlTemplate(expandSpintax(effectiveBody, spinSeed), values);
     const plainTextRender = plainText
-      ? renderTemplate(plainText, values)
+      ? renderTemplate(expandSpintax(plainText, spinSeed), values)
       : null;
     const unresolved = [
       ...subjectRender.unresolved,

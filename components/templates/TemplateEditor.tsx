@@ -6,6 +6,7 @@ import { STARTER_LAYOUTS } from "./starterLayouts";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { SpamCheck } from "@/components/spam/SpamCheck";
+import { VariationHint } from "@/components/templates/VariationHint";
 import { AiEmailWriter } from "./AiEmailWriter";
 import { AiEmailTools } from "./AiEmailTools";
 import { Button } from "@/components/ui/Button";
@@ -404,6 +405,9 @@ export function TemplateEditor({
           <p className="mt-1 text-xs text-muted">
             Placeholders work in the subject too: personalize it the same way as the body.
           </p>
+          {/* Reads the subject and body together, because a writer varying
+              only the greeting still wants the total for the whole email. */}
+          <VariationHint subject={subject} html={html} />
         </div>
 
         <AiEmailTools

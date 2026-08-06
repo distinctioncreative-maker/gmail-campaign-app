@@ -5,6 +5,8 @@
  * of inbox placement.
  */
 
+import { analyzeSpintax } from "@/lib/personalization/spintax";
+
 export type SpamStatus = "pass" | "warn" | "fail";
 
 export interface SpamCheck {
@@ -209,6 +211,42 @@ export function analyzeSpam(input: SpamInput): SpamResult {
           weight: 8,
         }
   );
+
+  // 11. Message variation
+  //
+  // Five hundred byte-identical bodies is a fingerprint: providers cluster on
+  // message similarity, and varying the wording is one of very few levers that
+  // costs nothing. Weighted low on purpose. A single well-written email with no
+  // variation is a perfectly reasonable thing to send and is not in the same
+  // class of problem as a missing opt-out, so this nudges rather than accuses.
+  const variation = analyzeSpintax(`${subject} ${html}`);
+  checks.push(
+    variation.variants > 1
+      ? {
+          label: "Message variation",
+          status: "pass",
+          detail: `${variation.variants.toLocaleString()}${variation.clamped ? "+" : ""} distinct versions of this email.`,
+          weight: 0,
+        }
+      : {
+          label: "Message variation",
+          status: "warn",
+          detail: "Every recipient gets a byte-identical email.",
+          fix: "Offer alternatives with {Hi|Hello|Hey} syntax. Providers cluster on message similarity, and varying the wording is free.",
+          weight: 4,
+        }
+  );
+  if (variation.issues.length > 0) {
+    // Malformed syntax is a different problem from having none: the author
+    // meant to vary the email and it is not working.
+    checks.push({
+      label: "Variation syntax",
+      status: "warn",
+      detail: variation.issues[0].message,
+      fix: "Every group needs a matching } and at least two options separated by |.",
+      weight: 6,
+    });
+  }
 
   const deductions = checks.reduce((sum, c) => sum + (c.status === "pass" ? 0 : c.weight), 0);
   const score = Math.max(0, Math.min(100, 100 - deductions));

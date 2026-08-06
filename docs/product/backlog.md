@@ -67,20 +67,34 @@ pass-through. Search by firmographics, preview, and import straight into a
 lead list with the verification from 1.4 already applied. Charge for it
 separately: it is a real marginal cost.
 
-### 1.3 Spintax and message variation — **S** — cheap deliverability win
+### 1.3 Spintax and message variation — **DONE**
 
-**Missing.** `lib/personalization/render.ts` substitutes `{{placeholders}}`
-and nothing else.
+**Was.** `lib/personalization/render.ts` substituted `{{placeholders}}` and
+nothing else, so every recipient got a byte-identical body.
 
-**Why.** Five hundred byte-identical bodies is a fingerprint. Providers
-cluster on message similarity, and variation is one of the few levers that is
-free.
+**Shipped.** `{option one|option two}` chosen per recipient, with nesting. The
+template editor shows the live variant count, and the spam scorer warns when a
+template has no variation and when its syntax is malformed.
 
-**Plan.** Extend the renderer with `{option one|option two}` syntax, chosen
-per recipient from the existing seeded randomness. Show the variant count in
-the template editor ("this produces 48 distinct bodies"). Add a spam-score
-rule that warns when a template has no variation at all. Fits the existing
-pure-renderer shape, so it is testable without a database.
+Three decisions worth recording:
+
+- **It parses rather than regexes.** A single regex looks adequate until
+  someone nests, and then `{Hi {there|friend}|Hello}` produces mangled output
+  instead of an error. Silently corrupting an email is worse than refusing it.
+- **`{{placeholder}}` is not spintax**, and the two syntaxes share a brace.
+  A parser that did not know the difference would read `{{first_name}}` as a
+  group with one option and strip a brace from every placeholder in the
+  product. Double braces are recognised and skipped whole. This one bit twice:
+  the first `hasSpintax` fast path used a brace-free window to find the pipe,
+  so a placeholder inside an option hid it and the template shipped unexpanded.
+  A test caught it.
+- **Expansion runs before substitution**, never after. A lead whose company is
+  literally `Foo {Bar|Baz}` is data, and the other order would let a contact's
+  own field decide what the email says.
+
+The choice is seeded from recipient plus step rather than random, so a retry
+after an ambiguous delivery sends the byte-identical email instead of a second,
+differently worded one, and the preview matches what goes out.
 
 ### 1.4 Deeper verification — **S** — extends what just shipped
 
@@ -375,7 +389,7 @@ Skeletons on the slowest three pages rather than a spinner.
    charging money are code-complete; what remains is configuration, tracked in
    the go-live checklist.
 4. ~~**5.1 command palette**~~ — done.
-5. **1.3 spintax** — S, deliverability, cheap.
+5. ~~**1.3 spintax**~~ — done.
 6. **1.1 multi-inbox** — L, and the one that changes what you can charge.
 7. **1.5 API and webhooks** — M, unlocks enterprise conversations.
 8. Everything else as it earns priority.

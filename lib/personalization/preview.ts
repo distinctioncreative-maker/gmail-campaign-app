@@ -10,6 +10,7 @@ import {
   valuesFromSenderProfile,
   type PlaceholderValues,
 } from "./render";
+import { expandSpintax } from "./spintax";
 
 export interface RenderedEmail {
   subject: string;
@@ -25,7 +26,10 @@ export async function renderForPreview(
   ctx: Scope,
   subjectTemplate: string,
   htmlTemplate: string,
-  contactId?: string | null
+  contactId?: string | null,
+  /** Which variant to show. Seeded by the contact, so previewing the same lead
+   * twice shows the same wording and the preview matches what will be sent. */
+  spinSeed?: string
 ): Promise<RenderedEmail> {
   const profile = await getSenderProfile(ctx);
   let values: PlaceholderValues;
@@ -44,8 +48,12 @@ export async function renderForPreview(
     }
   }
 
-  const subject = renderTemplate(subjectTemplate, values);
-  const body = renderHtmlTemplate(htmlTemplate, values);
+  // Spintax first, placeholders second, matching the send path exactly. A
+  // preview that resolved them in the other order would show the author an
+  // email the worker will never produce.
+  const seed = spinSeed ?? contactId ?? "preview";
+  const subject = renderTemplate(expandSpintax(subjectTemplate, seed), values);
+  const body = renderHtmlTemplate(expandSpintax(htmlTemplate, seed), values);
   return {
     subject: subject.output,
     html: body.output,

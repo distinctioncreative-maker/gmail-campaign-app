@@ -47,6 +47,23 @@ const SECTIONS: Array<{ heading: string; items: QA[] }> = [
     ],
   },
   {
+    heading: "Writing & variation",
+    items: [
+      {
+        q: "How do I stop every email looking identical?",
+        a: "Write alternatives in braces separated by a pipe: “{Hi|Hello|Hey} {{first_name}}, {quick question|one question} about {{business_name}}”. Each recipient gets one combination, chosen for them. The template editor shows how many distinct versions your email produces, so you can tell straight away that the syntax worked. This matters because providers cluster on message similarity: five hundred byte-identical bodies is a fingerprint, and varying the wording is one of the few deliverability levers that costs nothing.",
+      },
+      {
+        q: "Will the same lead get different wording if a send is retried?",
+        a: "No. The version is chosen from the lead and the follow-up step, so it is the same every time. A retry after a delivery hiccup sends the identical email rather than a second, differently worded one. It also means the preview you see is the email that goes out.",
+      },
+      {
+        q: "Can I use braces inside a spun option?",
+        a: "Yes. Placeholders keep working inside options ({Hi {{first_name}}|Hello there}), and you can nest groups ({Hi {there|friend}|Hello}). Lead data is never treated as syntax, so a company genuinely named with braces in it comes through exactly as typed.",
+      },
+    ],
+  },
+  {
     heading: "Gmail, safety & deliverability",
     items: [
       {
