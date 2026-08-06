@@ -390,6 +390,32 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/spam/score.ts"],
       },
       {
+        id: "api-keys",
+        name: "Workspace API keys",
+        status: "shipped",
+        description: "Hashed, scoped API keys per workspace with Bearer authentication, admin-only management, and a versioned public endpoint at /api/v1/leads for listing and creating contacts. The raw key is never stored, only its SHA-256, so a database dump or a stray log line can never yield a working credential; the cost is that a key is displayed exactly once at creation and the interface is built around that rather than around working past it. The stored document is keyed by the hash itself, which makes verification a single point read with no candidate scanning and no way for the number of comparisons to depend on how much of a guessed key was correct. Scopes are deny-by-default and a write scope never implies its read, because an integration granted permission to push contacts in has not thereby been granted permission to read the whole list back out. Each key records the owner whose data it addresses separately from the person who created it, so an integration keeps working when that person leaves. Creating a lead through the API is idempotent on the address, matching the CSV import, so a retried request after a timeout cannot duplicate a contact. The public namespace is versioned and kept separate from the app's internal routes, and the route-guard sweep asserts every route in it authenticates with a key and a scope.",
+        keyFiles: [
+          "lib/apiKeys/token.ts",
+          "lib/apiKeys/store.ts",
+          "lib/auth/requireApiKey.ts",
+          "app/api/v1/leads/route.ts",
+          "app/api/api-keys/route.ts",
+          "components/settings/ApiKeysCard.tsx",
+        ],
+      },
+      {
+        id: "outbound-webhooks",
+        name: "Outbound webhooks",
+        status: "planned",
+        description: "The security-critical core is built and tested and nothing is wired to it yet: HMAC signing with the same timestamp-plus-body scheme the Stripe verifier already checks inbound, so a customer can reuse verification code they almost certainly already have; a five-minute replay window, because a signature over the body alone is replayable forever; retry and backoff decisions that distinguish a server error worth retrying from a rejected payload that an identical retry cannot fix, with jitter that only ever spreads deliveries later so a recovering endpoint is not hammered; and validation of the customer-supplied target URL. That last piece is the reason to read this before finishing the feature: an outbound webhook is a request the server makes to an address the customer picks, which is textbook server-side request forgery, and on Google Cloud the prize is the metadata endpoint whose response contains service-account tokens. IP literals are refused in every notation, since blocking the dotted form while permitting the hex or integer spelling of the same address would be theatre. Still to build: event emission at the reply, bounce, unsubscribe, and deal-outcome sites, the delivery worker, and subscription management.",
+        keyFiles: [
+          "lib/webhooks/target.ts",
+          "lib/webhooks/signature.ts",
+          "lib/webhooks/retry.ts",
+          "schemas/integration.ts",
+        ],
+      },
+      {
         id: "custom-tracking-domain",
         name: "Per-workspace tracking domain",
         status: "beta",

@@ -87,6 +87,10 @@ describe("route guards — every authenticated route is scoped", () => {
     "api/tasks/send-message", // Cloud Tasks OIDC
     "api/u/[token]", // one-click unsubscribe
     "api/waitlist", // public contact form
+    // The public API. Authenticated by a workspace API key through
+    // requireApiKey, not by a session: see lib/auth/requireApiKey.ts for why
+    // the two are deliberately separate guards rather than one.
+    "api/v1/leads",
   ]);
 
   const routes = [...findRoutes("app")];
@@ -103,6 +107,21 @@ describe("route guards — every authenticated route is scoped", () => {
       .filter(({ source }) => !/\brequire(?:User|Role)\(/.test(source))
       .map(({ id }) => id);
     expect(missing).toEqual([]);
+  });
+
+  it("guards every public API route with an API key and a scope", () => {
+    // The exemption above removes these from the session sweep, so without this
+    // a new /api/v1 route could ship with no authentication at all.
+    const missing = routes
+      .filter(({ id }) => id.startsWith("api/v1/"))
+      .filter(({ source }) => !source.includes("requireApiKey("))
+      .map(({ id }) => id);
+    expect(missing).toEqual([]);
+  });
+
+  it("finds the public API namespace at all", () => {
+    // Guards the check above against passing vacuously if the routes move.
+    expect(routes.filter(({ id }) => id.startsWith("api/v1/")).length).toBeGreaterThan(0);
   });
 
   it("scopes every campaign route to the signed-in owner", () => {

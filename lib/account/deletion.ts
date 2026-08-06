@@ -7,6 +7,7 @@ import { getConnection, markDisconnected } from "@/lib/repositories/gmailConnect
 import { decryptSecret } from "@/lib/kms/crypto";
 import { oauthClient } from "@/lib/google/oauth";
 import { redactErrorMessage } from "@/lib/observability/report";
+import { purgeApiKeys } from "@/lib/apiKeys/store";
 import {
   DeletedIdentitySchema,
   DeletionRequestSchema,
@@ -248,6 +249,11 @@ export async function executePurge(
     if (request.scope === "WORKSPACE") {
       const db = firestore();
       await purgeSupportRequests("organizationId", request.organizationId);
+      // Credentials to data that no longer exists. Left behind, they would be
+      // live keys pointing at a deleted workspace.
+      await purgeApiKeys(request.organizationId).catch(() => {
+        /* Best effort: the data they addressed is going regardless. */
+      });
       await db.recursiveDelete(db.collection("organizations").doc(request.organizationId));
       await db
         .collection("organizationSettings")

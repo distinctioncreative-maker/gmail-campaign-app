@@ -11,6 +11,7 @@ import { BillingCard } from "@/components/admin/BillingCard";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { DeleteAccountCard } from "@/components/account/DeleteAccountCard";
 import { ExportDataCard } from "@/components/account/ExportDataCard";
+import { ApiKeysCard } from "@/components/settings/ApiKeysCard";
 import { exportSummary } from "@/lib/export/datasets";
 import { deletionState } from "@/lib/account/deletion";
 import { GRACE_PERIOD_DAYS } from "@/lib/account/eligibility";
@@ -93,6 +94,12 @@ export default async function SettingsPage({
             <ProfileForm initial={profile} />
           </CollapsibleCard>
         </div>
+        {/* Admin only: a key is a credential to the whole workspace's data. */}
+        {ctx.role === "ADMIN" ? (
+          <div className="animate-rise" style={{ animationDelay: "88ms" }}>
+            <ApiKeysCard />
+          </div>
+        ) : null}
         {/* Export sits immediately above deletion on purpose: taking your
             data out is the thing you want to do first if you are about to
             delete it, and finding that out afterwards is too late. */}

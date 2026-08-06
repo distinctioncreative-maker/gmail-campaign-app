@@ -134,18 +134,53 @@ addresses deserve a "cannot verify" verdict rather than a clean one. Skip SMTP
 probing entirely; it gets sending IPs blocklisted and is why the good vendors
 stopped doing it.
 
-### 1.5 API keys and webhooks — **M** — enterprise credibility
+### 1.5 API keys and webhooks — **API keys DONE, webhooks PART DONE**
 
-**Missing.** `grep -rn "apiKey\|webhookEndpoint"` returns nothing outside
-Stripe.
+**Was.** Nothing outside Stripe. The first question a serious buyer asks.
 
-**Why.** The first question a serious buyer asks. Also the cheapest CRM
-integration story: give them events and let them wire it up.
+**API keys: shipped and working.** Hashed keys per workspace with scoped
+permissions, `Bearer` auth, admin-only management in Settings, and a real
+versioned endpoint at `/api/v1/leads` (list and create) so the keys open
+something rather than existing for their own sake.
 
-**Plan.** Hashed API keys per workspace with scoped permissions, `Bearer` auth
-reusing the route-guard sweep already in `tests/unit/apiGuards.test.ts`.
-Outbound webhooks on reply received, bounce, unsubscribe, and deal outcome,
-signed with the same HMAC helper the Stripe webhook verifier already uses.
+Decisions worth recording:
+
+- **The raw key is never stored, only its SHA-256.** A database dump or a stray
+  log line can then never yield a working credential. The cost is that a key is
+  shown exactly once, which the UI is built around rather than working around.
+- **The document id is the hash.** Verification is a single point read, so there
+  is no candidate scanning and no way for the number of comparisons to depend on
+  how much of a guessed key was right.
+- **Write does not imply read.** A customer handing an integration
+  `leads:write` to push contacts in has not agreed to let it read the whole
+  list back out, and bundling them would make the narrow grant inexpressible.
+- **A key carries an owner, not just an organization.** This was a bug I wrote
+  and caught: leads live under `users/{userId}`, so scoping by organization id
+  addressed a document that does not exist and would have written API-created
+  leads into a subtree the app never reads. The owner is stored separately from
+  the creator so a workspace can reassign the integration when that person
+  leaves.
+- **`/api/v1/` is a separate namespace** from `/api/`. The latter is the app
+  talking to itself and may change with the UI; the former is a promise to
+  someone else's code.
+- The route-guard sweep in `tests/unit/apiGuards.test.ts` gained a check that
+  every `/api/v1` route calls `requireApiKey`, because exempting them from the
+  session sweep would otherwise let one ship with no authentication at all.
+
+**Webhooks: the core is built and tested, and is not wired up.** Signing,
+verification, replay tolerance, retry and backoff decisions, and target
+validation all exist with 40 tests. What does not exist yet: event emission at
+the reply, bounce, unsubscribe, and deal sites; the delivery worker; and the
+subscription management UI. Treat webhooks as unshipped.
+
+The one part worth reading before that work happens is
+`lib/webhooks/target.ts`. An outbound webhook is a request our server makes to
+an address the customer chooses, which is textbook server-side request forgery:
+on Google Cloud the prize is `169.254.169.254`, whose response contains
+service-account access tokens. The validator refuses IP literals in every
+notation, because blocking the dotted form while allowing `0xa9fea9fe` or
+`2852039166` would be theatre. DNS rebinding remains possible in principle and
+is documented rather than pretended away.
 
 ### 1.6 Custom tracking domain — **DONE (code)**
 
@@ -476,7 +511,7 @@ Skeletons on the slowest three pages rather than a spinner.
 4. ~~**5.1 command palette**~~ — done.
 5. ~~**1.3 spintax**~~ — done.
 6. ~~**1.1 multi-inbox**~~ — done. Also closed 3.2 and 3.3.
-7. **1.5 API and webhooks** — M, unlocks enterprise conversations.
+7. **1.5 API and webhooks** — API keys done; webhook emission and delivery remain.
 8. ~~**1.6 custom tracking domain**~~ — code done; needs a wildcard domain mapping.
 8. Everything else as it earns priority.
 
