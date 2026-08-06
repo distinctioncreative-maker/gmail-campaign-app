@@ -511,6 +511,20 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         ],
       },
       {
+        id: "account-deletion",
+        name: "Account and workspace deletion",
+        status: "shipped",
+        description: "Self-service deletion in Settings, scheduled rather than immediate: a request starts a 30-day clock, the account keeps working throughout, and one click cancels it, because a grace period nobody can act during is only a delay. A one-person workspace collapses account and workspace scope into one operation, since deleting the only member while keeping the organization would leave an empty one behind. Deleting the last admin of a workspace that still has members is refused and says how to proceed instead, because the alternative is an organization with billing and campaigns that nobody can administer. The purge revokes the Google OAuth grant before destroying the encrypted token, since deleting our copy alone would leave the app sitting in the customer's Google account with mailbox access they believe they revoked, and it writes a tombstone before deleting anything so that the next sign-in cannot silently re-provision the account being deleted; once the purge completes, a genuinely new signup by the same person is allowed through with none of the old data. Scheduled requests are purged by a daily sweep, and a purge that fails partway is marked for a human rather than retried blindly.",
+        keyFiles: [
+          "lib/account/eligibility.ts",
+          "lib/account/deletion.ts",
+          "schemas/deletion.ts",
+          "app/api/account/deletion/route.ts",
+          "components/account/DeleteAccountCard.tsx",
+          "lib/auth/requireUser.ts",
+        ],
+      },
+      {
         id: "waitlist-admin",
         name: "Sales-enquiry admin view",
         status: "shipped",

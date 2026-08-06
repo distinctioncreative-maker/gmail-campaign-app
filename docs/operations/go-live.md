@@ -85,9 +85,16 @@ Each is a genuine blocker for charging money, not polish.
       support path. This is the one remaining piece of item 3's first surface.
       Optionally set `SUPPORT_WEBHOOK_URL` so a request pings a chat channel
       instead of waiting to be noticed in Firestore.
-- [ ] **Account and workspace deletion.** No `deleteAccount`, no `deleteOrg`.
-      This is a GDPR obligation, and it is the one most likely to become a
-      complaint rather than a feature request.
+- [x] **Account and workspace deletion.** Built. Self-service in Settings,
+      scheduled with a 30-day grace period and cancellable throughout. The
+      purge revokes the Gmail grant with Google before destroying the token,
+      and leaves a tombstone so a later sign-in cannot re-provision the
+      account that was deleted.
+- [ ] **Run `scripts/setup-cloud.sh`** (or create the job by hand) so the
+      `outreach-deletions` Cloud Scheduler job exists **[cfg]**. Without it,
+      requests sit PENDING forever and the product promises a deletion it
+      never performs. Verify after deploying:
+      `gcloud scheduler jobs list --location us-central1 | grep deletions`
 - [ ] **Data export.** Leads and reply history go in and cannot come out.
 
 ---

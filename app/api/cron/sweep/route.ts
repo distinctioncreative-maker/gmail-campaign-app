@@ -4,10 +4,11 @@ import { firestore } from "@/lib/firebase/admin";
 import { processBouncesForUser, processRepliesForUser } from "@/lib/campaigns/monitoring";
 import { listAllOwners, repairOwner } from "@/lib/campaigns/repair";
 import { recomputeBenchmarks } from "@/lib/benchmarks/aggregate";
+import { purgeDueRequests } from "@/lib/account/deletion";
 
 /**
  * Cloud Scheduler entry point for periodic system sweeps (spec §16/§17/§25).
- * OIDC-verified. ?job=reply|bounce|repair|metrics|benchmarks.
+ * OIDC-verified. ?job=reply|bounce|repair|metrics|benchmarks|deletions.
  *
  * Sweeps enumerate users with active campaigns and process them; the
  * per-user monitoring functions themselves skip users without work.
@@ -21,6 +22,18 @@ export async function POST(req: NextRequest) {
   }
 
   const job = req.nextUrl.searchParams.get("job") ?? "reply";
+
+  // Keyed by request rather than by owner, and it must not run through the
+  // owner loop below: purging an owner mid-sweep would leave the other jobs
+  // reading a subtree that is disappearing underneath them.
+  if (job === "deletions") {
+    const result = await purgeDueRequests();
+    await firestore()
+      .collection("system")
+      .doc("sweeps")
+      .set({ deletionsLastRun: Date.now() }, { merge: true });
+    return NextResponse.json({ ok: true, job, ...result });
+  }
 
   // Cross-tenant aggregate, not a per-owner sweep: recomputes its own
   // owner list internally (see lib/benchmarks/aggregate.ts).

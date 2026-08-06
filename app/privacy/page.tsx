@@ -69,6 +69,22 @@ export default function PrivacyPage() {
           and deletion process must be approved in the signed agreement before live customer data
           is accepted.
         </p>
+        <p>
+          Account and workspace deletion is self-service, in Settings. A request is scheduled
+          rather than immediate: nothing is destroyed for 30 days, the request can be cancelled at
+          any point during that period, and the account keeps working throughout. An admin can
+          delete an entire workspace, which covers every member. Deleting the only admin of a
+          workspace that still has other members is refused, because it would leave an
+          organization nobody can administer.
+        </p>
+        <p>
+          When the period elapses, the deletion removes campaigns, recipients, leads, lead lists,
+          templates, sequences, suppressions, notifications, sending counters, settings, and
+          support requests for the deleted subject, and revokes the Gmail authorization with
+          Google so the stored token cannot be used again. Anonymized, aggregated deliverability
+          benchmarks that cannot be traced to a person or workspace are not removed. Backups age
+          out on their own schedule.
+        </p>
       </LegalSection>
 
       <LegalSection title="Security and privacy choices">

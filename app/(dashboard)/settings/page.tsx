@@ -10,6 +10,9 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 import { BillingCard } from "@/components/admin/BillingCard";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { DeleteAccountCard } from "@/components/account/DeleteAccountCard";
+import { deletionState } from "@/lib/account/deletion";
+import { GRACE_PERIOD_DAYS } from "@/lib/account/eligibility";
 
 export default async function SettingsPage({
   searchParams,
@@ -17,10 +20,11 @@ export default async function SettingsPage({
   searchParams: Promise<{ gmail?: string }>;
 }) {
   const ctx = await requireUser();
-  const [connection, profile, settings] = await Promise.all([
+  const [connection, profile, settings, deletion] = await Promise.all([
     getConnectionPublic(ctx.userId),
     getSenderProfile(ctx),
     getOrgSettings(ctx.organizationId),
+    deletionState(ctx, "ACCOUNT"),
   ]);
   const capabilities = capabilitiesFor(ctx.tenantType, settings.billing.plan);
   const { gmail } = await searchParams;
@@ -85,6 +89,22 @@ export default async function SettingsPage({
           >
             <ProfileForm initial={profile} />
           </CollapsibleCard>
+        </div>
+        {/* Last, and visually separated: the only control here that destroys
+            work belongs at the bottom of the page, not beside the ones people
+            use every day. */}
+        <div className="animate-rise border-t border-border pt-6" style={{ animationDelay: "105ms" }}>
+          <DeleteAccountCard
+            initial={{
+              request: deletion.request,
+              allowed: deletion.verdict.allowed,
+              effectiveScope: deletion.verdict.effectiveScope,
+              reason: deletion.verdict.reason,
+              gracePeriodDays: GRACE_PERIOD_DAYS,
+            }}
+            canDeleteWorkspace={ctx.role === "ADMIN"}
+            soloWorkspace={deletion.verdict.effectiveScope === "WORKSPACE"}
+          />
         </div>
       </div>
     </div>

@@ -247,11 +247,33 @@ chat channel.
 service. Until then `/support` says no address is published yet rather than
 rendering a mailto that goes nowhere.
 
-### 4.2 Account and workspace deletion — **M**
+### 4.2 Account and workspace deletion — **DONE**
 
-No `deleteAccount`, no `deleteOrg`. GDPR obligation. Plan: soft-delete with a
-30-day grace, then a hard recursive purge reusing `purgeCampaign`'s recursion.
-Must also revoke the Gmail grant with Google and destroy the KMS ciphertext.
+**Was.** No `deleteAccount`, no `deleteOrg`. A GDPR obligation, and the one
+most likely to arrive as a complaint rather than a feature request.
+
+**Shipped.** Soft first, hard later: a request starts a 30-day clock, the
+account works normally throughout, and the sweep (`?job=deletions`, daily at
+03:00) purges once the period has fully elapsed. Scope is ACCOUNT or
+WORKSPACE, and a one-person workspace collapses the two, because deleting the
+only member while keeping the org would leave an empty organization behind.
+Deleting the last admin of a workspace that still has members is refused, with
+the two ways out named: promote someone, or delete the workspace.
+
+Two things the recursive delete alone would have missed, and both are the
+whole point of the feature:
+
+- **The Google grant.** Deleting the encrypted token removes our copy but
+  leaves Cadence sitting in the customer's Google account with mailbox access
+  they believe they revoked. Revocation runs first, before the token is
+  destroyed, and the outcome is recorded on the request.
+- **The Firebase Auth identity**, which is not ours to delete. Without a
+  tombstone, `requireUser` provisions a fresh user document for any
+  authenticated identity it does not recognise, so the next sign-in would
+  silently rebuild the account that was just deleted. `deletedIdentities`
+  blocks sign-in while a purge is in flight and, once complete, lets a
+  genuinely new signup through with none of the old data: a deletion request
+  is not a permanent ban.
 
 ### 4.3 Data export — **M**
 

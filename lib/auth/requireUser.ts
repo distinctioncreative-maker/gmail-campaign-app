@@ -11,6 +11,8 @@ import {
   acceptInviteAndProvision,
   getPendingInvite,
 } from "@/lib/repositories/invites";
+// Type-only in the other direction, so this stays a one-way runtime edge.
+import { clearDeletedIdentity, deletedIdentity } from "@/lib/account/deletion";
 import type { Role } from "@/schemas/common";
 import type { TenantType, User } from "@/schemas/user";
 
@@ -92,6 +94,27 @@ export async function requireUser(): Promise<AuthContext> {
       tenantType: orgDoc.tenantType,
       user: existing,
     };
+  }
+
+  // No user document. That is normally a first sign-in, but it is also what a
+  // just-purged account looks like, and the two must not be confused: without
+  // this check the next sign-in after a deletion would provision a fresh user
+  // in the same organization and quietly undo the deletion.
+  const tombstone = await deletedIdentity(identity.userId);
+  if (tombstone?.status === "PURGING") {
+    // Provisioning now would rebuild documents the purge is midway through
+    // removing, and the race is unwinnable from this side.
+    throw new ForbiddenError(
+      "This account is being deleted. If that is a mistake, contact support."
+    );
+  }
+  if (tombstone?.status === "PURGED") {
+    // The deletion is complete and honoured. Signing up again is a new
+    // relationship, not a resurrection: the marker goes, and what follows is
+    // an empty account with none of the deleted data in it. Refusing forever
+    // would turn a deletion request into a permanent ban, which is not what
+    // anyone asked for.
+    await clearDeletedIdentity(identity.userId);
   }
 
   // Brand-new user: honor a pending invite (join that org), else resolve their
