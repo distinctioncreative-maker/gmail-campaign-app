@@ -11,6 +11,8 @@ import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 import { BillingCard } from "@/components/admin/BillingCard";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { DeleteAccountCard } from "@/components/account/DeleteAccountCard";
+import { ExportDataCard } from "@/components/account/ExportDataCard";
+import { exportSummary } from "@/lib/export/datasets";
 import { deletionState } from "@/lib/account/deletion";
 import { GRACE_PERIOD_DAYS } from "@/lib/account/eligibility";
 
@@ -20,11 +22,14 @@ export default async function SettingsPage({
   searchParams: Promise<{ gmail?: string }>;
 }) {
   const ctx = await requireUser();
-  const [connection, profile, settings, deletion] = await Promise.all([
+  const [connection, profile, settings, deletion, exportCounts] = await Promise.all([
     getConnectionPublic(ctx.userId),
     getSenderProfile(ctx),
     getOrgSettings(ctx.organizationId),
     deletionState(ctx, "ACCOUNT"),
+    // Aggregation queries, not document reads: five counts cost far less than
+    // paging the collections just to size a label.
+    exportSummary(ctx),
   ]);
   const capabilities = capabilitiesFor(ctx.tenantType, settings.billing.plan);
   const { gmail } = await searchParams;
@@ -90,10 +95,16 @@ export default async function SettingsPage({
             <ProfileForm initial={profile} />
           </CollapsibleCard>
         </div>
+        {/* Export sits immediately above deletion on purpose: taking your
+            data out is the thing you want to do first if you are about to
+            delete it, and finding that out afterwards is too late. */}
+        <div className="animate-rise" style={{ animationDelay: "105ms" }}>
+          <ExportDataCard counts={exportCounts} />
+        </div>
         {/* Last, and visually separated: the only control here that destroys
             work belongs at the bottom of the page, not beside the ones people
             use every day. */}
-        <div className="animate-rise border-t border-border pt-6" style={{ animationDelay: "105ms" }}>
+        <div className="animate-rise border-t border-border pt-6" style={{ animationDelay: "140ms" }}>
           <DeleteAccountCard
             initial={{
               request: deletion.request,

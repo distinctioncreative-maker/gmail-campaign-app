@@ -129,6 +129,8 @@ describe("rate limiting — the expensive routes are bounded", () => {
     // Cheap per request, but it writes to a collection a person reads: a
     // flood of requests buries the one that matters.
     "api/support",
+    // Walks every contact, campaign, and recipient the user owns.
+    "api/account/export",
   ];
 
   const routes = new Map([...findRoutes("app")].map((r) => [r.id, r.source]));

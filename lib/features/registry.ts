@@ -525,6 +525,18 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         ],
       },
       {
+        id: "data-export",
+        name: "Data export",
+        status: "shipped",
+        description: "Six CSV datasets and a settings snapshot from Settings: leads, campaigns, sending history, do-not-email, templates, and follow-ups. Each streams from a cursored Firestore read and is written a row at a time, so a workspace with a few hundred thousand recipient rows is never assembled in memory on the instance serving it, which is exactly the size of account that most needs an export to work. There is deliberately no staging bucket and no signed URL: a staged export would be a complete second copy of the personal data account deletion exists to destroy, requiring its own retention and its own purge path, and a fault in either would leave a customer's lead list in storage after they were told everything was gone. Exported values are guarded against spreadsheet formula injection, which quoting alone does not prevent, and are prefixed rather than stripped so a value like a negative number is never silently altered. Timestamps are ISO 8601 because an export is read by other software as often as by a person, and a failure mid-stream marks the file incomplete rather than ending in a truncated file that looks whole.",
+        keyFiles: [
+          "lib/export/serialize.ts",
+          "lib/export/datasets.ts",
+          "app/api/account/export/route.ts",
+          "components/account/ExportDataCard.tsx",
+        ],
+      },
+      {
         id: "waitlist-admin",
         name: "Sales-enquiry admin view",
         status: "shipped",

@@ -68,6 +68,15 @@ export const RATE_LIMITS = {
     windowMs: HOUR,
     message: "Too many campaign launches in a short time. Wait a while and try again.",
   },
+  /** Each export walks every contact, campaign, and recipient the user owns.
+   * Generous because a customer taking their data out may reasonably pull all
+   * six datasets twice while working out which one they wanted. */
+  dataExport: {
+    bucket: "data-export",
+    limit: 30,
+    windowMs: HOUR,
+    message: "Too many exports in a short time. Wait a few minutes and try again.",
+  },
   /** Support requests are cheap to store and expensive to bury: a flood of
    * them hides the real one. Set high enough that nobody with a genuine
    * problem meets it, since the person hitting this limit is by definition

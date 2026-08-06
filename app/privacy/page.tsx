@@ -102,6 +102,12 @@ export default function PrivacyPage() {
           or object to certain processing. Cadence and the customer will determine their respective
           responsibilities in the signed data terms. Cadence is not intended for children.
         </p>
+        <p>
+          Portability and deletion are both self-service and do not require a request to us.
+          Settings exports leads, campaigns, sending history, do-not-email records, templates, and
+          follow-ups as CSV, plus campaign settings as JSON. Exports are generated and streamed on
+          request and are not stored anywhere afterwards.
+        </p>
       </LegalSection>
     </LegalPage>
   );

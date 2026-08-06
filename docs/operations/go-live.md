@@ -95,7 +95,10 @@ Each is a genuine blocker for charging money, not polish.
       requests sit PENDING forever and the product promises a deletion it
       never performs. Verify after deploying:
       `gcloud scheduler jobs list --location us-central1 | grep deletions`
-- [ ] **Data export.** Leads and reply history go in and cannot come out.
+- [x] **Data export.** Built. Six streamed CSV datasets plus a settings
+      snapshot, from Settings. No bucket and no signed URLs on purpose: a
+      staged export would be a second copy of the data deletion exists to
+      destroy. Nothing to configure.
 
 ---
 
@@ -154,9 +157,11 @@ It currently does. Do not change that copy before the box above is ticked.
 
 - [ ] Your own sending domain passes SPF, DKIM, and DMARC. The product checks
       a customer's domain for them; yours should not fail its own test.
-- [ ] Decide the open-tracking default. It ships **on**, which puts a remote
-      pixel in every cold email for data that Apple Mail Privacy Protection
-      has already made mostly fictional.
+- [x] Open-tracking default decided. Open and click tracking are now separate
+      settings and both ship **off**, so a cold email carries neither a remote
+      pixel nor a rewritten link unless the sender chooses it. This also
+      shrinks the shared-domain exposure below to the minority of mail that
+      opts in.
 - [ ] Understand the shared tracking domain. Every customer's pixel and
       rewritten links point at `APP_BASE_URL`, one hostname for the whole
       platform. One customer sending real spam gets that domain flagged and
@@ -173,7 +178,9 @@ In order, no skipping:
 
 - [ ] OAuth verification granted (item 1).
 - [ ] Legal pages carry a real entity and address (item 2).
-- [ ] Support, deletion, and export shipped (item 3).
+- [x] Support, deletion, and export shipped (item 3). Code complete; the two
+      configuration steps in item 3 (`SUPPORT_EMAIL`, the deletions scheduler
+      job) still have to be done.
 - [ ] Live Stripe keys proven end to end (item 4).
 - [ ] Error alerting on (item 5).
 - [ ] Set `SIGNUP_MODE=open` and deploy.

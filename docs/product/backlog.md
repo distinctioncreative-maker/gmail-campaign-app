@@ -275,11 +275,32 @@ whole point of the feature:
   genuinely new signup through with none of the old data: a deletion request
   is not a permanent ban.
 
-### 4.3 Data export — **M**
+### 4.3 Data export — **DONE**
 
-Leads and reply history go in and cannot come out. Plan: a background job
-writing a zip of CSVs to signed-URL storage, notified when ready. Reuse
-`ExportCsvButton`'s existing serialisation for the per-entity shapes.
+**Was.** Leads and reply history went in and could not come out.
+
+**Shipped.** Six CSV datasets plus a settings snapshot, from Settings: leads,
+campaigns, sending history, do-not-email, templates, and follow-ups. Each
+streams from a cursored Firestore read, so a workspace with a few hundred
+thousand recipient rows does not get assembled in memory on a Cloud Run
+instance before the first byte moves.
+
+**Deliberately not the plan above.** The original sketch was a background job
+writing a zip to signed-URL storage. That needs a bucket, a lifecycle policy,
+signed URLs, a notification, and a new dependency, and it leaves a complete
+copy of the customer's personal data sitting in storage. That copy would then
+need its own retention schedule and its own purge path in 4.2, and a bug in
+either would leave someone's lead list in a bucket after they were told
+everything was deleted. Streaming the response produces the same file, in one
+click instead of an unknown number of minutes, and creates no second copy to
+govern.
+
+**The part worth knowing about:** exported values are guarded against formula
+injection. A lead whose company name is `=HYPERLINK("http://evil","Click")`
+was typed by whoever filled in a form, travelled through import untouched, and
+executes when the customer opens the file. Quoting does not fix it, because
+spreadsheets evaluate a leading `=` inside quotes too. Values are prefixed
+rather than stripped, so `-50` stays `-50` instead of quietly becoming `50`.
 
 ---
 
@@ -332,8 +353,9 @@ Skeletons on the slowest three pages rather than a spinner.
 
 1. ~~**2.1 rate limiting**~~ — done.
 2. ~~**3.4 tracking default**~~ — done.
-3. **4.1–4.3 support, deletion, export** — the actual blockers on charging.
-   4.1 is done; 4.2 and 4.3 remain.
+3. ~~**4.1–4.3 support, deletion, export**~~ — done. The three blockers on
+   charging money are code-complete; what remains is configuration, tracked in
+   the go-live checklist.
 4. **5.1 command palette** — the feel gap, and it makes demos better.
 5. **1.3 spintax** — S, deliverability, cheap.
 6. **1.1 multi-inbox** — L, and the one that changes what you can charge.
