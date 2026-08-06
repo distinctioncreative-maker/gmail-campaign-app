@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
+import { enforceUserRateLimit, RATE_LIMITS } from "@/lib/util/userRateLimit";
 import { parseCsvLeads, CSV_FIELDS, type CsvMapping } from "@/lib/leads/csv";
 import { classifyLead } from "@/lib/leads/classify";
 import { verifyLeadBatch } from "@/lib/leads/verifyBatch";
@@ -20,6 +21,7 @@ const BodySchema = z.object({
  */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
+  await enforceUserRateLimit(ctx, RATE_LIMITS.leadParse);
   const { csvText, mapping, saveMapping: shouldSave } = BodySchema.parse(await req.json());
 
   let effectiveMapping: CsvMapping | undefined = mapping;

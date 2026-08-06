@@ -131,7 +131,7 @@ separate deny block, with a comment showing whoever wrote it understood that
 Firestore grants on any match. Tokens are KMS-encrypted. Header injection is
 sanitised. Idempotency keys guard double sends.
 
-### 2.1 Rate limiting covers 5 routes of 67 — **S** — real exposure
+### 2.1 Rate limiting covers 5 routes of 67 — **DONE**
 
 **Verified.** `grep -rln "enforceRateLimit" app/api` returns only
 `auth/session`, the two tracking endpoints, the unsubscribe route, and the
@@ -142,11 +142,9 @@ Firestore writes per row. A signed-in user, or stolen session, can drive
 unbounded cost. AI routes have their own `aiRequestAllowed`, so the gap is
 specifically the bulk data routes.
 
-**Plan.** Per-user token bucket on `leads/import`, `leads/parse-csv`,
-`leads/parse-salesforce`, `contacts/bulk`, and the campaign launch route. The
-helper exists at `lib/util/rateLimit.ts`; this is wiring plus a test that
-walks the route tree and asserts every mutating authenticated route is
-covered, in the same shape as the existing guard sweep.
+**Shipped.** Per-user ceilings on the six fan-out routes via
+`lib/util/userRateLimit.ts`, mapped to a 429 with a specific message. A sweep
+in `tests/unit/apiGuards.test.ts` fails if any of them loses its limiter.
 
 ### 2.2 No audit log — **M** — required for enterprise, useful for support
 

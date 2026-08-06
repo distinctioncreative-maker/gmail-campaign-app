@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
+import { enforceUserRateLimit, RATE_LIMITS } from "@/lib/util/userRateLimit";
 import { parseSalesforceText } from "@/lib/parser/salesforce";
 import { ParseRequestSchema } from "@/schemas/parsedLead";
 import { classifyLead } from "@/lib/leads/classify";
@@ -14,6 +15,7 @@ import { verifyLeadBatch } from "@/lib/leads/verifyBatch";
  */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
+  await enforceUserRateLimit(ctx, RATE_LIMITS.leadParse);
   const { text } = ParseRequestSchema.parse(await req.json());
 
   const result = parseSalesforceText(text);

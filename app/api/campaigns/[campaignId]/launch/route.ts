@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
+import { enforceUserRateLimit, RATE_LIMITS } from "@/lib/util/userRateLimit";
 import {
   claimCampaignLaunch,
   getCampaign,
@@ -36,6 +37,7 @@ const BodySchema = z.object({
 /** Validate and launch a campaign with the selected recipients. */
 export const POST = handleApiErrors(async (req: NextRequest, { params }: { params: Promise<{ campaignId: string }> }) => {
   const ctx = await requireUser();
+  await enforceUserRateLimit(ctx, RATE_LIMITS.campaignLaunch);
   const { campaignId } = await params;
   const owner = ownerFromCtx(ctx);
   const campaign = await getCampaign(owner, campaignId);

@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { ForbiddenError, UnauthorizedError } from "@/lib/auth/requireUser";
 import { AuthError } from "@/lib/auth/session";
 import { reportError } from "@/lib/observability/report";
+import { RateLimitedError } from "@/lib/util/userRateLimit";
 
 /**
  * Wrap a route handler with uniform, user-friendly error responses.
@@ -21,6 +22,11 @@ export function handleApiErrors<Args extends unknown[]>(
       }
       if (err instanceof ForbiddenError || err instanceof AuthError) {
         return NextResponse.json({ error: err.message }, { status: 403 });
+      }
+      if (err instanceof RateLimitedError) {
+        // 429 with the specific message, because "too many requests" alone
+        // leaves someone staring at a screen with nothing to act on.
+        return NextResponse.json({ error: err.message }, { status: 429 });
       }
       if (err instanceof ZodError) {
         return NextResponse.json(

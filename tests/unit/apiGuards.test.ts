@@ -9,6 +9,7 @@ import { ZodError } from "zod";
 import { verifyTaskRequest, TaskAuthError } from "@/lib/tasks/verifyOidc";
 import { assertAiWritingEnabled } from "@/lib/ai/enabled";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
+import { RATE_LIMITS } from "@/lib/util/userRateLimit";
 
 /** Every route handler in the tree, keyed by its URL-shaped path. */
 function* findRoutes(dir: string): Generator<{ id: string; source: string }> {
@@ -112,5 +113,47 @@ describe("route guards — every authenticated route is scoped", () => {
       .filter(({ source }) => !source.includes("ownerFromCtx("))
       .map(({ id }) => id);
     expect(missing).toEqual([]);
+  });
+});
+
+describe("rate limiting — the expensive routes are bounded", () => {
+  /** Routes that fan out per row, per recipient, or per Gmail thread. An
+   * unbounded one lets a signed-in user, or a stolen session, drive cost. */
+  const MUST_LIMIT = [
+    "api/leads/parse-csv",
+    "api/leads/parse-salesforce",
+    "api/leads/import",
+    "api/contacts/bulk",
+    "api/campaigns/[campaignId]/launch",
+    "api/replies/scan",
+  ];
+
+  const routes = new Map([...findRoutes("app")].map((r) => [r.id, r.source]));
+
+  it("covers every route on the list", () => {
+    const unbounded = MUST_LIMIT.filter((id) => {
+      const source = routes.get(id);
+      // A missing route is a failure too: the list is wrong or something moved.
+      return !source || !source.includes("enforceUserRateLimit(");
+    });
+    expect(unbounded).toEqual([]);
+  });
+
+  it("gives every limit a message worth reading", () => {
+    // "Too many requests" alone leaves someone staring at a screen with
+    // nothing to act on.
+    for (const [, limit] of Object.entries(RATE_LIMITS)) {
+      expect(limit.message.length).toBeGreaterThan(30);
+      expect(limit.limit).toBeGreaterThan(0);
+      expect(limit.windowMs).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps ceilings well above ordinary use", () => {
+    // These bound abuse, they do not pace legitimate work. A customer
+    // importing several lists in a sitting must never meet one.
+    expect(RATE_LIMITS.leadParse.limit).toBeGreaterThanOrEqual(20);
+    expect(RATE_LIMITS.leadImport.limit).toBeGreaterThanOrEqual(10);
+    expect(RATE_LIMITS.contactBulk.limit).toBeGreaterThanOrEqual(30);
   });
 });

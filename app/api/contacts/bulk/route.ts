@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
+import { enforceUserRateLimit, RATE_LIMITS } from "@/lib/util/userRateLimit";
 import {
   bulkDeleteContacts,
   bulkSetOptOut,
@@ -30,6 +31,7 @@ const BodySchema = z.discriminatedUnion("action", [
 /** Bulk lead operations, scoped to the signed-in user's own document path. */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
+  await enforceUserRateLimit(ctx, RATE_LIMITS.contactBulk);
   const body = BodySchema.parse(await req.json());
   const { action, contactIds } = body;
 
