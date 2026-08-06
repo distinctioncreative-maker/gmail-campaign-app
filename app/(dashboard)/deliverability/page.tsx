@@ -8,6 +8,7 @@ import { bucketBatchSize, bucketDailyLimit, type DimensionAggregate } from "@/li
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
+import { TrackingDomainCard } from "@/components/deliverability/TrackingDomainCard";
 
 /** Which bucket the signed-in user's OWN current default falls into, for
  * dimensions we can compare against a live setting (pacing only: content
@@ -59,6 +60,13 @@ export default async function DeliverabilityPage() {
         title="Deliverability"
         description={`Is ${domain} set up to land in inboxes? Domain authentication is checked live; reputation comes from Google Postmaster Tools.`}
       />
+
+      {/* Directly under the header, above the DNS checks. It is the one thing
+          on this page a customer can fix that nothing else on the page covers,
+          and the shared-domain exposure applies to every account by default. */}
+      <div className="mb-8">
+        <TrackingDomainCard isAdmin={ctx.role === "ADMIN"} />
+      </div>
 
       {/* DNS auth: zero setup, always available */}
       <h2 className="mb-3 font-medium">Domain authentication</h2>

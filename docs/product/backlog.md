@@ -147,20 +147,54 @@ reusing the route-guard sweep already in `tests/unit/apiGuards.test.ts`.
 Outbound webhooks on reply received, bounce, unsubscribe, and deal outcome,
 signed with the same HMAC helper the Stripe webhook verifier already uses.
 
-### 1.6 Custom tracking domain — **M** — structural risk
+### 1.6 Custom tracking domain — **DONE (code)**
 
-**Missing.** `lib/tracking/inject.ts:32,36` builds every pixel and rewritten
-link as `${APP_BASE_URL}/api/t/...`.
+**Was.** Every pixel and rewritten link was built as `${APP_BASE_URL}/api/t/...`,
+so every customer shared one hostname in the body of every tracked email. One
+customer sending genuine spam gets that hostname flagged and every other
+customer's mail then contains a flagged domain. Defaulting tracking off (3.4)
+shrank how much mail was exposed; it never removed the exposure, and multi-inbox
+rotation (1.1) raised the volume flowing through it.
 
-**Why.** Every customer shares one hostname in the body of every tracked
-email. One customer sending genuine spam gets that domain flagged, and every
-other customer's mail then contains a flagged domain. Fine at five customers,
-dangerous at five hundred.
+**Shipped.** A workspace sets a subdomain it controls, points a CNAME at the
+deployment, and verifies it. Tracked links then carry that hostname, so the
+links spend the customer's own reputation.
 
-**Plan.** Per-workspace CNAME with verification, certificate provisioning, and
-a Cloud Run domain mapping. The cheap mitigation shipped as 3.4 below: both
-tracking settings default off, so most mail now carries neither the pixel nor a
-rewritten link.
+Decisions worth recording:
+
+- **Only a VERIFIED domain is ever used.** An unverified one would put a
+  hostname in real mail that does not resolve, breaking every link in the send,
+  which is strictly worse than the shared-domain risk it was meant to avoid.
+- **A failed DNS lookup reports PENDING, never FAILED.** Propagation takes
+  minutes to hours, and telling a customer their correct record is broken sends
+  them to change something that was already right.
+- **Unsubscribe links deliberately stay on the platform host.** An opt-out is
+  legally required to keep working for as long as the mail exists, and a
+  customer who later removes their CNAME would break every one already
+  delivered. A broken opt-out is a compliance failure; a tracked link on a
+  shared domain is a reputation cost. The inconsistency is intentional and
+  commented at the call site so nobody "fixes" it.
+- **The apex is refused.** Pointing the registrable domain at us would take
+  over the customer's website.
+- **`normalizeTrackingDomain` is a security boundary**, not a convenience: its
+  output is interpolated into a URL that goes into real email, so a value
+  carrying an @, a colon, a slash, or a newline is refused rather than cleaned
+  up. Raw unicode is refused too, since two different-looking strings can
+  normalize to the same host, which is what a homograph attack relies on.
+- **The Host header is cross-checked against the token's organization.** The
+  signed token already names the workspace, so routing never needed the header;
+  the check exists so one customer's verified hostname cannot serve another
+  customer's links, which would leak "this recipient opened" across a tenant
+  boundary. The verified-domain list is cached for a minute, because the pixel
+  and click endpoints are hit by mail clients rather than people and a
+  collection-group query per pixel load would scale with recipients.
+
+**Remaining, and it is infrastructure not code:** Cloud Run needs to accept the
+customer hostnames. A domain mapping per customer domain does not scale, so this
+wants a wildcard mapping (or a load balancer in front) before the first customer
+verifies one. Tracked in the go-live checklist. Until that exists, verification
+will succeed and links will still not resolve, so treat the feature as
+code-complete rather than live.
 
 ---
 
@@ -443,6 +477,7 @@ Skeletons on the slowest three pages rather than a spinner.
 5. ~~**1.3 spintax**~~ — done.
 6. ~~**1.1 multi-inbox**~~ — done. Also closed 3.2 and 3.3.
 7. **1.5 API and webhooks** — M, unlocks enterprise conversations.
+8. ~~**1.6 custom tracking domain**~~ — code done; needs a wildcard domain mapping.
 8. Everything else as it earns priority.
 
 Items 1 and 2 are shipped. They took under a day between them and removed the

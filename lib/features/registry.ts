@@ -390,6 +390,19 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/spam/score.ts"],
       },
       {
+        id: "custom-tracking-domain",
+        name: "Per-workspace tracking domain",
+        status: "beta",
+        description: "A workspace points a subdomain it controls at the deployment, verifies it with a CNAME, and its tracked links then carry that hostname instead of the one shared by every customer on the platform. Without it, one customer getting the shared hostname flagged puts a flagged domain in every other customer's mail. Only a verified domain is ever used, because an unverified one would put a hostname in real mail that does not resolve and break every link in the send, which is worse than the risk it was meant to avoid. A DNS lookup that cannot complete reports as still waiting rather than failed, since propagation takes minutes to hours and telling someone their correct record is broken sends them to change something already right. The apex is refused, because pointing a registrable domain at us would take over the customer's website, and the hostname a customer types is validated rather than cleaned up: its output is interpolated into a URL that goes into real email, so anything carrying an @, a colon, a slash, or a newline is rejected, and raw unicode is rejected in favour of punycode because two different-looking strings can normalise to the same host. Unsubscribe links deliberately stay on the platform hostname: an opt-out is legally required to keep working for as long as the mail exists, and a customer who later removed their CNAME would break every one already delivered. The Host a tracking request arrives on is cross-checked against the organisation its signed token names, so one customer's hostname cannot serve another's links, and that list is cached because the pixel and click endpoints are hit by mail clients rather than people. Marked beta until Cloud Run accepts customer hostnames through a wildcard mapping: verification succeeds before that exists, but the links will not resolve.",
+        keyFiles: [
+          "lib/tracking/domain.ts",
+          "lib/tracking/verifyDomain.ts",
+          "app/api/tracking-domain/route.ts",
+          "components/deliverability/TrackingDomainCard.tsx",
+          "firestore.indexes.json",
+        ],
+      },
+      {
         id: "multi-inbox-rotation",
         name: "Multi-inbox rotation",
         status: "shipped",

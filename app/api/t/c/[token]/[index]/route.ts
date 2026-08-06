@@ -12,6 +12,8 @@ import {
 import { env } from "@/lib/env";
 import { reportError } from "@/lib/observability/report";
 import { enforceRateLimit } from "@/lib/util/rateLimit";
+import { hostBelongsToOrganization } from "@/lib/tracking/domain";
+import { listVerifiedTrackingDomains } from "@/lib/repositories/orgSettings";
 
 type Params = { params: Promise<{ token: string; index: string }> };
 
@@ -28,7 +30,7 @@ function safeFallback(): NextResponse {
  * index into a list the template's own author wrote, never supply an
  * arbitrary URL. Falls back to the app home on anything invalid.
  */
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { token, index } = await params;
     const key = crypto.createHash("sha256").update(token).digest("hex").slice(0, 40);
@@ -42,6 +44,17 @@ export async function GET(_req: NextRequest, { params }: Params) {
     if (!withinLimit) return safeFallback();
     const payload = verifyTrackingToken(token);
     if (!payload) return safeFallback();
+    // A workspace with its own tracking hostname serves its own links from it.
+    // A token arriving on a different customer's hostname would leak a click
+    // across a tenant boundary, so it falls back rather than redirecting.
+    const hostOk = hostBelongsToOrganization(
+      req.headers.get("host"),
+      payload.organizationId,
+      await listVerifiedTrackingDomains().catch(() => []),
+      env.APP_BASE_URL
+    );
+    if (!hostOk) return safeFallback();
+
     const idx = Number(index);
     if (!Number.isInteger(idx) || idx < 0) return safeFallback();
 

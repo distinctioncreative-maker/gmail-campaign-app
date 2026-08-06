@@ -41,6 +41,8 @@ export async function getOrganization(organizationId: string): Promise<Organizat
   return snap.exists ? OrganizationSchema.parse(snap.data()) : null;
 }
 
+export type TrackingDomainStatus = "NONE" | "PENDING" | "VERIFIED" | "FAILED";
+
 export interface OrgSettings {
   collisionPolicy: Organization["collisionPolicy"];
   collisionBlockDays: number;
@@ -65,6 +67,10 @@ export interface OrgSettings {
   workspaceProfile: WorkspaceProfile;
   /** Reusable workspace role names, each mapped to an audited base role. */
   customRoles: CustomRoleDefinition[];
+  /** The workspace's own tracking hostname, so rewritten links carry the
+   * customer's reputation rather than the platform's shared one. Only used
+   * while VERIFIED: see lib/tracking/domain.ts. */
+  trackingDomain: { host: string; status: TrackingDomainStatus; verifiedAt: number | null; lastCheckedAt: number | null };
   /** Subscription / plan state. Defaults preserve current behavior: existing
    * workspaces read as the TEAM plan, so nothing is gated until billing
    * assigns a plan. */
@@ -117,8 +123,107 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
           .slice(0, 20)
       : [],
     billing: resolveBilling(data.billing, org?.tenantType ?? "WORKSPACE"),
+    trackingDomain: resolveTrackingDomain(data.trackingDomain),
     ...resolveBrandFields(data),
   };
+}
+
+/**
+ * The tracking domain as stored, or the "not configured" default.
+ *
+ * Every workspace predating this feature has no such field, and reading it as
+ * undefined would put "undefined" in a settings card and, worse, let a
+ * truthiness check treat an unconfigured domain as usable.
+ */
+function resolveTrackingDomain(raw: unknown): OrgSettings["trackingDomain"] {
+  const row = (raw ?? {}) as Partial<OrgSettings["trackingDomain"]>;
+  const host = typeof row.host === "string" ? row.host : "";
+  const status =
+    row.status === "PENDING" || row.status === "VERIFIED" || row.status === "FAILED"
+      ? row.status
+      : "NONE";
+  return {
+    // A status without a host is meaningless and would render as a verified
+    // empty string, so the two are reconciled here rather than downstream.
+    host,
+    status: host ? status : "NONE",
+    verifiedAt: Number.isFinite(Number(row.verifiedAt)) ? Number(row.verifiedAt) : null,
+    lastCheckedAt: Number.isFinite(Number(row.lastCheckedAt)) ? Number(row.lastCheckedAt) : null,
+  };
+}
+
+/** Write the tracking domain. Status transitions are decided by the caller. */
+export async function saveTrackingDomain(
+  organizationId: string,
+  patch: OrgSettings["trackingDomain"]
+): Promise<void> {
+  await orgRef(organizationId)
+    .collection("organizationSettings")
+    .doc("main")
+    .set({ trackingDomain: patch, updatedAt: Date.now() }, { merge: true });
+  // So a customer who just verified does not have to wait out the TTL before
+  // their own links start passing the host cross-check.
+  invalidateVerifiedTrackingDomains();
+}
+
+/**
+ * Every workspace with a verified tracking domain.
+ *
+ * Cached in memory for the life of the instance, with a short TTL. This is read
+ * by the open pixel and the click redirect, which are the highest-volume
+ * endpoints in the product and are hit by mail clients rather than by people: a
+ * collection-group query per pixel load would be the most expensive query in the
+ * system and would scale with recipients rather than with customers.
+ *
+ * A stale entry is cheap in both directions. The list only decides whether a
+ * Host header agrees with a token's organization, and both a newly verified
+ * domain arriving a minute late and a removed one lingering a minute merely
+ * skip or allow a cross-check that is defence in depth, never the thing that
+ * authorises the request. The token signature does that.
+ *
+ * Needs a COLLECTION_GROUP single-field index on trackingDomain.status:
+ * Firestore auto-creates single-field indexes with collection scope only. See
+ * firestore.indexes.json.
+ */
+const verifiedDomainCache: { rows: { organizationId: string; host: string; status: "VERIFIED" }[]; at: number } = {
+  rows: [],
+  at: 0,
+};
+const VERIFIED_DOMAIN_TTL_MS = 60_000;
+
+export async function listVerifiedTrackingDomains(): Promise<
+  { organizationId: string; host: string; status: "VERIFIED" }[]
+> {
+  if (Date.now() - verifiedDomainCache.at < VERIFIED_DOMAIN_TTL_MS) {
+    return verifiedDomainCache.rows;
+  }
+  const rows = await queryVerifiedTrackingDomains();
+  verifiedDomainCache.rows = rows;
+  verifiedDomainCache.at = Date.now();
+  return rows;
+}
+
+/** Bypasses the cache. For the write path, which must see its own change. */
+export function invalidateVerifiedTrackingDomains(): void {
+  verifiedDomainCache.at = 0;
+}
+
+async function queryVerifiedTrackingDomains(): Promise<
+  { organizationId: string; host: string; status: "VERIFIED" }[]
+> {
+  const snap = await firestore()
+    .collectionGroup("organizationSettings")
+    .where("trackingDomain.status", "==", "VERIFIED")
+    .limit(500)
+    .get();
+  return snap.docs
+    .map((doc) => {
+      const host = String((doc.data().trackingDomain as { host?: string } | undefined)?.host ?? "");
+      // The organization id is the settings document's grandparent.
+      const organizationId = doc.ref.parent.parent?.id ?? "";
+      return { organizationId, host, status: "VERIFIED" as const };
+    })
+    .filter((row) => row.host !== "" && row.organizationId !== "");
 }
 
 export async function saveWorkspaceProfile(

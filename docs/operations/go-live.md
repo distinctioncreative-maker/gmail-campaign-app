@@ -162,6 +162,12 @@ It currently does. Do not change that copy before the box above is ticked.
       pixel nor a rewritten link unless the sender chooses it. This also
       shrinks the shared-domain exposure below to the minority of mail that
       opts in.
+- [ ] **Map customer tracking hostnames to Cloud Run** **[cfg]**. Per-workspace
+      tracking domains are built and verified in-app, but Cloud Run still has to
+      accept the hostnames. One domain mapping per customer does not scale, so
+      set up a wildcard mapping or put a load balancer in front before the first
+      customer verifies a domain. Until then verification succeeds and the links
+      still do not resolve, so leave the feature unmentioned to customers.
 - [ ] Understand the shared tracking domain. Every customer's pixel and
       rewritten links point at `APP_BASE_URL`, one hostname for the whole
       platform. One customer sending real spam gets that domain flagged and

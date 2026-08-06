@@ -10,6 +10,9 @@ import {
   type OwnerRef,
 } from "@/lib/repositories/campaigns";
 import { reportError } from "@/lib/observability/report";
+import { hostBelongsToOrganization } from "@/lib/tracking/domain";
+import { listVerifiedTrackingDomains } from "@/lib/repositories/orgSettings";
+import { env } from "@/lib/env";
 import { enforceRateLimit } from "@/lib/util/rateLimit";
 
 // The smallest valid transparent GIF: the standard open-tracking beacon.
@@ -35,7 +38,7 @@ type Params = { params: Promise<{ token: string }> };
  * outcome, since a broken image or error page here is worse than a missed
  * open count.
  */
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { token } = await params;
     const key = crypto.createHash("sha256").update(token).digest("hex").slice(0, 40);
@@ -49,6 +52,17 @@ export async function GET(_req: NextRequest, { params }: Params) {
     if (!withinLimit) return pixelResponse();
     const payload = verifyTrackingToken(token);
     if (payload) {
+      // A workspace with its own tracking hostname serves its own links from
+      // it. Recording an open for a token that arrived on a *different*
+      // customer's hostname would leak across a tenant boundary, so it is
+      // dropped. Silently, because this endpoint always returns the pixel.
+      const hostOk = hostBelongsToOrganization(
+        req.headers.get("host"),
+        payload.organizationId,
+        await listVerifiedTrackingDomains().catch(() => []),
+        env.APP_BASE_URL
+      );
+      if (!hostOk) return pixelResponse();
       const owner: OwnerRef = { userId: payload.ownerUserId, organizationId: payload.organizationId };
       const recipient = await getRecipient(owner, payload.campaignId, payload.recipientId);
       if (

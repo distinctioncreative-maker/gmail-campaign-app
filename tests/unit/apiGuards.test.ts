@@ -133,6 +133,8 @@ describe("rate limiting — the expensive routes are bounded", () => {
     "api/account/export",
     // Four collection reads per keystroke, debounced on the client only.
     "api/search",
+    // A live DNS lookup per request.
+    "api/tracking-domain",
   ];
 
   const routes = new Map([...findRoutes("app")].map((r) => [r.id, r.source]));

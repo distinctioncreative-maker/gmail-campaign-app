@@ -87,6 +87,14 @@ export const RATE_LIMITS = {
     windowMs: HOUR,
     message: "Too many exports in a short time. Wait a few minutes and try again.",
   },
+  /** Every check is a live DNS lookup. Generous, because someone waiting on
+   * propagation will legitimately click "check again" a lot. */
+  trackingDomain: {
+    bucket: "tracking-domain",
+    limit: 60,
+    windowMs: HOUR,
+    message: "That is a lot of DNS checks. Give propagation a few minutes and try again.",
+  },
   /** Support requests are cheap to store and expensive to bury: a flood of
    * them hides the real one. Set high enough that nobody with a genuine
    * problem meets it, since the person hitting this limit is by definition

@@ -58,6 +58,7 @@ import { warmupDailyCap } from "@/lib/campaigns/warmup";
 import { expandSpintax } from "@/lib/personalization/spintax";
 import { resolveTracking, tracksAnything } from "@/lib/tracking/settings";
 import { injectTracking } from "@/lib/tracking/inject";
+import { trackingBaseUrl } from "@/lib/tracking/domain";
 import { env } from "@/lib/env";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
@@ -578,17 +579,28 @@ export async function POST(req: NextRequest) {
     let finalHtml = sanitizeEmailHtml(body.output);
     let trackingLinkUrls: string[] | null = null;
     const tracking = resolveTracking(campaign);
+    // The workspace's own hostname when it has a verified one, else the shared
+    // platform host. Only a verified domain is used: an unverified one would put
+    // a hostname in real mail that does not resolve, breaking every link in the
+    // send. See lib/tracking/domain.ts.
+    const trackingHost = trackingBaseUrl(settings.trackingDomain, env.APP_BASE_URL);
     if (tracksAnything(campaign) && !testMode) {
       const injected = injectTracking(
         finalHtml,
         { ownerUserId, organizationId, campaignId, recipientId: item.recipientId, step: item.sequenceStep },
-        env.APP_BASE_URL,
+        trackingHost,
         tracking
       );
       finalHtml = injected.html;
       trackingLinkUrls = injected.linkUrls;
     }
 
+    // Deliberately the platform host, not the workspace's tracking domain, even
+    // when one is verified. An opt-out link is legally required to keep working
+    // for as long as the mail exists, and a customer who later removes their
+    // CNAME would break every unsubscribe link already delivered. A broken
+    // opt-out is a compliance failure; a tracked link on a shared domain is a
+    // reputation cost. Do not "fix" this inconsistency.
     const signedUnsubscribeUrl = !testMode
       ? unsubscribeUrl({
           ownerUserId,
