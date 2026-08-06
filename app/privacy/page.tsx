@@ -43,10 +43,11 @@ export default function PrivacyPage() {
 
       <LegalSection title="Engagement tracking">
         <p>
-          If a sender enables tracking, Cadence can rewrite eligible links and add a small image
-          to estimate opens and clicks. Email clients can block or preload images, so an open is
-          not proof that a person read a message. Unsubscribe links are never routed through click
-          tracking. Senders can disable tracking for a campaign.
+          Open tracking and click tracking are separate per-campaign settings, and both are off
+          unless a sender turns them on. With open tracking on, Cadence adds a small image to the
+          message; with click tracking on, it rewrites eligible links to count clicks. Email
+          clients can block or preload images, so an open is not proof that a person read a
+          message. Unsubscribe links are never routed through click tracking.
         </p>
       </LegalSection>
 

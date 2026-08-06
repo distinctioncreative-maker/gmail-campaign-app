@@ -117,9 +117,9 @@ other customer's mail then contains a flagged domain. Fine at five customers,
 dangerous at five hundred.
 
 **Plan.** Per-workspace CNAME with verification, certificate provisioning, and
-a Cloud Run domain mapping. Until then, the cheap mitigation is 3.4 below:
-default tracking off, so most mail carries neither the pixel nor a rewritten
-link.
+a Cloud Run domain mapping. The cheap mitigation shipped as 3.4 below: both
+tracking settings default off, so most mail now carries neither the pixel nor a
+rewritten link.
 
 ---
 
@@ -199,14 +199,23 @@ connected a month ago and never used counts as warm.
 Currently per campaign. The reputation being spent is the inbox's, so once
 rotation lands the brake belongs there.
 
-### 3.4 Open tracking defaults on — **S** — decision, not code
+### 3.4 Open tracking defaults on — **DONE**
 
-`trackingEnabled` defaults `true` (`schemas/campaign.ts`). A remote pixel in
-every cold email, for data Apple Mail Privacy Protection has already made
-mostly fiction, on a shared domain (1.6).
+**Was.** One `trackingEnabled` flag defaulting `true`, so every cold email
+carried a remote pixel *and* had every link rewritten, on a shared domain
+(1.6), and a customer who wanted one had to accept the other.
 
-**Plan.** Flip the default to off for cold campaigns, keep the toggle. One
-line plus copy. Mitigates 1.6 for most mail at zero engineering cost.
+**Shipped.** Two independent settings, `openTrackingEnabled` and
+`clickTrackingEnabled`, both defaulting off, each stating its own tradeoff in
+the wizard. `lib/tracking/settings.ts` resolves them, falling back to the old
+flag for campaigns written before the split so nobody's running campaign
+silently stops tracking. Injection gained the same split, and opt-out links
+are now protected by their visible label as well as their address: a
+hand-written "Unsubscribe" pointing at `/preferences` is no longer rewritten.
+
+Mitigates 1.6 for most mail at zero engineering cost. Revisit the click
+default once per-workspace tracking domains ship: the signal is worth having
+once the reputation being spent is the customer's own.
 
 ---
 
@@ -282,8 +291,8 @@ Skeletons on the slowest three pages rather than a spinner.
 
 ## Suggested order
 
-1. **2.1 rate limiting** — S, real exposure, an afternoon.
-2. **3.4 tracking default** — S, one line, mitigates the structural risk.
+1. ~~**2.1 rate limiting**~~ — done.
+2. ~~**3.4 tracking default**~~ — done.
 3. **4.1–4.3 support, deletion, export** — the actual blockers on charging.
 4. **5.1 command palette** — the feel gap, and it makes demos better.
 5. **1.3 spintax** — S, deliverability, cheap.
@@ -291,4 +300,5 @@ Skeletons on the slowest three pages rather than a spinner.
 7. **1.5 API and webhooks** — M, unlocks enterprise conversations.
 8. Everything else as it earns priority.
 
-Items 1 and 2 together are under a day and remove the two sharpest edges.
+Items 1 and 2 are shipped. They took under a day between them and removed the
+two sharpest edges.

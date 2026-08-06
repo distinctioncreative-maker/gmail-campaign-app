@@ -15,6 +15,7 @@ import {
   type OwnerRef,
 } from "@/lib/repositories/campaigns";
 import { computeSendTimestamps } from "@/lib/scheduling/window";
+import { resolveTracking } from "@/lib/tracking/settings";
 import {
   CLOUD_TASK_SCHEDULE_HORIZON_MS,
   deleteTask,
@@ -491,6 +492,10 @@ export async function toggleFollowups(
 }
 
 export async function cloneCampaign(ctx: AuthContext, campaign: Campaign): Promise<string> {
+  // Resolved rather than copied: a pre-split source campaign carries neither
+  // new field, so copying the absences would hand the clone two undefineds
+  // (which Firestore rejects) and quietly drop tracking its owner had on.
+  const clonedTracking = resolveTracking(campaign);
   const copy = await createCampaign(ctx, {
     name: `${campaign.name} (copy)`,
     description: campaign.description,
@@ -522,7 +527,9 @@ export async function cloneCampaign(ctx: AuthContext, campaign: Campaign): Promi
     lostCount: 0,
     wonValueCents: 0,
     followupsPaused: false,
-    trackingEnabled: campaign.trackingEnabled,
+    openTrackingEnabled: clonedTracking.opens,
+    clickTrackingEnabled: clonedTracking.clicks,
+    trackingEnabled: clonedTracking.opens || clonedTracking.clicks,
     startedAt: null,
     pausedAt: null,
     deferredDayKey: null,

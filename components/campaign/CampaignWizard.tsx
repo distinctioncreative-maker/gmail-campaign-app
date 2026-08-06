@@ -20,6 +20,7 @@ import {
   type PaceInput,
 } from "@/lib/campaigns/paceSafety";
 import { buildLaunchSelections, computeListScopedCounts } from "@/lib/campaigns/wizardSelections";
+import { describeTracking } from "@/lib/tracking/settings";
 import { TagChips } from "@/components/leads/TagChips";
 
 const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
@@ -143,7 +144,9 @@ export function CampaignWizard() {
     ...PACE_PRESETS[1].schedule,
   });
   const [draftStrategy, setDraftStrategy] = useState<"SEND" | "DRAFT_ONLY">("SEND");
-  const [trackingEnabled, setTrackingEnabled] = useState(true);
+  // Two flags, both off. See lib/tracking/settings.ts for the trade.
+  const [openTracking, setOpenTracking] = useState(false);
+  const [clickTracking, setClickTracking] = useState(false);
   // Data-backed addition to the pace-risk warning below, once the
   // anonymized cross-user benchmarks have a surfaced daily-limit bucket.
   const [benchmarkTip, setBenchmarkTip] = useState<string | null>(null);
@@ -171,7 +174,8 @@ export function CampaignWizard() {
       preset,
       customPace,
       draftStrategy,
-      trackingEnabled,
+      openTracking,
+      clickTracking,
       priorPolicy,
       listFilter,
       tagFilter,
@@ -189,7 +193,8 @@ export function CampaignWizard() {
     setPreset(restored.preset);
     if (restored.customPace) setCustomPace(restored.customPace);
     setDraftStrategy(restored.draftStrategy);
-    if (typeof restored.trackingEnabled === "boolean") setTrackingEnabled(restored.trackingEnabled);
+    if (typeof restored.openTracking === "boolean") setOpenTracking(restored.openTracking);
+    if (typeof restored.clickTracking === "boolean") setClickTracking(restored.clickTracking);
     setPriorPolicy(restored.priorPolicy);
     setListFilter(restored.listFilter ?? "");
     setTagFilter(restored.tagFilter ?? "");
@@ -293,7 +298,8 @@ export function CampaignWizard() {
             schedule: preset === "custom" ? customPace : PRESETS[preset].schedule,
             priorContactPolicy: priorPolicy,
             draftStrategy,
-            trackingEnabled,
+            openTrackingEnabled: openTracking,
+            clickTrackingEnabled: clickTracking,
             sourceListId: listFilter || null,
             acceptPaceRisk: acceptedPaceRisk,
           }),
@@ -938,22 +944,46 @@ export function CampaignWizard() {
               </label>
             </div>
 
-            <div className="alert-warning mt-3 rounded-xl border p-3">
-              <label className="flex items-start gap-2 text-sm text-foreground">
+            {/* Two separate trades, so two separate choices. Both off by
+                default: the pixel costs more than it returns, and rewritten
+                links currently point at a shared hostname. */}
+            <div className="mt-3 rounded-xl border border-border p-3">
+              <p className="text-sm font-medium text-foreground">Tracking</p>
+              <p className="mt-0.5 text-xs text-muted">
+                Both are off by default. Replies are the signal that matters, and they are
+                counted either way.
+              </p>
+
+              <label className="mt-3 flex items-start gap-2 text-sm text-foreground">
                 <input
                   type="checkbox"
-                  checked={trackingEnabled}
-                  onChange={(e) => setTrackingEnabled(e.target.checked)}
+                  checked={openTracking}
+                  onChange={(e) => setOpenTracking(e.target.checked)}
                   className="mt-0.5"
                 />
                 <span>
-                  Track opens and clicks <span className="font-normal text-warning">(on by default)</span>
+                  Track opens
                   <span className="mt-0.5 block text-xs text-muted">
-                    Adds an open pixel and signed link redirects so this campaign can report engagement.{" "}
-                    <strong className="font-medium text-warning">Tracking pixels and rewritten links are a
-                    deliverability and privacy tradeoff</strong>. Open detection can include privacy
-                    preloading. Turn tracking off for sensitive campaigns or when replies are the only
-                    signal you need.
+                    Adds an invisible image to every email. Filters weigh remote images in cold
+                    mail, and Apple Mail Privacy Protection preloads them, so an open often means
+                    a proxy fetched a picture rather than a person read anything.
+                  </span>
+                </span>
+              </label>
+
+              <label className="mt-3 flex items-start gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={clickTracking}
+                  onChange={(e) => setClickTracking(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  Track clicks
+                  <span className="mt-0.5 block text-xs text-muted">
+                    Rewrites every link to a redirect. A reliable signal, but the redirect runs on
+                    a domain shared with other Cadence senders, so their reputation affects your
+                    links. Your unsubscribe link is never rewritten.
                   </span>
                 </span>
               </label>
@@ -1012,9 +1042,13 @@ export function CampaignWizard() {
               </li>
               <li className="flex items-start gap-2"><Icon name="check" size={17} className="mt-0.5 shrink-0 text-success" aria-hidden /><span>Mode: {draftStrategy === "SEND" ? "Send automatically" : "Create drafts only"}</span></li>
               <li className="flex items-start gap-2">
-                <Icon name={trackingEnabled ? "alert" : "check"} size={17} className={`mt-0.5 shrink-0 ${trackingEnabled ? "text-warning" : "text-success"}`} aria-hidden />
+                <Icon name={openTracking || clickTracking ? "alert" : "check"} size={17} className={`mt-0.5 shrink-0 ${openTracking || clickTracking ? "text-warning" : "text-success"}`} aria-hidden />
                 <span>Open/click tracking:{" "}
-                {trackingEnabled ? "On (adds some deliverability risk)" : "Off"}
+                {describeTracking({
+                  openTrackingEnabled: openTracking,
+                  clickTrackingEnabled: clickTracking,
+                })}
+                {openTracking || clickTracking ? " (adds some deliverability risk)" : ""}
                 </span>
               </li>
             </ul>

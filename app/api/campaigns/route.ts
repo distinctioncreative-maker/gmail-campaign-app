@@ -35,8 +35,11 @@ const CreateSchema = z.object({
   draftStrategy: DraftStrategySchema.default("SEND"),
   /** When the campaign was started from a saved lead list, its id. */
   sourceListId: z.string().nullable().default(null),
-  /** Open/click tracking defaults on for new campaigns and remains optional. */
-  trackingEnabled: z.boolean().default(true),
+  /** Two separate opt-ins, both off unless the wizard sends them. An older
+   * client posting the retired `trackingEnabled` gets tracking off, which is
+   * the safe direction to fail. See lib/tracking/settings.ts. */
+  openTrackingEnabled: z.boolean().default(false),
+  clickTrackingEnabled: z.boolean().default(false),
   acceptPaceRisk: z.boolean().default(false),
 });
 
@@ -107,7 +110,9 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     lostCount: 0,
     wonValueCents: 0,
     followupsPaused: false,
-    trackingEnabled: input.trackingEnabled,
+    openTrackingEnabled: input.openTrackingEnabled,
+    clickTrackingEnabled: input.clickTrackingEnabled,
+    trackingEnabled: input.openTrackingEnabled || input.clickTrackingEnabled,
     startedAt: null,
     pausedAt: null,
     deferredDayKey: null,

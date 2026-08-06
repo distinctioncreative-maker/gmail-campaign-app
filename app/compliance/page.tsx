@@ -51,10 +51,10 @@ export default function CompliancePage() {
 
       <LegalSection title="Tracking transparency">
         <p>
-          New campaigns default to open and click tracking with an explicit control to turn it
-          off. Open detection can be affected by image blocking and privacy preloading. Clicks
-          and replies are generally stronger engagement signals, but no metric proves intent or a
-          business outcome.
+          Open tracking and click tracking are separate settings and both are off unless a sender
+          turns them on for a campaign. Open detection can be affected by image blocking and
+          privacy preloading. Clicks and replies are generally stronger engagement signals, but no
+          metric proves intent or a business outcome.
         </p>
       </LegalSection>
 

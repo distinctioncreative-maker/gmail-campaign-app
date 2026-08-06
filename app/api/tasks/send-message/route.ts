@@ -42,6 +42,7 @@ import { recordCollisionContact } from "@/lib/campaigns/collision";
 import { isTestModeForOrg } from "@/lib/sending/mode";
 import { reportError } from "@/lib/observability/report";
 import { warmupDailyCap } from "@/lib/campaigns/warmup";
+import { resolveTracking, tracksAnything } from "@/lib/tracking/settings";
 import { injectTracking } from "@/lib/tracking/inject";
 import { env } from "@/lib/env";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
@@ -460,15 +461,17 @@ export async function POST(req: NextRequest) {
     const threaded = isFollowup && step?.sameThread && recipient.gmailThreadId;
 
     // Optional open/click tracking is skipped in test mode so test sends never
-    // write real engagement data. New campaigns default it on, while a sender
-    // can still disable it for privacy or deliverability-sensitive outreach.
+    // write real engagement data. Opens and clicks are separate choices and
+    // both default off: see lib/tracking/settings.ts for the trade.
     let finalHtml = sanitizeEmailHtml(body.output);
     let trackingLinkUrls: string[] | null = null;
-    if (campaign.trackingEnabled && !testMode) {
+    const tracking = resolveTracking(campaign);
+    if (tracksAnything(campaign) && !testMode) {
       const injected = injectTracking(
         finalHtml,
         { ownerUserId, organizationId, campaignId, recipientId: item.recipientId, step: item.sequenceStep },
-        env.APP_BASE_URL
+        env.APP_BASE_URL,
+        tracking
       );
       finalHtml = injected.html;
       trackingLinkUrls = injected.linkUrls;

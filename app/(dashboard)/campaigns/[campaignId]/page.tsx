@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { describeTracking, tracksAnything } from "@/lib/tracking/settings";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import {
@@ -244,7 +245,7 @@ export default async function CampaignDetailPage({
             <div>
               <dt className="text-xs text-muted">Open and click tracking</dt>
               <dd className="mt-0.5 font-medium">
-                {campaign.trackingEnabled ? "Enabled" : "Off"}
+                {describeTracking(campaign)}
               </dd>
             </div>
           </dl>
@@ -267,7 +268,7 @@ export default async function CampaignDetailPage({
         </StatGrid>
       </div>
 
-      {campaign.trackingEnabled ? (
+      {tracksAnything(campaign) ? (
         <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <p>

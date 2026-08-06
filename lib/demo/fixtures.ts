@@ -75,6 +75,8 @@ function campaign(over: Partial<Campaign> & { campaignId: string; name: string }
     lostCount: 0,
     wonValueCents: 0,
     followupsPaused: false,
+    openTrackingEnabled: false,
+    clickTrackingEnabled: false,
     trackingEnabled: false,
     createdAt: NOW - 30 * DAY,
     updatedAt: NOW - DAY,
@@ -110,7 +112,9 @@ export const DEMO_CAMPAIGNS: Campaign[] = [
     bounceCount: 19,
     unsubscribeCount: 11,
     totalRecipients: 2052,
-    trackingEnabled: true,
+    // Clicks only, which is the combination the split exists to allow: a real
+    // signal without a remote image in every cold email.
+    clickTrackingEnabled: true,
     updatedAt: NOW - 2 * 60 * 60 * 1000,
   }),
   campaign({

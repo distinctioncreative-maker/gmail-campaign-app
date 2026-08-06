@@ -90,10 +90,25 @@ export const CampaignSchema = z.object({
   /** Minor units. Sum of dealValueCents across recipients marked WON. */
   wonValueCents: z.number().int().nonnegative().default(0),
   followupsPaused: z.boolean().default(false),
-  /** Optional per-campaign open/click tracking (a pixel + link rewriting).
-   * New campaigns default on, with a clear privacy and deliverability notice;
-   * senders can disable it for sensitive campaigns. */
-  trackingEnabled: z.boolean().default(true),
+  /** Open and click tracking are separate trades and are now separate flags.
+   * See lib/tracking/settings.ts for why both default off: the pixel is a
+   * remote image in a cold email in exchange for a number Apple MPP has made
+   * mostly fiction, and every rewritten link points at one hostname shared by
+   * every customer on the platform.
+   *
+   * Deliberately `.optional()` and not `.default(false)`. Every read goes
+   * through this schema, so a default would materialise `false` on campaigns
+   * written before the split and resolveTracking could never tell "the owner
+   * chose off" from "this field did not exist yet". Absent has to stay absent
+   * for the fallback below to mean anything. New campaigns always write both
+   * explicitly, so absent identifies a pre-split document and nothing else. */
+  openTrackingEnabled: z.boolean().optional(),
+  clickTrackingEnabled: z.boolean().optional(),
+  /** @deprecated Superseded by the two flags above. Retained because
+   * campaigns written before the split carry only this, and resolveTracking
+   * falls back to it: reading a missing new field as "off" would silently
+   * stop tracking on running campaigns whose owners chose it. */
+  trackingEnabled: z.boolean().default(false),
   createdAt: EpochMillis,
   updatedAt: EpochMillis,
   startedAt: EpochMillis.nullable().default(null),

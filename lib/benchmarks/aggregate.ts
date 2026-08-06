@@ -1,4 +1,5 @@
 import "server-only";
+import { tracksAnything } from "@/lib/tracking/settings";
 import { firestore } from "@/lib/firebase/admin";
 import { listAllOwners } from "@/lib/campaigns/repair";
 import { listCampaigns, listRecipients, type OwnerRef } from "@/lib/repositories/campaigns";
@@ -49,7 +50,7 @@ async function signalForCampaign(
 
   let openRate: number | null = null;
   let clickRate: number | null = null;
-  if (campaign.trackingEnabled) {
+  if (tracksAnything(campaign)) {
     const recipients = await listRecipients(owner, campaign.campaignId).catch(() => []);
     if (recipients.length > 0) {
       openRate = (recipients.filter((r) => r.openedAt !== null).length / recipients.length) * 100;

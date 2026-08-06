@@ -222,10 +222,11 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         id: "open-click-tracking",
-        name: "Optional open/click tracking",
+        name: "Separate open and click tracking, both off by default",
         status: "shipped",
-        description: "New campaigns enable open and click tracking by default while preserving an explicit campaign-level opt-out and a clear privacy and deliverability tradeoff. Expiring, signed tokens drive rate-limited endpoints; redirects are restricted to stored HTTP(S) links, and counters update transactionally under concurrent image or link loads. The first detected open per recipient creates one transactionally deduplicated in-app notification with a privacy-preloading caveat. Visible unsubscribe links and their signed destinations are never rewritten or counted as clicks.",
+        description: "Open tracking and click tracking are independent campaign settings and both start off, because they are different trades and neither should be silently accepted on a customer's behalf. The open pixel is a remote image in a cold email in exchange for a figure Apple Mail Privacy Protection has already made mostly directional, and every rewritten click link points at one hostname shared by the whole platform, so one sender's reputation problem would travel in everyone else's mail. Each toggle states its tradeoff in the wizard and campaigns created before the split keep whatever their single old flag said. Expiring, signed tokens drive rate-limited endpoints; redirects are restricted to stored HTTP(S) links, and counters update transactionally under concurrent image or link loads. The first detected open per recipient creates one transactionally deduplicated in-app notification with a privacy-preloading caveat. An opt-out link is never rewritten or counted as a click, whether the word appears in its address or only in the text the reader sees.",
         keyFiles: [
+          "lib/tracking/settings.ts",
           "lib/tracking/inject.ts",
           "lib/tracking/token.ts",
           "app/api/t/o/[token]",

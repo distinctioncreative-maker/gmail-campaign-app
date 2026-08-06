@@ -1,4 +1,5 @@
 import "server-only";
+import { tracksAnything } from "@/lib/tracking/settings";
 
 import { listCampaigns, listRecipients, type OwnerRef } from "@/lib/repositories/campaigns";
 import {
@@ -239,7 +240,7 @@ export async function loadReport(
   // tracking, so those recipients are gathered separately.
   const trackedPoints = recipientsSentSince(
     scanned.flatMap((c, i) =>
-      c.trackingEnabled
+      tracksAnything(c)
         ? recipientLists[i].map((r) => ({
             initialSentAt: r.initialSentAt,
             repliedAt: r.repliedAt,
@@ -271,7 +272,7 @@ export async function loadReport(
     heatmap: replyHeatmap(periodPoints, timezone),
     bestHours: bestSendTimes(periodPoints, timezone).filter((row) => row.sent >= 2),
     trend: dailyTrend(periodPoints, timezone, opts.rangeDays, window.now),
-    trackedCampaignCount: scanned.filter((c) => c.trackingEnabled).length,
+    trackedCampaignCount: scanned.filter((c) => tracksAnything(c)).length,
     tracking: openClickRates(trackedPoints),
   };
 }
