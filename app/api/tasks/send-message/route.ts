@@ -41,6 +41,7 @@ import {
 import { recordCollisionContact } from "@/lib/campaigns/collision";
 import { isTestModeForOrg } from "@/lib/sending/mode";
 import { reportError } from "@/lib/observability/report";
+import { warmupDailyCap } from "@/lib/campaigns/warmup";
 import { injectTracking } from "@/lib/tracking/inject";
 import { env } from "@/lib/env";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
@@ -138,9 +139,12 @@ export async function POST(req: NextRequest) {
       getOrgSettings(organizationId),
     ]);
     if (!campaign || !recipient) return fail("MISSING_RECORDS", false);
+    // Three ceilings, lowest wins: what the customer chose, what their plan
+    // allows, and what a new inbox should be doing while it builds a history.
     const effectiveDailyLimit = Math.min(
       campaign.schedule.dailySendLimit,
-      PLANS[settings.billing.plan].maxDailySends
+      PLANS[settings.billing.plan].maxDailySends,
+      warmupDailyCap(connection?.createdAt)
     );
     const effectiveCampaign = {
       ...campaign,

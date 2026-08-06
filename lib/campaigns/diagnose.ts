@@ -8,6 +8,7 @@ import { getDailyCount, listQueueItems, ownerFromCtx } from "@/lib/repositories/
 import { tasksConfigured } from "@/lib/tasks/enqueue";
 import { isInWindow, localDayKey } from "@/lib/scheduling/window";
 import { assessBounces, DEFAULT_BOUNCE_GUARD } from "@/lib/campaigns/bounceGuard";
+import { warmupState } from "@/lib/campaigns/warmup";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 
 export type DiagnosticStatus = "ok" | "warn" | "fail";
@@ -111,7 +112,18 @@ export async function diagnoseCampaign(
       : { label: "Daily limit", status: "ok", detail: `${sentToday} of ${campaign.schedule.dailySendLimit} sent today.` }
   );
 
-  // 8. Bounce rate. Sending stops itself above the stop threshold, so this
+  // 8. Warmup. A capped inbox otherwise looks like a stuck campaign: the
+  // daily limit check would just say "limit reached" with no reason why.
+  const warmup = warmupState(connection?.createdAt);
+  if (warmup.active) {
+    checks.push({
+      label: "Inbox warmup",
+      status: "warn",
+      detail: warmup.message ?? "This inbox is still building a sending history.",
+    });
+  }
+
+  // 9. Bounce rate. Sending stops itself above the stop threshold, so this
   // exists to show the number climbing before it trips rather than after.
   const bounce = assessBounces(campaign);
   checks.push(
@@ -137,7 +149,7 @@ export async function diagnoseCampaign(
           }
   );
 
-  // 9. Queue health
+  // 10. Queue health
   const byStatus = (s: string) => queue.filter((q) => q.status === s).length;
   const errored = queue.filter((q) => q.status === "ERROR");
   const scheduled = byStatus("SCHEDULED") + byStatus("PENDING") + byStatus("RETRY_SCHEDULED");

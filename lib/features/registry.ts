@@ -338,6 +338,18 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/deliverability/dnsLookup.ts", "app/(dashboard)/deliverability"],
       },
       {
+        id: "inbox-warmup",
+        name: "Inbox warmup ramp",
+        status: "shipped",
+        description:
+          "A newly connected Gmail is capped at 20 sends a day, climbing to 40, 60, 100, and 150 over four weeks before the ceiling lifts. Providers weight a sudden appearance of bulk mail from an address with no sending history heavily, and an inbox connected five minutes ago could previously send a hundred cold emails on day one. The cap composes with the campaign limit and the plan cap by taking the lowest, so it only ever lowers a limit a customer already chose. An unreadable or missing connection date is treated as brand new, because a wrongly strict ceiling costs some throughput while a wrongly absent one costs the domain. Anchored on connection date rather than first send, a known simplification recorded in the source.",
+        keyFiles: [
+          "lib/campaigns/warmup.ts",
+          "app/api/tasks/send-message/route.ts",
+          "tests/unit/warmup.test.ts",
+        ],
+      },
+      {
         id: "bounce-brake",
         name: "Automatic stop on a high bounce rate",
         status: "shipped",
