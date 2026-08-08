@@ -31,6 +31,12 @@ import {
   type ReplyClass,
 } from "@/lib/gmail/classifyReply";
 import { classifyBounce, parseFailedRecipient } from "@/lib/gmail/classifyBounce";
+import { emitWebhookEvent } from "@/lib/webhooks/emit";
+import {
+  contactUnsubscribedData,
+  emailBouncedData,
+  replyReceivedData,
+} from "@/lib/webhooks/payload";
 import { getSequence } from "@/lib/repositories/sequences";
 import { addBusinessDays, localDayKey, nextValidTime } from "@/lib/scheduling/window";
 import { mapWithConcurrency } from "@/lib/util/pool";
@@ -152,6 +158,20 @@ async function actOnInbound(
       severity: "WARNING",
       campaignId: campaign.campaignId,
     });
+    // After the suppression is committed, never before: a receiving system that
+    // mirrors opt-outs must not be told about one we then failed to record.
+    await emitWebhookEvent(
+      { organizationId: owner.organizationId, ownerUserId: owner.userId },
+      "contact.unsubscribed",
+      contactUnsubscribedData({
+        campaignId: campaign.campaignId,
+        campaignName: campaign.name,
+        recipientId: r.recipientId,
+        email: r.emailSnapshot,
+        source: "REPLY_MONITOR",
+        unsubscribedAt: now,
+      })
+    );
     return true;
   }
 
@@ -222,6 +242,21 @@ async function actOnInbound(
       severity: "SUCCESS",
       campaignId: campaign.campaignId,
     });
+    // The event most subscriptions exist for. Guarded by `applied` above, so a
+    // reply already recorded on an earlier sweep does not emit twice.
+    await emitWebhookEvent(
+      { organizationId: owner.organizationId, ownerUserId: owner.userId },
+      "reply.received",
+      replyReceivedData({
+        campaignId: campaign.campaignId,
+        campaignName: campaign.name,
+        recipientId: r.recipientId,
+        email: r.emailSnapshot,
+        replyIntent,
+        snippet: fresh,
+        repliedAt: now,
+      })
+    );
     return true;
   }
 
@@ -458,6 +493,18 @@ export async function processBouncesForUser(owner: OwnerRef): Promise<{ bounces:
       severity: "WARNING",
       recipientEmail: match.recipient.emailSnapshot,
     });
+    await emitWebhookEvent(
+      { organizationId: owner.organizationId, ownerUserId: owner.userId },
+      "email.bounced",
+      emailBouncedData({
+        campaignId: match.campaignId,
+        campaignName: bouncedCampaign?.name ?? "",
+        recipientId: match.recipient.recipientId,
+        email: match.recipient.emailSnapshot,
+        bounceType: type,
+        bouncedAt: now,
+      })
+    );
     bounces++;
     byEmail.delete(failed.toLowerCase());
     if (bouncedCampaign) touched.add(bouncedCampaign.campaignId);

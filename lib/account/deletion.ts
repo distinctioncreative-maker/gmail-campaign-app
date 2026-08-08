@@ -254,6 +254,11 @@ export async function executePurge(
       await purgeApiKeys(request.organizationId).catch(() => {
         /* Best effort: the data they addressed is going regardless. */
       });
+      // Takes the organization's subcollections with it, which is where webhook
+      // subscriptions and their queued deliveries live: see the note on
+      // collection placement in lib/webhooks/store.ts. A delivery task already
+      // in the queue finds no subscription and settles itself rather than
+      // posting to an endpoint for a workspace that no longer exists.
       await db.recursiveDelete(db.collection("organizations").doc(request.organizationId));
       await db
         .collection("organizationSettings")

@@ -31,7 +31,8 @@ async function tasks(): Promise<CloudTasksClient> {
 export type WorkerPath =
   | "send-message"
   | "reply-check"
-  | "bounce-check";
+  | "bounce-check"
+  | "webhook-delivery";
 
 export interface TaskPayload {
   organizationId: string;

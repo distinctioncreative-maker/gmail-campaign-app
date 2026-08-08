@@ -10,6 +10,8 @@ organizations/{organizationId}/organizationSettings/main — sending, AI, billin
 organizations/{organizationId}/suppressions/…   — org-scoped suppressions
 organizations/{organizationId}/teamCollisionHashes/{hash}
 organizations/{organizationId}/invites/{inviteId}
+organizations/{organizationId}/webhookEndpoints/{endpointId} — subscription + signing secret
+organizations/{organizationId}/webhookDeliveries/{deliveryId} — signed body, attempts, status
 
 users/{userId}                                  — profile, role snapshot, onboarding
 users/{userId}/gmailConnections/primary         — encrypted refresh token (server-only)
@@ -91,6 +93,20 @@ See `schemas/*.ts` for authoritative field lists:
     NaN width renders a progress bar full rather than empty.
 - `suppression.ts` — Suppression (USER / ORGANIZATION scope)
 - `parsedLead.ts` — pre-import parsed lead + warnings + confidence
+- `integration.ts` — ApiKey, WebhookEndpoint, WebhookDelivery
+  - An API key document's **id is the SHA-256 of the secret**, which makes
+    verification a single point read. The secret is never stored. `ownerUserId`
+    is separate from `createdByUserId`, because leads and campaigns live under
+    `users/{userId}` and a key has to keep addressing that subtree after the
+    person who created it leaves.
+  - Webhook endpoints and deliveries are **subcollections of the organization**,
+    unlike API keys: a webhook is only ever looked up in a workspace we already
+    identified, and nesting means `recursiveDelete` during account deletion
+    removes both without deletion knowing the feature exists.
+  - A delivery stores the exact signed `body`. A retry must present identical
+    bytes, since the signature covers `timestamp.body`. The delivery id is also
+    the event id in that body, so a receiver deduplicating on it sees one event
+    across every retry.
 
 ## Dedup keys
 

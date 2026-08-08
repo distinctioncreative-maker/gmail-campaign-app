@@ -14,6 +14,8 @@ import { localDayKey } from "@/lib/scheduling/window";
 import { reportError } from "@/lib/observability/report";
 import { enforceRateLimit } from "@/lib/util/rateLimit";
 import { verifyUnsubscribeToken } from "@/lib/unsubscribe/token";
+import { emitWebhookEvent } from "@/lib/webhooks/emit";
+import { contactUnsubscribedData } from "@/lib/webhooks/payload";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -148,6 +150,18 @@ export async function POST(req: NextRequest, { params }: Params) {
           severity: "WARNING",
           campaignId: payload.campaignId,
         }),
+        emitWebhookEvent(
+          { organizationId: owner.organizationId, ownerUserId: owner.userId },
+          "contact.unsubscribed",
+          contactUnsubscribedData({
+            campaignId: payload.campaignId,
+            campaignName: campaign.name,
+            recipientId: payload.recipientId,
+            email: recipient.emailSnapshot,
+            source: "UNSUBSCRIBE_LINK",
+            unsubscribedAt: now,
+          })
+        ),
       ]);
     }
   } catch (error) {

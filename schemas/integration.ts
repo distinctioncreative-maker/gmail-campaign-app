@@ -80,3 +80,47 @@ export type WebhookEndpoint = z.infer<typeof WebhookEndpointSchema>;
 
 export const WebhookEndpointPublicSchema = WebhookEndpointSchema.omit({ signingSecret: true });
 export type WebhookEndpointPublic = z.infer<typeof WebhookEndpointPublicSchema>;
+
+/** The event a "send a test" button produces.
+ *
+ * Kept out of WEBHOOK_EVENTS on purpose: it is not something a customer can
+ * subscribe to, it is something they can trigger. Listing it as a subscribable
+ * event would put a checkbox in the interface for an event that never fires on
+ * its own. */
+export const WEBHOOK_TEST_EVENT = "test.ping";
+
+/** What a delivery can carry: any subscribable event, plus the test ping. */
+export const WebhookDeliveryEventSchema = z.union([
+  WebhookEventSchema,
+  z.literal(WEBHOOK_TEST_EVENT),
+]);
+export type WebhookDeliveryEvent = z.infer<typeof WebhookDeliveryEventSchema>;
+
+export const WebhookDeliverySchema = z.object({
+  deliveryId: z.string().min(1),
+  organizationId: z.string().min(1),
+  endpointId: z.string().min(1),
+  /** Snapshotted from the endpoint, so the deliveries list still says where a
+   * delivery went after the subscription was edited or removed. */
+  url: z.string().url(),
+  event: WebhookDeliveryEventSchema,
+  /** The exact bytes that were signed, stored rather than rebuilt.
+   *
+   * A retry has to present the identical body: the signature is over
+   * `timestamp.body`, so re-serializing and getting so much as a different key
+   * order would produce a payload the receiver's replay cache no longer
+   * recognises as the same event. */
+  body: z.string(),
+  attempt: z.number().int().nonnegative().default(0),
+  status: z.enum(["PENDING", "DELIVERED", "RETRYING", "FAILED"]),
+  /** HTTP status of the most recent attempt, or null when there was no
+   * response at all. The response *body* is deliberately never stored: see
+   * lib/webhooks/deliver.ts. */
+  lastStatus: z.number().int().nullable().default(null),
+  /** One readable line per attempt, oldest first, capped at write time. */
+  history: z.array(z.string()).default([]),
+  nextAttemptAt: EpochMillis.nullable().default(null),
+  createdAt: EpochMillis,
+  updatedAt: EpochMillis,
+});
+export type WebhookDelivery = z.infer<typeof WebhookDeliverySchema>;

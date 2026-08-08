@@ -12,6 +12,7 @@ import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { DeleteAccountCard } from "@/components/account/DeleteAccountCard";
 import { ExportDataCard } from "@/components/account/ExportDataCard";
 import { ApiKeysCard } from "@/components/settings/ApiKeysCard";
+import { WebhooksCard } from "@/components/settings/WebhooksCard";
 import { exportSummary } from "@/lib/export/datasets";
 import { deletionState } from "@/lib/account/deletion";
 import { GRACE_PERIOD_DAYS } from "@/lib/account/eligibility";
@@ -94,10 +95,16 @@ export default async function SettingsPage({
             <ProfileForm initial={profile} />
           </CollapsibleCard>
         </div>
-        {/* Admin only: a key is a credential to the whole workspace's data. */}
+        {/* Admin only, both of them: a key is a credential to the whole
+            workspace's data, and a webhook decides where that data is sent. */}
         {ctx.role === "ADMIN" ? (
           <div className="animate-rise" style={{ animationDelay: "88ms" }}>
             <ApiKeysCard />
+          </div>
+        ) : null}
+        {ctx.role === "ADMIN" ? (
+          <div className="animate-rise" style={{ animationDelay: "96ms" }}>
+            <WebhooksCard />
           </div>
         ) : null}
         {/* Export sits immediately above deletion on purpose: taking your

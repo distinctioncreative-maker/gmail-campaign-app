@@ -134,7 +134,7 @@ addresses deserve a "cannot verify" verdict rather than a clean one. Skip SMTP
 probing entirely; it gets sending IPs blocklisted and is why the good vendors
 stopped doing it.
 
-### 1.5 API keys and webhooks — **API keys DONE, webhooks PART DONE**
+### 1.5 API keys and webhooks — **DONE**
 
 **Was.** Nothing outside Stripe. The first question a serious buyer asks.
 
@@ -167,20 +167,56 @@ Decisions worth recording:
   every `/api/v1` route calls `requireApiKey`, because exempting them from the
   session sweep would otherwise let one ship with no authentication at all.
 
-**Webhooks: the core is built and tested, and is not wired up.** Signing,
-verification, replay tolerance, retry and backoff decisions, and target
-validation all exist with 40 tests. What does not exist yet: event emission at
-the reply, bounce, unsubscribe, and deal sites; the delivery worker; and the
-subscription management UI. Treat webhooks as unshipped.
+**Webhooks: shipped.** An admin subscribes a URL to any of four events
+(`reply.received`, `email.bounced`, `contact.unsubscribed`, `deal.updated`),
+Cadence posts a signed JSON envelope when one happens, and the Settings card
+shows what came back. Emission is wired at the reply and bounce sweeps, both
+unsubscribe paths, and the deal-outcome route; delivery runs in a Cloud Tasks
+worker at `/api/tasks/webhook-delivery`.
 
-The one part worth reading before that work happens is
-`lib/webhooks/target.ts`. An outbound webhook is a request our server makes to
-an address the customer chooses, which is textbook server-side request forgery:
-on Google Cloud the prize is `169.254.169.254`, whose response contains
-service-account access tokens. The validator refuses IP literals in every
-notation, because blocking the dotted form while allowing `0xa9fea9fe` or
-`2852039166` would be theatre. DNS rebinding remains possible in principle and
-is documented rather than pretended away.
+Decisions worth recording:
+
+- **The URL is the dangerous input.** An outbound webhook is a request our
+  server makes to an address the customer chooses, which is textbook
+  server-side request forgery: on Google Cloud the prize is
+  `169.254.169.254`, whose response contains service-account access tokens.
+  `lib/webhooks/target.ts` refuses IP literals in every notation, because
+  blocking the dotted form while allowing `0xa9fea9fe` or `2852039166` would be
+  theatre. Three things narrow the rest: **redirects are never followed**, since
+  a `Location` header would otherwise let a subscription aim the server anywhere
+  and make the validation decorative; **the response body is never read, stored,
+  or shown**, because request forgery is only fully useful when the attacker can
+  see what came back; and every request is bounded at ten seconds. DNS rebinding
+  remains possible in principle and is documented rather than pretended away.
+- **Emission happens after the state it describes is committed.** A receiver
+  that mirrors opt-outs must not be told about one we then failed to record.
+- **Emission never throws and never waits for the receiver.** It writes a
+  delivery and queues a task. A misconfigured endpoint cannot fail a reply
+  sweep, and a slow one cannot slow it down.
+- **The signed bytes are stored with the delivery.** The signature covers
+  `timestamp.body`, so a retry has to present an identical body. The delivery id
+  is also the event id inside it, which is what lets a receiver deduplicate
+  across retries and across an at-least-once queue redelivery.
+- **The worker answers 200 for a delivery that ran and failed, 500 for one that
+  could not run.** Retrying a failed delivery is our decision, made in
+  `lib/webhooks/retry.ts`; letting Cloud Tasks also retry would compound the two
+  schedules into far more requests at a struggling endpoint than either intended.
+  A delivery that never recorded an attempt is the opposite case and does need
+  the queue, or it would sit in `RETRYING` with nothing behind it.
+- **A test delivery exists and says it is a test.** Otherwise the first delivery
+  a customer ever receives is a real event, and a verification bug loses it.
+- **A dead subscription turns itself off**: immediately on `410 Gone`, and after
+  twenty consecutive failures. High on purpose, because turning off a working
+  customer's webhook is worse than a few more days of failed attempts.
+- Subscriptions and deliveries are **subcollections of the organization**, unlike
+  API keys, so `recursiveDelete` during account deletion removes them without
+  deletion knowing this feature exists.
+- The guard sweep gained two checks: every route that stores an endpoint calls
+  `validateWebhookTarget`, and every `/api/webhooks` route is admin-only.
+
+Not verified: no delivery has been made to a real external endpoint. The signing
+scheme is proven against its own verifier in tests, and `postDelivery` is tested
+with an injected fetch, but nothing here has posted to another company's server.
 
 ### 1.6 Custom tracking domain — **DONE (code)**
 
@@ -511,7 +547,8 @@ Skeletons on the slowest three pages rather than a spinner.
 4. ~~**5.1 command palette**~~ — done.
 5. ~~**1.3 spintax**~~ — done.
 6. ~~**1.1 multi-inbox**~~ — done. Also closed 3.2 and 3.3.
-7. **1.5 API and webhooks** — API keys done; webhook emission and delivery remain.
+7. ~~**1.5 API and webhooks**~~ — done. Keys, the versioned endpoint, emission,
+   the delivery worker, and subscription management all ship.
 8. ~~**1.6 custom tracking domain**~~ — code done; needs a wildcard domain mapping.
 8. Everything else as it earns priority.
 

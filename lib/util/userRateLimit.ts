@@ -106,6 +106,17 @@ export const RATE_LIMITS = {
     message:
       "That is a lot of support requests at once. Reply to the one you already sent and we will pick it up there.",
   },
+  /** A test delivery makes our server post to an address the customer chose.
+   * This is the one limit here that bounds an *outbound* request rather than our
+   * own cost, so it stays modest: wiring up a receiver takes a handful of tries
+   * and nothing legitimate needs more. */
+  webhookTest: {
+    bucket: "webhook-test",
+    limit: 30,
+    windowMs: HOUR,
+    message:
+      "That is a lot of test deliveries. Check what came back in recent deliveries, then try again in a few minutes.",
+  },
   /** Each scan walks Gmail threads for every active campaign. */
   replyScan: {
     bucket: "reply-scan",

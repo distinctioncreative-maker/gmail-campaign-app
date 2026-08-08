@@ -23,6 +23,21 @@
 
 export const MAX_ATTEMPTS = 6;
 
+/**
+ * Consecutive failed deliveries before a subscription turns itself off.
+ *
+ * A subscription nobody is maintaining otherwise keeps producing six attempts
+ * per event forever: queue work, log noise, and a stream of requests at a server
+ * whose owner has moved on. Twenty is high enough to ride out a long outage,
+ * because turning off a working customer's webhook is far worse than a few extra
+ * days of failed attempts.
+ */
+export const AUTO_DISABLE_AFTER_FAILURES = 20;
+
+export function shouldDisableAfterFailures(consecutiveFailures: number): boolean {
+  return consecutiveFailures >= AUTO_DISABLE_AFTER_FAILURES;
+}
+
 /** Base delays in milliseconds, before jitter. Roughly 30s to an hour. */
 const BACKOFF_MS = [30_000, 60_000, 5 * 60_000, 15 * 60_000, 30 * 60_000, 60 * 60_000];
 
@@ -75,6 +90,18 @@ export function decideRetry(
       outcome: "DISABLED",
       delayMs: 0,
       reason: "Endpoint returned 410 Gone, so this subscription was disabled.",
+    };
+  }
+  if (result.status !== null && result.status >= 300 && result.status < 400) {
+    // Deliveries are sent with redirects disabled, so a 3xx arrives here as a
+    // response rather than being followed. That is not a transport quirk to
+    // retry around: the redirect target was never checked by
+    // lib/webhooks/target.ts, and following it would hand a customer the
+    // ability to aim our server anywhere by returning a Location header.
+    return {
+      outcome: "FAILED",
+      delayMs: 0,
+      reason: `Endpoint redirected with ${result.status}. Cadence does not follow redirects on deliveries, because the redirect target is never validated. Subscribe to the final URL instead.`,
     };
   }
   if (!isRetryable(result.status)) {

@@ -11,6 +11,8 @@ import {
 } from "@/lib/repositories/campaigns";
 import { DealStatusSchema } from "@/schemas/campaign";
 import { formatDealValue } from "@/lib/campaigns/outcomes";
+import { emitWebhookEvent } from "@/lib/webhooks/emit";
+import { dealUpdatedData } from "@/lib/webhooks/payload";
 
 type Params = { params: Promise<{ campaignId: string; recipientId: string }> };
 
@@ -82,6 +84,24 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: Params)
       recipientEmail: recipient.emailSnapshot,
     });
   }
+
+  // Emitted for a clear as well as for a mark: a CRM that created a record from
+  // the first event has to hear about the undo, or a mis-click stays a booked
+  // meeting in their system forever.
+  await emitWebhookEvent(
+    { organizationId: owner.organizationId, ownerUserId: owner.userId },
+    "deal.updated",
+    dealUpdatedData({
+      campaignId,
+      campaignName: campaign.name,
+      recipientId,
+      email: recipient.emailSnapshot,
+      dealStatus,
+      dealValueCents,
+      dealNote,
+      updatedAt: Date.now(),
+    })
+  );
 
   return NextResponse.json({ ok: true, dealStatus, dealValueCents, dealNote });
 });

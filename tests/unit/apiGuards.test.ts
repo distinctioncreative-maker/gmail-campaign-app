@@ -85,6 +85,7 @@ describe("route guards — every authenticated route is scoped", () => {
     "api/t/c/[token]/[index]", // click redirect
     "api/t/o/[token]", // open pixel
     "api/tasks/send-message", // Cloud Tasks OIDC
+    "api/tasks/webhook-delivery", // Cloud Tasks OIDC
     "api/u/[token]", // one-click unsubscribe
     "api/waitlist", // public contact form
     // The public API. Authenticated by a workspace API key through
@@ -124,6 +125,36 @@ describe("route guards — every authenticated route is scoped", () => {
     expect(routes.filter(({ id }) => id.startsWith("api/v1/")).length).toBeGreaterThan(0);
   });
 
+  it("validates a customer-supplied webhook URL before storing it", () => {
+    // The SSRF boundary. A route that wrote an endpoint without going through
+    // validateWebhookTarget would let a customer aim our server at the GCP
+    // metadata service, whose response contains service-account tokens. Checked
+    // by sweep rather than by a single test on one file, because the next route
+    // that accepts a URL is the one that will forget.
+    const storesUrl = routes.filter(
+      ({ source }) =>
+        source.includes("createWebhookEndpoint(") || source.includes("WebhookEndpointSchema.parse(")
+    );
+    expect(storesUrl.length).toBeGreaterThan(0);
+    expect(
+      storesUrl
+        .filter(({ source }) => !source.includes("validateWebhookTarget("))
+        .map(({ id }) => id)
+    ).toEqual([]);
+  });
+
+  it("keeps webhook subscriptions admin-only", () => {
+    // A subscription decides where a workspace's reply and deal data is sent, so
+    // adding one is not a per-member action.
+    const webhookRoutes = routes.filter(({ id }) => id.startsWith("api/webhooks"));
+    expect(webhookRoutes.length).toBeGreaterThan(0);
+    expect(
+      webhookRoutes
+        .filter(({ source }) => !source.includes('requireRole("ADMIN")'))
+        .map(({ id }) => id)
+    ).toEqual([]);
+  });
+
   it("scopes every campaign route to the signed-in owner", () => {
     // A campaign route that reads or writes without ownerFromCtx would be
     // addressing another workspace's documents by ID.
@@ -154,6 +185,9 @@ describe("rate limiting — the expensive routes are bounded", () => {
     "api/search",
     // A live DNS lookup per request.
     "api/tracking-domain",
+    // Makes our server POST to an address the customer chose. The only entry
+    // here that bounds an outbound request rather than our own cost.
+    "api/webhooks/test",
   ];
 
   const routes = new Map([...findRoutes("app")].map((r) => [r.id, r.source]));
