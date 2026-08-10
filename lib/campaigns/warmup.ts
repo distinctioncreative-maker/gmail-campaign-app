@@ -52,12 +52,13 @@ export interface WarmupState {
 /**
  * Where an inbox sits on the ramp.
  *
- * Anchored on when the inbox was connected rather than when it first sent.
- * That is a deliberate simplification with one known weakness: an inbox
- * connected a month ago and never used is treated as warm despite having no
- * sending history. Fixing it properly needs a lifetime send counter per
- * connection, which is a schema change and a write on the send path. Recorded
- * here rather than hidden, because the failure is in the lenient direction.
+ * Anchored on when the inbox was connected rather than when it first sent, which
+ * on its own would treat an inbox connected a month ago and never used as fully
+ * warm. That weakness is now covered: `inboxWarmupCap` in
+ * lib/sending/inboxPool.ts combines this age-based ceiling with lifetime send
+ * volume and takes the stricter of the two, so an inbox with no history stays at
+ * the start of the ramp however long ago it was connected. Callers wanting the
+ * real per-inbox ceiling should use that rather than this directly.
  */
 export function warmupState(
   connectedAt: number | null | undefined,

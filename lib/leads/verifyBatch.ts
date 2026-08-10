@@ -13,7 +13,12 @@ export async function verifyLeadBatch<T extends { email: string | null; emailVal
   leads: T[]
 ): Promise<{
   verified: Array<T & { verification: VerificationResult }>;
-  counts: { deliverable: number; risky: number; undeliverable: number };
+  counts: {
+    deliverable: number;
+    unconfirmable: number;
+    risky: number;
+    undeliverable: number;
+  };
 }> {
   const domains = new Set<string>();
   for (const lead of leads) {
@@ -35,13 +40,14 @@ export async function verifyLeadBatch<T extends { email: string | null; emailVal
       };
     }
     const parts = splitEmail(lead.email.trim());
-    // undefined (never looked up) and null (lookup failed) both mean "unknown"
-    // to the verifier, which is not the same as "no mail server".
-    const hasMx = parts ? (mx.get(parts.domain) ?? null) : null;
+    const lookup = parts ? mx.get(parts.domain) : undefined;
     return {
       ...lead,
       verification: verifyEmailOffline(lead.email, {
-        hasMx,
+        // undefined (never looked up) and null (lookup failed) both mean
+        // "unknown" to the verifier, which is not the same as "no mail server".
+        hasMx: lookup?.hasMx ?? null,
+        mxHosts: lookup?.hosts ?? [],
         isValidSyntax: lead.emailValid,
       }),
     };

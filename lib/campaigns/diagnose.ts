@@ -9,6 +9,7 @@ import { tasksConfigured } from "@/lib/tasks/enqueue";
 import { isInWindow, localDayKey } from "@/lib/scheduling/window";
 import { assessBounces, DEFAULT_BOUNCE_GUARD } from "@/lib/campaigns/bounceGuard";
 import { warmupState } from "@/lib/campaigns/warmup";
+import { assessEngagement, DEFAULT_ENGAGEMENT } from "@/lib/campaigns/engagementPace";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 
 export type DiagnosticStatus = "ok" | "warn" | "fail";
@@ -148,6 +149,37 @@ export async function diagnoseCampaign(
                 : `${(bounce.rate * 100).toFixed(1)}% (${bounce.bounced} of ${bounce.sent}). Healthy.`,
           }
   );
+
+  // 9b. Reply rate, which now feeds pacing. A throttled campaign would
+  // otherwise present as "daily limit reached" at a number lower than the one
+  // the customer set, with nothing anywhere explaining the difference.
+  const engagement = assessEngagement({
+    sentCount: campaign.sentCount,
+    replyCount: campaign.replyCount,
+    dailySendLimit: campaign.schedule.dailySendLimit,
+  });
+  if (engagement.verdict === "POOR" || engagement.verdict === "WEAK") {
+    checks.push({
+      label: "Reply rate",
+      status: "warn",
+      detail: engagement.message ?? "Sending is eased back while the reply rate is low.",
+    });
+  } else if (engagement.verdict === "STRONG") {
+    checks.push({
+      label: "Reply rate",
+      status: "ok",
+      detail: engagement.message ?? "Reply rate is well above average.",
+    });
+  } else {
+    checks.push({
+      label: "Reply rate",
+      status: "ok",
+      detail:
+        engagement.verdict === "UNPROVEN"
+          ? `${engagement.replied} repl${engagement.replied === 1 ? "y" : "ies"} so far. A reply can arrive days after a send, so pacing ignores the rate until ${DEFAULT_ENGAGEMENT.minimumSends} emails have gone out.`
+          : `${(engagement.replyRate * 100).toFixed(1)}% (${engagement.replied} of ${engagement.sent}). Normal for cold outreach.`,
+    });
+  }
 
   // 10. Queue health
   const byStatus = (s: string) => queue.filter((q) => q.status === s).length;

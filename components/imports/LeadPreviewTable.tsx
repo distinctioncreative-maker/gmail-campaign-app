@@ -29,6 +29,7 @@ export function LeadPreviewTable({
   const verificationCounts = leads.some((l) => l.verification)
     ? {
         deliverable: leads.filter((l) => l.verification?.verdict === "DELIVERABLE").length,
+        unconfirmable: leads.filter((l) => l.verification?.verdict === "UNCONFIRMABLE").length,
         risky: leads.filter((l) => l.verification?.verdict === "RISKY").length,
         undeliverable: leads.filter((l) => l.verification?.verdict === "UNDELIVERABLE").length,
       }
@@ -128,8 +129,13 @@ export function LeadPreviewTable({
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           <span className="font-medium text-foreground">Address check:</span>
           <span className="badge bg-success-soft text-success">
-            {verificationCounts.deliverable} verified
+            {verificationCounts.deliverable} checked
           </span>
+          {verificationCounts.unconfirmable > 0 && (
+            <span className="badge bg-surface-2 text-muted">
+              {verificationCounts.unconfirmable} cannot confirm
+            </span>
+          )}
           {verificationCounts.risky > 0 && (
             <span className="badge bg-warning-soft text-warning">
               {verificationCounts.risky} risky
@@ -141,7 +147,8 @@ export function LeadPreviewTable({
             </span>
           )}
           <span className="text-muted">
-            Undeliverable rows cannot be imported. Risky ones are left unticked.
+            Undeliverable rows cannot be imported. Risky ones are left unticked. Cannot confirm
+            means the domain accepts every address, so no check can prove that mailbox exists.
           </span>
         </div>
       )}

@@ -123,16 +123,44 @@ The choice is seeded from recipient plus step rather than random, so a retry
 after an ambiguous delivery sends the byte-identical email instead of a second,
 differently worded one, and the preview matches what goes out.
 
-### 1.4 Deeper verification — **S** — extends what just shipped
+### 1.4 Deeper verification — **DONE, with the catch-all part reframed**
 
-**Partial.** MX, typo, disposable, and role checks exist
-(`lib/leads/verify.ts`). Catch-all domain detection and SMTP probing do not.
+**Was.** MX, typo, disposable, and role checks existed. Catch-all detection did
+not.
 
-**Plan.** Add catch-all detection by probing a known-bad address at the
-domain: a domain that accepts everything cannot confirm anything, and those
-addresses deserve a "cannot verify" verdict rather than a clean one. Skip SMTP
-probing entirely; it gets sending IPs blocklisted and is why the good vendors
-stopped doing it.
+**The plan contradicted itself, and it is worth recording why.** It asked for
+catch-all detection "by probing a known-bad address at the domain", then said in
+the next paragraph to skip SMTP probing because it gets sending IPs blocklisted.
+Those are the same technique. Learning that a domain accepts every address means
+opening an SMTP conversation with its mail server and offering it one that cannot
+exist, and there is no DNS record for it. The route is unavailable regardless:
+Google Cloud blocks outbound port 25 from Cloud Run.
+
+**So what shipped is the more valuable half of the idea: the verifier stopped
+overclaiming.** An address whose domain merely had an MX record used to come back
+**"Verified"**, and for most business domains that word was wrong. Google
+Workspace and Microsoft 365 accept at SMTP time and decide about the mailbox
+afterwards, so "the domain has a mail server" was the entire content of that
+verdict.
+
+- The same DNS lookup now returns the exchanger hostnames, so it also answers
+  *who runs the mail for this domain* at no extra cost.
+- A domain behind a **forwarding service** gets a new `UNCONFIRMABLE` verdict,
+  shown as "Cannot confirm": those accept every address by design, so nothing
+  short of sending will ever confirm one. Presented neutrally rather than as a
+  warning, and still importable, because most business addresses are in this
+  position and defaulting them out would break an ordinary import.
+- A **personal mailbox** on a business list is flagged, and so is a domain behind
+  a **filtering gateway**, where mail is likelier to be dropped silently than
+  bounced and a missing reply is not evidence it arrived.
+- **Workspace and 365 are deliberately not called catch-alls.** Either can be
+  configured that way and usually is not, and a warning that applies to most
+  addresses on earth is one people learn to ignore.
+- The clean badge now reads **"Checked"** rather than "Verified". Overstating it
+  made the honest tier beside it look like a downgrade.
+
+A real problem at the address still outranks an unconfirmable domain: a role
+inbox at a forwarding domain is first and foremost a role inbox.
 
 ### 1.5 API keys and webhooks — **DONE**
 
@@ -378,15 +406,39 @@ would fail.
 
 ## 3. Deliverability, remaining
 
-### 3.1 Reply-rate feedback into pacing — **M**
+### 3.1 Reply-rate feedback into pacing — **DONE, lowering only**
 
-Positive engagement is the strongest inbox signal there is, and it is measured
-but unused. A campaign replying at 12% has earned more volume than one at 1%.
+**Was.** Positive engagement is the strongest inbox signal there is, and it was
+measured on two pages and used for nothing.
 
-**Plan.** Fold reply rate into the effective daily cap as a fourth term
-alongside campaign limit, plan cap, and warmup, bounded so it can raise volume
-by at most 50% and lower it by at most 50%. Same `Math.min` composition, one
-more input.
+**Shipped** as a fourth term in the same lowest-wins composition beside the
+campaign limit, the plan cap, and inbox warmup. At or below 0.5% a campaign runs
+at half its daily limit, below 2% at three quarters, and at ordinary
+cold-outreach rates it is untouched.
+
+**The 50% raise in the plan was not built, on purpose.** Every other term in that
+`Math.min` is a ceiling, and the customer's chosen daily limit is the amount of
+mail they authorised. A product that sends 120 when someone typed 80 has taken a
+decision that was never offered to it, and unlike a wrong number on a screen the
+mistake arrives in strangers' inboxes. It is the same reasoning that keeps
+multi-inbox rotation from multiplying a campaign's limit.
+
+The reward half still ships, as an offer rather than an action: a campaign
+replying above 8% is told on its own page that it has earned a higher limit,
+capped so the product never proposes a number its own pace checks would then warn
+about. A person decides.
+
+Two details that matter more than the thresholds:
+
+- **The sixty-send sample floor.** A reply can arrive days after a send, so an
+  early zero means only that it is early. Throttling a campaign on its first
+  morning would be wrong, and hard to explain to whoever is watching it.
+- **Nothing is silent.** A throttled campaign would otherwise present as "daily
+  limit reached" at a number lower than the one the customer set, with nothing
+  anywhere accounting for the difference. The campaign page and the diagnose
+  panel both say what happened and why. It also never paces to zero: a campaign
+  stopped that way is indistinguishable from a broken one, and stopping belongs
+  to the bounce brake or to a person.
 
 ### 3.2 Warmup anchored on first send, not connection date — **DONE**
 
@@ -609,6 +661,10 @@ Skeletons on the slowest three pages rather than a spinner.
 9. ~~**2.2 audit log**~~ and ~~**2.3 session hardening**~~ — done together. The
    audit log had more to record after 1.5 than before it: a key and a webhook are
    both standing external access that appears on no other surface.
-10. Everything remaining, in the order it earns priority: **3.1 reply rate into
-    pacing**, **1.4 catch-all verification**, **5.2 saved views**, **5.5 polish**,
-    then **1.2 lead sourcing**, which is the largest piece left on the board.
+10. ~~**3.1 reply rate into pacing**~~ and ~~**1.4 deeper verification**~~ — done
+    together. Both turned out to be about not overclaiming: one refuses to send
+    more mail than was authorised, the other refuses to call an address verified
+    when nothing verified it.
+11. Everything remaining, in the order it earns priority: **5.2 saved views**,
+    **5.5 polish**, then **1.2 lead sourcing**, the largest piece left on the
+    board.

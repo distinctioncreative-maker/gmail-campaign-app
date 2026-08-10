@@ -55,6 +55,7 @@ import { recordCollisionContact } from "@/lib/campaigns/collision";
 import { isTestModeForOrg } from "@/lib/sending/mode";
 import { reportError } from "@/lib/observability/report";
 import { warmupDailyCap } from "@/lib/campaigns/warmup";
+import { assessEngagement, engagementDailyCap } from "@/lib/campaigns/engagementPace";
 import { expandSpintax } from "@/lib/personalization/spintax";
 import { resolveTracking, tracksAnything } from "@/lib/tracking/settings";
 import { injectTracking } from "@/lib/tracking/inject";
@@ -192,15 +193,25 @@ export async function POST(req: NextRequest) {
     const chosenInbox = selection.chosen;
 
     // Ceilings, lowest wins: what the customer chose for the campaign, what
-    // their plan allows, and what this specific inbox may send today. The first
-    // two bound the campaign total; the third protects the address. Rotation
-    // raises what a customer can achieve by adding inboxes, and never by
-    // quietly multiplying the limit they set.
+    // their plan allows, what this specific inbox may send today, and what this
+    // campaign's reply rate has earned. The first two bound the campaign total;
+    // the third protects the address; the fourth eases off a campaign nobody is
+    // answering, since volume with no engagement is the pattern providers filter
+    // on. Every term can only lower. Rotation raises what a customer can achieve
+    // by adding inboxes, and never by quietly multiplying the limit they set,
+    // and neither does a good reply rate: that is offered on the campaign page
+    // for a person to accept.
     const inboxCap = chosenInbox?.dailyCap ?? warmupDailyCap(connection?.createdAt);
+    const engagement = assessEngagement({
+      sentCount: campaign.sentCount,
+      replyCount: campaign.replyCount,
+      dailySendLimit: campaign.schedule.dailySendLimit,
+    });
     const effectiveDailyLimit = Math.min(
       campaign.schedule.dailySendLimit,
       PLANS[settings.billing.plan].maxDailySends,
-      inboxCap
+      inboxCap,
+      engagementDailyCap(campaign.schedule.dailySendLimit, engagement)
     );
     const effectiveCampaign = {
       ...campaign,

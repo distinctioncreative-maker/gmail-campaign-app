@@ -24,6 +24,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
+import { assessEngagement } from "@/lib/campaigns/engagementPace";
 import { CampaignSectionNav } from "@/components/campaign/CampaignSectionNav";
 import { LaunchCelebration } from "@/components/campaign/LaunchCelebration";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -69,6 +70,11 @@ export default async function CampaignDetailPage({
   const pct = totalToSend > 0 ? Math.min(100, Math.round((doneCount / totalToSend) * 100)) : 0;
   const remaining = Math.max(0, totalToSend - doneCount);
   const performance = campaignPerformance(campaign);
+  const engagement = assessEngagement({
+    sentCount: campaign.sentCount,
+    replyCount: campaign.replyCount,
+    dailySendLimit: campaign.schedule.dailySendLimit,
+  });
   const openedCount = recipients.filter((recipient) => recipient.openedAt !== null).length;
   const clickedCount = recipients.filter(
     (recipient) => recipient.firstClickedAt !== null
@@ -177,6 +183,24 @@ export default async function CampaignDetailPage({
         <div className="mt-5 rounded-xl border border-border bg-surface-2 p-4 text-sm text-muted">
           Archived <LocalTime value={campaign.archivedAt} options={{ dateStyle: "long" }} />.
           This campaign remains included in reporting.
+        </div>
+      ) : null}
+
+      {/* Pacing is now partly decided by how the campaign is performing, so the
+          reason has to be visible on the page rather than only in the diagnose
+          panel: a throttled campaign otherwise reads as a stuck one. */}
+      {engagement.message !== null ? (
+        <div
+          className={`mt-5 rounded-xl border p-4 text-sm leading-relaxed ${
+            engagement.verdict === "STRONG" ? "alert-success" : "alert-warning"
+          }`}
+        >
+          <p className="font-semibold">
+            {engagement.verdict === "STRONG"
+              ? "People are replying to this one"
+              : `Sending is at ${Math.round(engagement.factor * 100)}% of your daily limit`}
+          </p>
+          <p className="mt-1">{engagement.message}</p>
         </div>
       ) : null}
 

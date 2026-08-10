@@ -10,10 +10,31 @@
  *
  * Everything here except the MX lookup is pure and offline. No paid
  * verification API, no address is ever transmitted anywhere.
+ *
+ * What this deliberately does not do is open an SMTP connection to ask whether a
+ * mailbox exists. That is the only way to detect a catch-all domain or to confirm
+ * an individual address, and it is unavailable twice over: Cloud Run blocks
+ * outbound port 25, and probing is how sending IPs get blocklisted. The
+ * consequence is honest rather than hidden, in the shape of the `UNCONFIRMABLE`
+ * verdict below and the provider findings that explain it.
  */
+import {
+  acceptsEveryAddress,
+  describeProvider,
+  mailProviderFor,
+} from "@/lib/leads/domainProfile";
 
-/** What we are willing to say about an address before anything is sent. */
-export type EmailVerdict = "DELIVERABLE" | "RISKY" | "UNDELIVERABLE";
+/**
+ * What we are willing to say about an address before anything is sent.
+ *
+ * `UNCONFIRMABLE` is the honest tier, and adding it corrected an overclaim. An
+ * address behind a forwarding service cannot be confirmed by us or by anyone
+ * else without sending to it, because the service accepts every address by
+ * design. Reporting that as "Verified", which is what happened before, promised
+ * something no check performed could support. It is not a warning: it means we
+ * found nothing wrong and cannot find anything right either.
+ */
+export type EmailVerdict = "DELIVERABLE" | "UNCONFIRMABLE" | "RISKY" | "UNDELIVERABLE";
 
 export interface VerificationFinding {
   code:
@@ -22,7 +43,10 @@ export interface VerificationFinding {
     | "DISPOSABLE"
     | "ROLE_ADDRESS"
     | "LIKELY_TYPO"
-    | "TOO_LONG";
+    | "TOO_LONG"
+    | "CATCH_ALL"
+    | "CONSUMER_MAILBOX"
+    | "SECURITY_GATEWAY";
   /** Shown to the person importing, so it has to be worth reading. */
   detail: string;
   /** A corrected address, when we are confident enough to offer one. */
@@ -132,7 +156,13 @@ export function isDisposableDomain(domain: string): boolean {
  */
 export function verifyEmailOffline(
   email: string,
-  options: { hasMx?: boolean | null; isValidSyntax: boolean } = { isValidSyntax: true }
+  options: {
+    hasMx?: boolean | null;
+    /** Exchanger hostnames from the same lookup, when available. Absent simply
+     * means the provider checks are skipped. */
+    mxHosts?: readonly string[];
+    isValidSyntax: boolean;
+  } = { isValidSyntax: true }
 ): VerificationResult {
   const findings: VerificationFinding[] = [];
   const trimmed = email.trim();
@@ -201,17 +231,48 @@ export function verifyEmailOffline(
     });
   }
 
-  return { verdict: findings.length > 0 ? "RISKY" : "DELIVERABLE", findings };
+  // Provider checks. These describe the domain rather than the address, so they
+  // never make something undeliverable: at most they say what cannot be known.
+  const provider = mailProviderFor(parts.domain, options.mxHosts ?? []);
+  let unconfirmable = false;
+
+  if (acceptsEveryAddress(provider)) {
+    unconfirmable = true;
+    findings.push({
+      code: "CATCH_ALL",
+      detail: `${parts.domain} uses ${describeProvider(provider)}, which accepts mail for every address. Nothing can confirm this mailbox exists short of sending to it, so expect some of these to bounce.`,
+    });
+  } else if (provider === "CONSUMER") {
+    findings.push({
+      code: "CONSUMER_MAILBOX",
+      detail: `A personal ${parts.domain} address rather than a work one. Fine to keep, but on a business list these tend to be the wrong contact and they complain more than they bounce.`,
+    });
+  } else if (provider === "SECURITY_GATEWAY") {
+    findings.push({
+      code: "SECURITY_GATEWAY",
+      detail: `${parts.domain} filters inbound mail through ${describeProvider(provider)}. Mail here is more likely to be dropped quietly than bounced, so a missing reply is not proof it arrived.`,
+    });
+  }
+
+  // A concerning finding outranks an unconfirmable domain: "we found a problem"
+  // is more actionable than "we could not check", and a role address at a
+  // forwarding domain is still first and foremost a role address.
+  const concerning = findings.some((finding) => finding.code !== "CATCH_ALL");
+  if (concerning) return { verdict: "RISKY", findings };
+  if (unconfirmable) return { verdict: "UNCONFIRMABLE", findings };
+  return { verdict: "DELIVERABLE", findings };
 }
 
 /** One-line summary for a list of results, for the import preview header. */
 export function summarize(results: VerificationResult[]): {
   deliverable: number;
+  unconfirmable: number;
   risky: number;
   undeliverable: number;
 } {
   return {
     deliverable: results.filter((r) => r.verdict === "DELIVERABLE").length,
+    unconfirmable: results.filter((r) => r.verdict === "UNCONFIRMABLE").length,
     risky: results.filter((r) => r.verdict === "RISKY").length,
     undeliverable: results.filter((r) => r.verdict === "UNDELIVERABLE").length,
   };

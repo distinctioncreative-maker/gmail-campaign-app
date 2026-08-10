@@ -118,6 +118,8 @@ describe("summarize", () => {
       ok("b@mailinator.com"),
       ok("c@dead.example", false),
     ]);
-    expect(counts).toEqual({ deliverable: 1, risky: 1, undeliverable: 2 });
+    // No MX hosts are supplied here, so nothing lands in the cannot-confirm
+    // tier: see tests/unit/domain-profile.test.ts for that path.
+    expect(counts).toEqual({ deliverable: 1, unconfirmable: 0, risky: 1, undeliverable: 2 });
   });
 });

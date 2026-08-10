@@ -13,12 +13,21 @@ export type ClassifiedLead = ParsedLead & {
 /** How a verification verdict reads in the preview. Undeliverable addresses
  * cannot be selected: importing an address with no mail server behind it is
  * buying a bounce, and the bounce brake will eventually stop the campaign
- * that sends to it. */
+ * that sends to it.
+ *
+ * "Checked" rather than "Verified", which was the wrong word. Nothing short of
+ * sending confirms a mailbox exists, and the checks that ran are about syntax,
+ * the domain, and the mailbox name. Overstating that made the honest tier next to
+ * it look like a downgrade rather than the truth. */
 export const VERDICT_BADGES: Record<
   string,
   { label: string; className: string; selectable: boolean }
 > = {
-  DELIVERABLE: { label: "Verified", className: "bg-success-soft text-success", selectable: true },
+  DELIVERABLE: { label: "Checked", className: "bg-success-soft text-success", selectable: true },
+  // Neutral, not a warning. Most business domains behind a forwarding service
+  // land here, and colouring it amber would tell customers their good list is
+  // full of problems.
+  UNCONFIRMABLE: { label: "Cannot confirm", className: "bg-surface-2 text-muted", selectable: true },
   RISKY: { label: "Risky", className: "bg-warning-soft text-warning", selectable: true },
   UNDELIVERABLE: { label: "Undeliverable", className: "bg-danger-soft text-danger", selectable: false },
 };
