@@ -7,7 +7,6 @@ import {
   isPlatformOperator,
   platformConfigured,
   stepUpSatisfied,
-  type StepUpAction,
 } from "@/lib/platform/operators";
 
 /**
@@ -92,14 +91,23 @@ export async function requireOperator(): Promise<OperatorContext> {
   };
 }
 
-/** Resolve the operator and insist the sign-in is recent. */
-export async function requireStepUp(_action: StepUpAction): Promise<OperatorContext> {
+/**
+ * Resolve the operator and insist the sign-in is recent.
+ *
+ * Takes no action argument, because every mutation the portal offers needs this:
+ * STEP_UP_ACTIONS lists all ten and a test asserts the list stays complete. An
+ * argument would imply some platform write exists that does not need a fresh
+ * sign-in, and inviting a caller to decide which is exactly the decision that
+ * gets made wrong.
+ */
+export async function requireStepUp(): Promise<OperatorContext> {
   const ctx = await requireOperator();
   if (!stepUpSatisfied(ctx.authTimeSeconds)) throw new StepUpRequiredError();
   return ctx;
 }
 
-/** For the customer-facing app: whether to render the portal link at all. */
-export async function viewerIsOperator(email: string): Promise<boolean> {
-  return isPlatformOperator(email, env.PLATFORM_OWNER_EMAILS);
-}
+// There is deliberately no helper for rendering a portal link in the customer
+// app. It was written and then removed: a link would advertise the portal's
+// existence to anyone who shares a screen, and an operator who needs it can type
+// the path. Obscurity is not the security boundary here, requireOperator is, but
+// there is no reason to spend the obscurity for a convenience nobody needs.

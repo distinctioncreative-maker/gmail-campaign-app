@@ -246,6 +246,28 @@ describe("the portal's guards, by sweep", () => {
     expect(operators).not.toContain("firebase");
   });
 
+  it("authenticates before it parses the body", () => {
+    // Parsing first leaked the endpoint's existence: valid JSON from a
+    // non-operator returned 404 while malformed JSON returned 400, and the
+    // difference confirms both that the route is real and that the payload shape
+    // was right. That is the pair of facts the 404 exists to withhold.
+    const route = readFileSync("app/api/owner/route.ts", "utf8");
+    const guardAt = route.indexOf("requireStepUp()");
+    const parseAt = route.indexOf("ActionSchema.parse(");
+    expect(guardAt).toBeGreaterThan(0);
+    expect(parseAt).toBeGreaterThan(guardAt);
+  });
+
+  it("keeps the portal out of robots.txt", () => {
+    // Every other private path is listed there, because they are all guessable
+    // from the product's navigation and listing them stops a crawler indexing a
+    // signed-in page. This one is not guessable, and robots.txt is public: adding
+    // it would publish the location of the most privileged surface in the system.
+    // The noindex meta in the layout is the stronger signal anyway.
+    expect(readFileSync("app/robots.ts", "utf8")).not.toMatch(/"\/owner/);
+    expect(readFileSync("app/owner/layout.tsx", "utf8")).toContain("index: false");
+  });
+
   it("never prerenders the portal", () => {
     // The bug this catches shipped once. requireOperator refuses before reading a
     // cookie, so at build time it 404s, and Next.js then treats the route as

@@ -110,9 +110,16 @@ export const GET = handleApiErrors(async () => {
 });
 
 export const POST = handleApiErrors(async (req: NextRequest) => {
+  // Authenticate before touching the body. Parsing first leaked the endpoint's
+  // existence: a non-operator posting valid JSON got 404 while malformed JSON got
+  // 400, and the difference between those two answers confirms both that the
+  // route is real and that the payload shape was right. That is exactly the pair
+  // of facts requireOperator's 404 exists to withhold.
+  //
+  // Every action in this union is a state change, so all of them step up: see
+  // STEP_UP_ACTIONS, which covers all ten, and the test that keeps it complete.
+  const ctx = await requireStepUp();
   const input = ActionSchema.parse(await req.json());
-  // Every action in this union is a state change, so every one of them steps up.
-  const ctx = await requireStepUp(input.action);
   const by = ctx.email;
 
   switch (input.action) {
