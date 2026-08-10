@@ -3493,3 +3493,129 @@
     display: none;
   }
 }
+
+/* ── Variation demo ────────────────────────────────────────────
+   Spintax shipped and this site never sold it. The demo runs the real parser,
+   so these styles dress genuine output rather than a mock-up. Radii come from
+   the landing ladder and colours from the semantic palette: the flatness of
+   this page is enforced by tests/unit/landing-experience.test.ts, and a demo
+   with its own radii and its own white would read as bolted on. */
+.variationHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--landing-line);
+}
+.variationCount {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--landing-copy);
+}
+.variationHint {
+  margin: 4px 0 0;
+  max-width: 46ch;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--landing-muted);
+}
+.variationToggle {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-r-md);
+  background: var(--landing-surface);
+  color: var(--landing-copy);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.variationToggle[aria-checked="true"] {
+  border-color: var(--landing-blue-border);
+  background: var(--landing-blue);
+  color: var(--landing-blue-contrast);
+}
+.variationToggle:focus-visible {
+  outline: 3px solid var(--landing-blue);
+  outline-offset: 2px;
+}
+.variationSource {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--landing-line);
+  background: var(--landing-surface-soft);
+}
+.variationSourceLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--landing-muted);
+}
+.variationTemplate {
+  margin: 0;
+  font-size: 0.87rem;
+  line-height: 2;
+  color: var(--landing-copy);
+}
+/* The choice points, marked so the syntax reads as the feature it is rather
+   than as stray punctuation. A pill, which is a shape and not a radius. */
+.variationGroup {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 1px 8px;
+  border: 1px dashed var(--landing-blue-border);
+  border-radius: 999px;
+  background: var(--landing-blue-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--landing-blue-deep);
+}
+.variationGrid {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+}
+@media (min-width: 720px) {
+  .variationGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.variationCard {
+  padding: 14px 16px;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-r-lg);
+  background: var(--landing-surface);
+}
+.variationCard header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.variationCard header strong {
+  font-size: 0.9rem;
+  color: var(--landing-copy);
+}
+.variationCard header span {
+  font-size: 0.78rem;
+  color: var(--landing-muted);
+}
+.variationCard p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--landing-copy);
+}
+.variationFoot {
+  margin: 0;
+  padding: 0 20px 20px;
+  font-size: 0.82rem;
+  color: var(--landing-muted);
+}

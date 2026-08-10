@@ -18,6 +18,7 @@ import {
   publicPriceQualifier,
 } from "@/lib/billing/publicPricing";
 import styles from "./landing.module.css";
+import { VariationDemo } from "./VariationDemo";
 
 function Check({ size = 18 }: { size?: number }) {
   return (
@@ -295,8 +296,8 @@ const WORKFLOW = [
   },
   {
     number: "02",
-    title: "Write once, sound personal every time",
-    copy: "Describe the offer and AI drafts it in your brand voice. Every email goes out personalized to that recipient, not blasted from a template.",
+    title: "Write once, send something different to everyone",
+    copy: "Describe the offer and AI drafts it in your brand voice. Then mark the phrases that could go either way, and Cadence builds hundreds of versions from that one message, so each recipient gets wording nobody else received. Personalized fields on top of that, never a template blasted at a list.",
   },
   {
     number: "03",
@@ -451,9 +452,29 @@ const FEATURES = [
     copy: "Describe the offer. AI writes it in your brand voice, personalized per lead, with subject variants to test. You approve every message before it sends.",
   },
   {
+    eyebrow: "Vary",
+    title: "Hundreds of versions of one email",
+    copy: "Mark the phrases that could go either way and Cadence writes the combinations for you. Every recipient gets different wording, chosen consistently so a retry never sends a second, differently worded email. The editor counts the versions as you type.",
+  },
+  {
     eyebrow: "Send",
     title: "Volume without the spam folder",
     copy: "Cadence spreads sends across your day at a human rhythm and holds a hard cap. Speed that burns your domain is the expensive kind.",
+  },
+  {
+    eyebrow: "Rotate",
+    title: "More inboxes, not more risk",
+    copy: "Connect several Gmail accounts and Cadence rotates across them, always sending from the one that has done least today. A new inbox ramps up over four weeks instead of sprinting on day one. Follow-ups stay in the thread they started, because a reply from a stranger is not a follow-up.",
+  },
+  {
+    eyebrow: "Brake",
+    title: "It stops itself before you notice",
+    copy: "A campaign that starts bouncing pauses on its own, per inbox, so one bad list cannot spend the reputation of the others. Addresses are checked at import, before a single send, because an address never emailed cannot hurt you.",
+  },
+  {
+    eyebrow: "Connect",
+    title: "It talks to the rest of your stack",
+    copy: "Scoped API keys and signed webhooks, so a reply, a bounce, an opt-out, or a closed deal reaches your CRM without anyone copying it across. Same signature scheme Stripe uses, so your existing verification code works.",
   },
   {
     eyebrow: "Measure",
@@ -1457,6 +1478,26 @@ export function Landing() {
                 ))}
               </div>
               <MessageDemo />
+            </div>
+          </div>
+        </section>
+
+        {/* Variation had shipped for weeks and this site never mentioned it, while
+            step 02 above claimed its benefit without naming the mechanism or
+            showing any proof. The demo below runs the real parser. */}
+        <section className={styles.featuresSection} id="variation">
+          <div className={styles.shell}>
+            <div className={styles.sectionHeading} data-reveal>
+              <span className={styles.eyebrow}>Why it lands</span>
+              <h2>Two hundred emails. No two the same.</h2>
+              <p>
+                Identical text sent to a hundred people is the easiest thing in the world for a spam
+                filter to catch. Write one message with a few choices in it, and Cadence sends a
+                genuinely different email to every recipient.
+              </p>
+            </div>
+            <div data-reveal>
+              <VariationDemo />
             </div>
           </div>
         </section>

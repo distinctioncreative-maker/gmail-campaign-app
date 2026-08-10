@@ -290,3 +290,45 @@ describe("landing-page experience", () => {
     );
   });
 });
+
+describe("the variation demo sells a feature that had shipped in silence", () => {
+  const demo = readFileSync("components/marketing/VariationDemo.tsx", "utf8");
+
+  it("runs the shipped parser rather than a mock-up", () => {
+    // The whole value of this demo is that it cannot lie. A hand-written mock
+    // would have been easier and would have become false the first time anyone
+    // changed the parser, on a page whose job is to make a promise.
+    expect(demo).toContain('from "@/lib/personalization/spintax"');
+    expect(demo).toContain("expandSpintax(");
+    expect(demo).toContain("analyzeSpintax(");
+  });
+
+  it("seeds each example the way the send worker does", () => {
+    // The worker seeds on the recipient, so the four bodies shown are the four
+    // those recipients would actually receive.
+    expect(demo).toMatch(/expandSpintax\(TEMPLATE, recipient\.name\)/);
+  });
+
+  it("shows the off state, which is the actual argument", () => {
+    // Four identical emails beside four different ones turns an abstract
+    // deliverability claim into something visible in a second.
+    expect(demo).toContain("const FLAT");
+    expect(demo).toMatch(/identical/i);
+  });
+
+  it("is reachable from the page and named in the copy", () => {
+    const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+    expect(landing).toContain("<VariationDemo />");
+    expect(landing).toContain('id="variation"');
+  });
+
+  it("names the shipped work the site used to omit entirely", () => {
+    // Spintax, inbox rotation, warmup, the bounce brake, and the API were all
+    // built and none of them appeared anywhere on the marketing site: it
+    // described a product several rounds out of date.
+    const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+    for (const claim of ["rotates across them", "ramps up over four weeks", "webhooks"]) {
+      expect(landing.toLowerCase(), claim).toContain(claim.toLowerCase());
+    }
+  });
+});
