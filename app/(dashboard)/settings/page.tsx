@@ -11,6 +11,7 @@ import { BillingCard } from "@/components/admin/BillingCard";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { DeleteAccountCard } from "@/components/account/DeleteAccountCard";
 import { ExportDataCard } from "@/components/account/ExportDataCard";
+import { SessionsCard } from "@/components/account/SessionsCard";
 import { ApiKeysCard } from "@/components/settings/ApiKeysCard";
 import { WebhooksCard } from "@/components/settings/WebhooksCard";
 import { exportSummary } from "@/lib/export/datasets";
@@ -107,6 +108,13 @@ export default async function SettingsPage({
             <WebhooksCard />
           </div>
         ) : null}
+        {/* Every member, not admins only: this is about your own account. */}
+        <div className="animate-rise" style={{ animationDelay: "98ms" }}>
+          <SessionsCard
+            lastLoginAt={ctx.user.lastLoginAt}
+            sessionsRevokedAt={ctx.user.sessionsRevokedAt}
+          />
+        </div>
         {/* Export sits immediately above deletion on purpose: taking your
             data out is the thing you want to do first if you are about to
             delete it, and finding that out afterwards is too late. */}

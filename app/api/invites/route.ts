@@ -7,6 +7,7 @@ import { promoteConsumerToWorkspace } from "@/lib/repositories/organizations";
 import { createInvite, listInvites, revokeInvite } from "@/lib/repositories/invites";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { purchasedSeatLimit } from "@/lib/billing/plans";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 /** List pending/accepted invites for the admin's org. */
 export const GET = handleApiErrors(async () => {
@@ -68,6 +69,12 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       { status: 409 }
     );
   }
+  await recordAudit(auditActor(ctx), {
+    action: "invite.created",
+    subject: email,
+    summary: `${ctx.email} invited ${email} as ${role}.`,
+    details: { role },
+  });
   return NextResponse.json({ ok: true, message: `Invitation ready for ${email}.` });
 });
 
@@ -78,5 +85,10 @@ export const DELETE = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireRole("ADMIN");
   const { email } = DeleteSchema.parse(await req.json());
   await revokeInvite(ctx.organizationId, email);
+  await recordAudit(auditActor(ctx), {
+    action: "invite.revoked",
+    subject: email,
+    summary: `${ctx.email} revoked the invitation for ${email}.`,
+  });
   return NextResponse.json({ ok: true });
 });

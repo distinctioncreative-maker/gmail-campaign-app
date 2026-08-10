@@ -50,7 +50,9 @@ service cloud.firestore {
         allow read: if isSelf(userId);
         allow write: if false;
       }
-      // Collision hashes, org settings, and suppressions are server-only.
+      // Everything else under an organization is server-only: collision hashes,
+      // org settings, suppressions, the append-only audit log, and webhook
+      // subscriptions, whose documents hold signing secrets.
       match /{path=**} {
         allow read, write: if false;
       }

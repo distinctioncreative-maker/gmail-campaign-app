@@ -4,6 +4,7 @@ import { oauthClient } from "@/lib/google/oauth";
 import { verifyOauthState } from "@/lib/google/oauthState";
 import { encryptSecret } from "@/lib/kms/crypto";
 import { saveConnection } from "@/lib/repositories/gmailConnections";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 import { updateOnboardingStatus } from "@/lib/repositories/users";
 import { env } from "@/lib/env";
 import { handleApiErrors } from "@/lib/api";
@@ -59,6 +60,12 @@ export const GET = handleApiErrors(async (req: NextRequest) => {
     connectedEmail,
     encryptedRefreshToken,
     grantedScopes: tokens.scope?.split(" ") ?? [],
+  });
+
+  await recordAudit(auditActor(ctx), {
+    action: "gmail.connected",
+    subject: connectedEmail,
+    summary: `${ctx.email} connected the mailbox ${connectedEmail}.`,
   });
 
   if (ctx.user.onboardingStatus === "NEW") {

@@ -5,6 +5,7 @@ import { handleApiErrors } from "@/lib/api";
 import { createApiKey, listApiKeys, revokeApiKey } from "@/lib/apiKeys/store";
 import { ApiScopeSchema } from "@/schemas/integration";
 import { describeScopes } from "@/lib/apiKeys/token";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 /**
  * Managing API keys.
@@ -41,6 +42,16 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     environment: input.environment,
   });
 
+  // A key is standing access to the workspace's data from outside it, and
+  // unlike a member it never appears on the Team page. If it is not in the log
+  // there is no surface that says it was ever issued.
+  await recordAudit(auditActor(ctx), {
+    action: "apikey.created",
+    subject: input.name,
+    summary: `${ctx.email} created the API key "${input.name}" (${describeScopes(input.scopes)}).`,
+    details: { environment: input.environment, scopes: input.scopes.join(" ") },
+  });
+
   return NextResponse.json({
     key,
     // The one and only time this is ever returned. Nothing stores it.
@@ -60,6 +71,12 @@ export const DELETE = handleApiErrors(async (req: NextRequest) => {
   if (!revoked) {
     return NextResponse.json({ error: "That key does not exist." }, { status: 404 });
   }
+  await recordAudit(auditActor(ctx), {
+    action: "apikey.revoked",
+    subject: keyId,
+    summary: `${ctx.email} revoked an API key.`,
+    details: { keyId },
+  });
   return NextResponse.json({
     ok: true,
     message: "Revoked. Any integration using it stops working immediately.",

@@ -8,6 +8,7 @@ import { decryptSecret } from "@/lib/kms/crypto";
 import { oauthClient } from "@/lib/google/oauth";
 import { redactErrorMessage } from "@/lib/observability/report";
 import { purgeApiKeys } from "@/lib/apiKeys/store";
+import { revokeAllSessionsQuietly } from "@/lib/auth/sessions";
 import {
   DeletedIdentitySchema,
   DeletionRequestSchema,
@@ -174,6 +175,13 @@ async function revokeGmail(userId: string): Promise<boolean> {
 /** Everything under one user, plus their membership row. */
 async function purgeUser(userId: string, organizationId: string): Promise<boolean> {
   const revoked = await revokeGmail(userId);
+  // End any live session for this identity. Without it, a cookie issued before
+  // the purge still verifies for up to five days, and requireUser would clear
+  // the PURGED tombstone and provision a fresh empty account without the person
+  // authenticating again. That is the intended outcome eventually, since a
+  // deletion is not a ban, but it should be a deliberate new sign-in rather than
+  // something an old cookie does by itself.
+  await revokeAllSessionsQuietly(userId);
   const db = firestore();
   // Recursive: campaigns, recipients, queue, templates, sequences, contacts,
   // lead lists, suppressions, notifications, counters, settings, and the

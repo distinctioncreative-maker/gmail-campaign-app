@@ -48,6 +48,18 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["lib/auth/session.ts", "lib/auth/requireUser.ts", "app/api/auth/session", "app/(dashboard)/layout.tsx", "app/(auth)/sign-in/page.tsx", "components/AccountMenu.tsx", "components/Sidebar.tsx", "components/MobileNav.tsx"],
       },
       {
+        id: "session-revocation",
+        name: "Sign out everywhere",
+        status: "shipped",
+        description:
+          "A session cookie lasts five days, so a cookie copied off a shared or stolen laptop stayed usable for five days and nobody could end it early: clearing it in one browser does nothing to a copy elsewhere. Settings now carries an all-or-nothing revocation that ends every session for the account including the caller's own, since sparing the current browser would leave the most recently used session alive, which is backwards if the reason for pressing it is a device that is no longer yours. The implementation is deliberately not a version counter on the user document, which would have meant a Firestore read on the authentication path of every request to reimplement a check that already runs: the session cookie is verified with checkRevoked, so Firebase was already validating every request against the account's tokensValidAfterTime and the only thing missing was anything that ever set it. One call sets it, no per-request cost is added, and there is no second source of truth to drift. The recorded timestamp is display metadata that no access decision reads, and a test asserts that stays true, because a default on a field added after documents exist would otherwise be indistinguishable from a real revocation. The purge revokes too, so a cookie issued before a deletion cannot quietly re-provision an account without anyone signing in again, while merely scheduling a deletion does not revoke: the grace period exists for changing your mind, and signing someone out at that moment makes cancelling harder than requesting. What this cannot do is list the sessions being ended, because Firebase does not expose the cookies it has issued, and the card says so rather than showing an invented device list someone would rely on.",
+        keyFiles: [
+          "lib/auth/sessions.ts",
+          "app/api/account/sessions/route.ts",
+          "components/account/SessionsCard.tsx",
+        ],
+      },
+      {
         id: "dual-mode-tenancy",
         name: "Dual-mode tenancy (Solo vs Workspace)",
         status: "shipped",
@@ -546,6 +558,21 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         status: "shipped",
         description: "Workspace rename, sending-mode toggle with a go-live checklist, AI master switch, billing, invites, and member role/active management, gated by tenancy capability.",
         keyFiles: ["app/(dashboard)/admin/page.tsx", "lib/tenancy/capabilities.ts"],
+      },
+      {
+        id: "audit-log",
+        name: "Activity log",
+        status: "shipped",
+        description:
+          "An append-only record, per workspace, of who changed what about the workspace itself. Campaign events already existed but they are campaign-scoped and describe sending; this describes administration, and it is the first thing a security review asks for and the thing that answers \"we did not do that\" when a customer disputes a change. Twenty-one actions across sending policy, access, mailboxes, credentials, data, and workspace identity, written at the sites that perform them: sending mode, AI writing, tracking domain, role changes, deactivation, invitations, Gmail connect and disconnect, API keys, webhooks, exports, deletion requests, session revocation, and renames. Two of those matter more than they look: a key and a webhook are standing access to the workspace's data from outside it, and unlike a member neither ever appears on the Team page, so without the log there is no surface that says one was ever issued. The action list is a closed enum rather than a free string, because an open one drifts into three spellings of the same event within a month and a log that cannot be filtered reliably is a log nobody reads. Actor email is snapshotted at write time rather than resolved at read time, since the entire point is to survive the thing it describes and a removed member leaves no document to resolve an id against. Details are restricted to scalars, so the log cannot accumulate into a second copy of the data deletion exists to destroy. Entries are written after the audited action succeeds and a failed write is reported rather than raised: the stricter discipline of refusing the action when it cannot be audited is right for a bank and wrong here, since a Firestore blip would then stop an admin turning off live sending. That trade is stated in the module. There is no update or delete anywhere, the read route is GET-only and admin-only, and a test asserts no route touches the collection directly; the only thing that removes entries is the workspace purge, because a record of a workspace we promised to destroy is still a record.",
+        keyFiles: [
+          "schemas/audit.ts",
+          "lib/audit/log.ts",
+          "lib/audit/actions.ts",
+          "app/api/admin/audit/route.ts",
+          "app/(dashboard)/admin/audit/page.tsx",
+          "components/admin/AuditLogList.tsx",
+        ],
       },
       {
         id: "sending-safety-gate",

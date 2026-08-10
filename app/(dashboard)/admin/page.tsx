@@ -53,6 +53,21 @@ export default async function AdminPage() {
       </div>
       <div className="mt-6">
         <Link
+          href="/admin/audit"
+          className="card card-hover flex items-center justify-between p-6 no-underline"
+        >
+          <div>
+            <h2 className="font-medium">Activity log</h2>
+            <p className="mt-1 text-sm text-muted">
+              Who changed the sending mode, roles, mailboxes, keys, and webhooks, and who exported
+              or deleted data.
+            </p>
+          </div>
+          <span aria-hidden className="text-muted">→</span>
+        </Link>
+      </div>
+      <div className="mt-6">
+        <Link
           href="/admin/waitlist"
           className="card card-hover flex items-center justify-between p-6 no-underline"
         >

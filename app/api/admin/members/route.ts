@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { getOrgSettings, listMembers, setMemberAccess, setMemberActive } from "@/lib/repositories/orgSettings";
 import { purchasedSeatLimit } from "@/lib/billing/plans";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 export const GET = handleApiErrors(async () => {
   const ctx = await requireRole("ADMIN");
@@ -20,7 +21,15 @@ export const PATCH = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireRole("ADMIN");
   const { userId, accessRoleId, active } = PatchSchema.parse(await req.json());
 
-  const settings = await getOrgSettings(ctx.organizationId);
+  const [settings, members] = await Promise.all([
+    getOrgSettings(ctx.organizationId),
+    // Only for the audit entry: an entry naming a raw user id answers nobody's
+    // question, and after a removal there is no document left to resolve it
+    // against.
+    listMembers(ctx.organizationId),
+  ]);
+  const targetEmail = members.find((m) => m.userId === userId)?.email ?? userId;
+  const priorRole = members.find((m) => m.userId === userId)?.role ?? null;
   const builtInRole = accessRoleId?.startsWith("builtin:")
     ? accessRoleId.slice("builtin:".length)
     : null;
@@ -63,8 +72,21 @@ export const PATCH = handleApiErrors(async (req: NextRequest) => {
       );
     }
   }
+  if (active !== undefined) {
+    await recordAudit(auditActor(ctx), {
+      action: active ? "member.reactivated" : "member.deactivated",
+      subject: targetEmail,
+      summary: `${ctx.email} ${active ? "reactivated" : "deactivated"} ${targetEmail}.`,
+    });
+  }
   if (resolvedRole) {
     await setMemberAccess(ctx.organizationId, userId, resolvedRole, customRole);
+    await recordAudit(auditActor(ctx), {
+      action: "member.role_changed",
+      subject: targetEmail,
+      summary: `${ctx.email} changed ${targetEmail} to ${customRole?.name ?? resolvedRole}.`,
+      details: { from: priorRole, to: resolvedRole, label: customRole?.name ?? null },
+    });
   }
   return NextResponse.json({ ok: true });
 });

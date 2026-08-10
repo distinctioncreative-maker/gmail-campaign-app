@@ -69,6 +69,15 @@ export const UserSchema = z.object({
    * lib/onboarding/seed.ts also requires an empty template list: this default
    * alone would hand three templates to every established account. */
   startersSeededAt: EpochMillis.nullable().default(null),
+  /** When this user last signed every device out.
+   *
+   * Display only. The revocation itself lives in Firebase Auth as
+   * `tokensValidAfterTime`, which `verifySession` already checks on every
+   * request, so no access decision reads this field. That is what makes the
+   * `.default(null)` safe here: the worst it can do is make the Settings card
+   * say "never" for an account that revoked before the field existed. It can
+   * never let a revoked session through. See lib/auth/sessions.ts. */
+  sessionsRevokedAt: EpochMillis.nullable().default(null),
 });
 export type User = z.infer<typeof UserSchema>;
 

@@ -10,6 +10,7 @@ organizations/{organizationId}/organizationSettings/main — sending, AI, billin
 organizations/{organizationId}/suppressions/…   — org-scoped suppressions
 organizations/{organizationId}/teamCollisionHashes/{hash}
 organizations/{organizationId}/invites/{inviteId}
+organizations/{organizationId}/auditLog/{entryId}        — append-only admin trail
 organizations/{organizationId}/webhookEndpoints/{endpointId} — subscription + signing secret
 organizations/{organizationId}/webhookDeliveries/{deliveryId} — signed body, attempts, status
 
@@ -93,6 +94,14 @@ See `schemas/*.ts` for authoritative field lists:
     NaN width renders a progress bar full rather than empty.
 - `suppression.ts` — Suppression (USER / ORGANIZATION scope)
 - `parsedLead.ts` — pre-import parsed lead + warnings + confidence
+- `audit.ts` — AuditEntry, and a closed enum of the actions worth recording
+  - `actorEmail` is snapshotted at write time, not resolved at read time: a
+    removed member leaves no document to resolve an id against, and the point of
+    an entry is to outlive what it describes.
+  - `details` is restricted to scalars so the log cannot grow into a second copy
+    of the data account deletion exists to destroy.
+  - Nothing updates or deletes an entry. The only removal is the organization's
+    `recursiveDelete` during a workspace purge.
 - `integration.ts` — ApiKey, WebhookEndpoint, WebhookDelivery
   - An API key document's **id is the SHA-256 of the secret**, which makes
     verification a single point read. The secret is never stored. `ownerUserId`

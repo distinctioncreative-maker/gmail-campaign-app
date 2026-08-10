@@ -5,6 +5,7 @@ import { handleApiErrors } from "@/lib/api";
 import { enforceUserRateLimit, RATE_LIMITS } from "@/lib/util/userRateLimit";
 import { csvStream, settingsSnapshot } from "@/lib/export/datasets";
 import { EXPORT_DATASETS, exportFilename } from "@/lib/export/serialize";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 /** Cloud Run buffers a static response; a data export has to stream. */
 export const dynamic = "force-dynamic";
@@ -34,6 +35,15 @@ export const GET = handleApiErrors(async (req: NextRequest) => {
   }
   const dataset = parsed.data;
   const day = new Date().toISOString().slice(0, 10);
+
+  // Before the stream rather than after: the response is streamed, so there is
+  // no "after" inside this handler, and an export that began is the fact worth
+  // recording.
+  await recordAudit(auditActor(ctx), {
+    action: "data.exported",
+    summary: `${ctx.email} exported ${dataset}.`,
+    details: { dataset },
+  });
 
   if (dataset === "settings") {
     const snapshot = await settingsSnapshot(ctx);

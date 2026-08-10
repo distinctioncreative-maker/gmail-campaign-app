@@ -4,6 +4,7 @@ import { requireRole, requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { getOrgSettings, saveTrackingDomain } from "@/lib/repositories/orgSettings";
 import { verifyTrackingDomain } from "@/lib/tracking/verifyDomain";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 import {
   describeDomainStatus,
   dnsInstruction,
@@ -55,6 +56,12 @@ export const PUT = handleApiErrors(async (req: NextRequest) => {
     lastCheckedAt: now,
   };
   await saveTrackingDomain(ctx.organizationId, domain);
+  await recordAudit(auditActor(ctx), {
+    action: "sending.tracking_domain_changed",
+    subject: normalized.host,
+    summary: `${ctx.email} set the tracking domain to ${normalized.host}.`,
+    details: { status: domain.status },
+  });
 
   return NextResponse.json({
     domain,
@@ -103,6 +110,11 @@ export const DELETE = handleApiErrors(async () => {
     status: "NONE",
     verifiedAt: null,
     lastCheckedAt: Date.now(),
+  });
+  await recordAudit(auditActor(ctx), {
+    action: "sending.tracking_domain_changed",
+    summary: `${ctx.email} removed the custom tracking domain.`,
+    details: { status: "NONE" },
   });
   return NextResponse.json({
     ok: true,

@@ -10,6 +10,7 @@ import {
 import { decryptSecret } from "@/lib/kms/crypto";
 import { oauthClient } from "@/lib/google/oauth";
 import { handleApiErrors } from "@/lib/api";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 /** Disconnect Gmail: revoke the Google grant, then mark the stored
  * connection revoked (token is overwritten, never returned). */
@@ -42,5 +43,10 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   }
 
   await markDisconnected(ctx.userId, connection.connectionId);
+  await recordAudit(auditActor(ctx), {
+    action: "gmail.disconnected",
+    subject: connection.connectedEmail,
+    summary: `${ctx.email} disconnected the mailbox ${connection.connectedEmail}.`,
+  });
   return NextResponse.json({ ok: true });
 });

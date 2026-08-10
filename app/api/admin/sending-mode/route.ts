@@ -7,6 +7,7 @@ import { resolveSendingState } from "@/lib/sending/mode";
 import { listMembers } from "@/lib/repositories/orgSettings";
 import { getConnection } from "@/lib/repositories/gmailConnections";
 import { env } from "@/lib/env";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 /** Current sending state + a go-live readiness checklist. */
 export const GET = handleApiErrors(async () => {
@@ -70,5 +71,16 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   }
 
   await setSendingMode(ctx.organizationId, mode, ctx.userId);
+  // The most consequential switch in the product: after this, mail leaves for
+  // real people. Recorded after the write, so the log never claims a change
+  // that did not take.
+  await recordAudit(auditActor(ctx), {
+    action: "sending.mode_changed",
+    summary:
+      mode === "LIVE"
+        ? `${ctx.email} switched the workspace to live sending.`
+        : `${ctx.email} switched the workspace back to test sending.`,
+    details: { from: state.mode, to: mode },
+  });
   return NextResponse.json({ ok: true, mode });
 });

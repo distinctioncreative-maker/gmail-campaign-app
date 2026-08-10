@@ -292,31 +292,87 @@ specifically the bulk data routes.
 `lib/util/userRateLimit.ts`, mapped to a 429 with a specific message. A sweep
 in `tests/unit/apiGuards.test.ts` fails if any of them loses its limiter.
 
-### 2.2 No audit log — **M** — required for enterprise, useful for support
+### 2.2 Audit log — **DONE**
 
-**Missing.** `grep -rn "auditLog\|AuditEntry"` returns nothing. Campaign
-events exist but are campaign-scoped and describe sending, not administration.
+**Was.** `grep -rn "auditLog\|AuditEntry"` returned nothing. Campaign events
+existed but they are campaign-scoped and describe sending, not administration.
+Nobody could answer who switched the workspace to live sending, who removed a
+member, or who exported the lead list.
 
-**Why.** Who switched the workspace to live sending, who removed a member, who
-exported data. First thing a security review asks for, and the thing that
-answers "we did not do that" when a customer disputes.
+**Shipped.** An append-only `auditLog` subcollection per organization, twenty-one
+actions across sending policy, access, mailboxes, credentials, data, and
+workspace identity, with an admin-only page at `/admin/audit`.
 
-**Plan.** Append-only `auditLog` subcollection per organization. Write on:
-sending-mode change, member add/remove/role change, Gmail connect/disconnect,
-data export, deletion, API key issue/revoke. Admin-visible, never editable,
-retained on the schedule the legal work in the go-live checklist defines.
+Decisions worth recording:
 
-### 2.3 Session and token hardening — **S**
+- **The action list is a closed enum, not a free string.** An open one drifts
+  into three spellings of the same event within a month, and a log that cannot be
+  filtered reliably is a log nobody reads. A test asserts the catalog in
+  `lib/audit/actions.ts` and the schema enum have not drifted apart, and that
+  every action has a label, a category, and a weight.
+- **Actor email is snapshotted at write time.** The whole point of an entry is to
+  survive the thing it describes, and a removed member leaves no document to
+  resolve an id against. An entry reading `u_9fA2...` answers nobody's question.
+- **Details are scalars only.** An audit log that accumulates payloads becomes a
+  second copy of exactly the data deletion exists to destroy.
+- **Written after the action succeeds, and never allowed to fail it.** The
+  stricter discipline, refusing the action when it cannot be audited, is right for
+  a bank and wrong here: a Firestore blip would stop an admin turning off live
+  sending. So an entry can be missing when the write failed, that failure goes to
+  the error sink, and what cannot happen is an entry describing something that did
+  not occur. The trade is stated in the module rather than left implicit.
+- **API keys and webhooks were the two most valuable additions.** Each is
+  standing access to the workspace's data from outside it, and unlike a member
+  neither appears on the Team page, so without the log there was no surface
+  anywhere that said one had ever been issued.
+- **Nothing can write history.** No update, no delete, the read route is GET-only
+  and admin-only, and a sweep asserts no route touches the collection directly.
+  The only thing that removes entries is the workspace purge, because a record of
+  a workspace we promised to destroy is still a record.
 
-**Present:** HttpOnly session cookie, signed 10-minute OAuth state JWT bound
-to the user, KMS-encrypted refresh tokens, revocation on disconnect.
+An unknown action renders as NOTABLE rather than ROUTINE. A stored entry could
+name an action from another deployment, and quietly presenting the unknown as
+unimportant is the wrong way round for a security log.
 
-**Gaps:** no session revocation list, so a stolen cookie stays valid to its
-natural expiry; no visible "active sessions" surface.
+### 2.3 Session and token hardening — **DONE**
 
-**Plan.** A `tokenVersion` on the user, bumped on password-equivalent events
-and on explicit "sign out everywhere". Cheap, and it makes the deletion work
-in 4.2 actually terminal.
+**Was.** HttpOnly session cookie, signed 10-minute OAuth state JWT bound to the
+user, KMS-encrypted refresh tokens, revocation on Gmail disconnect. The gap was a
+five-day cookie nobody could end early: clearing it in one browser does nothing
+to a copy on a laptop you no longer control.
+
+**Shipped, and deliberately not the way this file planned it.** The plan called
+for a `tokenVersion` on the user document. Building it would have added a
+Firestore read to the authentication path of every request in order to
+reimplement a check that already runs: `lib/auth/session.ts` calls
+`verifySessionCookie(cookie, true)`, and that second argument is `checkRevoked`,
+which validates the cookie against the account's `tokensValidAfterTime` in
+Firebase Auth. Revocation was already enforced on every single request. The only
+thing missing was anything that ever set the timestamp.
+
+So `revokeAllSessions` calls `revokeRefreshTokens`, every cookie issued earlier
+stops verifying immediately, no per-request cost is added, and there is no second
+source of truth to drift. A test asserts that `true` is still there, because
+without it the mechanism silently becomes decorative and nothing else in the suite
+would fail.
+
+- **Signing out ends the caller's own session too.** Sparing the current browser
+  would leave the most recently used session alive, which is backwards if the
+  reason for pressing the button is a device that is no longer yours.
+- **`sessionsRevokedAt` is display metadata and nothing authorises against it.**
+  A test asserts `requireUser` and `session.ts` never read it: this is the eighth
+  time a Zod default on a field added after documents exist has needed thinking
+  about, and here the default is only safe because no access decision consults it.
+- **The purge revokes; scheduling a deletion does not.** Without revocation at
+  purge, a cookie issued beforehand still verifies for five days and `requireUser`
+  would clear the tombstone and provision a fresh account with nobody signing in
+  again. Revoking at *request* time would be worse than useless: the grace period
+  exists for changing your mind, and signing someone out the moment they schedule
+  a deletion makes cancelling harder than requesting.
+- **There is no device list, and the card says so.** Firebase does not expose the
+  session cookies it has issued, so any list would be invented, and someone would
+  read "1 active session" and conclude the copy they are worried about is not
+  there. All or nothing, stated plainly, is the honest interface.
 
 ---
 
@@ -550,7 +606,9 @@ Skeletons on the slowest three pages rather than a spinner.
 7. ~~**1.5 API and webhooks**~~ — done. Keys, the versioned endpoint, emission,
    the delivery worker, and subscription management all ship.
 8. ~~**1.6 custom tracking domain**~~ — code done; needs a wildcard domain mapping.
-8. Everything else as it earns priority.
-
-Items 1 and 2 are shipped. They took under a day between them and removed the
-two sharpest edges.
+9. ~~**2.2 audit log**~~ and ~~**2.3 session hardening**~~ — done together. The
+   audit log had more to record after 1.5 than before it: a key and a webhook are
+   both standing external access that appears on no other surface.
+10. Everything remaining, in the order it earns priority: **3.1 reply rate into
+    pacing**, **1.4 catch-all verification**, **5.2 saved views**, **5.5 polish**,
+    then **1.2 lead sourcing**, which is the largest piece left on the board.

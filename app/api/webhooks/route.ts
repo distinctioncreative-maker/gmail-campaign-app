@@ -11,6 +11,7 @@ import {
   listWebhookEndpoints,
   setWebhookEndpointEnabled,
 } from "@/lib/webhooks/store";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 /**
  * Managing webhook subscriptions.
@@ -72,6 +73,15 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
+  // Same reasoning as an API key, pointed the other way: this decides where
+  // the workspace's reply and deal data is sent.
+  await recordAudit(auditActor(ctx), {
+    action: "webhook.created",
+    subject: verdict.url,
+    summary: `${ctx.email} added a webhook to ${verdict.url}.`,
+    details: { events: input.events.join(" ") },
+  });
+
   return NextResponse.json({
     endpoint: result.endpoint,
     // Shown once, for the same reason an API key is: a receiver needs it to
@@ -98,6 +108,11 @@ export const PATCH = handleApiErrors(async (req: NextRequest) => {
     input.enabled
   );
   if (!ok) return NextResponse.json({ error: "That subscription does not exist." }, { status: 404 });
+  await recordAudit(auditActor(ctx), {
+    action: input.enabled ? "webhook.enabled" : "webhook.disabled",
+    subject: input.endpointId,
+    summary: `${ctx.email} turned a webhook ${input.enabled ? "on" : "off"}.`,
+  });
   return NextResponse.json({ ok: true, enabled: input.enabled });
 });
 
@@ -112,6 +127,11 @@ export const DELETE = handleApiErrors(async (req: NextRequest) => {
   if (!removed) {
     return NextResponse.json({ error: "That subscription does not exist." }, { status: 404 });
   }
+  await recordAudit(auditActor(ctx), {
+    action: "webhook.deleted",
+    subject: endpointId,
+    summary: `${ctx.email} removed a webhook.`,
+  });
   return NextResponse.json({
     ok: true,
     message: "Removed. Queued deliveries for it will not be sent.",

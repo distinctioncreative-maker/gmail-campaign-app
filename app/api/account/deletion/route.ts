@@ -9,6 +9,7 @@ import {
 } from "@/lib/account/deletion";
 import { DeletionScopeSchema } from "@/schemas/deletion";
 import { describeRemaining, GRACE_PERIOD_DAYS } from "@/lib/account/eligibility";
+import { auditActor, recordAudit } from "@/lib/audit/log";
 
 /** What the customer would be agreeing to, and whether they may. */
 export const GET = handleApiErrors(async (req: NextRequest) => {
@@ -44,6 +45,11 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   }
 
   const request = await requestDeletion(ctx, input.scope);
+  await recordAudit(auditActor(ctx), {
+    action: "account.deletion_requested",
+    summary: `${ctx.email} scheduled deletion of the ${request.scope === "WORKSPACE" ? "whole workspace" : "account"}.`,
+    details: { scope: request.scope, purgeAfter: request.purgeAfter },
+  });
   return NextResponse.json({
     request,
     message: `Scheduled. ${describeRemaining(request.purgeAfter, Date.now())} You can cancel any time before then.`,
@@ -54,6 +60,12 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
 export const DELETE = handleApiErrors(async () => {
   const ctx = await requireUser();
   const cancelled = await cancelDeletion(ctx);
+  if (cancelled) {
+    await recordAudit(auditActor(ctx), {
+      action: "account.deletion_cancelled",
+      summary: `${ctx.email} cancelled the scheduled deletion.`,
+    });
+  }
   return NextResponse.json({
     cancelled,
     message: cancelled
