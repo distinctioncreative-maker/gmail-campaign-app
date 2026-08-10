@@ -377,6 +377,49 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         ],
       },
       {
+        id: "lead-sourcing",
+        name: "Find leads from a data provider",
+        status: "beta",
+        description:
+          "Search a data provider by job title, industry, location, staff count, and keywords, preview the results with the same address checks an import gets, and add the ones worth emailing. Running out of list is the most common reason an activated account goes quiet, and until now import was the only way a lead entered the product. We deliberately do not build a data provider: compiling contact data is a business rather than a feature, so this is an interface with one adapter behind it, which keeps the vendor swappable, the cost pass-through, and every line above the adapter ignorant of whose data it is. Results normalise into the same ParsedLead shape a pasted CSV produces, so a sourced lead goes through the identical verification, suppression checks, preview table, and import route, because a second import path would be a second place for a suppressed address to get through. Sourcing is the only thing in the product with a real per-row cost to us, which is why there is a monthly credit ceiling per workspace, reserved inside a transaction before the vendor call and reconciled to what was actually charged afterwards: charging only on the way back would let concurrent searches all read the same balance and every one of them pass. A search with no narrowing filter is refused outright, because it returns the vendor's whole database a page at a time and bills for every page. A person the vendor will not release an address for is dropped rather than imported as a blank, since those become contacts that can never be emailed while quietly making every rate in reporting wrong, and the count of them is reported rather than hidden. A guessed address is flagged in the preview where someone can still decline it. Marked beta because no key exists on this deployment: the adapter is written from the vendor's documented request and response shape and has never made a live call, the same status the Stripe integration shipped in.",
+        keyFiles: [
+          "lib/sourcing/provider.ts",
+          "lib/sourcing/apollo.ts",
+          "lib/sourcing/normalize.ts",
+          "lib/sourcing/quota.ts",
+          "app/api/sourcing/search/route.ts",
+          "components/sourcing/SourcingPanel.tsx",
+        ],
+      },
+      {
+        id: "saved-views",
+        name: "Saved views",
+        status: "shipped",
+        description:
+          "A named filter set on the lead directory, saved per person and shown as tabs above the table. Every visit started from the default filter, so anyone whose actual job is \"the untouched leads in the Northeast list\" rebuilt that from four controls each time they opened the page. The active tab is derived from the live controls rather than stored as a selection: tracking it separately means the highlight survives someone changing a filter, and then the tab is claiming to describe a table it no longer describes. Saving is only offered when something is actually filtered, because an interface that lets you save the default produces a tab called \"Everything\" that does nothing. The stored payload is a flat map of control values rather than a typed shape per surface, so adding a filter is not a migration; the cost is that a view can name a control that no longer exists, which is why applying one ignores unknown keys and falls back to the table's own defaults rather than failing on a deploy the customer had nothing to do with. Views are per user, not per workspace: two reps with different territories would fight over one tab strip. Saving over a name you already have updates that view instead of erroring, since that is the obvious way to change one.",
+        keyFiles: [
+          "lib/views/savedViews.ts",
+          "app/api/saved-views/route.ts",
+          "components/views/SavedViewBar.tsx",
+          "tests/unit/saved-views.test.ts",
+        ],
+      },
+      {
+        id: "interface-polish",
+        name: "Error boundaries, 404s, skeletons, keyboard nav",
+        status: "shipped",
+        description:
+          "Four gaps that each showed up as the product looking broken rather than busy. There was no error boundary anywhere, so a single page that threw fell back to Next.js's own screen: on a production build that is a bare \"Application error\" with no sidebar, and the only way out of one broken page was the browser's back button. There are now boundaries at the dashboard and the root, plus a global one that renders its own html and body because the layout that normally provides them is the thing that failed. None of them display the error message, which is written by whatever threw and can carry document paths, ids, and occasionally tokens; the digest is shown instead, because that is the value that matches the server log line. A 404 inside the app keeps the navigation and points at Recently Deleted, since a stale link to one campaign should not eject someone from the product. The three pages that fan out across the most reads, Reports, Leads, and Replies, now show a skeleton in roughly their own shape instead of a blank screen. And the reply inbox takes j and k to move, Enter to open, Escape to clear, driven off the DOM so the table stays a server component rather than shipping every reply as props for the sake of two keystrokes; the shortcut handler refuses to fire while someone is typing or holding a modifier, because a single-letter shortcut that hijacks a search box is worse than no shortcut at all. The backlog also asked for an archive key, which is not built: there is no archive action on a reply anywhere in the product, and binding a key to it would have meant inventing a feature inside a keyboard shortcut.",
+        keyFiles: [
+          "app/(dashboard)/error.tsx",
+          "app/global-error.tsx",
+          "app/(dashboard)/not-found.tsx",
+          "components/ui/PageSkeleton.tsx",
+          "components/replies/RepliesKeyboardNav.tsx",
+          "lib/ui/keyboard.ts",
+        ],
+      },
+      {
         id: "engagement-pacing",
         name: "Reply rate feeds pacing",
         status: "shipped",
@@ -790,9 +833,9 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
       },
       {
         id: "contact-enrichment",
-        name: "Reviewable lead research and sourcing",
+        name: "Enrichment beyond an address",
         status: "planned",
-        description: "Future opt-in lead research and compliant sourcing with visible provenance, customer review, consent and acceptable-use controls, caching, strict cost limits, deletion support, and protections against fabricated personalization. Do not ship broad scraping or restricted-source collection without a separate legal, privacy, provider-terms, and abuse review.",
+        description: "Searching a provider for people who match now ships (see Find leads from a data provider). What remains is enrichment of contacts already in the directory: filling in a title, a company size, or a recent signal on a lead someone imported themselves, with visible provenance for every field so a rep can tell what came from a vendor and what came from their own list. The guardrails on the shipped half apply here too and are the reason this is separate rather than an extension: caching so the same lead is not paid for twice, deletion support so enrichment does not resurrect data a customer had destroyed, and protection against fabricated personalization, since an invented detail in an opening line is worse than a generic one. Broad scraping and restricted-source collection stay out until there is a separate legal, privacy, provider-terms, and abuse review.",
       },
       {
         id: "multichannel",

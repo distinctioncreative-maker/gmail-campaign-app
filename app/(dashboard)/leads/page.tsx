@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { countContacts, listContactsPage } from "@/lib/repositories/contacts";
 import { listLeadLists } from "@/lib/repositories/leadLists";
@@ -68,6 +69,11 @@ export default async function LeadsPage({
       <PageHeader
         title="Leads"
         description="Build reusable audiences, understand engagement, and keep every campaign list clean."
+        actions={
+          <Link href="/leads/sourcing" className="btn-secondary min-h-11 px-3 py-2 text-sm no-underline">
+            Find leads
+          </Link>
+        }
       />
 
       {contacts.length > 0 ? (

@@ -43,5 +43,8 @@ export function useSort<T, K extends string>(
     );
   }
 
-  return { sorted, sort, toggle };
+  // `setSort` is exposed so a saved view can restore the column someone chose
+  // earlier. Without it a view could restore the filters and silently reset the
+  // sort, which is half of what most views are actually about.
+  return { sorted, sort, toggle, setSort };
 }

@@ -7,6 +7,7 @@ import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
 import { DraftReplyButton } from "@/components/replies/DraftReplyButton";
 import { OutcomeControl } from "@/components/replies/OutcomeControl";
 import { ReplyThreadViewer } from "@/components/replies/ReplyThreadViewer";
+import { RepliesKeyboardNav } from "@/components/replies/RepliesKeyboardNav";
 import { formatDuration } from "@/lib/analytics/metrics";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
@@ -252,6 +253,7 @@ export default async function RepliesPage() {
           </ul>
 
           {/* Desktop: table */}
+          <RepliesKeyboardNav />
           <div className="hidden overflow-x-auto card sm:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border text-xs uppercase text-muted">
@@ -268,6 +270,10 @@ export default async function RepliesPage() {
                 {rows.map((r) => (
                   <tr
                     key={`${r.campaignId}-${r.contactId}-${r.repliedAt}`}
+                    // Read by components/replies/RepliesKeyboardNav.tsx, which
+                    // is what keeps this table a server component.
+                    data-reply-row=""
+                    data-reply-href={`/leads/${r.contactId}`}
                     className="border-b border-border last:border-0 hover:bg-surface-2"
                   >
                     <td className="px-4 py-3">

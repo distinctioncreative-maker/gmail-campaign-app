@@ -26,6 +26,13 @@ const EnvSchema = z.object({
   // which is fine while someone watches the collection and not fine once
   // customers are paying.
   SUPPORT_WEBHOOK_URL: z.string().default(""),
+  // Lead sourcing. Unset means the feature is absent rather than broken: see
+  // lib/sourcing/registry.ts. This is the only key in the file that buys
+  // something per row, which is why lib/sourcing/quota.ts exists.
+  APOLLO_API_KEY: z.string().default(""),
+  // Monthly sourcing credits per workspace. A ceiling on our own cost, not a
+  // price: nothing bills for these yet.
+  SOURCING_MONTHLY_CREDITS: z.coerce.number().int().nonnegative().default(250),
   // Stripe billing. All optional: when STRIPE_SECRET_KEY is unset, billing
   // is a no-op and the pricing UI stays "coming soon".
   STRIPE_SECRET_KEY: z.string().default(""),

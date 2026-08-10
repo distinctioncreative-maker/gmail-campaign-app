@@ -15,6 +15,7 @@ import {
   type OrganizeLeadAction,
 } from "@/components/leads/BulkLeadOrganizer";
 import { LocalTime } from "@/components/LocalTime";
+import { SavedViewBar } from "@/components/views/SavedViewBar";
 
 export interface ContactRow {
   contactId: string;
@@ -111,7 +112,7 @@ export function ContactsTable({
           ? { label: "Contacted before", className: "bg-info-soft text-info" }
           : { label: "Ready", className: "bg-success-soft text-success" };
 
-  const { sorted, sort, toggle } = useSort<
+  const { sorted, sort, toggle, setSort } = useSort<
     ContactRow,
     "name" | "business" | "email" | "phone" | "engagement" | "status" | "added"
   >(
@@ -204,8 +205,42 @@ export function ContactsTable({
 
   const filtersActive = search.trim() !== "" || filter !== "all" || tagFilter !== "" || listFilter !== "";
 
+  /** The four controls plus the sort, as the shape a saved view stores. Search
+   * text is included: "the leads at Acme" is a view, and leaving the term out
+   * would restore a view that shows the wrong rows. */
+  const viewState = {
+    filters: { search, status: filter, tag: tagFilter, list: listFilter },
+    sortKey: sort.key,
+    sortDir: sort.dir,
+  };
+
+  function applyView(next: { filters: Record<string, string>; sortKey: string; sortDir: "asc" | "desc" }) {
+    setSearch(next.filters.search ?? "");
+    // Falls back to the table's own default when a stored view names a filter
+    // value this build no longer offers, rather than leaving the control in an
+    // impossible state.
+    const status = next.filters.status ?? "all";
+    setFilter(FILTERS.some((f) => f.id === status) ? (status as Filter) : "all");
+    setTagFilter(next.filters.tag ?? "");
+    setListFilter(next.filters.list ?? "");
+    if (next.sortKey !== "") {
+      setSort({ key: next.sortKey as typeof sort.key, dir: next.sortDir });
+    }
+    setSelected(new Set());
+  }
+
+  function resetView() {
+    applyView({ filters: {}, sortKey: "name", sortDir: "asc" });
+  }
+
   return (
     <div>
+      <SavedViewBar
+        surface="LEADS"
+        current={viewState}
+        onApply={applyView}
+        onReset={resetView}
+      />
       <div className="card grid gap-3 p-3 xl:grid-cols-[minmax(16rem,1fr)_auto] xl:items-end">
         <div className="relative w-full">
           <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted">

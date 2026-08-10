@@ -106,6 +106,17 @@ export const RATE_LIMITS = {
     message:
       "That is a lot of support requests at once. Reply to the one you already sent and we will pick it up there.",
   },
+  /** Each search is a paid call to a data vendor. The credit ceiling in
+   * lib/sourcing/quota.ts bounds the money; this bounds the request rate, so a
+   * loop cannot burn a whole month's credits in a few seconds and leave the
+   * workspace unable to search for the rest of it. */
+  leadSourcing: {
+    bucket: "lead-sourcing",
+    limit: 60,
+    windowMs: HOUR,
+    message:
+      "That is a lot of searches at once. Each one costs a sourcing credit, so give it a minute and refine the filters rather than paging through.",
+  },
   /** A test delivery makes our server post to an address the customer chose.
    * This is the one limit here that bounds an *outbound* request rather than our
    * own cost, so it stays modest: wiring up a receiver takes a handful of tries

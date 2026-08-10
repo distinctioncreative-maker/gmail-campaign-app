@@ -81,18 +81,43 @@ this item.
 three healthy inboxes or two clean ones and one on fire, and those call for
 completely different actions.
 
-### 1.2 Lead sourcing — **L** — the reason accounts go quiet
+### 1.2 Lead sourcing — **DONE (code), needs a vendor account**
 
-**Missing.** Registry has it as `planned`. Import is the only way leads enter.
+**Was.** Import was the only way a lead entered the product, and an activated
+customer who runs out of list stops using it.
 
-**Why.** An activated customer who runs out of list stops using the product.
-It is the most common cause of quiet churn in this category.
+**Shipped** at `/leads/sourcing`: search by title, industry, location, staff
+count, and keywords; preview with the same address checks an import gets; add the
+ones worth emailing.
 
-**Plan.** Do not build a data provider. Integrate one (Apollo, Clearbit, or
-similar) behind an interface, so the vendor is swappable and the cost is
-pass-through. Search by firmographics, preview, and import straight into a
-lead list with the verification from 1.4 already applied. Charge for it
-separately: it is a real marginal cost.
+- **The interface is the point.** `lib/sourcing/provider.ts` is vendor-neutral
+  and `lib/sourcing/apollo.ts` is the only file that knows whose data it is.
+  Compiling contact data is a business, not a feature, and doing it badly is
+  worse than not doing it.
+- **Results normalise into `ParsedLead`**, the shape every existing import path
+  already speaks, so a sourced lead gets the same verification, the same
+  suppression checks, the same preview table, and the same import route. A second
+  import path would be a second place for a suppressed address to get through.
+- **Credits are reserved before the vendor call, not after.** Charging on the way
+  back would let concurrent searches all read the same remaining balance and
+  every one of them pass, which is precisely what a spending ceiling exists to
+  stop. Over-reserving and refunding the difference errs toward spending less of
+  the customer's money than they asked for.
+- **An unfiltered search is refused.** It returns the vendor's entire database a
+  page at a time and bills for every page.
+- **A person whose address the vendor withheld is dropped**, not imported as a
+  blank: those become contacts that can never be emailed while quietly making
+  every rate in reporting wrong. The count of them is reported, because a result
+  count that hid them would make the search look worse than it is while the
+  credits went anyway.
+- **A guessed address is flagged in the preview**, which is the last point where
+  someone can decline it.
+
+**Not verified, and this is the material gap.** There is no provider key on this
+deployment, so the adapter is written from the vendor's documented request and
+response shape and has never made a live call. Expect to correct a field name.
+Billing for credits is also not wired: the ceiling bounds our cost, and no price
+is attached to it yet.
 
 ### 1.3 Spintax and message variation — **DONE**
 
@@ -590,13 +615,34 @@ rather than left to be discovered. Real substring search over a collection that
 size needs a search index; loading five thousand documents per keystroke to
 fake one would be worse than the stated limit.
 
-### 5.2 No saved views or filters — **M**
+### 5.2 Saved views — **DONE on Leads**
 
-**Missing.** `grep -rn "savedView\|savedFilter"` returns nothing. Every visit
-to Leads or Campaigns starts from the default filter.
+**Was.** Every visit to Leads started from the default filter, so anyone whose
+actual job is "the untouched leads in the Northeast list" rebuilt that from four
+controls each time.
 
-**Plan.** Named filter sets per user, stored on user settings, surfaced as
-tabs above the table.
+**Shipped** as a tab strip above the lead table, per user.
+
+- **The active tab is derived from the live controls**, never stored as a
+  selection. Tracking it separately means the highlight survives someone changing
+  a filter, and then the tab describes a table it no longer describes.
+- **Saving is only offered when something is filtered.** Letting someone save the
+  default produces a tab called "Everything" that does nothing.
+- **The payload is a flat map of control values**, not a typed shape per surface,
+  so adding a filter is not a migration. The cost is that a stored view can name a
+  control that no longer exists, which is why applying one ignores unknown keys
+  and falls back to the table's defaults rather than failing on a deploy the
+  customer had nothing to do with.
+- **Per user, not per workspace.** Two reps with different territories would fight
+  over one tab strip, and a manager's view of everything means nothing to someone
+  scoped to their own leads.
+- Saving over an existing name updates that view, because that is the obvious way
+  to change one and an error there sends someone hunting for a rename control that
+  does not exist.
+
+Campaigns is a UI addition rather than new plumbing: the store is already
+surface-keyed. Left out because the campaign list has one filter and does not yet
+earn a tab strip.
 
 ### 5.3 First-run emptiness — **DONE**
 
@@ -637,11 +683,38 @@ short. The empty state points at import instead.
 `components/leads/BulkLeadOrganizer.tsx` exists. An earlier note in this
 session said otherwise and was wrong.
 
-### 5.5 Smaller polish — **S** each
+### 5.5 Smaller polish — **DONE, minus one item that should not exist**
 
-Keyboard shortcuts on the reply inbox (j/k, e to archive). Optimistic updates
-beyond the outcome control. A real 404 and error boundary per route group.
-Skeletons on the slowest three pages rather than a spinner.
+Four gaps that each made the product look broken rather than busy.
+
+- **Error boundaries.** There were none anywhere, so one page that threw fell back
+  to Next.js's own screen: on a production build a bare "Application error" with
+  no sidebar, and the only way out was the browser's back button. Now at the
+  dashboard and the root, plus a global one that renders its own `html` and
+  `body` because the layout that normally provides them is what failed. None show
+  the error message, which is written by whatever threw and can carry document
+  paths, ids, and occasionally tokens. The digest is shown instead, because that
+  is the value that matches the server log line.
+- **404s.** One inside the app keeps the navigation and points at Recently
+  Deleted, since a stale link to a single campaign should not eject someone from
+  the product. The public one is standalone, because a 404 showing an empty
+  sidebar and an account menu with no account reads as a broken app rather than a
+  wrong address.
+- **Skeletons** on Reports, Leads, and Replies, the three pages that wait on the
+  most reads. Shaped like the real page rather than a spinner: a skeleton whose
+  proportions are wrong is a more elaborate flicker.
+- **Keyboard navigation** on the reply inbox: `j`/`k` to move, Enter to open,
+  Escape to clear. Driven off the DOM so the table stays a server component,
+  rather than shipping every reply as props for two keystrokes. The handler
+  refuses to fire while someone is typing or holding a modifier, which is the
+  whole difference between a shortcut and a bug.
+
+**`e` to archive was not built.** There is no archive action on a reply anywhere
+in the product, so binding a key to it would have meant inventing a feature inside
+a keyboard shortcut. Optimistic updates beyond the outcome control were also left
+alone: the remaining mutations are all followed by a server-rendered refresh, and
+faking the result first would mean maintaining a second, divergent idea of what
+the row says.
 
 ---
 
@@ -665,6 +738,23 @@ Skeletons on the slowest three pages rather than a spinner.
     together. Both turned out to be about not overclaiming: one refuses to send
     more mail than was authorised, the other refuses to call an address verified
     when nothing verified it.
-11. Everything remaining, in the order it earns priority: **5.2 saved views**,
-    **5.5 polish**, then **1.2 lead sourcing**, the largest piece left on the
-    board.
+11. ~~**5.2 saved views**~~, ~~**5.5 polish**~~, and ~~**1.2 lead sourcing**~~ —
+    done. That closes every item in this file.
+
+## What is left, and it is not code
+
+Nothing on the backlog is unbuilt. What stands between this and a paying
+customer is configuration and one commercial decision:
+
+- A **lead provider account**, without which Find leads cannot search and the
+  adapter stays unverified.
+- **Stripe live keys**, proven once end to end.
+- `SUPPORT_EMAIL`, `ERROR_WEBHOOK_URL`, and the legal identity on the legal
+  pages.
+- A **wildcard Cloud Run domain mapping** before any customer verifies a tracking
+  domain: verification succeeds without it and the links will not resolve.
+- Then `SIGNUP_MODE=open`.
+
+The one thing on that list that is a decision rather than a task is what to charge
+for sourced leads. The credit ceiling exists and bounds our cost; no price is
+attached to it.
