@@ -6,6 +6,21 @@ import { STEP_UP_WINDOW_MS } from "@/lib/platform/operators";
 import { stepUpSatisfied } from "@/lib/platform/operators";
 
 /**
+ * Never prerendered.
+ *
+ * This is not an optimization, it is the difference between a portal and a 404.
+ * requireOperator checks whether the operator list is configured before it reads
+ * a cookie, so at build time, with no env var set, it throws and calls
+ * notFound(). Next.js sees a route that reached a 404 without ever touching
+ * request state, concludes it is static, and bakes that 404 into the deployment
+ * for every future request. No amount of correct configuration afterwards can
+ * change it, because the page is never executed again.
+ *
+ * A page whose entire output depends on who is asking must say so explicitly.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * The portal.
  *
  * A non-operator gets the app's ordinary 404, identical to any mistyped URL. A

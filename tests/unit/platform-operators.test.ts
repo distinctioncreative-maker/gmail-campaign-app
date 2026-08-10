@@ -246,6 +246,15 @@ describe("the portal's guards, by sweep", () => {
     expect(operators).not.toContain("firebase");
   });
 
+  it("never prerenders the portal", () => {
+    // The bug this catches shipped once. requireOperator refuses before reading a
+    // cookie, so at build time it 404s, and Next.js then treats the route as
+    // static and serves that 404 forever: the build passes, every test passes,
+    // and the page is broken for the only person meant to see it.
+    const page = readFileSync("app/owner/page.tsx", "utf8");
+    expect(page).toContain('export const dynamic = "force-dynamic"');
+  });
+
   it("stops sending for a suspended workspace in the worker, not only in the UI", () => {
     // A suspension that does not stop the queue is not a suspension: already
     // enqueued Cloud Tasks would keep sending for days.
