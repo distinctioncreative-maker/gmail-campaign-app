@@ -16,6 +16,7 @@ import {
   settleReservation,
 } from "@/lib/repositories/sourcingUsage";
 import { reportError } from "@/lib/observability/report";
+import { assertWritesAllowed } from "@/lib/platform/readonly";
 
 /**
  * Search a lead provider and return a preview.
@@ -43,6 +44,9 @@ const BodySchema = z.object({
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
   await enforceUserRateLimit(ctx, RATE_LIMITS.leadSourcing);
+  // Sourcing spends money and adds leads that will be emailed, so an incident
+  // halt covers it.
+  await assertWritesAllowed();
 
   const provider = activeSourcingProvider();
   if (!provider) {

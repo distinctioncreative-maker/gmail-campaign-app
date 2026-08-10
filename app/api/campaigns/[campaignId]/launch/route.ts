@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
+import { assertWritesAllowed } from "@/lib/platform/readonly";
 import { enforceUserRateLimit, RATE_LIMITS } from "@/lib/util/userRateLimit";
 import {
   claimCampaignLaunch,
@@ -38,6 +39,9 @@ const BodySchema = z.object({
 export const POST = handleApiErrors(async (req: NextRequest, { params }: { params: Promise<{ campaignId: string }> }) => {
   const ctx = await requireUser();
   await enforceUserRateLimit(ctx, RATE_LIMITS.campaignLaunch);
+  // An incident halt has to cover launching, not only sending: a campaign
+  // launched behind a halt would queue up and release all at once when it lifts.
+  await assertWritesAllowed();
   const { campaignId } = await params;
   const owner = ownerFromCtx(ctx);
   const campaign = await getCampaign(owner, campaignId);

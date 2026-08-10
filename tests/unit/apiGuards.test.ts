@@ -92,6 +92,12 @@ describe("route guards — every authenticated route is scoped", () => {
     // requireApiKey, not by a session: see lib/auth/requireApiKey.ts for why
     // the two are deliberately separate guards rather than one.
     "api/v1/leads",
+    // The owner portal. Authenticated by requireOperator against an env-var
+    // allowlist rather than by a workspace session: see
+    // lib/platform/operators.ts for why a role could never gate this, and
+    // tests/unit/platform-operators.test.ts for the sweep that guards it.
+    "api/owner",
+    "api/owner/checkup",
   ]);
 
   const routes = [...findRoutes("app")];

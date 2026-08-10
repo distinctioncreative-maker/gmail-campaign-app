@@ -62,6 +62,7 @@ import { injectTracking } from "@/lib/tracking/inject";
 import { trackingBaseUrl } from "@/lib/tracking/domain";
 import { env } from "@/lib/env";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
+import { getPlatformSettings, isOrganizationSuspended } from "@/lib/platform/state";
 import { PLANS } from "@/lib/billing/plans";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 import { unsubscribeUrl } from "@/lib/unsubscribe/token";
@@ -102,6 +103,20 @@ export async function POST(req: NextRequest) {
   }
   const { organizationId, ownerUserId, campaignId, queueItemId } = parsed.data;
   const owner: OwnerRef = { userId: ownerUserId, organizationId };
+
+  // Platform halts, before the item is even claimed. A suspension that does not
+  // stop the queue is not a suspension: a spamming workspace's already-enqueued
+  // Cloud Tasks would otherwise keep sending for days after we locked its people
+  // out of the app, which is exactly the damage the suspension was for. The item
+  // stays SCHEDULED so lifting the halt resumes it rather than losing it.
+  const platform = await getPlatformSettings();
+  if (platform.sendingHalted || (await isOrganizationSuspended(organizationId))) {
+    await updateQueueItem(owner, campaignId, queueItemId, {
+      status: "SCHEDULED",
+      lastError: platform.sendingHalted ? "PLATFORM_SENDING_HALTED" : "WORKSPACE_SUSPENDED",
+    });
+    return NextResponse.json({ ok: true, reason: "PLATFORM_HALT" });
+  }
 
   // 1. Claim (transactional; replay-safe no-op when already handled).
   const item = await claimQueueItem(owner, campaignId, queueItemId);

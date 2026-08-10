@@ -14,6 +14,7 @@ import {
 } from "@/schemas/user";
 import type { Role } from "@/schemas/common";
 import { type PlanId, defaultPlanFor, isPlanId } from "@/lib/billing/plans";
+import { planOverrideMap } from "@/lib/platform/state";
 
 export type SubscriptionStatus = "none" | "trialing" | "active" | "past_due" | "canceled";
 
@@ -106,6 +107,14 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
   const snap = await orgRef(organizationId).collection("organizationSettings").doc("main").get();
   const data = snap.data() ?? {};
   const org = await getOrganization(organizationId);
+  // A platform operator's override wins over whatever the subscription says.
+  // Applied here rather than at each call site because this is the one function
+  // every plan-dependent decision already goes through: send caps, seat limits,
+  // and capability gates all read settings.billing.plan, and an override applied
+  // in only some of those places would be a plan that half-exists.
+  const overrides = await planOverrideMap();
+  const overridden = overrides.get(organizationId);
+  const billing = resolveBilling(data.billing, org?.tenantType ?? "WORKSPACE");
   return {
     collisionPolicy: (data.collisionPolicy as Organization["collisionPolicy"]) ?? org?.collisionPolicy ?? "OFF",
     collisionBlockDays: (data.collisionBlockDays as number) ?? org?.collisionBlockDays ?? 30,
@@ -122,7 +131,7 @@ export async function getOrgSettings(organizationId: string): Promise<OrgSetting
           .map((row) => row.data)
           .slice(0, 20)
       : [],
-    billing: resolveBilling(data.billing, org?.tenantType ?? "WORKSPACE"),
+    billing: overridden && isPlanId(overridden) ? { ...billing, plan: overridden } : billing,
     trackingDomain: resolveTrackingDomain(data.trackingDomain),
     ...resolveBrandFields(data),
   };

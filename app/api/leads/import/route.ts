@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
+import { assertWritesAllowed } from "@/lib/platform/readonly";
 import { enforceUserRateLimit, RATE_LIMITS } from "@/lib/util/userRateLimit";
 import { ParsedLeadSchema } from "@/schemas/parsedLead";
 import { upsertFromParsedLead, addContactToList } from "@/lib/repositories/contacts";
@@ -28,6 +29,7 @@ const ImportRequestSchema = z.object({
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
   await enforceUserRateLimit(ctx, RATE_LIMITS.leadImport);
+  await assertWritesAllowed();
   const { leads, listId } = ImportRequestSchema.parse(await req.json());
 
   // Validate the target list up front (if adding to one).

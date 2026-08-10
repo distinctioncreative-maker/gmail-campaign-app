@@ -617,6 +617,23 @@ export const FEATURE_CATEGORIES: FeatureCategory[] = [
         keyFiles: ["app/(dashboard)/admin/page.tsx", "lib/tenancy/capabilities.ts"],
       },
       {
+        id: "owner-portal",
+        name: "Owner portal (platform controls)",
+        status: "shipped",
+        description:
+          "A console at /owner for whoever runs the service, as opposed to whoever administers a workspace. That distinction is the entire security model here and getting it wrong would be catastrophic: role ADMIN means admin of one customer's workspace, and the first member of every new organization becomes one automatically, so gating platform powers on a role would hand every customer who ever signs up the ability to suspend other customers and read across tenants, in code that would look identical to every other admin-gated route in the app. So operators are a separate list that no role, membership, or workspace can grant, held in an environment variable rather than Firestore on purpose: it is the floor under every other privilege, and if it were writable from inside the app then one bad write path, one rules mistake, or a compromised service account would escalate to total control of every tenant. Changing it needs Cloud Run access, which is a different credential. A non-operator gets the ordinary 404 rather than a 403, because a 403 confirms both that the portal exists and that the URL was right. Reading needs an operator; every change needs a sign-in from the last thirty minutes, since a five-day session should not be enough to suspend a customer. What it controls: signup mode at runtime, because the reason to close the doors is usually a wave of throwaway accounts that cannot wait for a deploy; a global sending halt and a read-only mode for incidents, enforced in the send worker and at the launch, import, and sourcing routes rather than only in the interface; a service notice shown on every page; workspace suspension, which signs every member out and stops mail already queued, because a suspension that leaves the queue running is not a suspension; identity bans by email, so signing up again with a fresh account does not get around it, checked on every request rather than only at sign-in; and per-workspace plan overrides for comped or grandfathered accounts. Plan limits themselves stay in code because they gate send caps and seat counts, and price comes from Stripe so it is never typed in two places. The abuse checkup reads across tenants, which nothing else in the product does, and is deliberately shaped around the real platform risk for a cold email product: one customer burning the shared sending reputation, which lands on every other customer at once. It surfaces bounce rate, opt-out rate, and volume without engagement, carries no lead data, and viewing it is itself audited. Operator actions go to an append-only log outside every organization, so they outlive a workspace the operator deleted.",
+        keyFiles: [
+          "lib/platform/operators.ts",
+          "lib/auth/requireOperator.ts",
+          "lib/platform/state.ts",
+          "lib/platform/checkup.ts",
+          "lib/platform/readonly.ts",
+          "app/api/owner/route.ts",
+          "app/owner/page.tsx",
+          "tests/unit/platform-operators.test.ts",
+        ],
+      },
+      {
         id: "audit-log",
         name: "Activity log",
         status: "shipped",

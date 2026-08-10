@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import type { TenantType } from "@/schemas/user";
 import { getOrganization, getOrgSettings } from "@/lib/repositories/orgSettings";
+import { getPlatformSettings } from "@/lib/platform/state";
 import { resolveSendingState } from "@/lib/sending/mode";
 import { AccountMenu } from "@/components/AccountMenu";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -72,10 +73,12 @@ export default async function DashboardLayout({
     redirect("/");
   }
 
-  const [sending, org, settings] = await Promise.all([
+  const [sending, org, settings, platform] = await Promise.all([
     resolveSendingState(organizationId),
     getOrganization(organizationId),
     getOrgSettings(organizationId),
+    // Cached for fifteen seconds, so this is not a read per page view.
+    getPlatformSettings(),
   ]);
   const capabilities = capabilitiesFor(tenantType, settings.billing.plan);
   const nav = navFor(role, capabilities);
@@ -185,6 +188,40 @@ export default async function DashboardLayout({
             </span>
           </div>
         </header>
+
+        {/* Platform notices, above the page rather than inside it: during an
+            incident the useful thing is that every page says the same sentence,
+            not that one page mentions it. */}
+        {platform.sendingHalted || platform.readOnlyMode || platform.noticeBanner !== "" ? (
+          <div
+            className={`border-b px-4 py-3 text-sm sm:px-6 md:px-10 ${
+              platform.sendingHalted || platform.noticeSeverity === "WARNING"
+                ? "alert-warning"
+                : "border-border bg-surface-2 text-muted"
+            }`}
+            role="status"
+          >
+            {platform.sendingHalted ? (
+              <p>
+                <strong>Sending is paused across Cadence.</strong>{" "}
+                {platform.haltReason.trim() !== ""
+                  ? platform.haltReason.trim()
+                  : "We are dealing with a delivery issue."}{" "}
+                Nothing is lost: campaigns resume where they stopped.
+              </p>
+            ) : platform.readOnlyMode ? (
+              <p>
+                <strong>Cadence is temporarily read-only.</strong> You can read everything;
+                launching and importing will work again shortly.
+              </p>
+            ) : null}
+            {platform.noticeBanner !== "" ? (
+              <p className={platform.sendingHalted || platform.readOnlyMode ? "mt-1" : ""}>
+                {platform.noticeBanner}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         <main id="dashboard-main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] flex-1 p-4 pb-28 outline-none sm:p-6 sm:pb-6 md:p-10">
           <div className="animate-rise">{children}</div>

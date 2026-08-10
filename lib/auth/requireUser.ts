@@ -15,6 +15,7 @@ import {
 import { clearDeletedIdentity, deletedIdentity } from "@/lib/account/deletion";
 import type { Role } from "@/schemas/common";
 import type { TenantType, User } from "@/schemas/user";
+import { isEmailBanned, isOrganizationSuspended } from "@/lib/platform/state";
 
 export interface AuthContext {
   userId: string;
@@ -51,6 +52,16 @@ export async function requireUser(): Promise<AuthContext> {
   const identity = await verifySession();
   if (!identity) throw new UnauthorizedError();
 
+  // Platform bans outrank everything below, including a workspace's own view of
+  // whether this person is a member. Checked here rather than only at sign-in
+  // because a cookie minted before the ban would otherwise stay good for its
+  // full five days.
+  if (await isEmailBanned(identity.email)) {
+    throw new ForbiddenError(
+      "This account cannot be used. If you believe that is a mistake, contact support."
+    );
+  }
+
   const existing = await getUser(identity.userId);
 
   // Returning user: their organization is whatever their record already says
@@ -76,6 +87,13 @@ export async function requireUser(): Promise<AuthContext> {
       ));
     if (!repairedMember.active || !existing.active) {
       throw new ForbiddenError("Your account has been disabled. Contact your administrator.");
+    }
+    // A platform suspension the customer's own admins cannot lift. The message
+    // deliberately does not blame their administrator, because this one is us.
+    if (await isOrganizationSuspended(existing.organizationId)) {
+      throw new ForbiddenError(
+        "This workspace is suspended. Contact support to resolve it."
+      );
     }
     // Last-login is activity metadata, not request telemetry. Throttle it to
     // once per hour instead of adding a Firestore write to every API request.
