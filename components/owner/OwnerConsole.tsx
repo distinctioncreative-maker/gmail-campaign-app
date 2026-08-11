@@ -101,6 +101,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
   const toast = useToast();
   const confirm = useConfirm();
   const [state, setState] = useState<OwnerState | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [checkup, setCheckup] = useState<Checkup | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -116,8 +117,14 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
     try {
       const res = await fetchJson<OwnerState>("/api/owner");
       setState(res);
+      setLoadFailed(false);
       setNotice(res.settings.noticeBanner);
     } catch (err) {
+      // A toast alone left the console showing "Loading…" forever, which reads
+      // as a hung page rather than a failed request. The incident controls are
+      // the one surface where that matters most: an operator reaching for them
+      // is usually already having a bad day.
+      setLoadFailed(true);
       toast(err instanceof Error ? err.message : "Could not load platform state.", "error");
     }
   }, [toast]);
@@ -155,7 +162,26 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
     }
   }
 
-  if (!state) return <p className="mt-6 text-sm text-muted">Loading…</p>;
+  if (!state) {
+    return loadFailed ? (
+      <section className="card mt-6 p-5">
+        <h2 className="font-medium">Platform state did not load</h2>
+        <p className="mt-1 text-sm text-muted">
+          The controls are hidden rather than shown against stale or missing values, because acting
+          on a state you cannot see is how the wrong workspace gets suspended.
+        </p>
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="btn-secondary mt-3 min-h-11 px-4 py-2.5 text-sm"
+        >
+          Try again
+        </button>
+      </section>
+    ) : (
+      <p className="mt-6 text-sm text-muted">Loading…</p>
+    );
+  }
 
   const disabled = busy || !canWrite;
 

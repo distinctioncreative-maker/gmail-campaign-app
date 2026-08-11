@@ -27,6 +27,20 @@ import type { ViewSurface } from "@/schemas/savedView";
  * called "Everything" that does nothing.
  */
 
+/**
+ * What the reset tab is called, per surface.
+ *
+ * This read "All leads" unconditionally, which is correct on the one table the
+ * bar is mounted on today and wrong on the other surface the schema already
+ * allows. A hardcoded noun in a component parameterised by surface is a bug
+ * waiting on its second caller, and the second caller is the kind of change
+ * nobody thinks to re-read this file for.
+ */
+const RESET_LABELS: Record<ViewSurface, string> = {
+  LEADS: "All leads",
+  CAMPAIGNS: "All campaigns",
+};
+
 interface StoredView {
   viewId: string;
   name: string;
@@ -129,7 +143,7 @@ export function SavedViewBar({
               active === null && nothingToSave ? "bg-surface-2 font-medium" : "text-muted"
             }`}
           >
-            All leads
+            {RESET_LABELS[surface]}
           </button>
           {views.map((view) => (
             <span

@@ -50,6 +50,84 @@ describe("premium shared design system", () => {
     expect(existsSync("components/SignOutButton.tsx")).toBe(false);
   });
 
+  /**
+   * The surfaces below were all written without ever being seen rendered: no
+   * session, no browser, only the source. That is exactly the condition under
+   * which a component drifts off the design system without anyone noticing,
+   * and the landing page already proved it happens. These assert the parts of
+   * "looks like the rest of the app" that are actually checkable by reading.
+   */
+  describe("surfaces built without a rendered preview", () => {
+    const SURFACES = [
+      "components/owner/OwnerConsole.tsx",
+      "components/sourcing/SourcingPanel.tsx",
+      "components/views/SavedViewBar.tsx",
+      "components/settings/WebhooksCard.tsx",
+      "components/replies/OutcomeControl.tsx",
+    ];
+
+    // A short line is a 32px-or-smaller control with nothing raising it to 44px
+    // on a phone. An `sm:` override alongside a base 44px is fine: the rule is
+    // about the phone, not about the desktop row.
+    const SHORT = /\b(?:min-)?h-(?:6|7|8|9|10)\b/;
+    const TALL = /\b(?:min-)?h-11\b/;
+
+    it("has a detector that actually fires", () => {
+      // Guards the sweep below from passing because the regex stopped matching.
+      expect(SHORT.test('className="min-h-8 rounded-md"')).toBe(true);
+      expect(SHORT.test('className="h-8 w-24"')).toBe(true);
+      expect(TALL.test('className="min-h-11 px-3"')).toBe(true);
+      expect(TALL.test('className="h-11 w-24 sm:h-8"')).toBe(true);
+    });
+
+    it("gives every hand-rolled control a 44px target on a phone", () => {
+      // The global stylesheet only raises .btn* classes to 44px on mobile, so a
+      // control built from raw utilities gets no help and has to say so itself.
+      const offenders: string[] = [];
+      for (const path of SURFACES) {
+        for (const line of read(path).split("\n")) {
+          if (!/className=/.test(line)) continue;
+          if (/\bbtn-(primary|secondary|ghost|danger)\b/.test(line)) continue;
+          if (SHORT.test(line) && !TALL.test(line)) {
+            offenders.push(`${path}: ${line.trim().slice(0, 90)}`);
+          }
+        }
+      }
+      expect(offenders).toEqual([]);
+    });
+
+    it("stays on semantic tokens rather than raw palette values", () => {
+      // Tailwind's own palette does not follow the theme, so a bg-slate-100 is
+      // a light-mode-only surface that goes invisible in dark mode.
+      for (const path of SURFACES) {
+        expect(read(path), path).not.toMatch(
+          /\b(?:bg|text|border|ring)-(?:red|green|blue|yellow|amber|emerald|slate|gray|zinc|neutral|indigo|purple|orange)-\d{2,3}\b/
+        );
+        expect(read(path), path).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+      }
+    });
+
+    it("does not name one surface's nouns in a component shared by two", () => {
+      // SavedViewBar is parameterised by surface and the schema already allows
+      // CAMPAIGNS, but the reset tab said "All leads" unconditionally. The bug
+      // only appears when the second caller lands, which is the change nobody
+      // re-reads this file for.
+      const bar = read("components/views/SavedViewBar.tsx");
+      expect(bar).toContain("RESET_LABELS");
+      expect(bar).toContain("All campaigns");
+      expect(bar).not.toMatch(/>\s*All leads\s*</);
+    });
+
+    it("shows a failed load as failed rather than as a permanent spinner", () => {
+      // The operator console caught its own load error, raised a toast, and
+      // then sat on "Loading…" forever. A toast is dismissed in four seconds
+      // and the page then claims to be working.
+      const console_ = read("components/owner/OwnerConsole.tsx");
+      expect(console_).toContain("loadFailed");
+      expect(console_).toContain("Try again");
+    });
+  });
+
   it("uses the shared icon language instead of decorative emoji in core journeys", () => {
     const coreSources = [
       "components/OnboardingWizard.tsx",

@@ -142,7 +142,11 @@ export function OutcomeControl({
               disabled={busy}
               aria-pressed={active}
               title={active ? `${option.label}. Click to clear.` : option.label}
-              className={`inline-flex min-h-8 items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition disabled:opacity-50 ${
+              // 44px on a phone, compact on a desktop row. Triaging replies is
+              // the most likely thing a rep does from a phone, and a 32px
+              // target next to two others is how the wrong outcome gets
+              // recorded against a deal.
+              className={`inline-flex min-h-11 items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium transition disabled:opacity-50 sm:min-h-8 sm:px-2 ${
                 active
                   ? option.active
                   : "border-border text-muted hover:bg-surface-2 hover:text-foreground"
@@ -173,7 +177,7 @@ export function OutcomeControl({
               }}
               inputMode="decimal"
               placeholder="Value"
-              className="field-input h-8 w-24 px-2 py-0 text-xs"
+              className="field-input h-11 w-24 px-2 py-0 text-xs sm:h-8"
             />
           </span>
         ) : (
@@ -183,7 +187,7 @@ export function OutcomeControl({
               setDraft(value !== null ? String(value / 100) : "");
               setEditing(true);
             }}
-            className="rounded-md px-1.5 py-1 text-xs font-medium text-success transition hover:bg-surface-2"
+            className="inline-flex min-h-11 items-center rounded-md px-2 py-1 text-xs font-medium text-success transition hover:bg-surface-2 sm:min-h-8 sm:px-1.5"
           >
             {/* An unrecorded value is not zero, and must not read as zero. */}
             {value !== null ? formatDealValue(value, currency) : "Add value"}
