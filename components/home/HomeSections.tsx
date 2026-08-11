@@ -151,7 +151,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
   const done = steps.filter((s) => s.done).length;
   const nextIdx = steps.findIndex((s) => !s.done);
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-medium">
           Get set up: {done} of {steps.length} done
@@ -233,7 +233,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
             <Link
               key={c.campaignId}
               href={`/campaigns/${c.campaignId}`}
-              className="card card-hover p-5"
+              className="card p-6 sm:p-7 card-hover"
             >
               <div className="flex items-center justify-between gap-2">
                 <p className="truncate font-medium">{c.name}</p>
@@ -293,7 +293,7 @@ export function QuickActions() {
   return (
     <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {QUICK_ACTIONS.map((a) => (
-        <Link key={a.href} href={a.href} className="card card-hover group p-5">
+        <Link key={a.href} href={a.href} className="card p-6 sm:p-7 card-hover group">
           <span
             aria-hidden
             className="bg-surface-2 text-foreground flex h-11 w-11 items-center justify-center rounded-2xl text-brand-contrast shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
@@ -346,7 +346,7 @@ export function RecentCampaigns({ campaigns }: { campaigns: Campaign[] }) {
 /** Only rendered when Gmail is not connected, since nothing can send without it. */
 export function GmailNudge() {
   return (
-    <div className="card flex flex-wrap items-center justify-between gap-3 p-4 ring-1 ring-warning/30">
+    <div className="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-3 ring-1 ring-warning/30">
       <div className="flex items-center gap-3">
         <span
           aria-hidden

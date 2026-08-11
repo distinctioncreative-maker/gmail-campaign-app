@@ -131,7 +131,7 @@ export function LeadEditor({
   }
 
   return (
-    <div className="card mt-4 p-6">
+    <div className="card p-6 sm:p-7 mt-4">
       <h2 className="font-medium">Edit lead</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">

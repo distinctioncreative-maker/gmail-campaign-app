@@ -82,7 +82,7 @@ export default async function DemoHomePage({
       {home.best && (
         <Link
           href="/demo/reports"
-          className="card card-hover flex items-center justify-between gap-3 p-4"
+          className="card p-5 sm:p-6 card-hover flex items-center justify-between gap-3"
         >
           <span className="flex items-center gap-2 text-sm">
             <Icon name="chart" size={16} className="shrink-0 text-muted" aria-hidden />

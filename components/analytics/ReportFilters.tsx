@@ -31,7 +31,7 @@ export function ReportFilters({
   }
 
   return (
-    <div className="card mb-6 grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_12rem_auto] sm:items-end">
+    <div className="card p-5 sm:p-6 mb-6 grid gap-4 sm:grid-cols-[minmax(0,1fr)_12rem_auto] sm:items-end">
       <label className="block text-sm font-medium text-foreground">
         Campaign
         <select

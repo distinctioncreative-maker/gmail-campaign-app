@@ -77,7 +77,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
 
       {lists.length === 0 ? (
         !creating && (
-          <div className="card p-5 text-sm text-muted">
+          <div className="card p-6 sm:p-7 text-sm text-muted">
             No lists yet. Create one to keep an ever-growing collection like “Alpine offers: all time”.
           </div>
         )
@@ -87,7 +87,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
             <Link
               key={l.listId}
               href={`/leads/lists/${l.listId}`}
-              className="card card-hover group animate-rise flex items-center justify-between p-4"
+              className="card p-5 sm:p-6 card-hover group animate-rise flex items-center justify-between"
               style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
             >
               <div className="min-w-0">

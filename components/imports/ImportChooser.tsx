@@ -32,7 +32,7 @@ export function ImportChooser({ listId }: { listId?: string }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <button
         onClick={() => setMode("csv")}
-        className="card card-hover p-6 text-left"
+        className="card p-6 sm:p-7 card-hover text-left"
       >
         <ImportIcon name="download" />
         <p className="mt-2 font-medium">Upload CSV <span className="align-middle text-[10px] font-semibold uppercase tracking-wide text-success">Recommended</span></p>
@@ -42,7 +42,7 @@ export function ImportChooser({ listId }: { listId?: string }) {
       </button>
       <button
         onClick={() => setMode("paste")}
-        className="card card-hover p-6 text-left"
+        className="card p-6 sm:p-7 card-hover text-left"
       >
         <ImportIcon name="copy" />
         <p className="mt-2 font-medium">Paste leads</p>
@@ -50,14 +50,14 @@ export function ImportChooser({ listId }: { listId?: string }) {
           Copy rows straight from a Salesforce list view: we match leads by email automatically
         </p>
       </button>
-      <div className="card p-6 opacity-60">
+      <div className="card p-6 sm:p-7 opacity-60">
         <ImportIcon name="external" />
         <p className="mt-2 font-medium">Salesforce Lightning sync</p>
         <p className="mt-1 text-sm text-muted">
           One-click connect to pull leads directly: <span className="font-medium text-foreground">coming soon</span>
         </p>
       </div>
-      <div className="card p-6 opacity-60">
+      <div className="card p-6 sm:p-7 opacity-60">
         <ImportIcon name="chart" />
         <p className="mt-2 font-medium">Import Google Sheet</p>
         <p className="mt-1 text-sm text-muted">Coming soon</p>

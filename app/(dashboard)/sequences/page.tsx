@@ -40,7 +40,7 @@ export default async function SequencesPage() {
             <Link
               key={s.sequenceId}
               href={`/sequences/${s.sequenceId}`}
-              className="card card-hover animate-rise p-5"
+              className="card p-6 sm:p-7 card-hover animate-rise"
               style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
             >
               <p className="font-medium">{s.name}</p>

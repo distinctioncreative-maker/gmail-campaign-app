@@ -26,7 +26,7 @@ export default async function ContactSupportPage() {
 
       <ContactSupportForm signedInEmail={ctx.email} />
 
-      <div className="mt-6 card p-5 sm:p-6">
+      <div className="mt-6 card p-6 sm:p-7">
         <h2 className="font-semibold">Faster than writing to us</h2>
         <p className="mt-1 text-sm text-muted">
           Some problems answer themselves, and these three cover most of what people write in about.

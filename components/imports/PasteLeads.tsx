@@ -43,7 +43,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       {importSummary && (
         <p className="mb-4 rounded-lg bg-success-soft p-3 text-sm text-success">{importSummary}</p>
       )}

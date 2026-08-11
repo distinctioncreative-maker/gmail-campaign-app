@@ -36,7 +36,7 @@ export default async function TemplatesPage() {
           {active.map((t, i) => (
             <div
               key={t.templateId}
-              className="flex flex-col card card-hover p-5 animate-rise"
+              className="flex flex-col card p-6 sm:p-7 card-hover animate-rise"
               style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
             >
               <Link href={`/templates/${t.templateId}`} className="font-medium hover:underline">

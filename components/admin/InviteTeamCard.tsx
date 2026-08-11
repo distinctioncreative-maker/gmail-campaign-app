@@ -76,7 +76,7 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
   const pending = invites.filter((i) => i.status === "PENDING");
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">{solo ? "Invite a teammate" : "Invite teammates"}</h2>
       <p className="mt-1 text-sm text-muted">
         {solo

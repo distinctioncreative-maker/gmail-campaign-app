@@ -52,12 +52,12 @@ export function AiWritingCard() {
     }
   }
 
-  if (!state) return <div className="card p-6 text-sm text-muted">Loading…</div>;
+  if (!state) return <div className="card p-6 sm:p-7 text-sm text-muted">Loading…</div>;
 
   const on = state.enabled;
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-medium">AI email writing</h2>

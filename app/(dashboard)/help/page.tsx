@@ -139,7 +139,7 @@ export default function HelpPage() {
       </div>
 
       {!query ? (
-        <div className="mt-10 card p-5 sm:p-6">
+        <div className="mt-10 card p-6 sm:p-7">
           <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Trust and responsible use
           </p>
@@ -168,7 +168,7 @@ export default function HelpPage() {
           given up on finding the answer should not then have to hunt for the
           way to ask. */}
       {!query ? (
-        <div id="contact" className="card mt-10 scroll-mt-24 p-5 sm:p-6">
+        <div id="contact" className="card p-6 sm:p-7 mt-10 scroll-mt-24">
           <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Still stuck
           </p>

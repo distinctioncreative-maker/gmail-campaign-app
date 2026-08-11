@@ -74,6 +74,45 @@ describe("token ladders", () => {
     expect(token("--edge-highlight", ':root[data-theme="dark"] {')).toContain("inset");
   });
 
+  it("routes every primitive through the ladder instead of a literal", () => {
+    // The failure this catches is the one that actually happened. The ladder was
+    // raised and nothing changed, because .btn, .segmented, .seg-btn and
+    // .field-input each carried a hardcoded rem value, so the buttons and inputs
+    // in the product never saw it. A ladder nothing references is decoration.
+    for (const selector of [".btn,", ".segmented {", ".seg-btn {", ".field-input {"]) {
+      const start = css.indexOf(selector);
+      expect(start, selector).toBeGreaterThan(0);
+      const block = css.slice(start, css.indexOf("\n}", start));
+      const radius = block.match(/border-radius:\s*([^;]+);/);
+      expect(radius, `${selector} declares a radius`).not.toBeNull();
+      expect(radius![1], `${selector} uses the ladder`).toContain("var(--radius-");
+    }
+  });
+
+  it("keeps the figure treatment overridable by a call site", () => {
+    // .display-figure sets a font-size, and five of its seven call sites set
+    // their own. Unlayered it would win over all of them and silently flatten
+    // every KPI to one size. @layer base puts it below Tailwind's utilities.
+    // The declaration, not the first mention: the class is named in the comment
+    // above the layer too, and matching that looked for a @layer that had not
+    // opened yet.
+    const at = css.indexOf(".display-figure {");
+    const layerAt = css.lastIndexOf("@layer base {", at);
+    expect(layerAt).toBeGreaterThan(0);
+    // The class must sit inside that block, not after it closed.
+    expect(css.slice(layerAt, at)).not.toContain("\n}");
+  });
+
+  it("moves on press and nowhere else", () => {
+    // Hover-lift makes a page twitch as the cursor crosses it. The press is what
+    // makes a control feel physical, and it is the only transform in the system.
+    // A previous pass removed the hover-lift rule but left both its comment and
+    // the :disabled:hover guard for it, so the file described behaviour it did
+    // not have.
+    expect(css).toMatch(/\.btn-primary:active:not\(:disabled\)/);
+    expect(css).not.toMatch(/\.btn-primary:hover\s*\{[^}]*translateY/);
+  });
+
   it("defaults to dark without consulting the operating system", () => {
     // Dark first is a brand decision. An explicit choice still wins both ways,
     // which is the part that matters for anyone who wants light.

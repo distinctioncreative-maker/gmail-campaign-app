@@ -119,7 +119,7 @@ export function SuppressionsManager({
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       {notice && (
         <p className="mb-4 rounded-lg bg-success-soft p-3 text-sm text-success">{notice}</p>
       )}

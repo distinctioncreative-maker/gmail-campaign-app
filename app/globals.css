@@ -292,19 +292,26 @@ h2 { letter-spacing: -0.026em; }
    titles beside it. One class owns the headline numeral treatment so the
    eight places that render a big number cannot drift apart again. Tabular
    figures keep digits from jittering as live values tick up. */
-.display-figure {
-  font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  font-variant-numeric: tabular-nums;
-  /* Owns its own size now.
-     Almost everything on screen was 14px, including the numbers, and a layout
-     with no range between its largest and smallest type reads cheap however
-     well it is otherwise built. This is the number a customer screenshots for
-     their boss, so it gets to be the loudest thing on the card and clamps
-     rather than stepping, so it never collides on a narrow phone. */
-  font-size: clamp(1.875rem, 1.4rem + 2.1vw, 2.75rem);
-  line-height: 1.02;
+/* Inside @layer base on purpose, and this matters.
+   Tailwind's utilities live in a later layer, so anything in base loses to
+   them. Five of the seven .display-figure call sites set their own text-* size,
+   and an unlayered font-size here silently overrode every one of them: the
+   class would have stopped being a treatment and become a size mandate. In base
+   it is what it should be, a sensible default a call site may override. */
+@layer base {
+  .display-figure {
+    font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+    /* Almost everything on screen was 14px including the numbers, and a layout
+       with no range between its largest and smallest type reads cheap however
+       well it is otherwise built. This is the figure a customer screenshots for
+       their boss. Clamped rather than stepped so it never collides on a narrow
+       phone. */
+    font-size: clamp(1.875rem, 1.4rem + 2.1vw, 2.75rem);
+    line-height: 1.02;
+  }
 }
 
 /* The label above or below a figure. Small, spaced, quiet: the contrast against
@@ -325,7 +332,7 @@ h2 { letter-spacing: -0.026em; }
 :focus-visible {
   outline: 3px solid var(--ring);
   outline-offset: 3px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 * {
@@ -400,7 +407,10 @@ a.card-hover:focus-visible {
   justify-content: center;
   gap: 0.45rem;
   min-height: 2.5rem;
-  border-radius: 0.625rem;
+  /* Was a hardcoded 0.625rem, which meant the new radius ladder never reached
+     a single button in the product. Every primitive below had the same problem:
+     the ladder existed and nothing used it. */
+  border-radius: var(--radius-md);
   font-weight: 590;
   line-height: 1;
   transition: background 0.15s ease, border-color 0.15s ease, filter 0.15s ease,
@@ -408,19 +418,39 @@ a.card-hover:focus-visible {
 }
 
 
-/* Every button in the app already carries one of these classes, so a subtle
-   hover-lift here gives the whole product a more animated feel with no
-   per-component changes. */
+/* Press, not hover-lift.
+   The comment that used to sit here described a subtle hover-lift, and the rule
+   it described had been removed, leaving only the :disabled:hover guard below
+   protecting a transform that no longer existed. Hover-lift on a button is also
+   the wrong instinct: it makes a page twitch as the cursor crosses it. What
+   makes a control feel physical is the press, so that is the one frame of
+   movement in the system. 1px, 60ms, and it is the only transform any button
+   gets. */
+.btn:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-ghost:active:not(:disabled),
+.btn-danger:active:not(:disabled) {
+  transform: translateY(1px);
+}
 
 .btn-primary:disabled:hover, .btn-secondary:disabled:hover, .btn-ghost:disabled:hover, .btn-danger:disabled:hover {
   transform: none;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .btn:active, .btn-primary:active, .btn-secondary:active,
+  .btn-ghost:active, .btn-danger:active { transform: none; }
+}
+
 .btn-primary {
   background: var(--primary);
   color: var(--primary-contrast);
+  /* The only element in the product that gets brand-tinted elevation, because
+     it is the one thing on a page we actually want a thumb to land on. */
+  box-shadow: var(--shadow-sm);
 }
-.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:hover { background: var(--primary-hover); box-shadow: var(--shadow-brand); }
 .btn-primary:disabled { filter: grayscale(0.25) opacity(0.55); box-shadow: none; }
 
 .btn-secondary {
@@ -542,7 +572,7 @@ a.card-hover:focus-visible {
   width: 2.5rem;
   height: 2.5rem;
   place-items: center;
-  border-radius: 0.8rem;
+  border-radius: var(--radius-lg);
   color: var(--primary);
   background: var(--primary-soft);
   border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
@@ -580,12 +610,12 @@ a.card-hover:focus-visible {
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border-radius: 0.625rem;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--foreground) 6%, transparent);
 }
 .seg-btn {
   min-height: 2.25rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
   padding: 0.3rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 550;
@@ -636,7 +666,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 .field-input {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 0.625rem;
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   background: var(--surface);

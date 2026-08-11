@@ -112,7 +112,7 @@ export function DeleteAccountCard({
 
   if (state.request) {
     return (
-      <div className="alert-danger card border p-6">
+      <div className="alert-danger card p-6 sm:p-7 border">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 shrink-0 text-danger">
             <Icon name="alert" size={20} />
@@ -143,7 +143,7 @@ export function DeleteAccountCard({
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">Delete {soloWorkspace ? "your workspace" : "your account"}</h2>
       <p className="mt-1 text-sm text-muted">
         Scheduled with a {state.gracePeriodDays} day grace period, so a change of mind costs

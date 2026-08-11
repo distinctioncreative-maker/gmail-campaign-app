@@ -47,7 +47,7 @@ export function CampaignDiagnostics({ campaignId }: { campaignId: string }) {
         : "Found problems that stop sending.";
 
   return (
-    <div className="card p-4">
+    <div className="card p-5 sm:p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold text-foreground">Diagnose this campaign</p>

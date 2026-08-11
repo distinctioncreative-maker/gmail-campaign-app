@@ -66,7 +66,7 @@ export function SourcingPanel({
 
   if (!configured) {
     return (
-      <div className="card p-6">
+      <div className="card p-6 sm:p-7">
         <h2 className="font-medium">Find leads</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted">
           Sourcing is not set up on this deployment yet. It needs a data provider account, and until
@@ -107,7 +107,7 @@ export function SourcingPanel({
   if (result) {
     return (
       <div>
-        <div className="card mb-4 flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+        <div className="card p-5 sm:p-6 mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
           <div>
             <p className="font-medium">
               {result.totalRecords} lead{result.totalRecords === 1 ? "" : "s"} from{" "}
@@ -154,7 +154,7 @@ export function SourcingPanel({
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">Find leads</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Search {providerName} for people who match, preview them with the same address checks as an

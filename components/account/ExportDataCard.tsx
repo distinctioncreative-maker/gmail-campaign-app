@@ -17,7 +17,7 @@ import { Icon } from "@/components/ui/Icon";
  */
 export function ExportDataCard({ counts }: { counts: Record<string, number> }) {
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">Export your data</h2>
       <p className="mt-1 text-sm text-muted">
         Everything you put in, in CSV, ready for a spreadsheet or another tool. Downloads start

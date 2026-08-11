@@ -28,7 +28,7 @@ export function PageSkeleton({
       {tiles > 0 ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: tiles }).map((_, i) => (
-            <div key={i} className="card p-5">
+            <div key={i} className="card p-6 sm:p-7">
               <Skeleton className="h-3 w-24" />
               <Skeleton className="mt-3 h-7 w-16" />
               <Skeleton className="mt-2 h-3 w-32" />
@@ -37,7 +37,7 @@ export function PageSkeleton({
         </div>
       ) : null}
 
-      <div className="card mt-6 p-4">
+      <div className="card p-5 sm:p-6 mt-6">
         <div className="flex flex-wrap gap-2">
           <Skeleton className="h-11 w-64" />
           <Skeleton className="h-11 w-40" />

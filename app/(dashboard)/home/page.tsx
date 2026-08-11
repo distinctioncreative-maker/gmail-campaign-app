@@ -140,7 +140,7 @@ export default async function HomePage({
       {home.best && (
         <Link
           href={`/campaigns/${home.best.c.campaignId}`}
-          className="card card-hover flex items-center justify-between gap-3 bg-surface-2 p-4"
+          className="card p-5 sm:p-6 card-hover flex items-center justify-between gap-3 bg-surface-2"
         >
           <span className="flex items-center gap-2 text-sm text-foreground">
             <Icon name="chart" size={16} className="shrink-0" aria-hidden />

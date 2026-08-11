@@ -179,7 +179,7 @@ export function WebhooksCard() {
 
   if (!endpoints) {
     return (
-      <div className="card p-6">
+      <div className="card p-6 sm:p-7">
         <h2 className="font-medium">Webhooks</h2>
         <p className="mt-2 text-sm text-muted">Loading…</p>
       </div>
@@ -187,7 +187,7 @@ export function WebhooksCard() {
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">Webhooks</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Have Cadence POST to your own service when something happens, so a reply or a bounce reaches

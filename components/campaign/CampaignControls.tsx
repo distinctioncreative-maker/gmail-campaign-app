@@ -137,7 +137,7 @@ export function CampaignControls({
   ];
 
   return (
-    <div className="card p-4">
+    <div className="card p-5 sm:p-6">
 
       <div className="flex flex-wrap gap-2">
         {status === "ACTIVE" && (

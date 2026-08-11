@@ -71,7 +71,7 @@ export default async function SettingsPage({
             <InviteTeamCard solo={ctx.tenantType === "CONSUMER"} />
           </div>
         )}
-        <div className="card animate-rise p-6">
+        <div className="card p-6 sm:p-7 animate-rise">
           <h2 className="font-medium">Your name</h2>
           <p className="mt-1 text-sm text-muted">
             Shown in the account menu and on Team pages instead of your email address.

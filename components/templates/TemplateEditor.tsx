@@ -665,7 +665,7 @@ export function TemplateEditor({
         </div>
       </section>
 
-      <aside className="card min-w-0 p-4 sm:p-6 2xl:sticky 2xl:top-20 2xl:max-h-[calc(100vh-6rem)] 2xl:overflow-y-auto">
+      <aside className="card p-5 sm:p-6 min-w-0 2xl:sticky 2xl:top-20 2xl:max-h-[calc(100vh-6rem)] 2xl:overflow-y-auto">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="segmented flex">
             {(["preview", "spam"] as const).map((t) => (

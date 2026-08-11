@@ -39,7 +39,7 @@ export function VariationPanel() {
   const analysis = analyzeSpintax(TEMPLATE);
 
   return (
-    <section className="card mt-8 p-5 sm:p-6">
+    <section className="card p-6 sm:p-7 mt-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-medium">What each recipient actually receives</h2>

@@ -18,10 +18,19 @@ const TONE: Record<StatTone, string> = {
   primary: "text-foreground",
 };
 
+/**
+ * Up roughly a third across the board.
+ *
+ * The old ladder started at 26px, which is only twice the 13px body around it,
+ * and that is the ratio at which a KPI stops reading as a headline and starts
+ * reading as slightly-large text. The thing that makes a Robinhood tile feel
+ * expensive is the gap between an enormous figure and a tiny label, not the
+ * figure's absolute size.
+ */
 const VALUE_SIZE = {
-  sm: "text-[1.625rem]",
-  md: "text-[1.875rem]",
-  lg: "text-[2.25rem]",
+  sm: "text-[2rem]",
+  md: "text-[2.375rem]",
+  lg: "text-[3rem]",
 } as const;
 
 export type StatTileProps = {
@@ -58,24 +67,22 @@ export function StatTile({
 }: StatTileProps) {
   const body = (
     <>
-      <p className="text-[0.6875rem] font-medium uppercase leading-none tracking-[0.09em] text-muted">
-        {label}
-      </p>
-      <p className={`display-figure mt-4 leading-none ${VALUE_SIZE[size]} ${TONE[tone]}`}>
+      <p className="display-label leading-none">{label}</p>
+      <p className={`display-figure mt-5 leading-none ${VALUE_SIZE[size]} ${TONE[tone]}`}>
         {value}
       </p>
-      {hint && <p className="mt-2.5 text-xs leading-5 text-muted">{hint}</p>}
+      {hint && <p className="mt-3 text-xs leading-5 text-muted">{hint}</p>}
     </>
   );
 
   if (href) {
     return (
-      <Link href={href} className="block bg-surface p-5 transition-colors duration-[--dur-base] hover:bg-surface-2">
+      <Link href={href} className="block bg-surface p-6 transition-colors duration-[--dur-base] hover:bg-surface-2">
         {body}
       </Link>
     );
   }
-  return <div className="bg-surface p-5">{body}</div>;
+  return <div className="bg-surface p-6">{body}</div>;
 }
 
 /**

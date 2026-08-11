@@ -52,7 +52,7 @@ export function SessionsCard({
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">Signed-in devices</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         A sign-in lasts five days on each browser. If you signed in somewhere you no longer control,

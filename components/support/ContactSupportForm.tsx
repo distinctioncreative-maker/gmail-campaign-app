@@ -70,7 +70,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
 
   if (sent) {
     return (
-      <div className="card p-5 sm:p-6">
+      <div className="card p-6 sm:p-7">
         <div className="flex items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success">
             <Icon name="check" size={18} />
@@ -95,7 +95,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
   }
 
   return (
-    <div className="card p-5 sm:p-6">
+    <div className="card p-6 sm:p-7">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="font-medium">What is this about?</span>

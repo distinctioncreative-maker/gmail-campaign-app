@@ -111,7 +111,7 @@ export function TestCenter() {
           const st = status[c.id] ?? "idle";
           const presentation = STATUS_PRESENTATION[st];
           return (
-            <div key={c.id} className="card p-5">
+            <div key={c.id} className="card p-6 sm:p-7">
               <div className="flex items-start justify-between gap-3">
                 <p className="font-medium">{c.label}</p>
                 <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-semibold ${presentation.className}`}>

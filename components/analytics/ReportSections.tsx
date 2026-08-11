@@ -245,7 +245,7 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
   const values = steps.map((s) => (Number.isFinite(s.value) ? s.value : 0));
   const max = Math.max(1, ...values);
   return (
-    <section className="card p-5 sm:p-6">
+    <section className="card p-6 sm:p-7">
       <h2 className="font-semibold">Campaign funnel</h2>
       <p className="mt-1 text-xs text-muted">
         Initial-send progress and reply outcomes. Follow-ups stay in the total sends KPI above.
@@ -281,7 +281,7 @@ export function TimeToReplyPanel({ ttr }: { ttr: ReportData["ttr"] }) {
     ["Later", ttr.buckets.later],
   ];
   return (
-    <section className="card p-5 sm:p-6">
+    <section className="card p-6 sm:p-7">
       <h2 className="font-semibold">Time to reply</h2>
       <p className="mb-4 mt-1 text-xs text-muted">
         {ttr.count > 0
@@ -320,7 +320,7 @@ export function TrackedEngagementPanel({
 }) {
   const unavailable = <span className="text-xl text-muted">Not available</span>;
   return (
-    <section className="card p-5 sm:p-6">
+    <section className="card p-6 sm:p-7">
       <h2 className="font-semibold">Tracked engagement</h2>
       {trackedCampaignCount === 0 ? (
         <div className="mt-4 rounded-xl bg-surface-2 p-4">
@@ -503,7 +503,7 @@ export function InboxBreakdownPanel({ inboxes }: { inboxes: ReportData["inboxes"
   const worst = Math.max(...inboxes.map((i) => i.bounceRate));
 
   return (
-    <section className="card p-5 sm:p-6">
+    <section className="card p-6 sm:p-7">
       <h2 className="font-semibold">Sending inboxes</h2>
       <p className="mt-1 text-xs text-muted">
         Volume and bounce rate per address. A pooled rate hides which inbox is producing it.

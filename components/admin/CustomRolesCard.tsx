@@ -71,7 +71,7 @@ export function CustomRolesCard({ roles }: { roles: CustomRoleDefinition[] }) {
   }
 
   return (
-    <section className="card p-6" aria-labelledby="custom-roles-heading">
+    <section className="card p-6 sm:p-7" aria-labelledby="custom-roles-heading">
       <h2 id="custom-roles-heading" className="font-medium">Custom roles</h2>
       <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
         Create role names that match your organization. Each role maps to a tested access level,

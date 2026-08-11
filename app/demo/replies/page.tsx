@@ -61,7 +61,7 @@ export default function DemoRepliesPage() {
         {DEMO_REPLIES.map((r) => {
           const chip = INTENT[r.intent];
           return (
-            <li key={r.email} className="card card-hover p-4">
+            <li key={r.email} className="card p-5 sm:p-6 card-hover">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-medium">

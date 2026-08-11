@@ -52,7 +52,7 @@ export default async function FeaturesPage() {
 
       <div className="mt-6 flex flex-col gap-6">
         {FEATURE_CATEGORIES.map((category) => (
-          <div key={category.id} className="card p-5">
+          <div key={category.id} className="card p-6 sm:p-7">
             <h2 className="font-medium text-foreground">{category.name}</h2>
             <ul className="mt-3 flex flex-col divide-y divide-border">
               {category.features.map((f) => {

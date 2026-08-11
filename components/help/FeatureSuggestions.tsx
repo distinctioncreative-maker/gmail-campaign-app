@@ -51,7 +51,7 @@ export function FeatureSuggestions() {
   }
 
   return (
-    <div className="card p-5">
+    <div className="card p-6 sm:p-7">
       <p className="text-sm text-muted">
         Have an idea to make the app better? Suggest it: the team can see every idea here.
       </p>

@@ -63,10 +63,10 @@ export function BillingCard() {
     }
   }
 
-  if (!state) return <div className="card p-6 text-sm text-muted">Loading…</div>;
+  if (!state) return <div className="card p-6 sm:p-7 text-sm text-muted">Loading…</div>;
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-medium">Plan &amp; billing</h2>

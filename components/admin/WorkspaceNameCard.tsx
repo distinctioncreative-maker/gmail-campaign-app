@@ -31,7 +31,7 @@ export function WorkspaceNameCard({ initial }: { initial: string }) {
   }
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">Workspace name</h2>
       <p className="mt-1 text-sm text-muted">
         Your company&apos;s name, shown in the sidebar and on Home for everyone in this workspace.

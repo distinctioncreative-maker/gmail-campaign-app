@@ -171,7 +171,7 @@ export default async function DeliverabilityPage() {
           </p>
         </>
       ) : (
-        <div className="card p-6">
+        <div className="card p-6 sm:p-7">
           {postmaster.state === "NOT_CONNECTED" && (
             <p className="text-sm text-muted">
               Connect Gmail in <span className="font-medium">Settings</span> first: Postmaster data
@@ -225,7 +225,7 @@ export default async function DeliverabilityPage() {
       {/* Deliverability Insights: anonymized, cross-user benchmarks */}
       <h2 className="mt-10 mb-3 font-medium">Deliverability insights</h2>
       {surfacedDimensions.length === 0 ? (
-        <div className="card p-6 text-sm text-muted">
+        <div className="card p-6 sm:p-7 text-sm text-muted">
           <p className="font-medium text-foreground">Still gathering data</p>
           <p className="mt-1">
             This learns what actually drives deliverability, reply rate, and click rate, across every
@@ -252,7 +252,7 @@ export default async function DeliverabilityPage() {
         </>
       )}
 
-      <div className="card mt-8 p-5">
+      <div className="card p-6 sm:p-7 mt-8">
         <h3 className="font-medium">If replies are low, work this list in order</h3>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
           <li>Fix anything red or amber above: authentication is the foundation.</li>
@@ -286,7 +286,7 @@ function DimensionCard({
 }) {
   const best = dimension.buckets[0];
   return (
-    <div className="card p-5">
+    <div className="card p-6 sm:p-7">
       <p className="text-sm text-muted">{dimension.label}</p>
       <p className="mt-1 text-lg font-semibold">{best.bucket}</p>
       <p className="mt-1 text-xs text-muted">

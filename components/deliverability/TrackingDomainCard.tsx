@@ -110,7 +110,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
 
   if (!state) {
     return (
-      <div className="card p-5 sm:p-6">
+      <div className="card p-6 sm:p-7">
         <h2 className="font-semibold">Tracking domain</h2>
         <p className="mt-2 text-sm text-muted">Loading…</p>
       </div>
@@ -122,7 +122,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
   const verified = domain.status === "VERIFIED";
 
   return (
-    <div className="card p-5 sm:p-6">
+    <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-semibold">Tracking domain</h2>

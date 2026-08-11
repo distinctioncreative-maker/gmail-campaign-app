@@ -207,7 +207,7 @@ export default async function CampaignDetailPage({
       <CampaignSectionNav showControls={campaign.deletedAt === null} />
 
       <div id="overview" className="mt-5 grid scroll-mt-24 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="card p-5 sm:p-6">
+        <section className="card p-6 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted">
@@ -233,7 +233,7 @@ export default async function CampaignDetailPage({
           </p>
         </section>
 
-        <section className="card p-5 sm:p-6">
+        <section className="card p-6 sm:p-7">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">
             Campaign setup
           </p>
@@ -342,7 +342,7 @@ export default async function CampaignDetailPage({
       ) : null}
 
       {abRows.length > 0 && (
-        <div className="mt-4 card p-5">
+        <div className="mt-4 card p-6 sm:p-7">
           <h2 className="font-medium">Template performance (A/B)</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -411,7 +411,7 @@ export default async function CampaignDetailPage({
         </div>
         <div id="activity" className="scroll-mt-24">
           <h2 className="mb-3 font-medium">Activity</h2>
-          <div className="card p-4">
+          <div className="card p-5 sm:p-6">
             {events.length === 0 ? (
               <p className="text-sm text-muted">Nothing yet.</p>
             ) : (

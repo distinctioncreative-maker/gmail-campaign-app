@@ -109,7 +109,7 @@ export function ApiKeysCard() {
 
   if (!keys) {
     return (
-      <div className="card p-6">
+      <div className="card p-6 sm:p-7">
         <h2 className="font-medium">API keys</h2>
         <p className="mt-2 text-sm text-muted">Loading…</p>
       </div>
@@ -119,7 +119,7 @@ export function ApiKeysCard() {
   const active = keys.filter((k) => k.revokedAt === null);
 
   return (
-    <div className="card p-6">
+    <div className="card p-6 sm:p-7">
       <h2 className="font-medium">API keys</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         For your own code and integrations. Send a key as{" "}

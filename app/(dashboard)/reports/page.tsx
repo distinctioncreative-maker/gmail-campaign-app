@@ -120,7 +120,7 @@ export default async function ReportsPage({
       ) : null}
 
       {/* Hero chart: effort in, conversations out, on one canvas. */}
-      <section className="card mt-6 p-5 sm:p-6">
+      <section className="card p-6 sm:p-7 mt-6">
         <h2 className="font-semibold">Outreach trend</h2>
         <p className="mt-1 text-xs text-muted">
           Initial sends and replies from the selected cohort over the last {rangeDays} days.
@@ -134,7 +134,7 @@ export default async function ReportsPage({
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <CampaignFunnel steps={report.funnel} />
 
-        <section className="card p-5 sm:p-6">
+        <section className="card p-6 sm:p-7">
           <h2 className="font-semibold">When replies arrive</h2>
           <p className="mb-4 mt-1 text-xs text-muted">
             Darker cells mean more replies in {ctx.user.timezone}.
@@ -142,7 +142,7 @@ export default async function ReportsPage({
           <ReplyHeatmap grid={report.heatmap} />
         </section>
 
-        <section className="card p-5 sm:p-6">
+        <section className="card p-6 sm:p-7">
           <h2 className="font-semibold">Best send hours</h2>
           <p className="mb-4 mt-1 text-xs text-muted">
             Reply rate by the local hour the initial email was sent. Hours need at least two sends
