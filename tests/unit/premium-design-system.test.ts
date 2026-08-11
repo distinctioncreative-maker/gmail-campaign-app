@@ -113,6 +113,74 @@ describe("token ladders", () => {
     expect(css).not.toMatch(/\.btn-primary:hover\s*\{[^}]*translateY/);
   });
 
+  it("gives every animation a reduced-motion escape", () => {
+    // The one rule the motion system cannot break. Expressive was chosen over
+    // restrained, which raises the stakes: someone with vestibular sensitivity
+    // now has more to opt out of, not less.
+    const reduced = css.slice(css.indexOf("(prefers-reduced-motion: reduce)"));
+    for (const cls of [
+      "stagger",
+      "stagger-rows",
+      "shimmer",
+      "draw-bar",
+      "grow-bar",
+      "draw-line",
+      "drift-field",
+    ]) {
+      expect(css, `.${cls} exists`).toContain(`.${cls}`);
+      expect(reduced, `.${cls} is disabled under reduced motion`).toContain(`.${cls}`);
+    }
+  });
+
+  it("animates transforms and opacity, never layout", () => {
+    // A width or height keyframe reflows on every frame, and these run on
+    // twenty table rows at once. Bars scale, they do not grow.
+    // Brace-counted rather than pattern-matched. A regex ending at the next
+    // "\n}" walks straight past a single-line @keyframes and swallows whatever
+    // rule follows it, which made this fail on an unrelated declaration.
+    const blocks: string[] = [];
+    for (let i = css.indexOf("@keyframes"); i !== -1; i = css.indexOf("@keyframes", i + 1)) {
+      let depth = 0;
+      let end = i;
+      for (let j = css.indexOf("{", i); j < css.length; j++) {
+        if (css[j] === "{") depth++;
+        else if (css[j] === "}") {
+          depth--;
+          if (depth === 0) {
+            end = j + 1;
+            break;
+          }
+        }
+      }
+      blocks.push(css.slice(i, end));
+    }
+    expect(blocks.length).toBeGreaterThan(5);
+    const offenders = blocks.filter((b) =>
+      /\n\s*(width|height|margin|padding|top|left|right|bottom)\s*:/.test(b)
+    );
+    expect(offenders.map((b) => b.slice(0, 40))).toEqual([]);
+  });
+
+  it("counts up from a server-rendered value, not from zero", () => {
+    // All 28 call sites are inside server-rendered pages, so initialising the
+    // state at zero shipped a literal "0" in the HTML: correct for nobody, and
+    // permanently wrong for a client with JavaScript off.
+    const countUp = read("components/ui/CountUp.tsx");
+    expect(countUp).toContain("useState(value)");
+    expect(countUp).not.toMatch(/useState\(0\)/);
+    // And reduced motion must skip the loop rather than run it fast.
+    expect(countUp).toMatch(/if \(reduce \|\|/);
+  });
+
+  it("sets the wordmark in the display face", () => {
+    // It rendered in the body face while every heading in the product used
+    // Inter Tight, so the one piece of type that is the brand was the one piece
+    // not using the brand face.
+    const logo = read("components/ui/Logo.tsx");
+    expect(logo).toContain("font-display");
+    expect(logo).not.toMatch(/opacity-55/);
+  });
+
   it("defaults to dark without consulting the operating system", () => {
     // Dark first is a brand decision. An explicit choice still wins both ways,
     // which is the part that matters for anyone who wants light.

@@ -194,7 +194,7 @@ export default async function RepliesPage() {
         ) : (
           <>
           {/* Mobile: reply cards */}
-          <ul className="space-y-2 sm:hidden">
+          <ul className="stagger-rows space-y-2 sm:hidden">
             {rows.map((r) => (
               <li key={`m-${r.campaignId}-${r.contactId}-${r.repliedAt}`} className="card p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-2">
@@ -266,7 +266,7 @@ export default async function RepliesPage() {
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-rows">
                 {rows.map((r) => (
                   <tr
                     key={`${r.campaignId}-${r.contactId}-${r.repliedAt}`}

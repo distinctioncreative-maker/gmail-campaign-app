@@ -262,7 +262,7 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
               <div
-                className="bg-primary h-full rounded-full"
+                className="bg-primary grow-bar h-full rounded-full"
                 style={{ width: `${Math.max(values[i] > 0 ? 3 : 0, (values[i] / max) * 100)}%` }}
               />
             </div>
@@ -295,7 +295,7 @@ export function TimeToReplyPanel({ ttr }: { ttr: ReportData["ttr"] }) {
               <span className="w-28 shrink-0 text-muted">{label}</span>
               <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface-2">
                 <div
-                  className="h-full rounded-full bg-primary"
+                  className="grow-bar h-full rounded-full bg-primary"
                   style={{ width: `${(count / ttr.count) * 100}%` }}
                 />
               </div>
@@ -453,7 +453,7 @@ export function CampaignLeaderboard({
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
                           <div
-                            className="h-full rounded-full bg-primary"
+                            className="grow-bar h-full rounded-full bg-primary"
                             style={{ width: `${Math.min(100, performance.replyRate)}%` }}
                           />
                         </div>

@@ -1,6 +1,15 @@
-/** Shimmering placeholder blocks for loading states. */
+/**
+ * Placeholder blocks for loading states.
+ *
+ * A sweep rather than a pulse. `animate-pulse` fades the whole block in and out,
+ * which at a glance is hard to tell apart from a layout that has broken and left
+ * grey boxes behind. A highlight travelling left to right reads unambiguously as
+ * work in progress, and because it animates background-position on a gradient it
+ * composites on the GPU instead of repainting a whole subtree. Both are disabled
+ * under prefers-reduced-motion, where the block simply sits there.
+ */
 export function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-surface-2 ${className}`} />;
+  return <div className={`shimmer rounded-lg bg-surface-2 ${className}`} />;
 }
 
 /** A few stacked list-row skeletons. */

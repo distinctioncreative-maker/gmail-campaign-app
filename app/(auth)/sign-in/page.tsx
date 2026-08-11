@@ -48,11 +48,7 @@ export default function SignInPage() {
     <main className="grid min-h-screen lg:grid-cols-2">
       {/* Brand panel */}
       <div className="brand-gradient relative hidden overflow-hidden p-12 text-brand-contrast lg:flex lg:flex-col">
-        <div className="aurora" aria-hidden>
-          <span className="aurora-blob b1" />
-          <span className="aurora-blob b2" />
-          <span className="aurora-blob b3" />
-        </div>
+        <div className="drift-field" aria-hidden />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"

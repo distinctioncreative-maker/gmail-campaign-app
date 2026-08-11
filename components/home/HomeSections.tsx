@@ -43,11 +43,7 @@ export function HomeHero({
   const pill = STATUS_PILL[briefing.status] ?? STATUS_PILL.READY;
   return (
     <section className="jarvis-hero p-6 md:p-8">
-      <div className="aurora" aria-hidden>
-        <span className="aurora-blob b1" />
-        <span className="aurora-blob b2" />
-        <span className="aurora-blob b3" />
-      </div>
+      <div className="drift-field" aria-hidden />
       <div className="relative grid gap-6 lg:grid-cols-[1.05fr_1fr] lg:items-center">
         <div>
           <div

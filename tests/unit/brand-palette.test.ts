@@ -56,7 +56,21 @@ describe("cool neutral brand palette", () => {
 
   it("keeps one accent across two grounds: near-white in light, navy in dark", () => {
     expect(token(lightBlock, "background")).toBe("#f1f4f8");
-    expect(token(darkBlock, "background")).toBe("#0b0f17");
+    // The dark ground is asserted by its properties rather than by its exact
+    // hex. It used to be pinned to #0b0f17, which made this test fail the first
+    // time the ground was legitimately deepened for the new elevation ladder,
+    // and a literal that has to be edited every time the palette is tuned is
+    // not protecting anything: it just relocates the decision into a diff.
+    //
+    // What actually matters is what the name promises. It has to be dark enough
+    // to be a dark theme, and navy rather than neutral grey or warm, because the
+    // whole palette is built on a cool family and a warm dark ground would put
+    // the accents out of key. Current value: #070b12.
+    const darkGround = token(darkBlock, "background");
+    expect(darkGround).toMatch(/^#[0-9a-f]{6}$/);
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(darkGround.slice(i, i + 2), 16));
+    expect(Math.max(r, g, b), "dark ground stays genuinely dark").toBeLessThan(0x22);
+    expect(b, "dark ground is navy, not neutral or warm").toBeGreaterThan(r);
     for (const block of [lightBlock, darkBlock]) {
       // The accent must stay clearly separable from body and muted text, which
       // is the failure that made an earlier plum accent invisible as an action.

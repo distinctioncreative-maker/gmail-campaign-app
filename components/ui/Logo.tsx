@@ -12,18 +12,43 @@ export const APP_NAME = "Cadence";
  * primary navigation stays calmer without a decorative badge competing with
  * the page content.
  */
+const WORDMARK_SIZE = {
+  /** Mobile header and other tight chrome. */
+  sm: "text-[1.0625rem] tracking-[-0.038em]",
+  /** Sidebar and top bar. */
+  md: "text-[1.1875rem] tracking-[-0.042em]",
+  /** Sign-in and anywhere the mark is the only thing on screen. */
+  lg: "text-[1.5rem] tracking-[-0.046em]",
+} as const;
+
 export function Wordmark({
   className = "",
   descriptor,
+  size = "md",
 }: {
   className?: string;
   descriptor?: string;
+  size?: keyof typeof WORDMARK_SIZE;
 }) {
   return (
     <span className={`inline-flex min-w-0 items-baseline gap-2 ${className}`}>
-      <span className="text-lg font-semibold tracking-[-0.035em]">{APP_NAME}</span>
+      {/*
+        Set in the display face, which it was not.
+        The wordmark rendered in Inter while every heading in the product renders
+        in Inter Tight, so the one piece of type that is supposed to be the brand
+        was the one piece not using the brand face. At this size the difference
+        is plainly visible and reads as a logo someone typed rather than set.
+
+        Tracking tightens as the size grows, matching the h1/h2 rule in
+        globals.css: a name at 24px needs proportionally more negative tracking
+        than the same name at 17px to hold together as one shape.
+      */}
+      <span className={`font-display font-semibold ${WORDMARK_SIZE[size]}`}>{APP_NAME}</span>
       {descriptor && (
-        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] opacity-55">
+        // text-muted rather than opacity, which is what this used. Opacity on
+        // text over a themed surface produces a different colour in light and
+        // dark and cannot be checked for contrast; the token is measured.
+        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
           {descriptor}
         </span>
       )}
@@ -74,7 +99,9 @@ export function Logo({
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark size={size} />
       {wordmark && (
-        <span className="text-lg font-semibold tracking-tight text-foreground">{APP_NAME}</span>
+        <span className="font-display text-[1.1875rem] font-semibold tracking-[-0.042em] text-foreground">
+          {APP_NAME}
+        </span>
       )}
     </span>
   );
