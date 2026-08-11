@@ -151,6 +151,29 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
     }
   }
 
+  /**
+   * "closed" is the heaviest switch on this page and it does not look like it.
+   *
+   * It reads as "stop new signups". It actually stops every sign-in, including
+   * existing paying customers and including you, because the gate sits at the
+   * point a session cookie is minted rather than at account creation. Your own
+   * way back in is the operator exemption in lib/auth/session.ts, and it is
+   * worth knowing that is what you are relying on before you press this.
+   */
+  async function chooseSignupMode(mode: string) {
+    if (mode === "closed") {
+      const ok = await confirm({
+        title: "Pause all sign-in?",
+        body:
+          "This stops every sign-in, not just new accounts. Existing customers with expired sessions will be locked out until you turn it back on. You can still get in yourself, because a platform operator is exempt from this gate.",
+        confirmLabel: "Pause sign-in",
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    await act({ action: "signup.mode", mode }, `Signup is now ${mode}.`);
+  }
+
   async function runCheckup() {
     setBusy(true);
     try {
@@ -201,7 +224,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
           {SIGNUP_MODES.map((mode) => (
             <button
               key={mode}
-              onClick={() => void act({ action: "signup.mode", mode }, `Signup is now ${mode}.`)}
+              onClick={() => void chooseSignupMode(mode)}
               disabled={disabled}
               aria-pressed={state.settings.signupMode === mode}
               className={`min-h-11 rounded-xl px-3 py-2 text-sm disabled:opacity-50 ${

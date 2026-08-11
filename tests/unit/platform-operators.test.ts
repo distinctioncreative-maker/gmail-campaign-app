@@ -290,4 +290,45 @@ describe("the portal's guards, by sweep", () => {
     const guard = readFileSync("lib/auth/requireUser.ts", "utf8");
     expect(guard).toContain("isEmailBanned");
   });
+
+  it("leaves a way back in when signup is closed", () => {
+    // This shipped as an unrecoverable lockout and was reached in practice.
+    // Reopening signup needs requireStepUp; step-up needs a sign-in inside the
+    // last 30 minutes; signing in is exactly what "closed" refuses. The stored
+    // value also wins over SIGNUP_MODE, so a redeploy could not undo it either.
+    // The only remaining exit was hand-editing Firestore, which is not a thing
+    // to discover during the incident that made you close the doors.
+    //
+    // An operator is now exempt from the signup gate. That is safe precisely
+    // because the list lives in an environment variable: no database write and
+    // no workspace role can put an address on it.
+    const session = readFileSync("lib/auth/session.ts", "utf8");
+    expect(session).toContain("isPlatformOperator");
+    expect(session).toContain("PLATFORM_OWNER_EMAILS");
+    expect(session).toMatch(/signupMode === "closed" && !isOperator/);
+
+    // The exemption must not outrank the ban list: an operator who is banned
+    // stays banned, so the ban check has to come after it.
+    const exemptionAt = session.indexOf("const isOperator");
+    const banAt = session.indexOf("isEmailBanned(email)");
+    expect(exemptionAt).toBeGreaterThan(0);
+    expect(banAt).toBeGreaterThan(exemptionAt);
+  });
+
+  it("does not tell locked-out customers their account still works", () => {
+    // The gate runs at cookie mint, which happens on every sign-in and not only
+    // the first, so "closed" locks out existing customers too. The old copy read
+    // "If you already have an account, contact support", which is an invitation
+    // to open a ticket support cannot resolve.
+    const session = readFileSync("lib/auth/session.ts", "utf8");
+    expect(session).toContain("including for existing accounts");
+    expect(session).not.toContain("If you already have an account, contact support");
+  });
+
+  it("warns before the heaviest switch on the page", () => {
+    // "closed" reads as "stop new signups" and is actually "stop all sign-in".
+    const owner = readFileSync("components/owner/OwnerConsole.tsx", "utf8");
+    expect(owner).toContain("chooseSignupMode");
+    expect(owner).toContain("not just new accounts");
+  });
 });

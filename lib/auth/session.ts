@@ -5,6 +5,7 @@ import { env } from "@/lib/env";
 import { allowlistMisconfigured, isAllowedAccount, parseAllowedDomains } from "./domains";
 import { effectiveSignupMode } from "@/lib/platform/state";
 import { isEmailBanned } from "@/lib/platform/state";
+import { isPlatformOperator } from "@/lib/platform/operators";
 
 export const SESSION_COOKIE = "__session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 5; // 5 days
@@ -37,13 +38,38 @@ export async function createSessionCookie(idToken: string): Promise<{
   // sign-in restricted to the configured work domains.
   // Runtime rather than the env var alone, so the doors can be shut in seconds
   // during an incident instead of after a deploy. See lib/platform/state.ts.
+  // Break glass.
+  //
+  // Closing signup used to be unrecoverable from inside the product, and the
+  // deadlock was exact: reopening it needs requireStepUp, step-up needs a
+  // sign-in inside the last 30 minutes, and signing in is what "closed" refuses.
+  // The stored value also wins over the env var, so redeploying with
+  // SIGNUP_MODE=allowlist could not rescue it either. The only way out was
+  // editing Firestore by hand, which is not a thing to discover during the
+  // incident that made you close the doors.
+  //
+  // A platform operator is therefore exempt from the signup gate. This grants no
+  // extra authority: the address is matched against PLATFORM_OWNER_EMAILS, an
+  // environment variable no database write can reach, and it is the same list
+  // that already governs the portal. Everything downstream, the ban check, the
+  // Firebase revocation check, requireOperator itself, is unchanged.
+  //
+  // Placed after the email-verified check and before the ban check on purpose:
+  // an operator must still hold a verified address, and an operator who has
+  // somehow been banned should stay banned.
+  const isOperator = isPlatformOperator(email, env.PLATFORM_OWNER_EMAILS);
+
   const signupMode = await effectiveSignupMode();
-  if (signupMode === "closed") {
+  if (signupMode === "closed" && !isOperator) {
     throw new AuthError(
-      "Cadence is not accepting new sign-ins right now. If you already have an account, contact support."
+      // Says what is true. This gate runs on every sign-in, not only the first
+      // one, so a closed deployment locks out existing customers as well. The
+      // previous wording told them their account still worked and to contact
+      // support, which sent people to a support queue to be told the same thing.
+      "Cadence sign-in is paused right now, including for existing accounts. This is temporary and nothing in your account has changed."
     );
   }
-  if (signupMode !== "open") {
+  if (signupMode !== "open" && !isOperator) {
     const allowedDomains = parseAllowedDomains(env.ALLOWED_GOOGLE_WORKSPACE_DOMAIN);
     // Fail closed: an empty allowlist means "no restriction", which is only
     // acceptable in development. In production, refuse sign-in until an admin
