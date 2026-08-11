@@ -94,20 +94,43 @@
   --marketing-info: #3e4a5c;
   --marketing-info-soft: #e7eaef;
 
-  /* Radius scale. Previously ad-hoc per component, which reads as sloppy. */
-  --radius-sm: 3px;
-  --radius-md: 5px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
+  /* Radius scale.
+     These are re-exported into Tailwind through @theme inline below, so
+     `rounded-lg` in a component means this value and not Tailwind's. That is
+     leverage and it was previously pointed the wrong way: the ladder topped out
+     at 10px, which meant 180 `rounded-xl` and 99 `rounded-lg` call sites all
+     rendered as near-rectangles. 8px is the Bootstrap 3 default and the app
+     read like it.
+     Nested radii follow inner = outer - padding, or the corners fight. */
+  --radius-sm: 6px;   /* badges, chips */
+  --radius-md: 10px;  /* buttons, inputs, segmented controls */
+  --radius-lg: 14px;  /* cards, panels */
+  --radius-xl: 20px;  /* dialogs, feature tiles */
+  --radius-2xl: 28px; /* hero surfaces, image frames */
   --radius-full: 999px;
 
-  /* Elevation ladder. Tighter and lighter than before: a large soft shadow
-     reads cheap, while a hairline border plus a whisper of lift reads
-     considered. Definition comes from --border, not from blur. */
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: 0 8px 28px -18px rgba(15, 23, 41, 0.18);
-  --shadow-brand: none;
+  /* Elevation ladder.
+     The previous ladder was three `none`s and one value, on the theory that a
+     soft shadow reads cheap. The instinct is right and the conclusion was
+     wrong: what reads cheap is a *visible* shadow. A shadow built from large
+     blur, large negative spread and low opacity is never perceived as a shadow
+     at all, only as separation, and that is what every interface we are
+     measuring ourselves against uses.
+     Two layers each: a 1px contact shadow that seats the element, and a wide
+     ambient one that lifts it. Hairline border still does the defining work. */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 41, 0.04);
+  --shadow-md: 0 1px 2px rgba(15, 23, 41, 0.04), 0 8px 24px -12px rgba(15, 23, 41, 0.10);
+  --shadow-lg: 0 1px 3px rgba(15, 23, 41, 0.05), 0 18px 48px -24px rgba(15, 23, 41, 0.16);
+  --shadow-xl: 0 2px 4px rgba(15, 23, 41, 0.06), 0 32px 80px -32px rgba(15, 23, 41, 0.22);
+  --shadow-brand: 0 1px 2px rgba(35, 84, 199, 0.10), 0 10px 30px -14px rgba(35, 84, 199, 0.35);
+  /* Dark mode cannot use shadow for separation: a darker shadow on a dark field
+     is invisible. It gets a top highlight instead, and this token is the seam
+     so components do not need to know which theme they are in.
+     Fully transparent rather than `none`, because `none` inside a comma-separated
+     box-shadow list invalidates the entire declaration. That is not theoretical:
+     one rule in this file already carried `var(--shadow-sm), 0 1px 3px ...` while
+     --shadow-sm was `none`, so the whole shadow silently did nothing. */
+  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0);
 
   /* Motion tokens, so every transition shares one curve and tempo. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -163,10 +186,19 @@
   --warning-contrast: #1a1104;
   --overlay: rgba(4, 6, 10, 0.7);
   --ring: rgba(110, 155, 255, 0.5);
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: 0 10px 30px -20px rgba(0, 0, 0, 0.7);
-  --shadow-brand: none;
+  /* Dark elevation works differently and copying the light values produces
+     nothing at all: black on near-black is invisible, which is why the previous
+     dark ladder was three `none`s and gave up. Separation in dark comes from
+     two things instead. A deeper, harder shadow that reads as an absence of
+     light rather than as a grey smudge, and a 1px top highlight, which is how a
+     physical edge catches light and the single most convincing dark-mode
+     depth cue there is. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.40), 0 8px 24px -12px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.45), 0 18px 48px -24px rgba(0, 0, 0, 0.70);
+  --shadow-xl: 0 2px 4px rgba(0, 0, 0, 0.50), 0 32px 80px -32px rgba(0, 0, 0, 0.80);
+  --shadow-brand: 0 1px 2px rgba(0, 0, 0, 0.40), 0 10px 30px -14px rgba(110, 155, 255, 0.28);
+  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 
 /* App surfaces, text, borders, status treatments, overlays, and filled-control
@@ -214,6 +246,15 @@
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  /* The elevation ladder was never mapped, so `shadow-md` in a component
+     silently meant Tailwind's default while the tokens were only reachable from
+     inside this file. Two ladders, one of them unused, is how the app ended up
+     with no consistent depth at all. */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
 }
 
 * {
@@ -256,6 +297,24 @@ h2 { letter-spacing: -0.026em; }
   font-weight: 600;
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
+  /* Owns its own size now.
+     Almost everything on screen was 14px, including the numbers, and a layout
+     with no range between its largest and smallest type reads cheap however
+     well it is otherwise built. This is the number a customer screenshots for
+     their boss, so it gets to be the loudest thing on the card and clamps
+     rather than stepping, so it never collides on a narrow phone. */
+  font-size: clamp(1.875rem, 1.4rem + 2.1vw, 2.75rem);
+  line-height: 1.02;
+}
+
+/* The label above or below a figure. Small, spaced, quiet: the contrast against
+   .display-figure is doing the work, not the label itself. */
+.display-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .display-title {
   font-family: var(--font-display), var(--font-sans-base), system-ui, sans-serif;
@@ -290,16 +349,25 @@ h2 { letter-spacing: -0.026em; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  /* Seated, not floating. The contact shadow is 1px and 4% opacity: you cannot
+     see it, you can only see that the card is not painted onto the page. In
+     dark, --edge-highlight carries the same job from the other direction. */
+  box-shadow: var(--shadow-sm), var(--edge-highlight);
 }
 .card-hover {
   transition: border-color var(--dur-base) var(--ease-out),
-    background-color var(--dur-base) var(--ease-out);
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
 }
 /* Hover darkens the rule. It does not lift, glow, or tint: a panel that
    floats off the page on mouseover is the visual language of a toy. */
 .card-hover:hover {
   border-color: color-mix(in srgb, var(--foreground) 28%, var(--border));
   background: color-mix(in srgb, var(--surface-2) 55%, var(--surface));
+  /* One step up the ladder, and only for things that are actually clickable.
+     Still no translate: a panel that jumps on mouseover is the visual language
+     of a toy, and that judgement from the previous pass was correct. */
+  box-shadow: var(--shadow-md), var(--edge-highlight);
 }
 /* Clickable cards: crisp keyboard focus ring, no default outline. */
 a.card-hover:focus-visible {

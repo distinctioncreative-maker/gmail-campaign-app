@@ -7,7 +7,10 @@ import { Icon } from "@/components/ui/Icon";
  * The no-flash inline script in the root layout sets the initial theme before
  * paint; this just keeps it in sync and lets the user switch. */
 export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  // Defaults to true because dark is now the product's default theme. Starting
+  // at false made the button render a "switch to dark" moon for one frame on a
+  // page that was already dark.
+  const [dark, setDark] = useState(true);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

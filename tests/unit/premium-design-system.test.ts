@@ -3,6 +3,86 @@ import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
+/**
+ * The token ladders, which are the whole of the redesign's phase one.
+ *
+ * These are worth testing because both ladders had failed silently before, in
+ * ways no build or typecheck could notice: the radius ladder topped out at 10px
+ * so 279 call sites rendered as near-rectangles, and the elevation ladder was
+ * three `none`s that were never mapped into Tailwind, so `shadow-md` in a
+ * component meant something entirely different from `--shadow-md` in the
+ * stylesheet.
+ */
+describe("token ladders", () => {
+  const css = read("app/globals.css");
+
+  function token(name: string, scope = ":root {"): string {
+    const start = css.indexOf(scope);
+    const block = css.slice(start, css.indexOf("\n}", start));
+    const match = block.match(new RegExp(`${name}:\\s*([^;]+);`));
+    return match ? match[1].trim() : "";
+  }
+
+  it("has a radius ladder that ascends and clears the 2012 line", () => {
+    const px = (name: string) => Number(token(name).replace("px", ""));
+    const sm = px("--radius-sm");
+    const md = px("--radius-md");
+    const lg = px("--radius-lg");
+    const xl = px("--radius-xl");
+    expect(sm).toBeLessThan(md);
+    expect(md).toBeLessThan(lg);
+    expect(lg).toBeLessThan(xl);
+    // The card radius is the single value that decides whether the product
+    // reads as current. 8px is the Bootstrap 3 default and is what it was.
+    expect(lg).toBeGreaterThanOrEqual(12);
+  });
+
+  it("has no elevation token set to none, in either theme", () => {
+    // `none` is not a soft shadow, it is the absence of a ladder. Worse, it is
+    // contagious: `box-shadow: var(--shadow-sm), 0 1px 3px ...` with --shadow-sm
+    // as `none` is invalid CSS and the browser drops the whole declaration, so
+    // an unrelated rule loses its shadow too. That shipped and went unnoticed.
+    for (const name of ["--shadow-sm", "--shadow-md", "--shadow-lg", "--shadow-xl"]) {
+      expect(token(name), `light ${name}`).not.toBe("none");
+      expect(token(name, ':root[data-theme="dark"] {'), `dark ${name}`).not.toBe("none");
+    }
+  });
+
+  it("never puts none inside a comma-separated box-shadow list", () => {
+    // The general form of the bug above.
+    const lists = css.match(/box-shadow:[^;]+;/g) ?? [];
+    const broken = lists.filter((line) => /,/.test(line) && /\bnone\b/.test(line));
+    expect(broken).toEqual([]);
+  });
+
+  it("maps elevation into Tailwind so components and CSS share one ladder", () => {
+    // The brace matters: "@theme inline" also appears in a comment above the
+    // radius ladder, and matching that grabbed :root instead.
+    const theme = css.slice(css.indexOf("@theme inline {"));
+    const block = theme.slice(0, theme.indexOf("\n}"));
+    for (const name of ["--shadow-sm", "--shadow-md", "--shadow-lg", "--shadow-xl"]) {
+      expect(block, name).toContain(`${name}: var(${name})`);
+    }
+  });
+
+  it("gives dark mode a top highlight, since shadow cannot separate on a dark field", () => {
+    // Black on near-black is invisible. A 1px inset highlight along the top edge
+    // is how a real edge catches light and is the strongest depth cue dark mode
+    // has. Light mode defines it transparent rather than `none`, because `none`
+    // in a shadow list invalidates the declaration.
+    expect(token("--edge-highlight")).toMatch(/rgba\(255,\s*255,\s*255,\s*0\)/);
+    expect(token("--edge-highlight", ':root[data-theme="dark"] {')).toContain("inset");
+  });
+
+  it("defaults to dark without consulting the operating system", () => {
+    // Dark first is a brand decision. An explicit choice still wins both ways,
+    // which is the part that matters for anyone who wants light.
+    const layout = read("app/layout.tsx");
+    expect(layout).toContain("t==='light'?'light':'dark'");
+    expect(layout).not.toContain("prefers-color-scheme");
+  });
+});
+
 describe("premium shared design system", () => {
   it("keeps navigation typography-first across public and app chrome", () => {
     expect(read("components/marketing/Landing.tsx")).toContain(

@@ -83,10 +83,27 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Set the theme before paint to avoid a flash of the wrong colors. */}
+        {/*
+          Dark first, set before paint so there is no flash of the wrong theme.
+
+          Dark is the default rather than something we detect. That is a brand
+          decision and not an accessibility one: this product shows people
+          numbers about money, and the tools people associate with that are dark.
+          Someone who has never touched the toggle should see the product the way
+          it is meant to look.
+
+          The rule is now "dark unless the person chose light", where it used to
+          be "light unless the operating system said dark". An explicit choice
+          still wins in both directions, which is the part that matters: pick
+          light and it stays light on every future visit, and the OS setting no
+          longer silently overrides a deliberate choice.
+
+          try/catch because localStorage throws outright in some privacy modes,
+          and the fallback still sets dark rather than leaving the attribute off.
+        */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('massleader.theme');if(t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark')}}catch(e){}`,
+            __html: `try{var t=localStorage.getItem('massleader.theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}`,
           }}
         />
       </head>
