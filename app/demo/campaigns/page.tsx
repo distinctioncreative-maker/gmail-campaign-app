@@ -5,6 +5,7 @@ import { LocalTime } from "@/components/LocalTime";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { campaignPerformance, formatPercent, totalSent } from "@/lib/analytics/metrics";
 import { DEMO_CAMPAIGNS } from "@/lib/demo/fixtures";
+import { VariationPanel } from "@/components/demo/VariationPanel";
 
 export default function DemoCampaignsPage() {
   const active = DEMO_CAMPAIGNS.filter((c) =>
@@ -68,6 +69,11 @@ export default function DemoCampaignsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* A visitor could previously walk the entire tour without learning that
+          Cadence varies the wording per recipient, which is one of the few
+          things that genuinely distinguish it. */}
+      <VariationPanel />
     </div>
   );
 }
