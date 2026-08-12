@@ -68,10 +68,23 @@
   --landing-ease: var(--ease-out);
   --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --landing-stage-duration: 2300ms;
-  /* Kept as a token so the 60-odd rules that referenced a shadow do not need
-     touching, but the page no longer lifts anything off the paper. Definition
-     comes from the hairline and from the space around it. */
-  --landing-shadow-premium: none;
+  /* Elevation, restored to the handful of surfaces that are actually objects.
+     A previous pass set this to `none` and wrote fifty literal `box-shadow: none`
+     declarations, reasoning that a soft shadow reads cheap. Half right: a
+     *visible* shadow reads cheap. One built from a large blur, a large negative
+     spread and a low opacity is not perceived as a shadow at all, only as
+     separation, and a page where nothing separates is a large part of why the
+     site read flatter than the product it advertises.
+     So a ladder rather than a switch, applied only to the seven surfaces a reader
+     would call cards. The forty-odd `none` declarations on dots, pill
+     indicators, tab states and keyframes stay: those are marks, not objects, and
+     they were right to be flat. Sourced from --marketing-shadow-*, not
+     --shadow-*, because the latter is remapped for dark mode into an
+     almost-black shadow that would be invisible on light paper. */
+  --landing-shadow-sm: var(--marketing-shadow-sm);
+  --landing-shadow-md: var(--marketing-shadow-md);
+  --landing-shadow-lg: var(--marketing-shadow-lg);
+  --landing-shadow-premium: var(--marketing-shadow-xl);
   min-width: 0;
   overflow: clip;
   background: var(--landing-paper);
@@ -566,7 +579,7 @@
   border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
   color: var(--landing-copy);
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-premium);
   text-align: left;
   animation: frameReveal 900ms 340ms ease-out both;
   contain: paint;
@@ -1465,7 +1478,7 @@
   border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 26px;
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-sm);
   transition:
     border-color 220ms ease,
     box-shadow 220ms ease,
@@ -1548,7 +1561,7 @@
   border: 1px solid var(--landing-line);
   border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-sm);
   transition:
     border-color 260ms ease,
     box-shadow 260ms ease,
@@ -1901,7 +1914,7 @@
   border: 1px solid var(--landing-line-strong);
   border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-md);
 }
 
 .operationsDemo::after {
@@ -2004,7 +2017,7 @@
   border: 1px solid var(--landing-line-strong);
   border-radius: var(--landing-r-xl);
   background: var(--landing-surface-soft);
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-md);
 }
 
 .controlBoardTop {
@@ -2233,7 +2246,7 @@
   border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 21px;
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-sm);
 }
 
 .pipelineCard::after {
@@ -2402,7 +2415,7 @@
   border-radius: var(--landing-r-xl);
   background: var(--landing-surface);
   padding: 30px;
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-md);
   transition:
     border-color 240ms var(--landing-ease),
     box-shadow 240ms var(--landing-ease),
@@ -2411,7 +2424,7 @@
 
 .pricingGrid .featuredPrice {
   border-color: var(--landing-blue-border);
-  box-shadow: none;
+  box-shadow: var(--landing-shadow-lg);
 }
 
 .recommended {
@@ -2644,7 +2657,7 @@
 @media (hover: hover) and (pointer: fine) {
   .featureGrid article:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: none;
+    box-shadow: var(--landing-shadow-md);
     transform: translateY(-3px);
   }
 
@@ -2656,7 +2669,7 @@
 
   .composeMock:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: none;
+    box-shadow: var(--landing-shadow-md);
     transform: translateY(-2px);
   }
 
@@ -2666,19 +2679,19 @@
 
   .pricingGrid article:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: none;
+    box-shadow: var(--landing-shadow-lg);
     transform: translateY(-4px);
   }
 
   .pricingGrid article > a:hover {
     border-color: var(--landing-blue-border);
-    box-shadow: none;
+    box-shadow: var(--landing-shadow-sm);
     transform: translateY(-1px);
   }
 
   .faq details:hover {
     border-color: var(--landing-line-strong);
-    box-shadow: none;
+    box-shadow: var(--landing-shadow-sm);
     transform: translateY(-2px);
   }
 }

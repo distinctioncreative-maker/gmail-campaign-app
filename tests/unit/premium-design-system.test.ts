@@ -181,6 +181,21 @@ describe("token ladders", () => {
     expect(logo).not.toMatch(/opacity-55/);
   });
 
+  it("joins the marketing hero to the app with one ink language", () => {
+    // The sign-in panel used .brand-gradient, which is blue-to-navy in light but
+    // light-blue-to-blue in dark, because its other three call sites are 2px nav
+    // indicators where a bright blue is right. As a full-height field that made
+    // the one screen every customer crosses the one screen matching neither the
+    // navy marketing hero before it nor the navy app after it.
+    const signIn = read("app/(auth)/sign-in/page.tsx");
+    expect(signIn).toContain("brand-panel");
+    expect(signIn).not.toMatch(/brand-gradient/);
+    expect(css).toMatch(/\.brand-panel \{[\s\S]*?linear-gradient\(160deg, var\(--ink\), var\(--ink-soft\)\)/);
+    // And the panel must not reintroduce a hardcoded text colour: --brand-contrast
+    // is near-black in dark mode, which on an ink field is invisible.
+    expect(signIn).not.toContain("text-brand-contrast");
+  });
+
   it("defaults to dark without consulting the operating system", () => {
     // Dark first is a brand decision. An explicit choice still wins both ways,
     // which is the part that matters for anyone who wants light.

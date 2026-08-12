@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Logo, LogoMark, APP_NAME } from "@/components/ui/Logo";
+import { Logo, LogoMark, Wordmark } from "@/components/ui/Logo";
 import { Icon, type IconName } from "@/components/ui/Icon";
 
 function GoogleGIcon() {
@@ -47,22 +47,22 @@ export default function SignInPage() {
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
       {/* Brand panel */}
-      <div className="brand-gradient relative hidden overflow-hidden p-12 text-brand-contrast lg:flex lg:flex-col">
+      <div className="brand-panel relative hidden overflow-hidden p-12 lg:flex lg:flex-col">
         <div className="drift-field" aria-hidden />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             backgroundImage:
-              "radial-gradient(600px 300px at 80% 10%, rgba(255,255,255,.18), transparent 60%), radial-gradient(500px 300px at 10% 90%, rgba(255,255,255,.14), transparent 55%)",
+              "radial-gradient(620px 320px at 78% 12%, rgba(255,255,255,.07), transparent 62%)",
           }}
         />
 
         <Link href="/" className="relative flex items-center gap-3 transition-opacity hover:opacity-80">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface/15 text-brand-contrast backdrop-blur">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface/10 text-on-ink backdrop-blur">
             <LogoMark size={26} className="[--brand-from:#fff] [--brand-to:#fff]" />
           </span>
-          <span className="text-2xl font-semibold tracking-tight">{APP_NAME}</span>
+          <Wordmark size="lg" />
         </Link>
 
         <div className="relative mt-auto">
@@ -70,14 +70,14 @@ export default function SignInPage() {
             Personal email campaigns,
             <br /> sent from your own Gmail.
           </h2>
-          <ul className="mt-8 space-y-4 text-brand-contrast/90">
+          <ul className="mt-8 space-y-4 text-on-ink-muted">
             {([
               ["mail", "Sends through your Gmail: replies come to your inbox"],
               ["shield", "Clears the deliverability gate before every send"],
               ["reply", "Follow-ups stop automatically when someone replies"],
             ] as Array<[IconName, string]>).map(([icon, label]) => (
               <li key={label} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface/15 text-brand-contrast">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface/10 text-brass-on-ink">
                   <Icon name={icon} size={18} />
                 </span>
                 {label}

@@ -11,6 +11,18 @@ const landingStyles = readFileSync(
 );
 const globalStyles = readFileSync("app/globals.css", "utf8");
 
+/**
+ * The landing stylesheet with comments removed.
+ *
+ * Three separate assertions in this file scan the stylesheet for patterns that
+ * are banned in declarations, and all three matched prose inside comments
+ * instead: a comment naming the hex a token used to resolve to, and a comment
+ * quoting the `box-shadow: none` it was replacing, each broke a different check.
+ * Every rule here is about what the CSS *does*, so they all read this. A fix has
+ * to be able to explain itself in the file it fixes.
+ */
+const landingDeclarations = landingStyles.replace(/\/\*[\s\S]*?\*\//g, "");
+
 function tokenHex(name: string): string {
   const value = globalStyles.match(
     new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6});`)
@@ -173,13 +185,7 @@ describe("landing-page experience", () => {
   });
 
   it("uses only the semantic warm palette and keeps text pairs at AA contrast", () => {
-    // Declarations only. The rule being enforced is that no *rule* introduces a
-    // literal colour, so comments are stripped first: a comment recording which
-    // hex a token used to resolve to, and why that was wrong, is documentation,
-    // and forbidding it means the reason for a fix cannot be written down next to
-    // the fix. This started failing the moment such a note was added.
-    const declarationsOnly = landingStyles.replace(/\/\*[\s\S]*?\*\//g, "");
-    expect(declarationsOnly.match(/#[0-9a-fA-F]{3,8}/g) ?? []).toHaveLength(0);
+    expect(landingDeclarations.match(/#[0-9a-fA-F]{3,8}/g) ?? []).toHaveLength(0);
 
     const textPairs = [
       ["marketing-copy", "marketing-paper"],
@@ -260,24 +266,58 @@ describe("landing-page experience", () => {
     ).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("keeps the public page flat: one radius ladder, no lift, no tinted washes", () => {
-    // Seventeen ad-hoc radii and sixty-two shadows are what made the site read
-    // softer and cheaper than the product it advertises.
+  it("keeps one radius ladder and no tinted washes", () => {
+    // Seventeen ad-hoc radii are what made the site read softer and cheaper than
+    // the product it advertises.
     // 999px is a pill and 50% is a circle: both are shapes, not radii.
-    const literalRadii = (landingStyles.match(/border-radius: \d+px/g) ?? []).filter(
+    const literalRadii = (landingDeclarations.match(/border-radius: \d+px/g) ?? []).filter(
       (declaration) => !declaration.endsWith("999px")
     );
     expect(literalRadii).toHaveLength(0);
     for (const token of ["--landing-r-sm", "--landing-r-lg", "--landing-r-xl"]) {
       expect(landingStyles).toContain(`${token}: var(--radius-`);
     }
-    // The only surviving shadows are inset focus and selection rings.
-    const shadows = (landingStyles.match(/box-shadow: (?!none)[^;]+;/g) ?? []);
-    for (const shadow of shadows) {
-      expect(shadow).toContain("inset 0 0 0");
-    }
     // Tinted radial washes behind sections and panels are gone.
     expect(landingStyles).not.toContain("radial-gradient(circle at");
+  });
+
+  it("elevates only from the ladder, and only the surfaces that are objects", () => {
+    /**
+     * This assertion has been inverted on purpose, so the reason is worth
+     * recording rather than just the new value.
+     *
+     * It used to require that the only non-`none` shadow on the page was an
+     * inset ring: the page was deliberately flattened after an earlier version
+     * carried sixty-two shadows and read cheap. The premise was half right. What
+     * reads cheap is a *visible* shadow. One built from a large blur, a large
+     * negative spread and a low opacity is not perceived as a shadow at all,
+     * only as separation, and a page where nothing separates is itself a reason
+     * the site read flatter than the product.
+     *
+     * So the rule is no longer "no elevation". It is that elevation may only
+     * come from the shared ladder, never from a literal, which is what stops the
+     * sixty-two hand-tuned shadows growing back one commit at a time.
+     */
+    // Matched then filtered, rather than excluded with a lookahead. Writing this
+    // as /box-shadow:\s*(?!none)[^;]+;/ does not work: \s* backtracks to zero
+    // width, so the lookahead gets tested against " none" instead of "none",
+    // passes, and every flat declaration comes back as a violation.
+    const allShadows = landingDeclarations.match(/box-shadow:[^;]+;/g) ?? [];
+    const shadows = allShadows.filter((shadow) => !/box-shadow:\s*none\s*;/.test(shadow));
+    expect(shadows.length).toBeGreaterThan(5);
+
+    const literal = shadows.filter(
+      (shadow) =>
+        !shadow.includes("var(--landing-shadow") &&
+        // Inset focus and selection rings are not elevation and stay allowed.
+        !shadow.includes("inset 0 0 0")
+    );
+    expect(literal).toEqual([]);
+
+    // The marks stay flat. Dots, pill indicators, tab states and keyframes were
+    // right to have no shadow, and there are far more of them than there are
+    // cards, so a blanket find-and-replace would have been the wrong move.
+    expect((landingDeclarations.match(/box-shadow:\s*none/g) ?? []).length).toBeGreaterThan(30);
   });
 
   it("makes the hero walkthrough user controlled and keyboard operable", () => {

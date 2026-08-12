@@ -110,6 +110,16 @@
   --marketing-revenue-soft: #e2f0e9;
   --marketing-danger: #b3261e;
 
+  /* Elevation for the public page, and invariant for the same reason as the
+     colours above: --shadow-* is remapped for dark mode, where it becomes an
+     almost-black shadow that would be invisible on light paper. Same geometry as
+     the app ladder: a 1px contact shadow that seats the element plus a wide
+     ambient one that lifts it, so the site and the product read as one system. */
+  --marketing-shadow-sm: 0 1px 2px rgba(15, 23, 41, 0.04);
+  --marketing-shadow-md: 0 1px 2px rgba(15, 23, 41, 0.04), 0 8px 24px -12px rgba(15, 23, 41, 0.10);
+  --marketing-shadow-lg: 0 1px 3px rgba(15, 23, 41, 0.05), 0 18px 48px -24px rgba(15, 23, 41, 0.16);
+  --marketing-shadow-xl: 0 2px 4px rgba(15, 23, 41, 0.06), 0 32px 80px -32px rgba(15, 23, 41, 0.22);
+
   /* Radius scale.
      These are re-exported into Tailwind through @theme inline below, so
      `rounded-lg` in a component means this value and not Tailwind's. That is
@@ -413,6 +423,22 @@ a.card-hover:focus-visible {
 /* ── Brand bits ──────────────────────────────────────────── */
 .brand-gradient {
   background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+}
+
+/* The full-height identity panel on sign-in, and the reason it is not
+   .brand-gradient any more.
+   --brand-from/--brand-to run blue-to-navy in light but light-blue-to-blue in
+   dark, because their other three call sites are 2px nav indicators where a
+   bright blue is exactly right. As a full-height field that same gradient became
+   a bright blue wall, sitting between a navy marketing hero on one side and the
+   navy app on the other: the one screen every customer crosses was the one
+   screen that matched neither thing it joined.
+   This is the marketing hero's own gradient instead, so the journey reads as one
+   surface deepening rather than three unrelated colours. Blue stays the accent
+   on top of it, which is what blue means everywhere else. */
+.brand-panel {
+  background-image: linear-gradient(160deg, var(--ink), var(--ink-soft));
+  color: var(--on-ink);
 }
 .brand-text {
   background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
