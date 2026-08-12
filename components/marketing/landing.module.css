@@ -1,8 +1,14 @@
 .root {
-  /* The public page uses one semantic, cool palette from globals.css. Text
-     tokens are deliberately limited to combinations that pass WCAG AA on
-     their intended surface. Component rules below never introduce literal
-     colors, which keeps future palette changes reviewable. */
+  /* The public page uses one semantic, cool palette from globals.css. Component
+     rules below never introduce literal colors, which keeps future palette
+     changes reviewable.
+
+     Every token here must resolve through the --marketing-* ramp, which is
+     theme-invariant by design, and never through an app token that globals.css
+     remaps for dark mode. This paragraph used to claim the palette was "limited
+     to combinations that pass WCAG AA on their intended surface" while four of
+     its own tokens shipped a 1.12:1 pairing, so the claim is now enforced by
+     landing-experience.test.ts instead of asserted here. */
   --landing-ink: var(--marketing-ink);
   --landing-ink-soft: var(--marketing-ink-soft);
   --landing-paper: var(--marketing-paper);
@@ -27,18 +33,29 @@
   --landing-info-soft: var(--marketing-info-soft);
   --landing-info-border: color-mix(in srgb, var(--landing-info) 34%, var(--landing-line));
   --landing-info-on-ink: color-mix(in srgb, var(--landing-on-ink) 62%, var(--landing-info));
-  --landing-green: var(--success);
+  /* These five come from the --marketing-* ramp, and that is not a stylistic
+     preference. They used to read the app's own --success / --revenue /
+     --danger, all of which globals.css remaps under [data-theme="dark"]. The
+     root layout defaults an unrecognised visitor to dark, so the public page
+     was rendering dark-mode status colours inside light-mode sections:
+     --success-soft resolved to #10261d, a near-black green, and it is a
+     *background* in eight rules below. The banner under the hero put #0f1729
+     body copy on it at 1.12:1, which is invisible text on a live marketing
+     page. Every other token in this block already obeyed the rule; these four
+     did not, and nothing caught it because the page still rendered. It just
+     rendered unreadable. Now 6.57:1. */
+  --landing-green: var(--marketing-success);
   --landing-green-strong: color-mix(in srgb, var(--landing-green) 70%, var(--landing-copy));
-  --landing-green-soft: var(--success-soft);
+  --landing-green-soft: var(--marketing-success-soft);
   --landing-green-border: color-mix(in srgb, var(--landing-green) 32%, var(--landing-line));
   --landing-green-on-ink: color-mix(in srgb, var(--landing-on-ink) 56%, var(--landing-green));
   /* Historical internal name. Money reads as the outcome green, not as a
      third hue: see the accent rule in docs/brand.md. */
-  --landing-gold: var(--revenue);
+  --landing-gold: var(--marketing-revenue);
   --landing-gold-strong: color-mix(in srgb, var(--landing-gold) 68%, var(--landing-copy));
-  --landing-gold-soft: var(--revenue-soft);
-  --landing-danger-strong: color-mix(in srgb, var(--danger) 72%, var(--landing-copy));
-  --landing-danger-on-ink: color-mix(in srgb, var(--landing-on-ink) 54%, var(--danger));
+  --landing-gold-soft: var(--marketing-revenue-soft);
+  --landing-danger-strong: color-mix(in srgb, var(--marketing-danger) 72%, var(--landing-copy));
+  --landing-danger-on-ink: color-mix(in srgb, var(--landing-on-ink) 54%, var(--marketing-danger));
   /* Radius ladder, bridged to the app's own scale. The public page carried
      seventeen ad-hoc radii, twelve of them pill-shaped, which is the single
      biggest reason the site read softer and cheaper than the product it

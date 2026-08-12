@@ -93,6 +93,22 @@
      background entirely and rendered light text on light paper. */
   --marketing-info: #3e4a5c;
   --marketing-info-soft: #e7eaef;
+  /* Status colours for the public site, and these are not decoration.
+     The landing stylesheet was reading --success, --success-soft, --revenue,
+     --revenue-soft and --danger directly, all five of which this file remaps
+     under [data-theme="dark"]. The root layout defaults an unknown visitor to
+     dark, so a first-time reader of the marketing page got dark-mode values
+     inside light-mode sections: --success-soft resolved to #10261d, a near-black
+     green, and it is a *background* in eight places there. The banner under the
+     hero was rendering #0f1729 body copy on it at 1.12:1, which is invisible
+     text on a live marketing page.
+     Duplicated as literals rather than aliased to the app tokens, because the
+     entire point of this ramp is that it does not move when the theme does. */
+  --marketing-success: #167c52;
+  --marketing-success-soft: #e2f0e9;
+  --marketing-revenue: #167c52;
+  --marketing-revenue-soft: #e2f0e9;
+  --marketing-danger: #b3261e;
 
   /* Radius scale.
      These are re-exported into Tailwind through @theme inline below, so

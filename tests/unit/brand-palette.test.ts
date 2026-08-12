@@ -243,7 +243,16 @@ describe("cool neutral brand palette", () => {
     ]
       .map((path) => readFileSync(path, "utf8"))
       .join("\n");
-    const landing = readFileSync("components/marketing/landing.module.css", "utf8");
+    // Comments stripped, same as the equivalent check in
+    // landing-experience.test.ts. The rule is that no *declaration* carries a
+    // literal colour; a comment recording the hex a token wrongly resolved to,
+    // and why that mattered, is documentation. Banning it means a fix cannot
+    // explain itself in the file it fixes, and both copies of this assertion
+    // failed the moment such a note was written.
+    const landing = readFileSync("components/marketing/landing.module.css", "utf8").replace(
+      /\/\*[\s\S]*?\*\//g,
+      ""
+    );
 
     expect(aiSources).toContain("bg-info-soft");
     expect(aiSources).toContain("text-info");

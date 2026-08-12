@@ -58,6 +58,78 @@ function mixHex(first: string, second: string, firstWeight: number): string {
   ).join("")}`;
 }
 
+describe("the public palette cannot be moved by the app's theme", () => {
+  /**
+   * The bug this exists to prevent, stated once.
+   *
+   * globals.css keeps a --marketing-* ramp specifically so the public page can
+   * stay light while the authenticated app switches themes, and the landing
+   * stylesheet is supposed to resolve everything through it. Four of its tokens
+   * instead read --success, --success-soft, --revenue and --revenue-soft
+   * directly, and a fifth read --danger. All five are remapped under
+   * [data-theme="dark"], and the root layout defaults an unrecognised visitor to
+   * dark. So the marketing page served dark-mode status colours inside
+   * light-mode sections: --success-soft resolved to #10261d, a near-black green,
+   * and it is a background in eight rules, one of which put #0f1729 body copy on
+   * it at 1.12:1.
+   *
+   * Asserting those five names would only stop it recurring in those five
+   * places. This is written against the rule instead, so a sixth token added
+   * next year fails the same way.
+   */
+  const darkBlock = (() => {
+    const start = globalStyles.indexOf(':root[data-theme="dark"] {');
+    return globalStyles.slice(start, globalStyles.indexOf("\n}", start));
+  })();
+
+  /** Every custom property globals.css redefines for dark mode. */
+  const themeDependent = new Set(
+    [...darkBlock.matchAll(/^\s*--([\w-]+):/gm)].map((match) => match[1])
+  );
+
+  it("remaps a meaningful number of tokens for dark mode", () => {
+    // Guards the guard. If this set came back empty the assertion below would
+    // pass against anything, which is how a test like that quietly rots.
+    expect(themeDependent.size).toBeGreaterThan(20);
+    expect(themeDependent.has("success-soft")).toBe(true);
+  });
+
+  it("resolves every --landing-* token through the theme-invariant ramp", () => {
+    const declarations = [
+      ...landingStyles.matchAll(/^\s*(--landing-[\w-]+):\s*([^;]+);/gm),
+    ];
+    expect(declarations.length).toBeGreaterThan(30);
+
+    const leaks: string[] = [];
+    for (const [, name, value] of declarations) {
+      for (const [, referenced] of value.matchAll(/var\(\s*--([\w-]+)/g)) {
+        // Referencing another --landing-* token is fine; it is checked on its
+        // own declaration. Only a direct read of a theme-remapped app token is a
+        // leak. --marketing-*, --radius-* and --ease-* are invariant by
+        // construction and so never appear in the set.
+        if (referenced.startsWith("landing-")) continue;
+        if (themeDependent.has(referenced)) {
+          leaks.push(`${name} reads --${referenced}`);
+        }
+      }
+    }
+    expect(leaks).toEqual([]);
+  });
+
+  it("keeps the green status pairing readable on the light ground", () => {
+    // The exact pairing that measured 1.12:1 in production. green-strong is a
+    // color-mix, so it is recomputed here rather than trusted.
+    const soft = tokenHex("marketing-success-soft");
+    const strong = mixHex(
+      tokenHex("marketing-success"),
+      tokenHex("marketing-copy"),
+      0.7
+    );
+    expect(contrastRatio(strong, soft)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(tokenHex("marketing-copy"), soft)).toBeGreaterThanOrEqual(7);
+  });
+});
+
 describe("landing-page experience", () => {
   it("uses a calm typographic wordmark in the public navigation", () => {
     const navigation = landingSource.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
@@ -101,7 +173,13 @@ describe("landing-page experience", () => {
   });
 
   it("uses only the semantic warm palette and keeps text pairs at AA contrast", () => {
-    expect(landingStyles.match(/#[0-9a-fA-F]{3,8}/g) ?? []).toHaveLength(0);
+    // Declarations only. The rule being enforced is that no *rule* introduces a
+    // literal colour, so comments are stripped first: a comment recording which
+    // hex a token used to resolve to, and why that was wrong, is documentation,
+    // and forbidding it means the reason for a fix cannot be written down next to
+    // the fix. This started failing the moment such a note was added.
+    const declarationsOnly = landingStyles.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(declarationsOnly.match(/#[0-9a-fA-F]{3,8}/g) ?? []).toHaveLength(0);
 
     const textPairs = [
       ["marketing-copy", "marketing-paper"],
