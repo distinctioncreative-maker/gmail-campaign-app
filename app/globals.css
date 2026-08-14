@@ -158,6 +158,23 @@
      --shadow-sm was `none`, so the whole shadow silently did nothing. */
   --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0);
 
+  /* Chart series.
+     Separate tokens from --primary and --revenue on purpose, even though light
+     mode happens to reuse the same two values. A chart mark and a piece of text
+     are different jobs with different constraints: text needs WCAG contrast
+     against its surface, a mark needs to sit inside a perceptual lightness band
+     and stay separable under colour-vision deficiency. In dark mode those
+     constraints genuinely diverge, and the UI accents sit outside the band a
+     mark needs, so the dark values below are stepped rather than inherited.
+     Both pairs were run through the validator, not eyeballed:
+     light  #2354c7/#167c52: CVD deltaE 22.2 deutan, 24.2 normal, all checks pass
+     dark   #5b8df7/#31a97c: CVD deltaE 20.3 deutan, 22.5 normal, all checks pass
+     Meaning is inherited from the two-accent rule and does not change per chart:
+     blue is mail we sent, green is a reply we got back. */
+  --chart-1: #2354c7;
+  --chart-2: #167c52;
+  --chart-grid: #e3e8f0;
+
   /* Motion tokens, so every transition shares one curve and tempo. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -231,6 +248,13 @@
   --shadow-xl: 0 2px 4px rgba(0, 0, 0, 0.50), 0 32px 80px -32px rgba(0, 0, 0, 0.80);
   --shadow-brand: 0 1px 2px rgba(0, 0, 0, 0.40), 0 10px 30px -14px rgba(110, 155, 255, 0.28);
   --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  /* Stepped, not inherited. --primary and --revenue sit at OKLCH L 0.70 and
+     0.72 in dark mode, tuned for text contrast; a chart mark wants L 0.48-0.67,
+     so reusing the UI accents here fails the perceptual band a mark is read in.
+     Validated: CVD deltaE 20.3 deutan, 22.5 normal, contrast >= 3:1 on #161f2e. */
+  --chart-1: #5b8df7;
+  --chart-2: #31a97c;
+  --chart-grid: #2a3547;
 }
 
 /* App surfaces, text, borders, status treatments, overlays, and filled-control

@@ -1,5 +1,9 @@
-/* Lightweight, dependency-free charts (server components) for the analytics
-   dashboard. Pure SVG/CSS driven by pre-aggregated data. */
+/* Lightweight, dependency-free charts for the analytics dashboard. Pure SVG/CSS
+   driven by pre-aggregated data. The trend panel delegates to the shared chart
+   primitives; the heatmap and hour table stay local because their forms are
+   specific to this page. */
+
+import { TrendChart as ChartTrend } from "@/components/ui/charts/TrendChart";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -47,40 +51,33 @@ export function ReplyHeatmap({ grid }: { grid: number[][] }) {
   );
 }
 
-/** Catmull-Rom to cubic Bezier: a smooth path through every point, no library. */
-function smoothPath(points: Array<{ x: number; y: number }>): string {
-  if (points.length === 0) return "";
-  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
-  let d = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] ?? points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] ?? p2;
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
-  }
-  return d;
-}
-
-const CHART_W = 720;
-const CHART_H = 200;
-const PAD_L = 34;
-const PAD_R = 8;
-const PAD_T = 12;
-const PAD_B = 22;
+/* The Catmull-Rom smoothPath that used to live here, and the chart geometry
+   constants beside it, are gone. That spline is the one this codebase's own
+   tests now demonstrate undershoots: on [4, 4, 90, 4, 4] it drew -2.37 against a
+   data floor of 4. components/ui/charts/geometry.ts uses Fritsch-Carlson
+   monotone interpolation instead, which cannot leave the interval between two
+   points it connects. */
 
 /**
- * The hero chart of the Reports page: volume as a filled area, replies as a
- * bold line on top, so the question a customer actually asks (is the effort
- * turning into conversations?) is answered by the shape alone.
+ * Sends and replies over the period, drawn as small multiples.
  *
- * Replies are plotted on their own scale. Sharing an axis with send volume
- * flattened the reply line into the baseline and made the chart useless,
- * which is why the previous version showed a 3px bar strip instead.
+ * This previously plotted both series on one chart with **two different y
+ * scales**: `maxSent` for the blue line and `maxReplied` for the green one.
+ * The comment explaining it was candid about the motivation: on a shared axis
+ * the reply line flattened into the baseline and the chart looked useless. That
+ * diagnosis was right and the fix was the single most misleading thing a chart
+ * can do.
+ *
+ * With 445 sends and 2 replies in a week, `maxSent` is 445 and `maxReplied` is
+ * 2, so a day with one reply was drawn at exactly the same height as a day with
+ * 222 sends. The chart implied a reply rate near 100%. Worse, the gridlines were
+ * labelled against the send scale alone, so the green line carried no axis at
+ * all and a reader had no way to discover the trick.
+ *
+ * Two measures of genuinely different magnitude get two charts. Each has its own
+ * honest zero baseline, they share an x-axis, and stacking them answers the same
+ * question the dual axis was reaching for (is the effort turning into
+ * conversations?) without inviting a comparison of heights that means nothing.
  */
 export function TrendChart({ rows }: { rows: Array<{ day: string; sent: number; replied: number }> }) {
   const totalSent = rows.reduce((a, r) => a + r.sent, 0);
@@ -89,117 +86,38 @@ export function TrendChart({ rows }: { rows: Array<{ day: string; sent: number; 
     return <p className="text-sm text-muted">No sends in this period yet.</p>;
   }
 
-  const maxSent = Math.max(1, ...rows.map((r) => r.sent));
-  const maxReplied = Math.max(1, ...rows.map((r) => r.replied));
-  const innerW = CHART_W - PAD_L - PAD_R;
-  const innerH = CHART_H - PAD_T - PAD_B;
-  const xAt = (i: number) => PAD_L + (rows.length === 1 ? innerW / 2 : (i / (rows.length - 1)) * innerW);
-  const yAt = (v: number, max: number) => PAD_T + innerH - (v / max) * innerH;
-
-  const sentPoints = rows.map((r, i) => ({ x: xAt(i), y: yAt(r.sent, maxSent) }));
-  const replyPoints = rows.map((r, i) => ({ x: xAt(i), y: yAt(r.replied, maxReplied) }));
-  const sentLine = smoothPath(sentPoints);
-  const sentArea = `${sentLine} L ${xAt(rows.length - 1)} ${PAD_T + innerH} L ${PAD_L} ${PAD_T + innerH} Z`;
-
-  // Label the ends and the midpoint only: a tick per day is unreadable at 90d.
-  const tickIdx = rows.length <= 2 ? rows.map((_, i) => i) : [0, Math.floor((rows.length - 1) / 2), rows.length - 1];
+  const labels = rows.map((r) => r.day.slice(5));
 
   return (
-    <div>
-      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
-        <span className="flex items-center gap-1.5 text-muted">
-          <span aria-hidden className="h-2 w-2 rounded-full bg-primary" />
-          Emails sent
-          <span className="font-medium tabular-nums text-foreground">{totalSent.toLocaleString()}</span>
-        </span>
-        <span className="flex items-center gap-1.5 text-muted">
-          <span aria-hidden className="h-2 w-2 rounded-full bg-revenue" />
-          Replies
-          <span className="font-medium tabular-nums text-foreground">{totalReplied.toLocaleString()}</span>
-        </span>
+    <div className="space-y-5">
+      <div>
+        <p className="flex items-baseline justify-between gap-3">
+          <span className="text-xs font-medium uppercase tracking-wider text-muted">Emails sent</span>
+          <span className="text-sm font-semibold tabular-nums text-foreground">
+            {totalSent.toLocaleString()}
+          </span>
+        </p>
+        <ChartTrend
+          series={[{ name: "Emails sent", values: rows.map((r) => r.sent), tone: 1 }]}
+          labels={labels}
+          height={150}
+          caption={`Emails sent per day. ${totalSent} over ${rows.length} days.`}
+        />
       </div>
-      <svg
-        viewBox={`0 0 ${CHART_W} ${CHART_H}`}
-        className="h-48 w-full overflow-visible"
-        role="img"
-        aria-label={`Daily sends and replies. ${totalSent} sent and ${totalReplied} replies over ${rows.length} days.`}
-      >
-        <defs>
-          <linearGradient id="trend-sent-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.24" />
-            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {/* Horizontal gridlines, labelled against the send scale. */}
-        {[0, 0.5, 1].map((f) => {
-          const y = PAD_T + innerH - f * innerH;
-          return (
-            <g key={f}>
-              <line
-                x1={PAD_L}
-                x2={CHART_W - PAD_R}
-                y1={y}
-                y2={y}
-                stroke="var(--border)"
-                strokeWidth="1"
-                strokeDasharray={f === 0 ? undefined : "3 4"}
-              />
-              <text x={PAD_L - 7} y={y + 3.5} textAnchor="end" fontSize="10" fill="var(--muted)">
-                {Math.round(maxSent * f).toLocaleString()}
-              </text>
-            </g>
-          );
-        })}
-
-        <path d={sentArea} fill="url(#trend-sent-fill)" />
-        <path
-          d={sentLine}
-          fill="none"
-          stroke="var(--primary)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      <div>
+        <p className="flex items-baseline justify-between gap-3">
+          <span className="text-xs font-medium uppercase tracking-wider text-muted">Replies</span>
+          <span className="text-sm font-semibold tabular-nums text-revenue">
+            {totalReplied.toLocaleString()}
+          </span>
+        </p>
+        <ChartTrend
+          series={[{ name: "Replies", values: rows.map((r) => r.replied), tone: 2 }]}
+          labels={labels}
+          height={150}
+          caption={`Replies per day. ${totalReplied} over ${rows.length} days.`}
         />
-        <path
-          d={smoothPath(replyPoints)}
-          fill="none"
-          stroke="var(--revenue)"
-          strokeWidth="2.25"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Reply markers, so a single good day is still visible on a long range. */}
-        {rows.map((r, i) =>
-          r.replied > 0 ? (
-            <circle
-              key={r.day}
-              cx={replyPoints[i].x}
-              cy={replyPoints[i].y}
-              r="2.75"
-              fill="var(--surface)"
-              stroke="var(--revenue)"
-              strokeWidth="1.75"
-            >
-              <title>{`${r.day}: ${r.sent} sent, ${r.replied} repl${r.replied === 1 ? "y" : "ies"}`}</title>
-            </circle>
-          ) : null
-        )}
-
-        {tickIdx.map((i) => (
-          <text
-            key={i}
-            x={xAt(i)}
-            y={CHART_H - 5}
-            textAnchor={i === 0 ? "start" : i === rows.length - 1 ? "end" : "middle"}
-            fontSize="10"
-            fill="var(--muted)"
-          >
-            {rows[i].day.slice(5)}
-          </text>
-        ))}
-      </svg>
+      </div>
     </div>
   );
 }
