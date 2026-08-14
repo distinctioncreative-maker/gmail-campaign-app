@@ -116,8 +116,8 @@ export function DailyAllowanceTile({
   const pct = dailyLimit > 0 ? Math.min(100, (sentToday / dailyLimit) * 100) : 0;
   const remaining = Math.max(0, dailyLimit - sentToday);
   return (
-    <Link href="/settings" className="group block bg-surface p-5 transition-colors duration-[--dur-base] hover:bg-surface-2">
-      <p className="text-[0.6875rem] font-medium uppercase leading-none tracking-[0.09em] text-muted">Today&apos;s sending</p>
+    <Link href="/settings" className="group block bg-surface p-6 transition-colors duration-[--dur-base] hover:bg-surface-2">
+      <p className="display-label leading-none">Today&apos;s sending</p>
       <div className="mt-4 flex items-center gap-3">
         <div
           className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"

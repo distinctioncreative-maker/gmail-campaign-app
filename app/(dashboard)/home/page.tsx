@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
-import { Icon, type IconName } from "@/components/ui/Icon";
+import { type IconName } from "@/components/ui/Icon";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
 import { RangeTabs, type HomeRange } from "@/components/home/RangeTabs";
@@ -13,6 +12,7 @@ import {
   QuickActions,
   RecentCampaigns,
 } from "@/components/home/HomeSections";
+import { SignalReel, type Signal } from "@/components/home/SignalReel";
 import { loadHome, greetingFor } from "@/lib/home/dashboard";
 
 /**
@@ -101,6 +101,96 @@ export default async function HomePage({
     },
   ];
 
+  /**
+   * The rotating headline band.
+   *
+   * Every entry is gated on the data that would make it true. A reel that pads
+   * itself out with "0 replies this week" and "$0 won" to reach a respectable
+   * number of slides is worse than a short one: it teaches a new customer that
+   * the band is decoration, which is exactly what the static tile grid already
+   * risked. An empty array renders nothing at all.
+   */
+  const signals: Signal[] = [];
+
+  if (home.repliesThisWeek > 0) {
+    signals.push({
+      kicker: "Replies this week",
+      value: home.repliesThisWeek,
+      sentence:
+        "Every reply lands in your own Gmail inbox, and any follow-up still queued for that person stops automatically.",
+      icon: "reply",
+      href: "/replies",
+      cta: "Open replies",
+      tone: "revenue",
+    });
+  }
+
+  if (home.best) {
+    signals.push({
+      kicker: `Best performer · ${home.best.c.name}`,
+      value: home.best.rate,
+      decimals: 1,
+      suffix: "%",
+      sentence:
+        "Your strongest reply rate so far. Worth looking at what that subject line and opening did differently before writing the next one.",
+      icon: "chart",
+      href: `/campaigns/${home.best.c.campaignId}`,
+      cta: "View campaign",
+    });
+  }
+
+  if (home.wonCount > 0) {
+    signals.push({
+      kicker: "Revenue won",
+      value: home.wonValueCents / 100,
+      prefix: "$",
+      sentence: `Closed from ${home.wonCount} ${home.wonCount === 1 ? "deal" : "deals"} traced back to outreach in this workspace.`,
+      icon: "chart",
+      href: "/reports",
+      cta: "See the report",
+      tone: "revenue",
+    });
+  }
+
+  if (totals.sent > 0 && home.bounceRate > 3) {
+    signals.push({
+      kicker: "Bounce rate needs attention",
+      value: home.bounceRate,
+      decimals: 1,
+      suffix: "%",
+      sentence:
+        "Above 3% puts your sending reputation at risk. Cleaning the list is the fastest way to bring this down.",
+      icon: "alert",
+      href: "/deliverability",
+      cta: "Check deliverability",
+      tone: "warning",
+    });
+  }
+
+  if (home.activeCampaigns.length > 0) {
+    signals.push({
+      kicker: "Sending right now",
+      value: home.activeCampaigns.length,
+      sentence:
+        "Paced across the day rather than sent in one burst, which is what keeps a Gmail account in good standing.",
+      icon: "rocket",
+      href: "/campaigns",
+      cta: "View campaigns",
+    });
+  }
+
+  if (totals.leads > 0 && signals.length < 2) {
+    // A quiet workspace still deserves one true thing to look at.
+    signals.push({
+      kicker: "Leads ready",
+      value: totals.leads,
+      sentence: "Imported and available to send to. Pick a slice of them to start a campaign.",
+      icon: "users",
+      href: "/leads",
+      cta: "Open leads",
+    });
+  }
+
   // Only once there is something to show. A new workspace greeted by a
   // permanent $0 learns that the number is decoration.
   if (home.wonCount > 0) {
@@ -137,23 +227,7 @@ export default async function HomePage({
         <RangeTabs active={range} />
       </div>
 
-      {home.best && (
-        <Link
-          href={`/campaigns/${home.best.c.campaignId}`}
-          className="card p-5 sm:p-6 card-hover flex items-center justify-between gap-3 bg-surface-2"
-        >
-          <span className="flex items-center gap-2 text-sm text-foreground">
-            <Icon name="chart" size={16} className="shrink-0" aria-hidden />
-            <span>
-              Top campaign: <strong>{home.best.c.name}</strong> at{" "}
-              {home.best.rate.toFixed(1)}% reply rate
-            </span>
-          </span>
-          <span aria-hidden className="text-foreground">
-            →
-          </span>
-        </Link>
-      )}
+      <SignalReel signals={signals} />
 
       <StatGrid columns={4}>
         {orbs.map((o) => (

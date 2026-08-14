@@ -86,9 +86,22 @@ export function StatTile({
 }
 
 /**
- * A ruled block of figures rather than a row of separate cards. The 1px gap
- * over a border-coloured ground draws the hairlines between cells, so the
- * group reads as one table instead of several floating objects.
+ * A ruled block of figures rather than a row of separate cards, so the group
+ * reads as one table instead of several floating objects.
+ *
+ * The hairlines used to be drawn by a 1px grid gap over a border-coloured
+ * ground. That is a common trick and it has a failure mode this page hit
+ * squarely: the ground is only hidden where a child covers it, so any number of
+ * children that does not exactly fill the last row leaves the rest of that row
+ * showing as a bare grey slab. Home renders nine tiles into four columns, which
+ * left a three-cell grey rectangle sitting under the numbers.
+ *
+ * Padding the children out to a multiple of the column count would fix that
+ * instance and not the next one, because the column count changes at every
+ * breakpoint. So the ground is gone entirely: the cells carry their own right
+ * and bottom hairline, the grid is pulled 1px past its container on those two
+ * edges, and the container clips the overhang. An incomplete final row now ends
+ * where the content ends, at any child count and any breakpoint.
  */
 export function StatGrid({
   columns = 4,
@@ -104,10 +117,12 @@ export function StatGrid({
     6: "sm:grid-cols-3 lg:grid-cols-6",
   };
   return (
-    <div
-      className={`grid gap-px overflow-hidden rounded-[--radius-lg] border border-border bg-border ${cols[columns]}`}
-    >
-      {children}
+    <div className="overflow-hidden rounded-[--radius-lg] border border-border bg-surface">
+      <div
+        className={`-mb-px -mr-px grid [&>*]:border-b [&>*]:border-r [&>*]:border-border ${cols[columns]}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }

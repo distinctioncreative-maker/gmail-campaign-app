@@ -858,9 +858,45 @@ a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.1
   animation: drift 60s var(--ease-in-out) infinite;
 }
 
+/* Signal reel: the rotating headline band on Home.
+   The dots double as the timer. A separate progress bar would be a second thing
+   to look at saying the same thing, and the dot is already where the eye goes to
+   find out how many slides there are. */
+.reel-dot {
+  position: relative;
+  height: 4px;
+  width: 28px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--foreground) 14%, transparent);
+  transition: width var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+.reel-dot:hover { background: color-mix(in srgb, var(--foreground) 26%, transparent); }
+.reel-dot[data-active] { width: 56px; }
+.reel-dot-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(0);
+  border-radius: inherit;
+  background: var(--primary);
+}
+/* Only the active dot with a live timer fills. Everything else, including the
+   active dot once the reader has taken over, sits at full width instead, so a
+   paused reel still shows which slide you are on. */
+.reel-dot[data-active] .reel-dot-fill { transform: scaleX(1); }
+.reel-dot-fill[data-running] {
+  animation-name: reel-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes reel-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
 @media (prefers-reduced-motion: reduce) {
   .stagger > * { opacity: 1; animation: none; }
   .stagger-rows > * { opacity: 1; animation: none; }
+  .reel-dot-fill { animation: none; }
   .shimmer { animation: none; background-image: none; }
   .draw-bar, .grow-bar, .draw-line { animation: none; }
   .draw-line { stroke-dasharray: none; }

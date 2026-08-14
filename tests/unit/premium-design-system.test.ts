@@ -196,6 +196,42 @@ describe("token ladders", () => {
     expect(signIn).not.toContain("text-brand-contrast");
   });
 
+  it("never exposes a bare grid ground when the last row is short", () => {
+    /**
+     * Home renders nine tiles into four columns. The grid drew its hairlines by
+     * showing a border-coloured background through 1px gaps, and that ground is
+     * only covered where a child sits, so the three empty cells of the last row
+     * rendered as one large grey slab under the numbers.
+     *
+     * The fix has to be structural rather than "add a ninth tile", because the
+     * column count changes at every breakpoint, so no fixed child count fills
+     * every layout. Cells own their hairlines now and there is no ground to
+     * leak.
+     */
+    const statTile = read("components/ui/StatTile.tsx");
+    const grid = statTile.slice(statTile.indexOf("export function StatGrid"));
+    expect(grid).not.toContain("bg-border");
+    expect(grid).toContain("[&>*]:border-r");
+    // The overhang trick only works if the container clips it.
+    expect(grid).toContain("-mb-px -mr-px");
+    expect(grid).toContain("overflow-hidden");
+  });
+
+  it("gives the rotating band every reason to stop moving", () => {
+    // An auto-advancing panel is only tolerable if it yields. Missing any one of
+    // these is what makes a carousel the most complained-about pattern there is.
+    const reel = read("components/home/SignalReel.tsx");
+    expect(reel).toContain("prefers-reduced-motion");
+    expect(reel).toContain("visibilitychange");
+    expect(reel).toMatch(/onMouseEnter/);
+    expect(reel).toMatch(/onFocusCapture/);
+    // Taking manual control must be permanent, not a temporary reprieve.
+    expect(reel).toMatch(/manual \|\|/);
+    // Arrow keys, and dots that are real buttons.
+    expect(reel).toContain('event.key === "ArrowRight"');
+    expect(reel).toContain('type="button"');
+  });
+
   it("defaults to dark without consulting the operating system", () => {
     // Dark first is a brand decision. An explicit choice still wins both ways,
     // which is the part that matters for anyone who wants light.
