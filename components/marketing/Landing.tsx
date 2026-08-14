@@ -295,12 +295,12 @@ const WORKFLOW = [
   {
     number: "01",
     title: "Start with a list that will not burn you",
-    copy: "Bring a CSV, a paste, or a saved list. We strip duplicates and hold back anyone who already opted out, so bad data never touches your domain.",
+    copy: "Bring a CSV, a paste, or a saved list. Duplicates and opt-outs are stripped before anything touches your domain.",
   },
   {
     number: "02",
     title: "Write once, send something different to everyone",
-    copy: "Describe the offer and AI drafts it in your brand voice. Then mark the phrases that could go either way, and Cadence builds hundreds of versions from that one message, so each recipient gets wording nobody else received. Personalized fields on top of that, never a template blasted at a list.",
+    copy: "Describe the offer and AI drafts it in your voice. Mark the phrases that could go either way and Cadence builds hundreds of versions from the one message.",
   },
   {
     number: "03",
@@ -310,12 +310,12 @@ const WORKFLOW = [
   {
     number: "04",
     title: "See exactly what is producing",
-    copy: "Sends, bounces, opens, clicks, and replies in one view. You always know which campaign is generating pipeline and which is wasting good leads.",
+    copy: "Sends, bounces, clicks and replies in one view, so you know which campaign is producing and which is wasting leads.",
   },
   {
     number: "05",
     title: "Turn replies into booked revenue",
-    copy: "Every reply is sorted by intent, so your team works the hot ones first inside the real Gmail thread. Mark what each one became, meeting booked, won, or lost, and reports show the revenue the campaign actually produced. Follow-ups stop the moment someone answers.",
+    copy: "Replies are sorted by intent so the hot ones get worked first, in the real Gmail thread. Follow-ups stop the moment someone answers.",
   },
 ] as const;
 
@@ -450,19 +450,9 @@ const HERO_MOTION_NODES = [
 
 const FEATURES = [
   {
-    eyebrow: "Write",
-    title: "A rep's email, in seconds",
-    copy: "Describe the offer. AI writes it in your voice, personalized per lead. You approve every send.",
-  },
-  {
     eyebrow: "Vary",
     title: "Hundreds of versions of one email",
     copy: "Mark the phrases that could go either way and Cadence writes the combinations. A retry never sends different wording to the same person.",
-  },
-  {
-    eyebrow: "Send",
-    title: "Volume your domain can carry",
-    copy: "Sends spread across the day under a hard cap. Speed that burns your domain is the expensive kind.",
   },
   {
     eyebrow: "Rotate",
@@ -493,11 +483,6 @@ const FEATURES = [
     eyebrow: "Scale",
     title: "Built for a team, not a seat",
     copy: "Roles, per-rep leaderboards, shared brand voice. Managers see everything; each rep's leads stay their own.",
-  },
-  {
-    eyebrow: "Land",
-    title: "Deliverability, checked before you send",
-    copy: "SPF, DKIM, DMARC and sender reputation verified up front, so you find out here rather than from a silent campaign.",
   },
 ] as const;
 

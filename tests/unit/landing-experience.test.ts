@@ -162,6 +162,67 @@ describe("the public palette cannot be moved by the app's theme", () => {
 });
 
 describe("landing-page experience", () => {
+  it("keeps the page scannable rather than a document", () => {
+    /**
+     * The complaint this encodes was "too overwhelming to read", and the first
+     * attempt to measure it got the number wrong in a way worth recording: a
+     * naive count of every string in the file returned 1,387 words, but 282 of
+     * those sit inside a <details> FAQ that is collapsed until asked for, and
+     * 244 more live inside interactive demo widgets. Neither is prose a visitor
+     * confronts. Measuring what is actually on screen gave 706, and the honest
+     * target moved with it.
+     *
+     * So this counts visible prose only, and caps the individual block rather
+     * than just the total: a page can hit any word count and still read as
+     * homework if it delivers it in four dense paragraphs. Both limits sit a
+     * little above where the page currently is, so ordinary edits are free and
+     * a drift back toward walls of text is not.
+     */
+    const arrayLiteral = (name: string) => {
+      const start = landingSource.indexOf(`const ${name} = [`);
+      if (start === -1) return "";
+      let depth = 0;
+      for (let i = landingSource.indexOf("[", start); i < landingSource.length; i++) {
+        if (landingSource[i] === "[") depth++;
+        else if (landingSource[i] === "]" && --depth === 0) return landingSource.slice(start, i + 1);
+      }
+      return "";
+    };
+    // Collapsed by default, or inside a widget the reader drives.
+    const notConfronted = [
+      "FAQ",
+      "HERO_DEMO_STAGES",
+      "HERO_MOTION_NODES",
+      "VOICE_OPTIONS",
+      "VARIANT_ENDINGS",
+    ]
+      .map(arrayLiteral)
+      .join("");
+
+    const source = landingSource
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+    const candidates = new Set<string>();
+    for (const [, text] of source.matchAll(/"([^"\\]{20,})"/g)) candidates.add(text);
+    for (const [, text] of source.matchAll(/>\s*([^<>{}\n]{20,})\s*</g)) candidates.add(text.trim());
+
+    const noise = ["<", ">", "{", "}", "=", "()", "http", "/", "px", "var(", "styles."];
+    const visible = [...candidates].filter(
+      (text) =>
+        text.includes(" ") &&
+        !noise.some((token) => text.includes(token)) &&
+        /^[A-Z"]/.test(text) &&
+        !notConfronted.includes(text)
+    );
+
+    const total = visible.reduce((sum, text) => sum + text.split(/\s+/).length, 0);
+    expect(visible.length, "prose blocks were found at all").toBeGreaterThan(30);
+    expect(total, "visible words on the page").toBeLessThanOrEqual(650);
+
+    const walls = visible.filter((text) => text.split(/\s+/).length > 32);
+    expect(walls.map((text) => text.slice(0, 60))).toEqual([]);
+  });
+
   it("uses a calm typographic wordmark in the public navigation", () => {
     const navigation = landingSource.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
     expect(navigation).toContain("<Wordmark />");
