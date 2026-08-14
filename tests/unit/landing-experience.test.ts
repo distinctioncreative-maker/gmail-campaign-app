@@ -106,26 +106,45 @@ describe("the public palette cannot be moved by the app's theme", () => {
     expect(themeDependent.has("success-soft")).toBe(true);
   });
 
-  it("resolves every --landing-* token through the theme-invariant ramp", () => {
+  it("never reads a theme-remapped token anywhere in the landing stylesheet", () => {
+    /**
+     * Tightened from "every --landing-* declaration" to "every var() reference
+     * in the file". The narrower version would have missed a rule that reads a
+     * theme token directly in a property rather than through the token block,
+     * which became a live possibility once the dark outcome band started
+     * overriding chart variables locally. Verified against the file at the time
+     * of tightening: zero references, so this costs nothing today and closes the
+     * gap for tomorrow.
+     */
     const declarations = [
       ...landingStyles.matchAll(/^\s*(--landing-[\w-]+):\s*([^;]+);/gm),
     ];
     expect(declarations.length).toBeGreaterThan(30);
 
-    const leaks: string[] = [];
-    for (const [, name, value] of declarations) {
-      for (const [, referenced] of value.matchAll(/var\(\s*--([\w-]+)/g)) {
-        // Referencing another --landing-* token is fine; it is checked on its
-        // own declaration. Only a direct read of a theme-remapped app token is a
-        // leak. --marketing-*, --radius-* and --ease-* are invariant by
-        // construction and so never appear in the set.
-        if (referenced.startsWith("landing-")) continue;
-        if (themeDependent.has(referenced)) {
-          leaks.push(`${name} reads --${referenced}`);
-        }
-      }
-    }
+    // --landing-* and --marketing-* are invariant by construction; --radius-*,
+    // --ease-* and --dur-* are not colours and are never remapped.
+    const referenced = [...landingDeclarations.matchAll(/var\(\s*--([\w-]+)/g)].map(
+      (match) => match[1]
+    );
+    const leaks = [...new Set(referenced.filter((name) => themeDependent.has(name)))];
     expect(leaks).toEqual([]);
+  });
+
+  it("gives the dark band chart colours that do not follow the app theme", () => {
+    // The band is always dark, whatever theme the visitor's app is in, so a
+    // chart mark taken from --chart-* would be wrong for half of them. These are
+    // separate invariant tokens, validated against this band's own ink ground
+    // rather than a generic dark surface.
+    expect(globalStyles).toContain("--marketing-chart-on-ink-1");
+    expect(globalStyles).toContain("--marketing-chart-on-ink-2");
+    expect(landingStyles).toMatch(
+      /\.outcomeBand \{[\s\S]*?--chart-1: var\(--marketing-chart-on-ink-1\)/
+    );
+    // The sparkline draws its endpoint ring in --surface, which is white in the
+    // light theme and would sit as a white dot on ink without this override.
+    expect(landingStyles).toMatch(/\.outcomeBand \{[\s\S]*?--surface: var\(--landing-ink\)/);
+    // Illustrative figures must be labelled as such wherever they appear.
+    expect(landingSource).toContain("Illustrative figures from an example workspace.");
   });
 
   it("keeps the green status pairing readable on the light ground", () => {
@@ -202,6 +221,15 @@ describe("landing-page experience", () => {
       "guaranteed delivery",
       "stay out of spam",
       "avoid the spam folder",
+      // Added after the guard above shipped and promptly failed to catch a claim
+      // that was already on the page: a feature titled "Volume without the spam
+      // folder". A list of banned sentences only ever catches the sentences
+      // someone thought of, so the entries below cover the shapes rather than
+      // the wordings, and the assertion after this loop catches the rest.
+      "without the spam folder",
+      "no spam folder",
+      "skip the spam folder",
+      "bypass spam",
       // Note the missing entry: "guarantee inbox" cannot be banned as a
       // substring, because the page's own disclaimer reads "No platform can
       // guarantee inbox placement or replies". A flat substring ban flags the
@@ -211,6 +239,36 @@ describe("landing-page experience", () => {
     ]) {
       expect(landingSource.toLowerCase()).not.toContain(promise.toLowerCase());
     }
+
+    /**
+     * The catch-all, because the list above is only ever as good as the
+     * imagination of whoever last edited it. Any sentence that puts "spam" or
+     * "inbox" within a few words of a word implying avoidance or arrival is
+     * flagged for a human to look at, whether or not anyone predicted it.
+     *
+     * Exempted: the anti-spam policy link, and copy that explains why identical
+     * text is easy for a filter to catch, which is education rather than a
+     * promise.
+     */
+    const claims = [
+      ...landingSource.matchAll(
+        /[^.!?\n]*\b(?:spam|inbox)\b[^.!?\n]*/gi
+      ),
+    ]
+      .map((match) => match[0].trim())
+      .filter(
+        (line) =>
+          // Education and policy, not promises: the anti-spam link, the
+          // explanation of why identical text is easy to filter, and the FAQ
+          // question whose answer is the disclaimer itself.
+          !/anti-spam|spam filter|easiest thing in the world|spam complaints|guarantee replies or inbox placement/i.test(
+            line
+          )
+      )
+      .filter((line) => /\b(?:without|avoid|never|skip|bypass|guarantee|ensure|always|straight to|land)\b/i.test(line))
+      // The disclaimer is the sentence that makes the page honest, not a claim.
+      .filter((line) => !/No platform can guarantee/i.test(line));
+    expect(claims).toEqual([]);
 
     // And the qualification has to be present, not merely the promise absent.
     expect(landingSource).toContain("No platform can guarantee inbox placement or replies.");
@@ -493,9 +551,22 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
     // Spintax, inbox rotation, warmup, the bounce brake, and the API were all
     // built and none of them appeared anywhere on the marketing site: it
     // described a product several rounds out of date.
+    //
+    // Written as patterns rather than three exact sentences. The point is that
+    // these capabilities are named somewhere on the page, not that they are
+    // named in the words someone happened to use in 2025: a copy pass that
+    // shortened "rotates across them" to "rotates across your connected Gmail
+    // accounts" broke this while making the page strictly better.
     const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
-    for (const claim of ["rotates across them", "ramps up over four weeks", "webhooks"]) {
-      expect(landing.toLowerCase(), claim).toContain(claim.toLowerCase());
+    const capabilities: Array<[string, RegExp]> = [
+      ["inbox rotation", /rotat\w* across/i],
+      ["warmup ramp", /ramps?\b[^.]{0,40}four weeks/i],
+      ["webhooks", /webhook/i],
+      ["spintax", /combinations/i],
+      ["bounce brake", /bouncing pauses/i],
+    ];
+    for (const [name, pattern] of capabilities) {
+      expect(pattern.test(landing), `${name} is named on the page`).toBe(true);
     }
   });
 });

@@ -120,6 +120,15 @@
   --marketing-shadow-lg: 0 1px 3px rgba(15, 23, 41, 0.05), 0 18px 48px -24px rgba(15, 23, 41, 0.16);
   --marketing-shadow-xl: 0 2px 4px rgba(15, 23, 41, 0.06), 0 32px 80px -32px rgba(15, 23, 41, 0.22);
 
+  /* Chart marks for the public site's dark band. Invariant like the rest of
+     this ramp, and separate from --chart-* for two reasons: those are remapped
+     for dark mode, and that band is always dark regardless of the visitor's app
+     theme, so a theme-following token would be wrong half the time. Validated
+     against this band's own ink ground rather than a generic dark surface:
+     CVD deltaE 20.3 deutan, 22.5 normal, both above 3:1 on #0f1729. */
+  --marketing-chart-on-ink-1: #5b8df7;
+  --marketing-chart-on-ink-2: #31a97c;
+
   /* Radius scale.
      These are re-exported into Tailwind through @theme inline below, so
      `rounded-lg` in a component means this value and not Tailwind's. That is

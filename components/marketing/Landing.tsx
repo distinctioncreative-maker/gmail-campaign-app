@@ -20,6 +20,7 @@ import {
 import styles from "./landing.module.css";
 import { VariationDemo } from "./VariationDemo";
 import { ScrollReveal } from "./ScrollReveal";
+import { Sparkline } from "@/components/ui/charts/Sparkline";
 import { InboxProof } from "./InboxProof";
 
 function Check({ size = 18 }: { size?: number }) {
@@ -304,7 +305,7 @@ const WORKFLOW = [
   {
     number: "03",
     title: "Send at a pace inboxes actually trust",
-    copy: "Set your hours, your daily cap, your spacing. Cadence drips sends the way a person would, which is why they land in the inbox instead of Promotions.",
+    copy: "Set your hours, your daily cap, your spacing. Cadence drips sends the way a person would, at a pace your domain can carry.",
   },
   {
     number: "04",
@@ -451,52 +452,52 @@ const FEATURES = [
   {
     eyebrow: "Write",
     title: "A rep's email, in seconds",
-    copy: "Describe the offer. AI writes it in your brand voice, personalized per lead, with subject variants to test. You approve every message before it sends.",
+    copy: "Describe the offer. AI writes it in your voice, personalized per lead. You approve every send.",
   },
   {
     eyebrow: "Vary",
     title: "Hundreds of versions of one email",
-    copy: "Mark the phrases that could go either way and Cadence writes the combinations for you. Every recipient gets different wording, chosen consistently so a retry never sends a second, differently worded email. The editor counts the versions as you type.",
+    copy: "Mark the phrases that could go either way and Cadence writes the combinations. A retry never sends different wording to the same person.",
   },
   {
     eyebrow: "Send",
-    title: "Volume without the spam folder",
-    copy: "Cadence spreads sends across your day at a human rhythm and holds a hard cap. Speed that burns your domain is the expensive kind.",
+    title: "Volume your domain can carry",
+    copy: "Sends spread across the day under a hard cap. Speed that burns your domain is the expensive kind.",
   },
   {
     eyebrow: "Rotate",
     title: "More inboxes, not more risk",
-    copy: "Connect several Gmail accounts and Cadence rotates across them, always sending from the one that has done least today. A new inbox ramps up over four weeks instead of sprinting on day one. Follow-ups stay in the thread they started, because a reply from a stranger is not a follow-up.",
+    copy: "Rotates across your connected Gmail accounts, always sending from the one that has done least today. A new inbox ramps over four weeks.",
   },
   {
     eyebrow: "Brake",
     title: "It stops itself before you notice",
-    copy: "A campaign that starts bouncing pauses on its own, per inbox, so one bad list cannot spend the reputation of the others. Addresses are checked at import, before a single send, because an address never emailed cannot hurt you.",
+    copy: "A campaign that starts bouncing pauses itself, per inbox, so one bad list cannot spend the reputation of the others.",
   },
   {
     eyebrow: "Connect",
     title: "It talks to the rest of your stack",
-    copy: "Scoped API keys and signed webhooks, so a reply, a bounce, an opt-out, or a closed deal reaches your CRM without anyone copying it across. Same signature scheme Stripe uses, so your existing verification code works.",
+    copy: "Scoped API keys and signed webhooks, so replies, bounces and closed deals reach your CRM on their own. Same signature scheme as Stripe.",
   },
   {
     eyebrow: "Measure",
     title: "Know which campaign pays",
-    copy: "Compare campaigns side by side on the metrics that predict revenue. Replies and clicks lead, because opens are the least honest number in email.",
+    copy: "Compare campaigns on the metrics that predict revenue. Replies lead, because opens are the least honest number in email.",
   },
   {
     eyebrow: "Protect",
     title: "Compliance you cannot forget",
-    copy: "Opt-outs are checked before every send and honored instantly with one click. Follow-ups stop themselves. Your list stays clean and your name stays good.",
+    copy: "Opt-outs are checked before every send and honored in one click. Follow-ups stop themselves.",
   },
   {
     eyebrow: "Scale",
     title: "Built for a team, not a seat",
-    copy: "Roles, per-rep leaderboards, and shared brand voice. Managers see the whole board while each rep's leads stay strictly their own.",
+    copy: "Roles, per-rep leaderboards, shared brand voice. Managers see everything; each rep's leads stay their own.",
   },
   {
     eyebrow: "Land",
     title: "Deliverability, checked before you send",
-    copy: "SPF, DKIM, DMARC, and sender reputation verified up front, so you find out on the dashboard rather than from a silent campaign.",
+    copy: "SPF, DKIM, DMARC and sender reputation verified up front, so you find out here rather than from a silent campaign.",
   },
 ] as const;
 
@@ -1328,6 +1329,58 @@ function OperationsDemo() {
   );
 }
 
+/**
+ * The four glyphs for the feature row, drawn locally.
+ *
+ * The app has a 37-icon module, and importing it here would pull every one of
+ * them into the marketing bundle for the sake of four. This page already keeps
+ * its own Check and Arrow for the same reason.
+ */
+function FeatureGlyph({ kind }: { kind: "write" | "pace" | "verify" | "reply" }) {
+  const common = {
+    width: 18,
+    height: 18,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.7,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+    focusable: false as const,
+  };
+  if (kind === "write") {
+    return (
+      <svg {...common}>
+        <path d="M4 20h4l10-10a2.1 2.1 0 0 0-3-3L5 17v3Z" />
+        <path d="M14 7l3 3" />
+      </svg>
+    );
+  }
+  if (kind === "pace") {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M12 7.5V12l3 1.8" />
+      </svg>
+    );
+  }
+  if (kind === "verify") {
+    return (
+      <svg {...common}>
+        <path d="M12 3.5 19 6v5.5c0 4-2.9 7.4-7 8.9-4.1-1.5-7-4.9-7-8.9V6l7-2.5Z" />
+        <path d="m9.2 11.9 2 2 3.6-3.9" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M9.5 8.5 5 13l4.5 4.5" />
+      <path d="M5 13h9a5 5 0 0 0 5-5V6.5" />
+    </svg>
+  );
+}
+
 export function Landing() {
   return (
     <div className={styles.root} data-landing-root>
@@ -1401,6 +1454,31 @@ export function Landing() {
             <InboxProof />
           </div>
         </header>
+
+        {/* Four columns, six to eight words each. The scannable index of the
+            product for a visitor who reads nothing else, taken directly from
+            the reference designs. The detailed feature section further down is
+            where anyone still interested goes. */}
+        <section className={styles.introSection} style={{ paddingBottom: 0 }}>
+          <div className={styles.shell}>
+            <div className={styles.featureRow} data-reveal data-stagger>
+              {[
+                ["write", "Written for each lead", "AI drafts in your voice. You approve every one."],
+                ["pace", "Paced across the day", "Spread at a human rhythm, under a hard cap."],
+                ["verify", "Checked before launch", "SPF, DKIM and DMARC verified up front."],
+                ["reply", "Replies come to you", "In your own Gmail thread, sorted by intent."],
+              ].map(([icon, title, copy]) => (
+                <article key={title}>
+                  <span className={styles.featureRowIcon} aria-hidden>
+                    <FeatureGlyph kind={icon as "write" | "pace" | "verify" | "reply"} />
+                  </span>
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <section className={styles.introSection}>
           <div className={styles.shell}>
@@ -1578,6 +1656,80 @@ export function Landing() {
                   </article>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* The dark metrics band. Every figure is illustrative and says so:
+            these are the shapes a healthy workspace produces, not a forecast,
+            and not anyone's real results. */}
+        <section className={styles.outcomeBand}>
+          <div className={styles.shell}>
+            <div className={styles.outcomeLayout} data-reveal>
+              <div className={styles.outcomeCopy}>
+                <h2>More replies. More meetings. More closed deals.</h2>
+                <p>
+                  Volume is easy. Volume that still sounds like one person
+                  writing to one person is the part that earns a reply.
+                </p>
+                <StartLink className={styles.heroPrimary}>
+                  Get started <Arrow />
+                </StartLink>
+                <p className={styles.outcomeNote}>
+                  Illustrative figures from an example workspace.
+                </p>
+              </div>
+
+              <dl className={styles.outcomeStats}>
+                <div className={styles.outcomeStat}>
+                  <div>
+                    <dt>Emails sent</dt>
+                    <dd>
+                      2,439
+                      <small>Across 30 days</small>
+                    </dd>
+                  </div>
+                  <Sparkline
+                    data={[110, 128, 96, 152, 141, 173, 168, 196, 184, 212]}
+                    width={190}
+                    height={54}
+                    series={1}
+                    label="Emails sent per day"
+                  />
+                </div>
+                <div className={styles.outcomeStat}>
+                  <div>
+                    <dt>Reply rate</dt>
+                    <dd>
+                      6.2%
+                      <small>Replies, not opens</small>
+                    </dd>
+                  </div>
+                  <Sparkline
+                    data={[3.1, 3.4, 4.0, 4.2, 4.9, 5.1, 5.4, 5.8, 6.0, 6.2]}
+                    width={190}
+                    height={54}
+                    series={2}
+                    label="Reply rate per day"
+                  />
+                </div>
+                <div className={styles.outcomeStat}>
+                  <div>
+                    <dt>Meetings booked</dt>
+                    <dd>
+                      17
+                      <small>Traced to outreach</small>
+                    </dd>
+                  </div>
+                  <Sparkline
+                    data={[0, 1, 1, 3, 4, 6, 8, 11, 14, 17]}
+                    width={190}
+                    height={54}
+                    series={2}
+                    label="Meetings booked, cumulative"
+                  />
+                </div>
+              </dl>
             </div>
           </div>
         </section>
