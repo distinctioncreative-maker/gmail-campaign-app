@@ -2696,11 +2696,53 @@
   }
 }
 
-@supports (animation-timeline: view()) {
-  .root [data-reveal] {
-    animation: sectionReveal 1ms var(--landing-ease) both;
-    animation-range: entry 5% cover 28%;
-    animation-timeline: view();
+/* Scroll reveal.
+   This used to live inside @supports (animation-timeline: view()), which is
+   Chrome and Edge only: Safari has not shipped scroll-driven animations and
+   Firefox keeps them behind a flag, so on iPhone, on Safari, and in Firefox the
+   page had no entrance animation whatsoever. An IntersectionObserver in
+   ScrollReveal.tsx does the same job everywhere and is now the only mechanism.
+
+   The hiding rule is deliberately scoped to [data-reveal-ready], an attribute
+   that component sets on mount. If the script is blocked or fails, nothing is
+   ever hidden and the page reads normally. Hiding by default and revealing with
+   JavaScript is how a marketing page ends up blank for the strictest browsers. */
+.root[data-reveal-ready] [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.root[data-reveal-ready] [data-reveal][data-revealed] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 620ms var(--landing-ease),
+    transform 720ms var(--landing-ease);
+}
+/* Children of a revealed block arrive just behind it, which reads as one
+   considered movement rather than eight separate ones. */
+.root[data-reveal-ready] [data-reveal][data-stagger] > * {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.root[data-reveal-ready] [data-reveal][data-stagger][data-revealed] > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 560ms var(--landing-ease),
+    transform 640ms var(--landing-ease);
+}
+.root[data-reveal-ready] [data-stagger][data-revealed] > *:nth-child(2) { transition-delay: 70ms; }
+.root[data-reveal-ready] [data-stagger][data-revealed] > *:nth-child(3) { transition-delay: 140ms; }
+.root[data-reveal-ready] [data-stagger][data-revealed] > *:nth-child(4) { transition-delay: 210ms; }
+.root[data-reveal-ready] [data-stagger][data-revealed] > *:nth-child(5) { transition-delay: 280ms; }
+.root[data-reveal-ready] [data-stagger][data-revealed] > *:nth-child(6) { transition-delay: 350ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .root[data-reveal-ready] [data-reveal],
+  .root[data-reveal-ready] [data-reveal] > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 
@@ -3649,3 +3691,258 @@
   font-size: 0.82rem;
   color: var(--landing-muted);
 }
+
+/* ── Hero visual: Gmail chrome with Cadence working inside it ────────
+   The proposition is "your own Gmail", so the hero shows Gmail. The panel
+   beside it shows the deliverability work rather than claiming an outcome:
+   the domain authenticated, the send paced, the bounce rate watched, the
+   replies counted. See the note at the top of InboxProof.tsx for why that
+   distinction is not negotiable. */
+.inboxProof {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  margin-top: 52px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: start;
+  text-align: left;
+}
+
+.mailWindow {
+  overflow: hidden;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-surface);
+  box-shadow: var(--landing-shadow-premium);
+}
+
+.mailChrome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--landing-line);
+  padding: 13px 16px;
+}
+.mailChromeName {
+  color: var(--landing-copy);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.mailSearch {
+  height: 26px;
+  flex: 1;
+  border-radius: var(--landing-r-md);
+  background: var(--landing-surface-soft);
+}
+
+.mailBody {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  min-height: 268px;
+}
+
+.mailRail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid var(--landing-line);
+  padding: 12px 8px;
+}
+.mailRail > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--landing-r-md);
+  padding: 7px 10px;
+  color: var(--landing-muted);
+  font-size: 12px;
+  font-weight: 550;
+}
+.mailRail > span[data-current] {
+  background: var(--landing-blue-soft);
+  color: var(--landing-blue-deep);
+  font-weight: 680;
+}
+.mailRail > span[data-quiet] b { color: var(--landing-muted); }
+.mailRail b { font-size: 11px; font-variant-numeric: tabular-nums; }
+
+.mailList {
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+}
+.mailRow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-radius: var(--landing-r-md);
+  padding: 10px 11px;
+  /* Rows arrive rather than existing: the point of the visual is that mail is
+     moving. Transform and opacity only, and the delay is set per row inline. */
+  opacity: 0;
+  transform: translateY(7px);
+  transition: opacity 520ms var(--landing-ease), transform 560ms var(--landing-ease);
+}
+.inboxProof[data-live] .mailRow { opacity: 1; transform: none; }
+.mailRow[data-reply] { background: var(--landing-green-soft); }
+
+.mailAvatar {
+  display: grid;
+  height: 30px;
+  width: 30px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--landing-surface-soft);
+  color: var(--landing-copy);
+  font-size: 12px;
+  font-weight: 680;
+}
+.mailText { display: grid; gap: 2px; min-width: 0; }
+.mailText strong {
+  color: var(--landing-copy);
+  font-size: 13px;
+  font-weight: 620;
+}
+.mailText small {
+  overflow: hidden;
+  color: var(--landing-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mailTag {
+  margin-left: auto;
+  flex-shrink: 0;
+  border-radius: var(--landing-r-sm);
+  background: var(--landing-surface);
+  color: var(--landing-green-strong);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 4px 7px;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------- side panel */
+.proofPanel {
+  display: grid;
+  gap: 15px;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-r-xl);
+  background: var(--landing-surface);
+  padding: 18px;
+  box-shadow: var(--landing-shadow-lg);
+}
+.proofPanelHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--landing-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.proofDot {
+  height: 7px;
+  width: 7px;
+  border-radius: 50%;
+  background: var(--landing-green);
+}
+.inboxProof[data-live] .proofDot { animation: proofPulse 2.6s var(--landing-ease) infinite; }
+@keyframes proofPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
+.proofFigure b {
+  display: block;
+  color: var(--landing-copy);
+  font-size: clamp(34px, 4vw, 44px);
+  font-weight: 660;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.proofFigure small {
+  display: block;
+  margin-top: 6px;
+  color: var(--landing-muted);
+  font-size: 12px;
+}
+
+.proofChecks { display: flex; flex-wrap: wrap; gap: 6px; }
+.proofChecks > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--landing-green-border);
+  border-radius: var(--landing-r-sm);
+  background: var(--landing-green-soft);
+  color: var(--landing-green-strong);
+  font-size: 11px;
+  font-weight: 620;
+  padding: 4px 7px;
+}
+.proofChecks i {
+  height: 5px;
+  width: 5px;
+  border-radius: 50%;
+  background: var(--landing-green);
+}
+.proofChecks b { font-weight: 700; }
+
+.proofStats { display: grid; gap: 9px; margin: 0; }
+.proofStats > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--landing-line);
+  padding-top: 9px;
+}
+.proofStats dt { color: var(--landing-muted); font-size: 12px; }
+.proofStats dd {
+  margin: 0;
+  color: var(--landing-copy);
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.proofStats dd[data-good] { color: var(--landing-green-strong); }
+
+.proofFootnote {
+  margin: 0;
+  color: var(--landing-muted);
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  .inboxProof { grid-template-columns: minmax(0, 1fr); }
+  .mailBody { grid-template-columns: 96px minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .mailBody { grid-template-columns: minmax(0, 1fr); }
+  .mailRail { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mailRow { opacity: 1; transform: none; transition: none; }
+  .inboxProof[data-live] .proofDot { animation: none; }
+}
+
+/* The accent phrase in the hero headline.
+   One coloured span, on the middle beat. The references that prompted this used
+   a second brand hue for it; this uses the action blue, because the two-accent
+   rule in docs/brand.md is what keeps the palette from becoming noise, and a
+   third colour introduced purely for one headline is exactly how that starts. */
+.hero h1 em {
+  font-style: normal;
+  color: var(--landing-blue-on-ink);
+}
+
+/* Spacing for the walkthrough that moved out of the hero. */
+.controlsWalkthrough { margin-top: 34px; }

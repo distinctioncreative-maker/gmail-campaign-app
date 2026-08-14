@@ -178,10 +178,54 @@ describe("landing-page experience", () => {
   });
 
   it("qualifies deliverability claims instead of promising inbox placement", () => {
-    expect(landingSource).toContain("Gmail outreach with deliberate control");
-    expect(landingSource).toContain("Built for deliverability");
-    expect(landingSource).not.toContain("keeps them out of spam");
-    expect(landingSource).not.toContain("Outreach that lands in the inbox");
+    /**
+     * The most important guard on this page, and the reason it is written
+     * against phrasings rather than one blessed sentence.
+     *
+     * Inbox placement is decided by the receiving provider from recipient
+     * engagement, domain history, list quality and content. No sending tool
+     * controls any of those, and Google makes no such promise about Gmail
+     * either, so a page that promises placement is describing a product that
+     * cannot exist. The pull towards writing it anyway is constant, because it
+     * is the single thing a buyer most wants to hear.
+     *
+     * Two phrasings used to be banned by name. The hero has since been rewritten
+     * around a Gmail visual whose entire job is to suggest deliverability, so
+     * the ban is broadened here rather than left pinned to the two sentences
+     * that happened to exist in 2025.
+     */
+    for (const promise of [
+      "keeps them out of spam",
+      "Outreach that lands in the inbox",
+      "lands in the inbox",
+      "never hit spam",
+      "guaranteed delivery",
+      "stay out of spam",
+      "avoid the spam folder",
+      // Note the missing entry: "guarantee inbox" cannot be banned as a
+      // substring, because the page's own disclaimer reads "No platform can
+      // guarantee inbox placement or replies". A flat substring ban flags the
+      // one sentence that makes the page honest, which is why the promissory
+      // first person is banned instead.
+      "we guarantee",
+    ]) {
+      expect(landingSource.toLowerCase()).not.toContain(promise.toLowerCase());
+    }
+
+    // And the qualification has to be present, not merely the promise absent.
+    expect(landingSource).toContain("No platform can guarantee inbox placement or replies.");
+
+    // The page must still show the deliverability *work*, which is what makes
+    // the qualified position credible rather than evasive. This lived in a
+    // proof bar that the new hero replaced; it is now the authentication row
+    // inside the hero visual.
+    const proof = readFileSync("components/marketing/InboxProof.tsx", "utf8");
+    for (const signal of ["SPF", "DKIM", "DMARC", "Bounce rate", "Paced across"]) {
+      expect(proof).toContain(signal);
+    }
+    // Illustrative figures must say so. A visitor should never read the example
+    // workspace's numbers as a forecast of their own.
+    expect(proof).toContain("Example workspace");
   });
 
   it("uses only the semantic warm palette and keeps text pairs at AA contrast", () => {
@@ -373,9 +417,14 @@ describe("landing-page experience", () => {
   });
 
   it("leads with a strong but qualified business outcome", () => {
-    expect(landingSource).toContain(
-      "Your list is worth more than you are getting from it."
-    );
+    // The headline was rewritten to three beats with the middle one accented,
+    // matching the reference designs this redesign is working from. The
+    // assertion moved with it rather than being dropped, because what it is
+    // really protecting is that the lead claim stays about behaviour the
+    // product controls: sending volume, sounding personal, earning replies.
+    expect(landingSource).toContain("Send thousands.");
+    expect(landingSource).toContain("<em>Sound like one person.</em>");
+    expect(landingSource).toContain("Get replies.");
     expect(landingSource).toContain(
       "No platform can guarantee inbox placement or replies."
     );

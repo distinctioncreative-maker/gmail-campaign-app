@@ -19,6 +19,8 @@ import {
 } from "@/lib/billing/publicPricing";
 import styles from "./landing.module.css";
 import { VariationDemo } from "./VariationDemo";
+import { ScrollReveal } from "./ScrollReveal";
+import { InboxProof } from "./InboxProof";
 
 function Check({ size = 18 }: { size?: number }) {
   return (
@@ -1328,7 +1330,8 @@ function OperationsDemo() {
 
 export function Landing() {
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-landing-root>
+      <ScrollReveal />
       <a className={styles.skipLink} href="#main">
         Skip to main content
       </a>
@@ -1366,15 +1369,21 @@ export function Landing() {
             <div className={styles.heroCopy}>
               <span className={styles.pill}>
                 <span />
-                Gmail outreach with deliberate control
+                Built for Gmail
               </span>
+              {/* Three beats, and the middle one carries the accent because it
+                  is the one a deliverability-literate buyer is actually weighing.
+                  Note what it does not say: nothing here promises inbox
+                  placement, because no sender can. It promises the behaviour
+                  that earns it. */}
               <h1>
-                Your list is worth more than you are getting from it.
+                Send thousands.{" "}
+                <em>Sound like one person.</em>{" "}
+                Get replies.
               </h1>
               <p className={styles.heroLead}>
-                Cadence helps you prepare and schedule personalized campaigns
-                from your own Gmail, with human-reviewed AI, measured pacing,
-                and every reply organized for the next step.
+                Cadence paces every campaign from your own Gmail and checks your
+                domain before a single email leaves. Replies land in your thread.
               </p>
               <div className={styles.heroCtas}>
                 <StartLink className={styles.heroPrimary}>
@@ -1385,36 +1394,11 @@ export function Landing() {
                 </ContactLink>
               </div>
               <p className={styles.heroNote}>
-                Connect your own Gmail. Nothing sends until you review it.
+                Free to start. No card. Nothing sends until you review it.
               </p>
-              <div className={styles.heroFoot}>
-                <a href="#workflow">
-                  Explore the workflow <Arrow />
-                </a>
-                <span>
-                  Human-reviewed by design. Gmail-connected. Built for the next step.
-                </span>
-              </div>
             </div>
 
-            <HeroDemo />
-
-            <div className={styles.proofBar}>
-              {[
-                ["Your real Gmail", "Not a relay. Replies land in your thread."],
-                ["Built for deliverability", "Pacing and domain checks before launch."],
-                ["Personal at scale", "Every email written for that one recipient."],
-                ["Replies ranked", "Your team works the hot ones first."],
-              ].map(([title, copy]) => (
-                <div key={title}>
-                  <Check size={17} />
-                  <span>
-                    <strong>{title}</strong>
-                    <small>{copy}</small>
-                  </span>
-                </div>
-              ))}
-            </div>
+            <InboxProof />
           </div>
         </header>
 
@@ -1425,24 +1409,25 @@ export function Landing() {
                 Why teams switch
               </span>
               <h2>Turn more of your list into real conversations.</h2>
-              <p>
-                Most outreach fails for three reasons. Cadence is built to
-                remove all three.
-              </p>
+              <p>Most outreach fails for three reasons. Cadence removes all three.</p>
             </div>
-            <div className={styles.outcomeGrid} data-reveal>
+            {/* Each of these ran 23 to 26 words, which is three or four
+                sentences per card and the main reason the page felt like
+                homework. Cut to roughly half by removing the hedge clause in
+                front of each claim, not the claim itself. */}
+            <div className={styles.outcomeGrid} data-reveal data-stagger>
               {[
                 [
                   "It never reached them",
-                  "High-volume blasts can damage sender reputation. Cadence uses your connected Gmail, measured pacing, and preflight domain checks to help you send more responsibly.",
+                  "Sent from your own Gmail, paced across the day, with domain checks before launch.",
                 ],
                 [
                   "It read like a template",
-                  "Generic email is easy to ignore. AI-assisted drafts use your brand voice and lead context, while your team stays responsible for review and approval.",
+                  "AI drafts in your brand voice from real lead context. You approve every one.",
                 ],
                 [
                   "The reply went cold",
-                  "Interest can fade in a crowded inbox. Cadence groups replies by intent and keeps follow-up in the original Gmail thread so the right conversations surface sooner.",
+                  "Replies sorted by intent, kept in the original Gmail thread.",
                 ],
               ].map(([title, copy], index) => (
                 <article key={title}>
@@ -1466,7 +1451,7 @@ export function Landing() {
               </p>
             </div>
             <div className={styles.workflow} data-reveal>
-              <div className={styles.workflowSteps}>
+              <div className={styles.workflowSteps} data-stagger>
                 {WORKFLOW.map((step) => (
                   <article key={step.number}>
                     <span>{step.number}</span>
@@ -1537,6 +1522,13 @@ export function Landing() {
             <div data-reveal>
               <OperationsDemo />
             </div>
+            {/* The staged walkthrough that used to sit in the hero. The hero now
+                carries the Gmail visual instead, but a demo a visitor can drive
+                is the thing this page has that a screenshot-led competitor does
+                not, so it moves here rather than being deleted. */}
+            <div className={styles.controlsWalkthrough} data-reveal>
+              <HeroDemo />
+            </div>
           </div>
         </section>
 
@@ -1558,7 +1550,7 @@ export function Landing() {
                   Talk to sales <Arrow />
                 </ContactLink>
               </div>
-              <div className={styles.trustGrid}>
+              <div className={styles.trustGrid} data-stagger>
                 {[
                   [
                     "Scoped workspace access",
