@@ -4137,3 +4137,162 @@
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
+
+/* Link out to the real playground, in place of four demos that used to live
+   inline. See the note in Landing.tsx. */
+.workflowFoot {
+  margin: 30px 0 0;
+  font-size: 15px;
+}
+.workflowFoot a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--landing-blue-deep);
+  font-weight: 600;
+}
+.workflowFoot a svg { transition: transform 220ms var(--landing-ease); }
+.workflowFoot a:hover svg { transform: translateX(3px); }
+
+/* ── Hero: the Gmail panel arrives rather than appearing ─────────────
+   The brief was that the first thing on the page is the right thing but it
+   should move. It already staggered its message rows; what was missing was the
+   frame itself, and the sense that mail is actively flowing rather than sitting
+   still. Everything below is transform and opacity, so none of it costs layout,
+   and all of it stops under prefers-reduced-motion. */
+.inboxProof {
+  opacity: 0;
+  transform: translateY(22px) scale(0.985);
+  animation: proofArrive 900ms var(--landing-ease) 120ms both;
+}
+@keyframes proofArrive {
+  to { opacity: 1; transform: none; }
+}
+
+/* The side panel comes in just behind the window, so the pair reads as one
+   object assembling rather than two things appearing at once. */
+.proofPanel {
+  opacity: 0;
+  animation: proofArrive 820ms var(--landing-ease) 380ms both;
+}
+
+/* A send pulse travelling down the left edge of the mail window: the visual
+   claim of the whole page is volume moving at a steady rhythm, so the hero
+   should look like something is being sent. */
+.mailWindow { position: relative; }
+.mailWindow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 22%;
+  border-radius: var(--landing-r-full, 999px);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--landing-blue) 45%,
+    var(--landing-green) 70%,
+    transparent
+  );
+  opacity: 0;
+  animation: sendPulse 4.2s var(--landing-ease-soft) 1.4s infinite;
+  pointer-events: none;
+}
+@keyframes sendPulse {
+  0%   { opacity: 0; transform: translateY(-10%); }
+  12%  { opacity: 0.9; }
+  70%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(420%); }
+}
+
+/* The authentication chips tick over one after another, which is what the
+   product is actually doing in that moment. */
+.proofChecks > span {
+  opacity: 0;
+  animation: chipIn 460ms var(--landing-ease) both;
+}
+.proofChecks > span:nth-child(1) { animation-delay: 900ms; }
+.proofChecks > span:nth-child(2) { animation-delay: 1040ms; }
+.proofChecks > span:nth-child(3) { animation-delay: 1180ms; }
+@keyframes chipIn {
+  from { opacity: 0; transform: translateY(5px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Motion across the rest of the page ──────────────────────────────
+   Small, consistent, and tied to the pointer rather than running on a loop.
+   Ambient movement in peripheral vision carries no information and is the
+   thing that makes a page feel busy rather than alive. */
+
+/* Cards lift a little and their hairline sharpens. */
+.featureRow article,
+.outcomeStat {
+  transition:
+    transform 320ms var(--landing-ease),
+    box-shadow 320ms var(--landing-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .featureRow article:hover { transform: translateY(-3px); }
+}
+
+/* The icon tile responds before the card does, which is what makes the hover
+   feel like it has depth rather than being one flat move. */
+.featureRowIcon {
+  transition:
+    transform 320ms var(--landing-ease),
+    background-color 320ms var(--landing-ease),
+    border-color 320ms var(--landing-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .featureRow article:hover .featureRowIcon {
+    transform: translateY(-2px) scale(1.06);
+    background: var(--landing-blue);
+    border-color: var(--landing-blue);
+    color: var(--landing-blue-contrast);
+  }
+}
+
+/* Numbered workflow steps: the numeral is the structure, so it is the thing
+   that reacts. */
+.workflowSteps article > span {
+  transition:
+    color 260ms var(--landing-ease),
+    transform 260ms var(--landing-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .workflowSteps article:hover > span {
+    color: var(--landing-blue);
+    transform: scale(1.08);
+  }
+}
+
+/* Primary actions get a soft brand shadow on hover, matching the app. */
+.heroPrimary,
+.navStart {
+  transition:
+    transform 180ms var(--landing-ease),
+    box-shadow 220ms var(--landing-ease),
+    background-color 180ms var(--landing-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .heroPrimary:hover { transform: translateY(-1px); box-shadow: var(--landing-shadow-lg); }
+}
+.heroPrimary:active { transform: translateY(1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .inboxProof,
+  .proofPanel,
+  .proofChecks > span {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+  .mailWindow::after { animation: none; opacity: 0; }
+  .featureRow article,
+  .featureRow article:hover,
+  .featureRowIcon,
+  .workflowSteps article > span,
+  .heroPrimary,
+  .heroPrimary:hover { transform: none; transition: none; }
+}

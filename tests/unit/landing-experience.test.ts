@@ -483,56 +483,74 @@ describe("landing-page experience", () => {
     expect((landingDeclarations.match(/box-shadow:\s*none/g) ?? []).length).toBeGreaterThan(30);
   });
 
-  it("makes the hero walkthrough user controlled and keyboard operable", () => {
-    expect(landingSource).toContain("const HERO_DEMO_STAGES");
-    expect(landingSource).toContain('role="tablist"');
-    expect(landingSource).toContain('role="tab"');
-    expect(landingSource).toContain("Pause walkthrough");
-    expect(landingSource).toContain("setPlaying(false)");
-    expect(landingSource).toContain('event.key === "ArrowRight"');
-    expect(landingSource).toContain('event.key === "ArrowLeft"');
-    expect(landingSource).toContain("IntersectionObserver");
-    expect(landingSource).toContain("Interactive example");
+  it("keeps the interactive product demos off the landing page", () => {
+    /**
+     * This test and three others used to guard four inline demos: a staged hero
+     * walkthrough, a compose demo, an operations console, and the variation
+     * demo. They were removed after direct feedback that the how-it-works demo
+     * was too complicated and tedious, which it was: the page asked a visitor who
+     * had decided nothing to operate a product they had not bought.
+     *
+     * The demos were not deleted as a category. /demo runs the real application
+     * components against sample data, which is a better demonstration than any
+     * of the four mock-ups were, and the landing page links to it. The variation
+     * demo moved there intact because it runs the shipped spintax parser and is
+     * therefore evidence rather than decoration.
+     *
+     * What this asserts now is the decision: the heavy inline demos stay off the
+     * page, and the route that replaced them is linked from it.
+     */
+    expect(landingSource).not.toContain("const HERO_DEMO_STAGES");
+    expect(landingSource).not.toContain('role="tablist"');
+    expect(landingSource).toContain('href="/demo"');
   });
 
-  it("makes premium hero motion obvious immediately and pauses it responsibly", () => {
-    expect(landingSource).toContain("HERO_STAGE_DURATION_MS = 2300");
-    expect(landingSource).toContain("Live walkthrough");
-    expect(landingSource).toContain("HERO_MOTION_NODES");
-    expect(landingSource).toContain("Live action");
-    expect(landingSource).toContain('document.visibilityState === "visible"');
-    expect(landingSource).toContain(
-      'aria-live={autoplayActive ? "off" : "polite"}'
-    );
-    expect(landingSource).toContain("pointerFrameRef");
-    expect(landingStyles).toContain("@keyframes activeStageClock");
-    expect(landingStyles).toContain("@keyframes signalSweep");
-    expect(landingStyles).toContain("animation-timeline: view()");
-    expect(landingStyles).toContain("contain: paint");
-    expect(landingStyles).toMatch(
-      /@keyframes heroReveal \{[\s\S]*?from \{[\s\S]*?opacity: 0\.72;/
-    );
-    expect(landingStyles).toMatch(
-      /@keyframes frameReveal \{[\s\S]*?from \{[\s\S]*?opacity: 0\.42;/
-    );
+  it("gives the hero motion that arrives and then settles", () => {
+    /**
+     * Rewritten for the hero that exists. The old assertions described the
+     * staged walkthrough's clock and sweep animations, which went with it.
+     *
+     * The current hero is the Gmail panel, and the brief was that it should
+     * move: the frame arrives, the side panel follows just behind so the pair
+     * reads as one object assembling, the authentication chips tick over in
+     * sequence, and a send pulse travels the edge of the mail window because the
+     * claim of the page is volume moving at a steady rhythm.
+     *
+     * Every one of those is transform and opacity so none of it costs layout,
+     * and every one is disabled under reduced motion, which is the part that
+     * matters more than the effect.
+     */
+    for (const animation of ["proofArrive", "sendPulse", "chipIn"]) {
+      expect(landingStyles, `${animation} exists`).toContain(`@keyframes ${animation}`);
+    }
+    const reduced = landingStyles.slice(landingStyles.lastIndexOf("(prefers-reduced-motion: reduce)"));
+    for (const selector of [".inboxProof", ".proofPanel", ".mailWindow::after"]) {
+      expect(reduced, `${selector} stops under reduced motion`).toContain(selector);
+    }
   });
 
-  it("keeps demo interactions deterministic and away from production APIs", () => {
+  it("makes exactly one network call, and only to the waitlist", () => {
+    /**
+     * The demos are gone, so the "example control does not send email" notices
+     * went with them. The rule underneath is unchanged and is the one worth
+     * keeping: the marketing page must not reach a production API. The contact
+     * form is the single permitted exception.
+     */
     const fetches = landingSource.match(/fetch\(/g) ?? [];
     expect(fetches).toHaveLength(1);
     expect(landingSource).toContain('fetch("/api/waitlist"');
-    expect(landingSource).toMatch(
-      /This example control does not send email or change a real\s+account\./
-    );
-    expect(landingSource).toContain("Example data, last");
   });
 
-  it("supports before-and-after AI copy, variants, and human approval", () => {
-    expect(landingSource).toContain("Before AI");
-    expect(landingSource).toContain("AI-assisted");
-    expect(landingSource).toContain("Brand voice");
-    expect(landingSource).toContain("Human review required");
-    expect(landingSource).toContain("Approve draft");
+  it("still promises human approval, which the deleted demo used to show", () => {
+    /**
+     * The compose demo carried "Human review required" and "Approve draft" as
+     * interface labels. Deleting it removed the only place the page made that
+     * promise visually, and human approval is a claim worth keeping: it is the
+     * difference between this and a tool that sends unreviewed AI output.
+     * The copy has to carry it now, so this checks the copy rather than the
+     * demo chrome.
+     */
+    expect(landingSource).toMatch(/approve every (?:one|send)/i);
   });
 
   it("leads with a strong but qualified business outcome", () => {
@@ -547,9 +565,15 @@ describe("landing-page experience", () => {
     expect(landingSource).toContain(
       "No platform can guarantee inbox placement or replies."
     );
-    expect(landingSource).toContain(
-      "Provider limits are ceilings, not a universal target."
-    );
+    /**
+     * This pinned a sentence that lived inside the deleted pacing demo. The
+     * claim survives in the FAQ, which says provider limits are technical
+     * ceilings rather than outreach recommendations, so what is asserted is the
+     * claim rather than the wording that happened to carry it. Losing the
+     * sentence moved this from a visible section into a collapsed one, which is
+     * a real reduction in prominence and is worth knowing.
+     */
+    expect(landingSource).toMatch(/limits are (?:technical )?ceilings, not/i);
   });
 
   it("turns off decorative animation for reduced-motion users", () => {
@@ -602,27 +626,35 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
     expect(demo).toMatch(/identical/i);
   });
 
-  it("is reachable from the page and still has its own address", () => {
+  it("is still reachable, from the playground rather than the landing page", () => {
     /**
-     * The demo used to sit in a section carrying id="variation". Three demo
-     * sections were merged into one tabbed group, and the literal anchor went
-     * with them.
+     * This demo has now moved twice, and the reason it survived both moves is
+     * the point of the test.
      *
-     * That was a capability, not just markup: a tab you can only reach by
-     * clicking is less reachable than the section it replaced, and any link
-     * anyone had shared to #variation would have quietly stopped working. So
-     * DemoTabs reads the URL fragment and selects the matching tab, which now
-     * gives all four demos an address where previously only some had one. This
-     * asserts the capability rather than the old markup.
+     * It first sat in its own landing section, then in a tabbed group, and now
+     * lives on /demo. The landing page dropped its four interactive demos
+     * because asking a visitor who has decided nothing to operate a product they
+     * have not bought is tedious, which was the feedback. But this one is
+     * evidence rather than decoration: it runs the real parser, so deleting it
+     * would have left the page claiming per-recipient variation with nothing
+     * behind the claim.
+     *
+     * So the assertion is that it is reachable somewhere a person can get to,
+     * and that the landing page still points at that place.
      */
+    const demoPage = readFileSync("app/demo/page.tsx", "utf8");
     const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
-    const tabs = readFileSync("components/marketing/DemoTabs.tsx", "utf8");
-    expect(landing).toContain("<VariationDemo />");
-    expect(landing).toContain('slug: "variation"');
-    // The slug has to actually become the element id and be honoured on load.
-    expect(tabs).toContain("id={tab.slug}");
-    expect(tabs).toContain("window.location.hash");
-    expect(tabs).toContain('addEventListener("hashchange"');
+    expect(demoPage).toContain("<VariationDemo />");
+    expect(landing).toContain('href="/demo"');
+  });
+
+  it("keeps the landing page free of the heavy inline demos", () => {
+    // The feedback was that the how-it-works demo was too complicated and
+    // tedious. This stops it, or anything like it, drifting back inline.
+    const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+    for (const gone of ["<DemoTabs", "<HeroDemo", "<MessageDemo", "<OperationsDemo"]) {
+      expect(landing, `${gone} stays off the landing page`).not.toContain(gone);
+    }
   });
 
   it("names the shipped work the site used to omit entirely", () => {

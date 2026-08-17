@@ -9,6 +9,7 @@ import {
   RecentCampaigns,
 } from "@/components/home/HomeSections";
 import { demoHome } from "@/lib/demo/fixtures";
+import { VariationDemo } from "@/components/marketing/VariationDemo";
 
 /** The tour's home screen, rendered from the same components as the real one. */
 export default async function DemoHomePage({
@@ -113,6 +114,27 @@ export default async function DemoHomePage({
 
       <LiveCampaignCards campaigns={home.activeCampaigns} />
       <RecentCampaigns campaigns={home.campaigns} />
+
+      {/* Moved here from the landing page, where four interactive demos made the
+          first visit tedious. This one is worth keeping reachable because it
+          cannot lie: it imports the same spintax functions the send worker calls,
+          so what it shows is what a recipient would actually receive. A hand-
+          written mock-up would have been easier and would have become false the
+          first time anyone touched the parser, on a page whose job is to make a
+          promise about exactly that. */}
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
+          One message, every recipient different
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+          Mark the phrases that could go either way. Cadence picks per recipient and
+          keeps the choice stable, so a retry never sends different wording to the
+          same person.
+        </p>
+        <div className="mt-5">
+          <VariationDemo />
+        </div>
+      </section>
     </div>
   );
 }
