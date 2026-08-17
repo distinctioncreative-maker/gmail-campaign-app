@@ -3,7 +3,8 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { getSequence } from "@/lib/repositories/sequences";
 import { listTemplates } from "@/lib/repositories/templates";
 import { SequenceBuilder } from "@/components/sequences/SequenceBuilder";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { LocalTime } from "@/components/LocalTime";
+import { EntityHeader } from "@/components/ui/EntityHeader";
 
 export default async function EditSequencePage({
   params,
@@ -17,11 +18,26 @@ export default async function EditSequencePage({
 
   return (
     <div>
-      <PageHeader
+      <EntityHeader
+        kicker="Follow-up sequence"
         title={sequence.name}
-        description="Edit the follow-up steps, timing, and stop rules for this sequence."
+        description="Steps, timing, and stop rules."
         backHref="/sequences"
         backLabel="All follow-ups"
+        meta={[
+          {
+            label: "Steps",
+            value: (
+              <span className="tabular-nums">
+                {sequence.steps.length} {sequence.steps.length === 1 ? "step" : "steps"}
+              </span>
+            ),
+          },
+          {
+            label: "Last edited",
+            value: <LocalTime value={sequence.updatedAt} options={{ dateStyle: "medium" }} />,
+          },
+        ]}
       />
       <div>
         <SequenceBuilder

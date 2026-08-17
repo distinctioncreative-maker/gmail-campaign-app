@@ -5,7 +5,7 @@ import { countContactsInList, listContactsPage } from "@/lib/repositories/contac
 import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
 import { LeadListHeaderActions } from "@/components/leads/LeadListHeaderActions";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { EntityHeader } from "@/components/ui/EntityHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
   CONTACT_PAGE_SIZE,
@@ -59,11 +59,20 @@ export default async function LeadListDetailPage({
 
   return (
     <div>
-      <PageHeader
+      {/* Found by the archetype guard rather than by me: this is a fifth detail
+          route and it was still using the index header. The count is now a
+          real fact in the header instead of a sentence describing it. */}
+      <EntityHeader
+        kicker="Lead list"
         title={list.name}
-        description={`${totalContacts.toLocaleString()} lead${totalContacts === 1 ? "" : "s"} in this list`}
         backHref="/leads"
         backLabel="All leads"
+        meta={[
+          {
+            label: "Leads",
+            value: <span className="tabular-nums">{totalContacts.toLocaleString()}</span>,
+          },
+        ]}
         actions={<LeadListHeaderActions listId={list.listId} name={list.name} />}
       />
 

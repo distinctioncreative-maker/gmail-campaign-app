@@ -28,7 +28,7 @@ import { PLANS } from "@/lib/billing/plans";
 import { assessEngagement } from "@/lib/campaigns/engagementPace";
 import { CampaignSectionNav } from "@/components/campaign/CampaignSectionNav";
 import { LaunchCelebration } from "@/components/campaign/LaunchCelebration";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { EntityHeader } from "@/components/ui/EntityHeader";
 
 export default async function CampaignDetailPage({
   params,
@@ -148,11 +148,44 @@ export default async function CampaignDetailPage({
         />
       )}
 
-      <PageHeader
+      {/* EntityHeader rather than PageHeader: this screen is about one campaign,
+          and it used to open identically to the list it was reached from. The
+          status was previously the last item inside `actions`, which put the
+          single most decision-relevant fact on the page in the position reserved
+          for buttons. It is a badge beside the name now. */}
+      <EntityHeader
+        kicker="Campaign"
         title={campaign.name}
+        status={{ label: badge.label, className: badge.className }}
         description={campaign.description || undefined}
         backHref={campaign.deletedAt !== null ? "/campaigns?view=deleted" : "/campaigns"}
         backLabel={campaign.deletedAt !== null ? "Recently deleted" : "All campaigns"}
+        meta={[
+          {
+            label: "Recipients",
+            value: (
+              <span className="tabular-nums">
+                {campaign.eligibleRecipients.toLocaleString()}
+              </span>
+            ),
+          },
+          {
+            label: "Sent",
+            value: (
+              <span className="tabular-nums">{campaign.sentCount.toLocaleString()}</span>
+            ),
+          },
+          {
+            label: "Replies",
+            value: (
+              <span className="tabular-nums">{campaign.replyCount.toLocaleString()}</span>
+            ),
+          },
+          {
+            label: "Created",
+            value: <LocalTime value={campaign.createdAt} options={{ dateStyle: "medium" }} />,
+          },
+        ]}
         actions={
           <>
             {campaign.status === "ACTIVE" && <LiveRefresh intervalMs={12000} />}
@@ -165,9 +198,6 @@ export default async function CampaignDetailPage({
                 View report
               </Link>
             ) : null}
-            <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>
-              {badge.label}
-            </span>
           </>
         }
       />

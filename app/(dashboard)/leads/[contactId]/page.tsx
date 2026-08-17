@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { EntityHeader } from "@/components/ui/EntityHeader";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { getContact } from "@/lib/repositories/contacts";
 import { isSuppressed } from "@/lib/repositories/suppressions";
@@ -43,28 +43,49 @@ export default async function ContactDetailPage({
 
   return (
     <div>
-      <PageHeader
+      {/* The four states were previously four differently-shaped pills rendered
+          into `actions`, each with its own colour classes written inline. They
+          are one badge now, chosen in a single expression, so the states are
+          visibly the same kind of thing as each other. */}
+      <EntityHeader
+        kicker="Lead"
         title={contact.fullName || contact.email}
+        status={
+          suppression || contact.emailOptOut
+            ? { label: "Excluded for safety", className: "bg-warning-soft text-warning" }
+            : contact.repliedAt
+              ? {
+                  label: `Replied${contact.replyCount > 1 ? ` ${contact.replyCount}\u00d7` : ""}`,
+                  className: "bg-success-soft text-success",
+                }
+              : contact.campaignCount > 0
+                ? { label: "Contacted before", className: "bg-info-soft text-info" }
+                : { label: "Ready", className: "bg-success-soft text-success" }
+        }
         description={contact.businessName || undefined}
         backHref="/leads"
         backLabel="All leads"
-        actions={
-          suppression || contact.emailOptOut ? (
-            <span className="rounded-full bg-warning-soft px-3 py-1 text-sm text-warning">
-              Excluded for safety
-            </span>
-          ) : contact.repliedAt ? (
-            <span className="rounded-full bg-success-soft px-3 py-1 text-sm text-success">
-              Replied {contact.replyCount > 1 ? `${contact.replyCount}×` : ""}
-            </span>
-          ) : contact.campaignCount > 0 ? (
-            <span className="rounded-full bg-info-soft px-3 py-1 text-sm text-info">
-              Contacted before
-            </span>
-          ) : (
-            <span className="rounded-full bg-success-soft px-3 py-1 text-sm text-success">Ready</span>
-          )
-        }
+        meta={[
+          { label: "Email", value: contact.email },
+          {
+            label: "Emails sent",
+            value: (
+              <span className="tabular-nums">{contact.emailsSentCount.toLocaleString()}</span>
+            ),
+          },
+          {
+            label: "Last contacted",
+            value: contact.lastCampaignAt ? (
+              <LocalTime value={contact.lastCampaignAt} options={{ dateStyle: "medium" }} />
+            ) : (
+              <span className="text-muted">Never</span>
+            ),
+          },
+          {
+            label: "Added",
+            value: <LocalTime value={contact.createdAt} options={{ dateStyle: "medium" }} />,
+          },
+        ]}
       />
 
       {/* Engagement at a glance */}
