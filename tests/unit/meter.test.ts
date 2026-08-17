@@ -82,10 +82,11 @@ describe("the proportion meter", () => {
         if (/width: `\$\{/.test(window)) suspects.push(`${path}:${index + 1}`);
       });
     }
-    // Three remain and they are deliberate: the wizard step indicator and the
-    // demo pages, which are illustrative surfaces rather than reporting real
-    // workspace numbers. The bound is tight against that count, so a new
-    // hand-rolled bar on a real screen fails here.
-    expect(suspects.length, `remaining hand-rolled meters:\n${suspects.join("\n")}`).toBeLessThanOrEqual(3);
+    // Two remain and both are deliberate: the campaign wizard's step indicator,
+    // which is chrome rather than a measurement, and a demo page, which is an
+    // illustrative surface rather than one reporting real workspace numbers.
+    // The bound is tight against that count, so a new hand-rolled bar on a real
+    // screen fails here.
+    expect(suspects.length, `remaining hand-rolled meters:\n${suspects.join("\n")}`).toBeLessThanOrEqual(2);
   });
 });

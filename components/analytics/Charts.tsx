@@ -4,6 +4,7 @@
    specific to this page. */
 
 import { TrendChart as ChartTrend } from "@/components/ui/charts/TrendChart";
+import { Meter } from "@/components/ui/charts/Meter";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -138,9 +139,7 @@ export function BestSendTimes({
       {rows.map((r) => (
         <div key={r.hour} className="flex items-center gap-2 text-xs">
           <span className="w-8 shrink-0 text-right text-muted">{fmtHour(r.hour)}</span>
-          <div className="h-3 flex-1 overflow-hidden rounded-full bg-surface-2">
-            <div className="h-full rounded-full bg-primary" style={{ width: `${(r.rate / maxRate) * 100}%` }} />
-          </div>
+          <Meter value={r.rate} max={maxRate} height={12} className="flex-1" />
           <span className="w-24 shrink-0 tabular-nums text-muted">
             {r.rate.toFixed(0)}% · {r.replied}/{r.sent}
           </span>

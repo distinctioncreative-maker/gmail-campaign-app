@@ -137,7 +137,7 @@ const WORKFLOW = [
   {
     number: "03",
     title: "Send at a pace inboxes actually trust",
-    copy: "Set your hours, your daily cap, your spacing. Cadence drips sends the way a person would, at a pace your domain can carry.",
+    copy: "Set your hours, your daily cap, your spacing. Provider limits are ceilings, not targets, so Cadence drips at a pace your domain can carry.",
   },
   {
     number: "04",

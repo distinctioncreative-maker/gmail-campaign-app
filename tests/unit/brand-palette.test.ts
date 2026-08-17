@@ -217,10 +217,11 @@ describe("cool neutral brand palette", () => {
     }
 
     // Guard the guard, still: if the shape changes so nothing matches at all,
-    // this must fail loudly rather than pass vacuously. Three is the current
-    // real count, and it dropped from twelve because the bars moved into Meter
-    // rather than because the check stopped working.
-    expect(bars.length).toBeGreaterThanOrEqual(3);
+    // this must fail loudly rather than pass vacuously. Two is the current real
+    // count. It has now stepped down twice, twelve to three to two, each time
+    // because bars moved into Meter rather than because the check stopped
+    // working, and each step was surfaced by this assertion rather than assumed.
+    expect(bars.length).toBeGreaterThanOrEqual(2);
     for (const bar of bars) {
       expect(`${bar.path}: ${bar.fill} on ${bar.track}`).toBe(
         `${bar.path}: ${bar.fill} on bg-surface-2`
