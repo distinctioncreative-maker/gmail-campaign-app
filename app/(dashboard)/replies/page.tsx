@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listCampaigns, listRecipients, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ReplyFocus } from "@/components/replies/ReplyFocus";
 import { LocalTime } from "@/components/LocalTime";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
 import { DraftReplyButton } from "@/components/replies/DraftReplyButton";
@@ -13,7 +14,7 @@ import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatTile, StatGrid, type StatTone } from "@/components/ui/StatTile";
-import type { IconName } from "@/components/ui/Icon";
+import { Icon, type IconName } from "@/components/ui/Icon";
 import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 import { formatDealValue } from "@/lib/campaigns/outcomes";
 import type { DealStatus } from "@/schemas/campaign";
@@ -109,7 +110,15 @@ export default async function RepliesPage() {
   const interested = rows.filter((r) => r.intent === "INTERESTED").length;
   const won = rows.filter((r) => r.dealStatus === "WON");
   const wonValueCents = won.reduce((sum, r) => sum + (r.dealValueCents ?? 0), 0);
-  const awaiting = rows.filter((r) => r.dealStatus === null && r.intent !== "NOT_INTERESTED").length;
+  const waitingRows = rows.filter((r) => r.dealStatus === null && r.intent !== "NOT_INTERESTED");
+  const awaiting = waitingRows.length;
+  /**
+   * The conversation the focus panel gets. Same predicate as `awaiting`, so the
+   * panel and the "Waiting on you" figure are computed from one list and cannot
+   * drift apart. rows is already sorted hot-first with actioned replies sunk, so
+   * the first waiting row is genuinely the most pressing one.
+   */
+  const focus = waitingRows[0] ?? null;
   const kpis: Array<{ label: string; value: string; icon: IconName; tone: StatTone; hint: string }> = [
     {
       label: "Interested",
@@ -164,9 +173,64 @@ export default async function RepliesPage() {
     <div>
       <PageHeader
         title="Replies"
-        description="Everyone who has replied to your campaigns, newest first. Open the thread and keep the conversation going."
+        description="Everyone who has replied to your campaigns, ranked so the interested ones come first."
         actions={<ScanRepliesButton />}
       />
+
+      {/* The workspace archetype: the work before the list. The queue below is
+          unchanged; what moved is which of them a rep sees first. Renders only
+          when something is genuinely waiting, so an inbox that is fully actioned
+          shows no panel rather than a finished conversation dressed as work. */}
+      {focus && (
+        <div className="mb-6">
+          <ReplyFocus
+            name={focus.fullName}
+            email={focus.email}
+            campaignName={focus.campaignName}
+            contactId={focus.contactId}
+            intentLabel={INTENT_META[focus.intent].label}
+            intentClassName={INTENT_META[focus.intent].className}
+            snippet={focus.snippet}
+            repliedAt={focus.repliedAt}
+            timeToReply={formatDuration(focus.timeToReplyMs)}
+            waiting={awaiting}
+          >
+            {focus.gmailThreadId && (
+              <ReplyThreadViewer
+                campaignId={focus.campaignId}
+                recipientId={focus.recipientId}
+                fullName={focus.fullName}
+                email={focus.email}
+                fallbackSnippet={focus.snippet}
+              />
+            )}
+            {aiEnabled && (
+              <DraftReplyButton
+                campaignId={focus.campaignId}
+                recipientId={focus.recipientId}
+                threadId={focus.gmailThreadId}
+              />
+            )}
+            <OutcomeControl
+              campaignId={focus.campaignId}
+              recipientId={focus.recipientId}
+              status={focus.dealStatus}
+              valueCents={focus.dealValueCents}
+            />
+            {focus.gmailThreadId && (
+              <a
+                href={`https://mail.google.com/mail/u/0/#all/${focus.gmailThreadId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost px-3 py-2 text-sm"
+              >
+                Open in Gmail
+                <Icon name="external" size={14} aria-hidden />
+              </a>
+            )}
+          </ReplyFocus>
+        </div>
+      )}
 
       <StatGrid columns={3}>
         {kpis.map((k) => (

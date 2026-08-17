@@ -83,3 +83,48 @@ describe("screen archetypes", () => {
     }
   });
 });
+
+describe("the workspace archetype", () => {
+  const repliesPage = readFileSync("app/(dashboard)/replies/page.tsx", "utf8");
+  const focus = readFileSync("components/replies/ReplyFocus.tsx", "utf8");
+
+  it("puts the work before the list on the screen reps live in", () => {
+    /**
+     * Replies opened as a title, three stat tiles and a table: the same shape as
+     * Templates, Suppressions and the audit log. The rows were already sorted
+     * hot-first, so the product knew which conversation mattered most and then
+     * gave it the least emphasis available, row one of a table.
+     */
+    expect(repliesPage).toContain("<ReplyFocus");
+    // Before the stat grid, not after it.
+    expect(repliesPage.indexOf("<ReplyFocus")).toBeLessThan(
+      repliesPage.indexOf("<StatGrid")
+    );
+  });
+
+  it("computes the focus and the waiting count from one list", () => {
+    /**
+     * The panel and the "Waiting on you" figure answer the same question, so
+     * they are derived from a single filtered array. Two separate predicates
+     * would eventually disagree, and a focus panel showing a conversation the
+     * count says is not waiting is worse than either alone.
+     */
+    expect(repliesPage).toContain("const waitingRows = rows.filter(");
+    expect(repliesPage).toContain("const awaiting = waitingRows.length;");
+    expect(repliesPage).toContain("const focus = waitingRows[0] ?? null;");
+  });
+
+  it("shows nothing rather than a finished conversation", () => {
+    // A focus panel that renders whatever is at the top, actioned or not, teaches
+    // a rep that the top of the page is decoration.
+    expect(repliesPage).toMatch(/\{focus && \(/);
+    expect(focus).toContain("waiting");
+  });
+
+  it("quotes the reply rather than summarising it", () => {
+    // On a screen about answering people, what they actually said is what decides
+    // the next action.
+    expect(focus).toContain("<blockquote");
+    expect(focus).toContain("{snippet}");
+  });
+});
