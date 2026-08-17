@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Meter } from "@/components/ui/charts/Meter";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
@@ -122,12 +123,10 @@ function Leaderboard({
               </p>
               {/* Reply-rate bar (scaled to the top performer) */}
               <div className="mt-2 flex items-center gap-2">
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
-                  <div
-                    className="bg-primary h-full rounded-full"
-                    style={{ width: `${s.sent > 0 ? Math.max(4, (s.replyRate / topRate) * 100) : 0}%` }}
-                  />
-                </div>
+                <Meter
+                  value={s.sent > 0 ? Math.max(4, (s.replyRate / topRate) * 100) : 0}
+                  className="flex-1"
+                />
                 <span className="w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-muted">
                   {s.sent > 0 ? formatPercent(s.replyRate) : "Not available"}
                 </span>

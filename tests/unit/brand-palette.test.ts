@@ -176,14 +176,28 @@ describe("cool neutral brand palette", () => {
   });
 
   it("keeps every progress-bar fill visible against its own track", () => {
-    // Three bars shipped with the fill and the track set to the same token.
-    // Two of them measured 1.00:1, which is not a subtle bar: it is no bar at
-    // all. A green test suite proved they compiled, not that they were
-    // legible, so the rule is encoded here instead.
-    //
-    // Rule: the track is always --surface-2; the fill is always a status or
-    // action colour. Green means progress toward completion, blue means the
-    // magnitude of a value next to its peers.
+    /**
+     * Three bars once shipped with the fill and the track set to the same token,
+     * two of them measuring 1.00:1, which is not a subtle bar but no bar at all.
+     * A green suite proved they compiled, not that they were legible, so the rule
+     * was encoded here: the track is always --surface-2 and the fill is always a
+     * status or action colour.
+     *
+     * That rule is now enforced by construction instead. components/ui/charts/
+     * Meter.tsx derives its track from its fill with color-mix, so there is no
+     * second colour left to choose wrongly, and sixteen of the nineteen
+     * hand-rolled bars have been replaced by it.
+     *
+     * This test therefore does two things now. It still checks whatever bars are
+     * hand-rolled, because three deliberately remain on illustrative surfaces.
+     * And it asserts the structural guarantee, which is the stronger claim: the
+     * count floor below moved from twelve to three, and if it ever climbs back
+     * the meter.test.ts bound fails first.
+     */
+    expect(
+      readFileSync("components/ui/charts/Meter.tsx", "utf8"),
+      "the meter derives its track from its fill"
+    ).toContain("color-mix(in srgb, ${fill} 16%, var(--surface-2))");
     const allowedFills = new Set(["bg-success", "bg-primary", "bg-revenue", "bg-danger", "bg-warning"]);
     const bars: Array<{ path: string; track: string; fill: string }> = [];
 
@@ -202,9 +216,11 @@ describe("cool neutral brand palette", () => {
       }
     }
 
-    // Guard the guard: if the markup shape changes so nothing matches, this
-    // test must fail loudly rather than pass vacuously.
-    expect(bars.length).toBeGreaterThanOrEqual(12);
+    // Guard the guard, still: if the shape changes so nothing matches at all,
+    // this must fail loudly rather than pass vacuously. Three is the current
+    // real count, and it dropped from twelve because the bars moved into Meter
+    // rather than because the check stopped working.
+    expect(bars.length).toBeGreaterThanOrEqual(3);
     for (const bar of bars) {
       expect(`${bar.path}: ${bar.fill} on ${bar.track}`).toBe(
         `${bar.path}: ${bar.fill} on bg-surface-2`

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Meter } from "@/components/ui/charts/Meter";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { CountUp } from "@/components/ui/CountUp";
 import { PulseChart } from "@/components/home/PulseChart";
@@ -156,12 +157,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
           A few minutes to your first send
         </span>
       </div>
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
-        <div
-          className="bg-success h-full rounded-full transition-all duration-500"
-          style={{ width: `${(done / steps.length) * 100}%` }}
-        />
-      </div>
+      <Meter value={done} max={steps.length} tone="good" height={6} className="mt-3 w-full" />
       <ol className="mt-4 flex flex-col gap-2">
         {steps.map((s, i) => {
           const isNext = i === nextIdx;
@@ -237,12 +233,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
                   <span className="h-1.5 w-1.5 rounded-full bg-success" /> sending
                 </span>
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className="bg-success h-full rounded-full transition-all"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
+              <Meter value={pct} tone="good" height={8} className="mt-3" />
               <div className="mt-2 flex items-center justify-between text-xs text-muted">
                 <span className="tabular-nums">
                   {sent} of {total} sent

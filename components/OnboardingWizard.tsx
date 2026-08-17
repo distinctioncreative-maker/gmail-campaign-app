@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Meter } from "@/components/ui/charts/Meter";
 import { useRouter } from "next/navigation";
 import { ProfileForm } from "./ProfileForm";
 import type { SenderProfile } from "@/schemas/userSettings";
@@ -210,12 +211,7 @@ export function OnboardingWizard({
         </span>
       </div>
 
-      <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
-        <div
-          className="bg-success h-full rounded-full transition-[width] duration-500"
-          style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
-        />
-      </div>
+      <Meter value={step + 1} max={STEPS.length} tone="good" />
       <ol className="mt-3 grid grid-cols-4 gap-1 text-[10px] sm:grid-cols-7 sm:text-xs" aria-label="Setup progress">
         {STEPS.map((label, index) => (
           <li

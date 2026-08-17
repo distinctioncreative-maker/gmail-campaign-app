@@ -11,6 +11,7 @@ import {
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { listTemplates } from "@/lib/repositories/templates";
 import { CampaignControls } from "@/components/campaign/CampaignControls";
+import { Meter } from "@/components/ui/charts/Meter";
 import { CampaignDiagnostics } from "@/components/campaign/CampaignDiagnostics";
 import { RecipientTable } from "@/components/campaign/RecipientTable";
 import { LocalTime } from "@/components/LocalTime";
@@ -222,12 +223,7 @@ export default async function CampaignDetailPage({
               <p className="text-xs text-muted">{remaining.toLocaleString()} remaining</p>
             </div>
           </div>
-          <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-surface-2">
-            <div
-              className="h-full rounded-full bg-success transition-all"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+          <Meter value={pct} tone="good" height={12} className="mt-4 w-full" />
           <p className="mt-3 text-xs leading-relaxed text-muted">
             Follow-up sends are reported separately and do not inflate campaign completion.
           </p>
@@ -372,9 +368,7 @@ export default async function CampaignDetailPage({
                       <td className="py-2 pr-4 tabular-nums">{r.replied}</td>
                       <td className="py-2">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
-                            <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, rate)}%` }} />
-                          </div>
+                          <Meter value={rate} className="w-24" />
                           <span className="tabular-nums text-xs text-muted">
                             {r.sent > 0 ? `${rate.toFixed(1)}%` : "Not available"}
                           </span>

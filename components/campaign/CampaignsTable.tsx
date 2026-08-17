@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Meter } from "@/components/ui/charts/Meter";
 import { LocalTime } from "@/components/LocalTime";
 import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
@@ -264,14 +265,9 @@ export function CampaignsTable({
                   {c.progressRate.toFixed(0)}%
                 </span>
               </div>
-              {/* Fill and track must never share a token. This bar shipped as
-                  bg-surface-2 on bg-surface-2, which is 1.00:1: invisible. */}
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className="h-full rounded-full bg-success"
-                  style={{ width: `${c.progressRate}%` }}
-                />
-              </div>
+              {/* The track is derived from the fill inside Meter, so the
+                  1.00:1 invisible-bar bug this rule used to carry cannot recur. */}
+              <Meter value={c.progressRate} tone="good" height={8} className="mt-2" />
               <p className="mt-1 text-[11px] text-muted">
                 {Math.min(c.recipients, c.initialSent)} of {c.recipients} leads
                 contacted
@@ -402,12 +398,7 @@ export function CampaignsTable({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex min-w-36 items-center gap-2">
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
-                      <div
-                        className="h-full rounded-full bg-success"
-                        style={{ width: `${c.progressRate}%` }}
-                      />
-                    </div>
+                    <Meter value={c.progressRate} tone="good" className="flex-1" />
                     <span className="w-10 text-right text-xs tabular-nums text-muted">
                       {c.progressRate.toFixed(0)}%
                     </span>

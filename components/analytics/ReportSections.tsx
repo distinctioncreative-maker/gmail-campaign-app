@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Meter } from "@/components/ui/charts/Meter";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -260,12 +261,12 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
               </div>
               <p className="display-figure text-xl">{values[i].toLocaleString()}</p>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
-              <div
-                className="bg-primary grow-bar h-full rounded-full"
-                style={{ width: `${Math.max(values[i] > 0 ? 3 : 0, (values[i] / max) * 100)}%` }}
-              />
-            </div>
+            <Meter
+              value={Math.max(values[i] > 0 ? 3 : 0, (values[i] / max) * 100)}
+              height={8}
+              animate
+              className="mt-2"
+            />
           </div>
         ))}
       </div>
@@ -293,12 +294,7 @@ export function TimeToReplyPanel({ ttr }: { ttr: ReportData["ttr"] }) {
           {buckets.map(([label, count]) => (
             <div key={label} className="flex items-center gap-3 text-sm">
               <span className="w-28 shrink-0 text-muted">{label}</span>
-              <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className="grow-bar h-full rounded-full bg-primary"
-                  style={{ width: `${(count / ttr.count) * 100}%` }}
-                />
-              </div>
+              <Meter value={count} max={ttr.count} height={10} animate className="flex-1" />
               <span className="w-8 shrink-0 text-right tabular-nums text-muted">{count}</span>
             </div>
           ))}
@@ -451,12 +447,7 @@ export function CampaignLeaderboard({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
-                          <div
-                            className="grow-bar h-full rounded-full bg-primary"
-                            style={{ width: `${Math.min(100, performance.replyRate)}%` }}
-                          />
-                        </div>
+                        <Meter value={performance.replyRate} animate className="w-24" />
                         <span className="text-xs tabular-nums text-muted">
                           {formatPercent(performance.replyRate)}
                         </span>
