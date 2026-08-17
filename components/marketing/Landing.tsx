@@ -22,6 +22,7 @@ import { VariationDemo } from "./VariationDemo";
 import { ScrollReveal } from "./ScrollReveal";
 import { Sparkline } from "@/components/ui/charts/Sparkline";
 import { InboxProof } from "./InboxProof";
+import { DemoTabs } from "./DemoTabs";
 
 function Check({ size = 18 }: { size?: number }) {
   return (
@@ -1380,9 +1381,8 @@ export function Landing() {
             <Wordmark />
           </Link>
           <div className={styles.navLinks}>
-            <a href="#workflow">Workflow</a>
+            <a href="#workflow">How it works</a>
             <a href="#features">Product</a>
-            <a href="#controls">Live demo</a>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
           </div>
@@ -1444,7 +1444,7 @@ export function Landing() {
             product for a visitor who reads nothing else, taken directly from
             the reference designs. The detailed feature section further down is
             where anyone still interested goes. */}
-        <section className={styles.introSection} style={{ paddingBottom: 0 }}>
+        <section className={styles.introSection}>
           <div className={styles.shell}>
             <div className={styles.featureRow} data-reveal data-stagger>
               {[
@@ -1462,12 +1462,10 @@ export function Landing() {
                 </article>
               ))}
             </div>
-          </div>
-        </section>
 
-        <section className={styles.introSection}>
-          <div className={styles.shell}>
-            <div className={styles.sectionHeading} data-reveal>
+            {/* Second beat of the same section rather than a section of its own:
+                the four-column row above is the index, this is the argument. */}
+            <div className={styles.sectionHeading} data-reveal style={{ marginTop: 96 }}>
               <span className={styles.eyebrow}>
                 Why teams switch
               </span>
@@ -1525,7 +1523,41 @@ export function Landing() {
                   </article>
                 ))}
               </div>
-              <MessageDemo />
+            </div>
+
+            {/* Every demo in one frame, instead of three full-width sections
+                each repeating the beat "here is the product working". The tab
+                component mounts only the active panel, so the three that are not
+                on screen cost nothing. */}
+            <div data-reveal>
+              <DemoTabs
+                tabs={[
+                  {
+                    label: "Compose",
+                    slug: "compose",
+                    hint: "Write once, and Cadence personalizes each copy from the lead's own context.",
+                    render: () => <MessageDemo />,
+                  },
+                  {
+                    label: "Variation",
+                    slug: "variation",
+                    hint: "Identical text is the easiest thing for a filter to catch. Mark a few choices and every recipient gets different wording.",
+                    render: () => <VariationDemo />,
+                  },
+                  {
+                    label: "Controls",
+                    slug: "controls",
+                    hint: "Set your hours, your daily cap, your spacing, and watch the pipeline build.",
+                    render: () => <OperationsDemo />,
+                  },
+                  {
+                    label: "Full walkthrough",
+                    slug: "walkthrough",
+                    hint: "The whole run, from import to booked call, at your own pace.",
+                    render: () => <HeroDemo />,
+                  },
+                ]}
+              />
             </div>
           </div>
         </section>
@@ -1533,22 +1565,7 @@ export function Landing() {
         {/* Variation had shipped for weeks and this site never mentioned it, while
             step 02 above claimed its benefit without naming the mechanism or
             showing any proof. The demo below runs the real parser. */}
-        <section className={styles.featuresSection} id="variation">
-          <div className={styles.shell}>
-            <div className={styles.sectionHeading} data-reveal>
-              <span className={styles.eyebrow}>Why it lands</span>
-              <h2>Two hundred emails. No two the same.</h2>
-              <p>
-                Identical text sent to a hundred people is the easiest thing in the world for a spam
-                filter to catch. Write one message with a few choices in it, and Cadence sends a
-                genuinely different email to every recipient.
-              </p>
-            </div>
-            <div data-reveal>
-              <VariationDemo />
-            </div>
-          </div>
-        </section>
+        
 
         <section className={styles.featuresSection} id="features">
           <div className={styles.shell}>
@@ -1572,28 +1589,7 @@ export function Landing() {
           </div>
         </section>
 
-        <section className={styles.controlsSection} id="controls">
-          <div className={styles.shell}>
-            <div className={styles.sectionHeading} data-reveal>
-              <span className={styles.eyebrow}>See it work</span>
-              <h2>Set the pace. Watch the pipeline build.</h2>
-              <p>
-                Every control that protects your domain, and every number that
-                tells you it is working.
-              </p>
-            </div>
-            <div data-reveal>
-              <OperationsDemo />
-            </div>
-            {/* The staged walkthrough that used to sit in the hero. The hero now
-                carries the Gmail visual instead, but a demo a visitor can drive
-                is the thing this page has that a screenshot-led competitor does
-                not, so it moves here rather than being deleted. */}
-            <div className={styles.controlsWalkthrough} data-reveal>
-              <HeroDemo />
-            </div>
-          </div>
-        </section>
+        
 
         <section className={styles.trustSection} id="trust">
           <div className={styles.shell}>

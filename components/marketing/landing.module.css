@@ -1419,14 +1419,14 @@
 .pricingSection,
 .faqSection {
   position: relative;
-  padding-block: 120px;
+  padding-block: 96px;
   background: var(--landing-paper);
 }
 
 .workflowSection,
 .trustSection {
   position: relative;
-  padding-block: 120px;
+  padding-block: 96px;
   background: var(--landing-surface);
 }
 
@@ -1902,7 +1902,7 @@
 
 .controlsSection {
   position: relative;
-  padding-block: 120px;
+  padding-block: 96px;
   background: var(--landing-surface-soft);
 }
 
@@ -3944,8 +3944,8 @@
   color: var(--landing-blue-on-ink);
 }
 
-/* Spacing for the walkthrough that moved out of the hero. */
-.controlsWalkthrough { margin-top: 34px; }
+/* .controlsWalkthrough is gone: HeroDemo now lives inside DemoTabs, which owns
+   its own spacing. */
 
 /* ── Feature row: four columns, straight from the reference designs ──
    A scannable index of the product, placed immediately after the hero so a
@@ -4082,4 +4082,58 @@
 @media (max-width: 900px) {
   .outcomeLayout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .outcomeStat { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}
+
+/* ── Demo tabs: one section for what used to be three ────────────────
+   See the note at the top of DemoTabs.tsx. The control is a segmented row
+   rather than underlined tabs, matching the app's own segmented controls so the
+   site and the product share a vocabulary. */
+.demoTabs { margin-top: 34px; }
+
+.demoTabList {
+  display: inline-flex;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-r-md);
+  background: var(--landing-surface-soft);
+  max-width: 100%;
+  overflow-x: auto;
+}
+.demoTab {
+  flex: 0 0 auto;
+  min-height: 38px;
+  border-radius: var(--landing-r-sm);
+  padding: 0 15px;
+  color: var(--landing-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 180ms var(--landing-ease),
+    color 180ms var(--landing-ease),
+    box-shadow 180ms var(--landing-ease);
+}
+.demoTab:hover { color: var(--landing-copy); }
+.demoTab[data-active] {
+  background: var(--landing-surface);
+  color: var(--landing-copy);
+  box-shadow: var(--landing-shadow-sm);
+}
+
+.demoTabHint {
+  margin: 14px 0 0;
+  color: var(--landing-muted);
+  font-size: 13.5px;
+}
+
+.demoTabPanel { margin-top: 20px; }
+/* Each demo already animates itself on mount, so the panel only needs to not
+   fight that: a short fade keeps the swap from being a hard cut. */
+@media (prefers-reduced-motion: no-preference) {
+  .demoTabPanel { animation: demoPanelIn 340ms var(--landing-ease) both; }
+}
+@keyframes demoPanelIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }

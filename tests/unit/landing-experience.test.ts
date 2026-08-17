@@ -602,10 +602,27 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
     expect(demo).toMatch(/identical/i);
   });
 
-  it("is reachable from the page and named in the copy", () => {
+  it("is reachable from the page and still has its own address", () => {
+    /**
+     * The demo used to sit in a section carrying id="variation". Three demo
+     * sections were merged into one tabbed group, and the literal anchor went
+     * with them.
+     *
+     * That was a capability, not just markup: a tab you can only reach by
+     * clicking is less reachable than the section it replaced, and any link
+     * anyone had shared to #variation would have quietly stopped working. So
+     * DemoTabs reads the URL fragment and selects the matching tab, which now
+     * gives all four demos an address where previously only some had one. This
+     * asserts the capability rather than the old markup.
+     */
     const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+    const tabs = readFileSync("components/marketing/DemoTabs.tsx", "utf8");
     expect(landing).toContain("<VariationDemo />");
-    expect(landing).toContain('id="variation"');
+    expect(landing).toContain('slug: "variation"');
+    // The slug has to actually become the element id and be honoured on load.
+    expect(tabs).toContain("id={tab.slug}");
+    expect(tabs).toContain("window.location.hash");
+    expect(tabs).toContain('addEventListener("hashchange"');
   });
 
   it("names the shipped work the site used to omit entirely", () => {
