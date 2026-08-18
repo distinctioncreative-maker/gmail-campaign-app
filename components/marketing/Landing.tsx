@@ -409,8 +409,19 @@ export function Landing() {
                   Note what it does not say: nothing here promises inbox
                   placement, because no sender can. It promises the behaviour
                   that earns it. */}
+              {/* The first beat used to be a raw volume boast, and it was wrong
+                  twice over. Google's acceptable-use policy prohibits
+                  unsolicited mass email, and this is the page an OAuth reviewer
+                  reads before deciding what the app is for. It was also untrue:
+                  the default send limit is 100 a day, so the figure the hero
+                  promised was roughly ten times what the product will do in a
+                  day by design. Hundreds a week is what a paced workspace
+                  actually sends, which is the safer claim and the accurate one
+                  at the same time. The exact former wording is deliberately not
+                  quoted here: the guard in landing-experience.test.ts bans it
+                  as a substring across this whole file. */}
               <h1>
-                Send thousands.{" "}
+                Reach hundreds a week.{" "}
                 <em>Sound like one person.</em>{" "}
                 Get replies.
               </h1>

@@ -347,6 +347,74 @@ describe("landing-page experience", () => {
     expect(proof).toContain("Example workspace");
   });
 
+  it("sells the outreach rather than the volume", () => {
+    /**
+     * A sibling of the deliverability guard above, and it exists for a reader
+     * nobody writes marketing copy for: the Google OAuth reviewer.
+     *
+     * This app requests a restricted Gmail scope, so a human at Google reads
+     * this page and decides what the product is for. The Workspace
+     * acceptable-use policy prohibits using Gmail to "generate, distribute,
+     * publish or facilitate unsolicited mass email", and a hero whose opening
+     * words are a volume boast is hard to distinguish from exactly that,
+     * however disciplined the software underneath.
+     *
+     * The hero used to open "Send thousands." It was also false: the default
+     * daily send limit is 100, so the page promised roughly ten times what the
+     * product will do in a day by design. Both problems have one fix, and this
+     * keeps it fixed.
+     */
+    /**
+     * Checked against the copy with comments stripped, unlike the
+     * deliverability guard above. That one bans phrasings nobody should write
+     * anywhere; this one bans phrasings nobody should *ship*, and the comment
+     * beside the hero explaining why the old wording went has to be able to
+     * name what it is talking about. A guard that forbids describing itself
+     * gets worked around rather than understood.
+     */
+    const shipped = landingSource
+      .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ")
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/^\s*\/\/.*$/gm, " ")
+      .toLowerCase();
+
+    // Guard the guard: over-eager comment stripping would leave an empty string
+    // that passes every assertion below without checking anything.
+    expect(shipped).toContain("reach hundreds a week.");
+    expect(shipped.length).toBeGreaterThan(landingSource.length / 2);
+
+    for (const boast of [
+      "send thousands",
+      "send millions",
+      "unlimited sends",
+      "unlimited emails",
+      "mass email",
+      "email blast",
+      "blast out",
+      "bulk send",
+    ]) {
+      expect(shipped).not.toContain(boast);
+    }
+
+    /**
+     * The catch-all, in the same spirit as the deliverability one: a claim
+     * pairing a big-number word with sending is flagged whether or not the
+     * exact wording was predicted. Volume as such is not banned and the hero
+     * still promises reach; what is banned is reach with no pacing attached,
+     * which is the shape that reads as a blast tool.
+     */
+    const volumeClaims = [
+      ...shipped.matchAll(/[^.!?\n]*\b(?:thousands|millions|unlimited)\b[^.!?\n]*/g),
+    ]
+      .map((match) => match[0].trim())
+      .filter((line) => /\b(?:send|sending|sent|email|emails|blast|outreach)\b/.test(line));
+    expect(volumeClaims).toEqual([]);
+
+    // The pacing disclaimer is what makes a reach claim credible, so it has to
+    // be present rather than merely un-contradicted.
+    expect(landingSource).toContain("Provider limits are ceilings");
+  });
+
   it("uses only the semantic warm palette and keeps text pairs at AA contrast", () => {
     expect(landingDeclarations.match(/#[0-9a-fA-F]{3,8}/g) ?? []).toHaveLength(0);
 
@@ -559,7 +627,10 @@ describe("landing-page experience", () => {
     // assertion moved with it rather than being dropped, because what it is
     // really protecting is that the lead claim stays about behaviour the
     // product controls: sending volume, sounding personal, earning replies.
-    expect(landingSource).toContain("Send thousands.");
+    // First beat rewritten from "Send thousands." The three-beat shape and the
+    // accented middle are what this protects; the opening claim moved to reach
+    // rather than raw volume, for the reasons in the volume guard above.
+    expect(landingSource).toContain("Reach hundreds a week.");
     expect(landingSource).toContain("<em>Sound like one person.</em>");
     expect(landingSource).toContain("Get replies.");
     expect(landingSource).toContain(
