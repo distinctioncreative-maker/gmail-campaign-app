@@ -42,6 +42,13 @@ export async function getOrganization(organizationId: string): Promise<Organizat
   return snap.exists ? OrganizationSchema.parse(snap.data()) : null;
 }
 
+import {
+  BRAND_TONES,
+  compileBrandVoice,
+  type BrandTone,
+  type BrandVoice,
+} from "@/lib/ai/brandVoice";
+
 export type TrackingDomainStatus = "NONE" | "PENDING" | "VERIFIED" | "FAILED";
 
 export interface OrgSettings {
@@ -81,15 +88,73 @@ export interface OrgSettings {
 export interface AiBrandProfile {
   id: string;
   name: string;
+  /**
+   * What the model receives. Derived from `voice` and `notes` rather than typed,
+   * except on profiles saved before the structured fields existed, where it is
+   * still the text a person wrote. Kept as the single field every generator
+   * reads, so adding structure did not require touching six AI modules.
+   */
   content: string;
+  /** The structured answers. Empty on profiles that predate them. */
+  voice: BrandVoice;
+  /**
+   * Free text that is not one of the structured questions.
+   *
+   * On a legacy profile this holds the entire original blob, unparsed. Guessing
+   * which sentence of someone's paragraph was the offer would mangle real data,
+   * and a wrong guess is worse than none because nobody would notice it
+   * happened. So the blob is carried forward verbatim and appended to whatever
+   * the fields say, which means an untouched profile behaves exactly as before
+   * and a half-filled one is strictly better rather than partly broken.
+   */
+  notes: string;
+}
+
+function normalizeTones(value: unknown): BrandTone[] {
+  if (!Array.isArray(value)) return [];
+  const allowed = new Set<string>(BRAND_TONES);
+  // Deduplicated and filtered against the closed set, so a stale tone left in a
+  // document by an older build cannot reach a prompt.
+  return [...new Set(value.filter((t): t is BrandTone => typeof t === "string" && allowed.has(t)))];
+}
+
+function normalizeVoice(value: unknown): BrandVoice {
+  const o = (value ?? {}) as Record<string, unknown>;
+  const text = (key: string, max: number) =>
+    (typeof o[key] === "string" ? (o[key] as string) : "").slice(0, max);
+  return {
+    offer: text("offer", 600),
+    audience: text("audience", 400),
+    proof: text("proof", 600),
+    tones: normalizeTones(o.tones),
+    avoid: text("avoid", 600),
+  };
 }
 
 function normalizeProfile(p: unknown): AiBrandProfile {
   const o = (p ?? {}) as Record<string, unknown>;
+  const voice = normalizeVoice(o.voice);
+
+  /**
+   * A document written before this change has `content` and no `voice`. That
+   * text is the notes, and recompiling from an empty voice would blank it: the
+   * one outcome that must be impossible here, because it would silently delete
+   * every customer's brand memory on first read.
+   */
+  const legacyOnly = !o.voice && typeof o.content === "string";
+  const notes = (
+    typeof o.notes === "string" ? o.notes : legacyOnly ? (o.content as string) : ""
+  ).slice(0, 4000);
+
   return {
     id: typeof o.id === "string" && o.id ? o.id : crypto.randomUUID(),
     name: (typeof o.name === "string" && o.name.trim() ? o.name : "Untitled").slice(0, 80),
-    content: (typeof o.content === "string" ? o.content : "").slice(0, 4000),
+    // Always recomputed, never trusted from the document. `content` is a
+    // derived field, and a stored derived value is a value that can disagree
+    // with its inputs.
+    content: compileBrandVoice(voice, notes).slice(0, 6000),
+    voice,
+    notes,
   };
 }
 
@@ -356,7 +421,7 @@ function resolveBrandFields(data: Record<string, unknown>): {
     raw.length > 0
       ? raw.map(normalizeProfile)
       : legacy.trim()
-        ? [{ id: "default", name: "Default", content: legacy }]
+        ? [normalizeProfile({ id: "default", name: "Default", content: legacy })]
         : [];
   return { aiBrandProfiles, aiBrandContext: aiBrandProfiles[0]?.content ?? legacy };
 }

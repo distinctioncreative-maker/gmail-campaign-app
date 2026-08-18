@@ -153,4 +153,40 @@ describe("validateWebhookTarget", () => {
       expect(validateWebhookTarget(bad).reason.length, bad).toBeGreaterThan(15);
     }
   });
+
+  it("blocks dotted-octal and dotted-hex spellings of the metadata server", () => {
+    /**
+     * A regression test for a hole that shipped in this validator.
+     *
+     * The IP checks were two regexes: `/^\d{1,3}(\.\d{1,3}){3}$/` for dotted
+     * form, and `/^(0x[0-9a-f]+|0[0-7]+|\d+)$/` for the single-number forms.
+     * `0251.0376.0251.0376` matched neither, because the four-digit `0251` is
+     * too long for `\d{1,3}` and the second pattern permits no dots. That string
+     * is dotted-octal for 169.254.169.254, `inet_aton` resolves it, and a GET to
+     * that address from inside Cloud Run returns service-account tokens. The
+     * module comment promised IP literals were blocked "in any notation", and
+     * they were not.
+     *
+     * The rule is a parser now rather than a pattern: a host whose dot-separated
+     * parts are all numeric in some base is an address, never a name.
+     */
+    for (const spelling of [
+      "0251.0376.0251.0376",
+      "0xa9.0xfe.0xa9.0xfe",
+      "169.254.43518",
+      "1.2",
+    ]) {
+      const result = validateWebhookTarget(`https://${spelling}/hook`);
+      expect(result.ok, `${spelling} was accepted`).toBe(false);
+      expect(result.reason).toContain("hostname");
+    }
+  });
+
+  it("still accepts hostnames that merely contain digits", () => {
+    // Guards the guard above: an over-broad numeric rule would refuse real
+    // customer domains, and these are all ordinary names.
+    for (const host of ["3m.com", "123reg.co.uk", "acme2.io", "s3.acme.com"]) {
+      expect(validateWebhookTarget(`https://${host}/hook`).ok, host).toBe(true);
+    }
+  });
 });

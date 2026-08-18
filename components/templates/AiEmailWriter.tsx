@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
+import { BrandVoiceEditor, type BrandProfileDraft } from "@/components/ai/BrandVoiceEditor";
+import { EMPTY_BRAND_VOICE } from "@/lib/ai/brandVoice";
 import { useToast } from "@/components/ui/UIProviders";
 import { Icon } from "@/components/ui/Icon";
 
@@ -46,11 +48,12 @@ interface AiStatus {
   hasBrandMemory: boolean;
 }
 
-interface BrandProfile {
-  id: string;
-  name: string;
-  content: string;
-}
+/**
+ * The editor owns the shape now. `content` is not part of it: the server compiles
+ * that from the structured voice, so a client that also held a copy would be
+ * holding a value able to disagree with the fields it was derived from.
+ */
+type BrandProfile = BrandProfileDraft;
 
 /**
  * "Write with AI" panel for the template editor. Describe the email in plain
@@ -76,7 +79,6 @@ export function AiEmailWriter({
   const [canEditBrand, setCanEditBrand] = useState(false);
   const [savingBrand, setSavingBrand] = useState(false);
 
-  const selected = profiles.find((p) => p.id === selectedId) ?? null;
 
   useEffect(() => {
     fetchJson<AiStatus>("/api/templates/generate")
@@ -109,7 +111,10 @@ export function AiEmailWriter({
 
   function addProfile() {
     const id = `new-${Date.now()}`;
-    setProfiles((prev) => [...prev, { id, name: "New brand", content: "" }]);
+    setProfiles((prev) => [
+      ...prev,
+      { id, name: "New brand", voice: { ...EMPTY_BRAND_VOICE }, notes: "" },
+    ]);
     setSelectedId(id);
   }
 
@@ -130,7 +135,8 @@ export function AiEmailWriter({
           profiles: profiles.map((p) => ({
             ...(p.id.startsWith("new-") ? {} : { id: p.id }),
             name: p.name,
-            content: p.content,
+            voice: p.voice,
+            notes: p.notes,
           })),
         }),
       });
@@ -215,87 +221,18 @@ export function AiEmailWriter({
           </div>
 
           {memoryOpen && (
-            <div className="mt-2 rounded-xl border border-info/20 bg-surface p-3">
-              <p className="text-xs font-medium text-foreground">
-                Brand memory: the AI weaves the chosen brand into every email, freshly each time
-              </p>
-              {/* Profile tabs */}
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {profiles.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSelectedId(p.id)}
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                      selectedId === p.id
-                        ? "bg-info text-info-contrast"
-                        : "border border-border text-muted hover:border-info"
-                    }`}
-                  >
-                    {p.name || "Untitled"}
-                  </button>
-                ))}
-                {canEditBrand && (
-                  <button
-                    onClick={addProfile}
-                    className="rounded-full border border-dashed border-info/40 px-2.5 py-1 text-xs font-medium text-info hover:bg-info-soft"
-                  >
-                    + Add brand
-                  </button>
-                )}
-              </div>
-
-              {selected ? (
-                <div className="mt-3">
-                  {canEditBrand && (
-                    <input
-                      value={selected.name}
-                      onChange={(e) => updateSelected({ name: e.target.value })}
-                      placeholder="Brand name (e.g. Alpine, Everest)"
-                      className="mb-2 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm font-medium focus:border-info focus:outline-none"
-                    />
-                  )}
-                  <p className="mb-1 text-[11px] text-muted">
-                    Offer, key benefits, and tone. Example: “Alpine: working capital $10k to $500k,
-                    funded in 24 to 48 hours, no collateral. Confident and friendly, never pushy.”
-                  </p>
-                  <textarea
-                    value={selected.content}
-                    onChange={(e) => updateSelected({ content: e.target.value })}
-                    disabled={!canEditBrand}
-                    rows={4}
-                    placeholder={
-                      canEditBrand
-                        ? "What the AI should always know about this brand…"
-                        : "Only an admin can edit brand memory."
-                    }
-                    className="w-full rounded-lg border border-border p-2.5 text-sm focus:border-info focus:outline-none disabled:bg-surface-2 disabled:text-muted"
-                  />
-                  {canEditBrand && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <button
-                        onClick={() => void saveBrand()}
-                        disabled={savingBrand}
-                        className="btn-primary px-3 py-1.5 text-xs"
-                      >
-                        {savingBrand ? "Saving…" : "Save all brands"}
-                      </button>
-                      <button
-                        onClick={deleteSelected}
-                        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted hover:bg-surface-2"
-                      >
-                        Delete this brand
-                      </button>
-                      <span className="text-[11px] text-muted">Applies to your whole team.</span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="mt-3 text-xs text-muted">
-                  {canEditBrand
-                    ? "No brands yet: click “+ Add brand” to create Alpine, Everest, etc."
-                    : "No brand memory yet. Ask an admin to add one."}
-                </p>
-              )}
+            <div className="mt-2">
+              <BrandVoiceEditor
+                profiles={profiles}
+                selectedId={selectedId}
+                canEdit={canEditBrand}
+                onChange={updateSelected}
+                onSelect={setSelectedId}
+                onAdd={addProfile}
+                onDelete={deleteSelected}
+                onSave={() => void saveBrand()}
+                saving={savingBrand}
+              />
             </div>
           )}
 
