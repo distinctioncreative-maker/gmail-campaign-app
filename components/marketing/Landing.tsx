@@ -409,19 +409,23 @@ export function Landing() {
                   Note what it does not say: nothing here promises inbox
                   placement, because no sender can. It promises the behaviour
                   that earns it. */}
-              {/* The first beat used to be a raw volume boast, and it was wrong
-                  twice over. Google's acceptable-use policy prohibits
-                  unsolicited mass email, and this is the page an OAuth reviewer
-                  reads before deciding what the app is for. It was also untrue:
-                  the default send limit is 100 a day, so the figure the hero
-                  promised was roughly ten times what the product will do in a
-                  day by design. Hundreds a week is what a paced workspace
-                  actually sends, which is the safer claim and the accurate one
-                  at the same time. The exact former wording is deliberately not
-                  quoted here: the guard in landing-experience.test.ts bans it
-                  as a substring across this whole file. */}
+              {/* The volume claim is true and stays. A warmed inbox sends 150 a
+                  day, the per-campaign ceiling is 2000, and inbox rotation
+                  spreads a day's volume across several mailboxes, so thousands
+                  a month is what the starter plan does with one inbox and a
+                  large multiple of that with a pool.
+
+                  What changed is the unit. The old first beat named a raw send
+                  count with no timeframe, which reads as a blast boast, and
+                  this is the page a Google reviewer reads when deciding what an
+                  app requesting a restricted Gmail scope is for. A monthly
+                  figure says the same thing about capacity while implying the
+                  pacing that earns it. Both halves matter: understating the
+                  number would sell the product short, and stating it without a
+                  timeframe invites exactly the reading the acceptable-use
+                  policy is aimed at. */}
               <h1>
-                Reach hundreds a week.{" "}
+                Thousands a month.{" "}
                 <em>Sound like one person.</em>{" "}
                 Get replies.
               </h1>

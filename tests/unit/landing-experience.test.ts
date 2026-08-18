@@ -359,10 +359,14 @@ describe("landing-page experience", () => {
      * words are a volume boast is hard to distinguish from exactly that,
      * however disciplined the software underneath.
      *
-     * The hero used to open "Send thousands." It was also false: the default
-     * daily send limit is 100, so the page promised roughly ten times what the
-     * product will do in a day by design. Both problems have one fix, and this
-     * keeps it fixed.
+     * An earlier version of this guard also asserted the volume claim was
+     * *false*, on the grounds that the default daily limit is 100. That was
+     * wrong and the assertion is gone: 100 is the default, not the ceiling. A
+     * warmed inbox sends 150 a day, the per-campaign maximum is 2000, and
+     * inbox rotation spreads volume across a pool, so thousands a month is
+     * true on the smallest plan. Understating capacity is its own failure on a
+     * landing page, so what is enforced below is the vocabulary and the
+     * timeframe, not the magnitude.
      */
     /**
      * Checked against the copy with comments stripped, unlike the
@@ -380,7 +384,7 @@ describe("landing-page experience", () => {
 
     // Guard the guard: over-eager comment stripping would leave an empty string
     // that passes every assertion below without checking anything.
-    expect(shipped).toContain("reach hundreds a week.");
+    expect(shipped).toContain("thousands a month.");
     expect(shipped.length).toBeGreaterThan(landingSource.length / 2);
 
     for (const boast of [
@@ -397,18 +401,22 @@ describe("landing-page experience", () => {
     }
 
     /**
-     * The catch-all, in the same spirit as the deliverability one: a claim
-     * pairing a big-number word with sending is flagged whether or not the
-     * exact wording was predicted. Volume as such is not banned and the hero
-     * still promises reach; what is banned is reach with no pacing attached,
-     * which is the shape that reads as a blast tool.
+     * A volume claim must carry a timeframe.
+     *
+     * This is the rule that replaced banning big numbers, and it is the one
+     * that actually separates the two readings. "Thousands a month" describes
+     * capacity: it invites the reader to divide by thirty and see a paced
+     * operation. A bare count with no unit describes an event, and an event is
+     * what the acceptable-use policy means by mass email. The number is allowed
+     * to be as large as it is true; it just has to say per what.
      */
-    const volumeClaims = [
-      ...shipped.matchAll(/[^.!?\n]*\b(?:thousands|millions|unlimited)\b[^.!?\n]*/g),
-    ]
+    const untimed = [...shipped.matchAll(/\b(?:thousands|millions)\b[^.!?\n]{0,40}/g)]
       .map((match) => match[0].trim())
-      .filter((line) => /\b(?:send|sending|sent|email|emails|blast|outreach)\b/.test(line));
-    expect(volumeClaims).toEqual([]);
+      .filter((line) => !/\b(?:a|per|each|every)\s+(?:day|week|month|quarter|year)\b/.test(line));
+    expect(
+      untimed,
+      "a volume claim needs a timeframe, or it reads as a blast"
+    ).toEqual([]);
 
     // The pacing disclaimer is what makes a reach claim credible, so it has to
     // be present rather than merely un-contradicted.
@@ -630,7 +638,7 @@ describe("landing-page experience", () => {
     // First beat rewritten from "Send thousands." The three-beat shape and the
     // accented middle are what this protects; the opening claim moved to reach
     // rather than raw volume, for the reasons in the volume guard above.
-    expect(landingSource).toContain("Reach hundreds a week.");
+    expect(landingSource).toContain("Thousands a month.");
     expect(landingSource).toContain("<em>Sound like one person.</em>");
     expect(landingSource).toContain("Get replies.");
     expect(landingSource).toContain(
