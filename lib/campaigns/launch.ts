@@ -20,6 +20,7 @@ import { enqueueTask, tasksConfigured } from "@/lib/tasks/enqueue";
 import { checkCollision } from "@/lib/campaigns/collision";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { generateOpener } from "@/lib/ai/generateOpener";
+import { lookupBusinessByDomain, lookupDomainFor } from "@/lib/enrichment/businessLookup";
 import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { mapWithConcurrency } from "@/lib/util/pool";
 import { idempotencyKey } from "@/lib/campaigns/idempotency";
@@ -28,6 +29,13 @@ import { missingCommercialEmailPlaceholders } from "@/lib/campaigns/compliance";
 /** Safety caps for per-lead AI personalization at launch. */
 const MAX_PERSONALIZED = 150;
 const PERSONALIZE_CONCURRENCY = 3;
+/**
+ * Website lookups run wider than opener generation. Openers are limited by our
+ * own AI provider's rate limit, which is shared across the workspace; lookups
+ * are limited by other people's web servers, one request each, so the binding
+ * constraint is latency rather than quota.
+ */
+const LOOKUP_CONCURRENCY = 6;
 
 function stableDocumentId(kind: "recipient" | "queue", ...parts: string[]): string {
   return `${kind}_${crypto.createHash("sha256").update(parts.join("\u001f")).digest("hex").slice(0, 40)}`;
@@ -300,11 +308,40 @@ export async function launchCampaign(
   if (personalize && personalizeSettings && aiWritingEnabled(personalizeSettings)) {
     const settings = personalizeSettings;
     const targets = recipients.filter((r) => r.included).slice(0, MAX_PERSONALIZED);
+
+    /**
+     * Read each distinct prospect website once, before writing any openers.
+     *
+     * Deduplicating by domain first is not only an optimization. Doing the
+     * lookup inside the opener loop would let several contacts at the same
+     * company race: with three workers and fifty leads at one domain, three
+     * fetches of the same site start before any of them writes the cache, and
+     * the site sees a burst from us for no benefit. Resolving the distinct set
+     * up front makes it exactly one fetch per company per launch.
+     *
+     * Higher concurrency than the opener loop because this is bounded by a
+     * remote server's response time rather than by our own AI rate limit.
+     */
+    const domains = [
+      ...new Set(
+        targets.map((r) => lookupDomainFor(r.emailSnapshot)).filter((d): d is string => d !== null)
+      ),
+    ];
+    const summaries = new Map<string, string>();
+    await mapWithConcurrency(domains, LOOKUP_CONCURRENCY, async (domain) => {
+      // Any failure leaves the domain absent from the map, and the opener is
+      // written without it. Enrichment must never be able to fail a launch.
+      const found = await lookupBusinessByDomain(domain);
+      if (found?.summary) summaries.set(domain, found.summary);
+    });
+
     await mapWithConcurrency(targets, PERSONALIZE_CONCURRENCY, async (r) => {
+      const domain = lookupDomainFor(r.emailSnapshot);
       r.aiOpenerSnapshot = await generateOpener({
         firstName: r.firstNameSnapshot,
         businessName: r.businessNameSnapshot,
         brandContext: settings.aiBrandContext,
+        businessSummary: domain ? summaries.get(domain) : undefined,
       });
     });
   }
