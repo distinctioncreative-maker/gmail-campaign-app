@@ -23,8 +23,22 @@ import { buildLaunchSelections, computeListScopedCounts } from "@/lib/campaigns/
 import { describeTracking } from "@/lib/tracking/settings";
 import { SenderPicker } from "@/components/campaign/SenderPicker";
 import { TagChips } from "@/components/leads/TagChips";
+import {
+  needsSendConfirmation,
+  SEND_CONFIRM_WORD,
+} from "@/lib/campaigns/confirmThreshold";
 
-const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Safety check", "Launch"];
+/**
+ * Six steps, not seven. "Safety check" used to be its own screen listing what
+ * was about to happen, followed by a "Launch" screen that listed what was about
+ * to happen and had the button. Two screens for one job, and the split caused a
+ * real defect rather than merely an extra click: on a large campaign the
+ * "type SEND to confirm" box lived on the safety screen while Start lived on the
+ * next one, so skipping it was not caught until the server refused the launch
+ * after the final button had already been pressed. The confirmation now sits
+ * directly above the action it confirms, and gates it.
+ */
+const STEPS = ["Name", "Leads", "Review", "Email", "Schedule", "Launch"];
 
 interface WizardContact {
   contactId: string;
@@ -399,6 +413,16 @@ export function CampaignWizard() {
   function selectableIds(list: WizardContact[]): string[] {
     return list.filter((c) => badgeFor(c.classification).selectable).map((c) => c.contactId);
   }
+
+  /**
+   * A large campaign needs the typed confirmation before it can start. Checked
+   * here as well as on the server: the server is the rule, but relying on it
+   * alone means the person learns they missed a field by having their launch
+   * rejected after pressing the final button, which is the worst possible moment
+   * to discover it.
+   */
+  const confirmMissing =
+    needsSendConfirmation(counts.selected) && confirmText.trim() !== SEND_CONFIRM_WORD;
 
   const nextDisabled =
     (step === 0 && name.trim() === "") ||
@@ -1026,7 +1050,7 @@ export function CampaignWizard() {
 
         {step === 5 && (
           <>
-            <h2 className="text-xl font-semibold">Safety check</h2>
+            <h2 className="text-xl font-semibold">Check and launch</h2>
             <ul className="mt-4 space-y-2 text-sm text-foreground">
               <li className="flex items-start gap-2"><Icon name="check" size={17} className="mt-0.5 shrink-0 text-success" aria-hidden /><span>{counts.selected} will receive this email</span></li>
               {counts.excluded > 0 && (
@@ -1082,7 +1106,7 @@ export function CampaignWizard() {
                 <SpamCheck subject={preview.subject} html={preview.html} />
               </div>
             )}
-            {counts.selected > 100 && (
+            {needsSendConfirmation(counts.selected) && (
               <label className="mt-4 block text-sm font-medium text-foreground">
                 This is a large campaign: type <strong>SEND</strong> to confirm
                 <input
@@ -1092,12 +1116,7 @@ export function CampaignWizard() {
                 />
               </label>
             )}
-          </>
-        )}
-
-        {step === 6 && (
-          <>
-            <h2 className="text-xl font-semibold">Ready to go</h2>
+            <h2 className="mt-8 border-t border-border pt-6 text-xl font-semibold">Ready to go</h2>
             <p className="mt-2 text-sm text-muted">
               {counts.selected} emails will be {draftStrategy === "SEND" ? "sent" : "drafted"}{" "}
               at the pace you chose.
@@ -1117,8 +1136,8 @@ export function CampaignWizard() {
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 onClick={() => void confirmAndLaunch()}
-                disabled={busy}
-                className="btn-primary px-5 py-2.5"
+                disabled={busy || confirmMissing}
+                className="btn-primary px-5 py-2.5 disabled:opacity-50"
               >
                 {busy ? "Starting…" : "Start now"}
               </button>
@@ -1133,7 +1152,7 @@ export function CampaignWizard() {
           </>
         )}
 
-        {step < 6 && (
+        {step < 5 && (
           <div className="mt-8 flex justify-between border-t border-border pt-4">
             <button
               onClick={() => setStep((s) => Math.max(0, s - 1))}

@@ -14,8 +14,11 @@ import { launchCampaign, validateForLaunch } from "@/lib/campaigns/launch";
 import { assessPaceRisk } from "@/lib/campaigns/paceSafety";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { PLANS } from "@/lib/billing/plans";
+import {
+  needsSendConfirmation,
+  SEND_CONFIRM_WORD,
+} from "@/lib/campaigns/confirmThreshold";
 
-const SEND_CONFIRM_THRESHOLD = 100;
 
 const BodySchema = z.object({
   selections: z
@@ -98,7 +101,7 @@ export const POST = handleApiErrors(async (req: NextRequest, { params }: { param
 
   const selections = [...new Map(body.selections.map((s) => [s.contactId, s])).values()];
   const includedCount = selections.filter((s) => s.included).length;
-  if (includedCount > SEND_CONFIRM_THRESHOLD && body.confirmText !== "SEND") {
+  if (needsSendConfirmation(includedCount) && body.confirmText !== SEND_CONFIRM_WORD) {
     return NextResponse.json(
       {
         error: `This campaign will email ${includedCount} people. Type SEND to confirm.`,
