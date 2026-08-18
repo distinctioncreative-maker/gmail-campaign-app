@@ -847,7 +847,13 @@ export function Landing() {
             <Link href="/sign-in">Log in</Link>
           </div>
           <p className={styles.copyright}>
-            © 2026 Cadence. Early access. A signed order form completes the
+            {/* The old line said a signed order form completes the commercial
+                and data terms, which is an enterprise-sales framing that stopped
+                being true for most customers the moment self-serve checkout
+                existed: nobody signs an order form to pay for a plan on Stripe.
+                Both paths are now named, because both are real. */}
+            © 2026 Cadence. Plans bought online are governed by the terms below.
+            Enterprise rollouts are completed by a signed order form covering
             operating entity, jurisdiction, commercial, and data terms.
           </p>
         </div>
