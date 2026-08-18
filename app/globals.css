@@ -891,6 +891,29 @@ a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.1
   animation: drift 60s var(--ease-in-out) infinite;
 }
 
+/* Route transition.
+   Applied by app/(dashboard)/template.tsx, which is remounted on every
+   navigation. A layout would be preserved across route changes and the
+   animation would run exactly once, which is a bug that looks like working
+   code, so the distinction is load-bearing.
+
+   Small on purpose: 12px and 260ms. This is the one piece of motion a person
+   sees dozens of times a session, so it has to sit under the threshold where it
+   becomes something you wait for. */
+@keyframes route-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.route-enter {
+  animation: route-enter 260ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* A plain swap, not a shorter animation. Someone who asked for stillness on a
+     transition they meet dozens of times a session meant it. */
+  .route-enter { animation: none; }
+}
+
 /* Signal reel: the rotating headline band on Home.
    The dots double as the timer. A separate progress bar would be a second thing
    to look at saying the same thing, and the dot is already where the eye goes to

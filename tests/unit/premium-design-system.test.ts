@@ -384,3 +384,44 @@ describe("premium shared design system", () => {
     }
   });
 });
+
+describe("route transitions", () => {
+  // `css` on line 17 is scoped to the describe above, so this block reads it
+  // again rather than reaching for a binding it cannot see.
+  const css = read("app/globals.css");
+
+  it("animates on a template, which is the only thing that remounts", () => {
+    /**
+     * The mechanism is the interesting part, and getting it wrong produces a bug
+     * that looks exactly like working code.
+     *
+     * Next preserves a `layout.tsx` across navigations inside its segment, so an
+     * entrance animation placed there runs on first load and never again: the
+     * app would appear to have a transition until you actually navigated. A
+     * `template.tsx` is remounted for every route change, which is what gives
+     * the animation something to run on.
+     *
+     * So this asserts the file is a template, not a layout, and that the class
+     * it applies is the one the keyframe targets.
+     */
+    const template = read("app/(dashboard)/template.tsx");
+    expect(template).toContain("route-enter");
+    expect(css).toContain("@keyframes route-enter");
+    expect(css).toMatch(/\.route-enter \{[\s\S]*?animation: route-enter/);
+  });
+
+  it("stays under the threshold where navigation becomes a wait", () => {
+    // Dozens of times a session. A transition long enough to notice is a
+    // transition long enough to resent.
+    const rule = css.slice(css.indexOf(".route-enter {"));
+    const duration = Number(rule.match(/animation: route-enter (\d+)ms/)?.[1]);
+    expect(duration).toBeGreaterThan(0);
+    expect(duration).toBeLessThanOrEqual(300);
+  });
+
+  it("gives reduced motion a plain swap rather than a faster one", () => {
+    const reduced = css.slice(css.lastIndexOf("(prefers-reduced-motion: reduce)"));
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.route-enter \{ animation: none/);
+    expect(reduced.length).toBeGreaterThan(0);
+  });
+});
