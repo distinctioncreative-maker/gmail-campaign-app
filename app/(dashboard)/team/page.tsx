@@ -81,8 +81,9 @@ function Leaderboard({
       <EmptyState
         variant="inline"
         icon="users"
-        title="No reps on this team yet"
+        title="See your reps side by side"
         description="Assign someone to this team and their sends, replies, and reply rate show up right here."
+        action={{ href: "/admin", label: "Assign a rep" }}
       />
     );
   }
@@ -218,12 +219,15 @@ export default async function TeamPage() {
       {visibleTeams.length === 0 ? (
         <EmptyState
           icon="team"
-          title={isAdmin ? "No teams yet" : "You are not leading a team yet"}
+          title={isAdmin ? "Group your reps into teams" : "You are not leading a team yet"}
           description={
             isAdmin
               ? "Create your first team above, then assign reps to it. Team leads see their reps' numbers side by side."
               : "Ask your administrator to make you the lead of a team, and your reps' numbers will show up here."
           }
+          // An admin can fix this from the admin console. A rep cannot make
+          // themselves a team lead, so for them there is deliberately nothing.
+          action={isAdmin ? { href: "/admin", label: "Create a team" } : undefined}
         />
       ) : (
         <div className="space-y-10">

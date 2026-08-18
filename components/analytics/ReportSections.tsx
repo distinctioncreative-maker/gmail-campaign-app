@@ -404,6 +404,7 @@ export function CampaignLeaderboard({
           icon="chart"
           title="No sends yet"
           description="Campaign results land here the moment your first message goes out."
+          action={{ href: "/campaigns/new", label: "Start a campaign" }}
         />
       ) : (
         <div className="card overflow-x-auto">

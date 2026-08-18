@@ -251,9 +251,9 @@ export default async function RepliesPage() {
           <EmptyState
             icon="reply"
             title="This is where your pipeline shows up"
-            description={
-              'Every reply to a campaign lands here, ranked so the interested ones are on top. Replies are picked up automatically in the background. If you are expecting one now, hit "Scan for replies" above.'
-            }
+            description="Every reply lands here, ranked so the interested ones are on top. They are picked up automatically in the background."
+            action={{ href: "/campaigns/new", label: "Start a campaign" }}
+            secondaryAction={{ href: "/leads", label: "Import leads first" }}
           />
         ) : (
           <>
