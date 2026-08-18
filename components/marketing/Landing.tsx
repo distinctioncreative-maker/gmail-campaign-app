@@ -3,6 +3,7 @@
 import { useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { Wordmark } from "@/components/ui/Logo";
+import { TRIAL_PERIOD_DAYS } from "@/lib/billing/plans";
 import {
   PUBLIC_PRICING,
   publicPriceLabel,
@@ -132,7 +133,7 @@ const WORKFLOW = [
   {
     number: "02",
     title: "Write once, send something different to everyone",
-    copy: "Describe the offer and AI drafts it in your voice. Mark the phrases that could go either way and Cadence builds hundreds of versions from the one message.",
+    copy: "Describe the offer and AI drafts it in your voice, learned from your own website. One more press writes the alternate phrasings, so Cadence builds hundreds of combinations from the one message.",
   },
   {
     number: "03",
@@ -153,9 +154,19 @@ const WORKFLOW = [
 
 const FEATURES = [
   {
+    eyebrow: "Write",
+    title: "It learns how you sound from your own site",
+    copy: "Paste your address once. Cadence reads what you sell, who you sell to, and how you say it, then drafts in that voice. You approve every one.",
+  },
+  {
+    eyebrow: "Research",
+    title: "Openers that could only be for them",
+    copy: "Before a campaign goes out, Cadence reads each prospect's own website, so the first line references their actual business instead of hoping trade is good.",
+  },
+  {
     eyebrow: "Vary",
     title: "Hundreds of versions of one email",
-    copy: "Mark the phrases that could go either way and Cadence writes the combinations. A retry never sends different wording to the same person.",
+    copy: "One press writes the alternate phrasings, so no two recipients get a byte-identical message. A retry never sends different wording to the same person.",
   },
   {
     eyebrow: "Rotate",
@@ -212,7 +223,7 @@ const FAQ = [
   ],
   [
     "When am I charged?",
-    "Not on signup. There is no card field anywhere on this site and none in the product yet, so creating a workspace costs nothing. The prices above are the current monthly model, and we confirm the plan, limits, support, and payment terms with you before any charge is ever raised.",
+    `Not on signup, and not during the free days. Creating a workspace costs nothing and takes no card. When you start a paid plan, checkout runs on Stripe and takes your card there, then the first charge is raised ${TRIAL_PERIOD_DAYS} days later. Cancel inside those days and you are not billed at all. This site never has a card field of its own.`,
   ],
 ] as const;
 
@@ -579,8 +590,6 @@ export function Landing() {
           </div>
         </section>
 
-        
-
         <section className={styles.trustSection} id="trust">
           <div className={styles.shell}>
             <div className={styles.trustLayout} data-reveal>
@@ -711,10 +720,10 @@ export function Landing() {
               <span className={styles.eyebrow}>Pricing</span>
               <h2>Priced for real use, not for a demo.</h2>
               <p>
-                Choose a focused solo workflow or a shared team operating
-                view. Card details are never taken on this page: we confirm
-                limits, onboarding, and payment terms with you before any
-                charge.
+                Every paid plan starts with {TRIAL_PERIOD_DAYS} days free. Card details are
+                never taken on this page: checkout runs on Stripe, nothing is
+                charged until the free days are up, and you can cancel inside
+                them without paying anything.
               </p>
             </div>
             <div className={styles.pricingGrid} data-reveal>
@@ -732,6 +741,15 @@ export function Landing() {
                     <strong>{publicPriceLabel(tier.id)}</strong>
                     <span>{publicPriceQualifier(tier.id)}</span>
                   </div>
+                  {/* Named on the tier as well as in the section intro. The
+                      intro is read once; this is next to the number someone is
+                      actually weighing, and it is the thing that makes the
+                      number easy to say yes to. */}
+                  {tier.id !== "ENTERPRISE" && (
+                    <p className={styles.trialNote}>
+                      {TRIAL_PERIOD_DAYS} days free, then billed monthly. Cancel any time.
+                    </p>
+                  )}
                   <p>{tier.description}</p>
                   <ul>
                     {tier.features.map((feature) => (

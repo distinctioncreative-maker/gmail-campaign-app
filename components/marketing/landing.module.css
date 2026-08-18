@@ -2470,6 +2470,24 @@
   line-height: 1.6;
 }
 
+/*
+ * The trial line under the price.
+ *
+ * Written with the same `article > p` specificity as the description rule above
+ * rather than as a bare class, because that rule sets a 72px min-height to keep
+ * the three plan cards aligned. A bare `.trialNote` loses to it and the line
+ * renders inside a tall empty block, which reads as a layout bug rather than as
+ * a sentence.
+ */
+.pricingGrid article > p.trialNote {
+  min-height: 0;
+  margin: 8px 0 0;
+  color: var(--landing-green-strong);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 .pricingGrid ul {
   display: grid;
   gap: 12px;

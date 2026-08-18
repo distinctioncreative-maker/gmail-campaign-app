@@ -32,6 +32,29 @@ export const PLANS: Record<PlanId, PlanDef> = {
   ENTERPRISE: { id: "ENTERPRISE", name: "Enterprise", priceMonthly: null, seatsIncluded: 0, minimumSeats: 1, maxDailySends: 2000, teams: true, stripePriceEnv: null },
 };
 
+/**
+ * Free days on a first paid subscription.
+ *
+ * The application already understood a trialing subscription everywhere it
+ * mattered: the webhook mapped the status, the plan resolver treated it as
+ * entitled, and checkout refused to start a second subscription during one. The
+ * one thing missing was anything that ever began a trial, so `trialing` was a
+ * state the code could describe and never reach.
+ */
+export const TRIAL_PERIOD_DAYS = 7;
+
+/**
+ * Whether this workspace should get the free days.
+ *
+ * Offered once, on the first subscription this workspace has ever had. Stripe
+ * grants `trial_period_days` on whatever session it is given, so without this
+ * check a customer who subscribes, cancels, and returns collects another free
+ * week every time, indefinitely.
+ */
+export function trialDaysFor(existingSubscriptionId: string | null | undefined): number {
+  return existingSubscriptionId ? 0 : TRIAL_PERIOD_DAYS;
+}
+
 export const PLAN_IDS = Object.keys(PLANS) as PlanId[];
 
 export function isPlanId(v: unknown): v is PlanId {

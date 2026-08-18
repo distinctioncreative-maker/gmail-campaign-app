@@ -78,6 +78,8 @@ export async function createCheckoutSession(input: {
   metadata: Record<string, string>;
   successUrl: string;
   cancelUrl: string;
+  /** Free days before the first charge. Zero means bill immediately. */
+  trialDays?: number;
 }): Promise<{ url: string; id: string }> {
   const body: Record<string, unknown> = {
     mode: "subscription",
@@ -88,6 +90,17 @@ export async function createCheckoutSession(input: {
     client_reference_id: input.clientReferenceId,
     allow_promotion_codes: "true",
   };
+  if (input.trialDays && input.trialDays > 0) {
+    body["subscription_data[trial_period_days]"] = String(input.trialDays);
+    /**
+     * Cancel rather than bill if the trial ends with no usable payment method.
+     * Checkout collects a card up front, so this is the edge where that card
+     * later fails or is removed. Cancelling leaves someone unsubscribed, which
+     * they can fix; the alternative leaves a subscription in an unpaid state
+     * that keeps retrying against a card its owner already withdrew.
+     */
+    body["subscription_data[trial_settings][end_behavior][missing_payment_method]"] = "cancel";
+  }
   if (input.customerId) body.customer = input.customerId;
   else if (input.customerEmail) body.customer_email = input.customerEmail;
   // Carry plan + org on both the session and the resulting subscription so the

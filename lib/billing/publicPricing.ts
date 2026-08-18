@@ -21,7 +21,7 @@ export const PUBLIC_PRICING: readonly PublicPricingTier[] = [
     name: PLANS.STARTER.name,
     eyebrow: "For one focused sender",
     description: "Build a repeatable Gmail outreach workflow that turns preparation, sending, and replies into one clear process.",
-    cta: "Get started",
+    cta: "Start free trial",
     featured: false,
     features: [
       "1 user and 1 connected inbox",
@@ -35,7 +35,7 @@ export const PUBLIC_PRICING: readonly PublicPricingTier[] = [
     name: PLANS.TEAM.name,
     eyebrow: "For collaborative outreach",
     description: "Give a small team one operating view for campaigns, permissions, reusable messages, reporting, and next steps.",
-    cta: "Get started",
+    cta: "Start free trial",
     featured: true,
     features: [
       "2-user minimum, priced per user",

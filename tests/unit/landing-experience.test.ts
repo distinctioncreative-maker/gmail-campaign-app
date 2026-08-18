@@ -751,8 +751,20 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
       ["inbox rotation", /rotat\w* across/i],
       ["warmup ramp", /ramps?\b[^.]{0,40}four weeks/i],
       ["webhooks", /webhook/i],
-      ["spintax", /combinations/i],
+      // Matched on the capability rather than one noun, for the reason stated
+      // above: a copy pass moved this from "builds the combinations" to "writes
+      // the alternate phrasings" while describing the same feature better.
+      ["spintax", /combinations|alternate phrasings|versions of one email/i],
       ["bounce brake", /bouncing pauses/i],
+      /**
+       * Added after this test caught the same drift a second time. Brand voice
+       * learned from a URL, prospect research, and AI lead grouping all shipped
+       * while the page still described marking your own phrases by hand, which
+       * had stopped being true. The site understating the product is a quieter
+       * failure than overstating it and just as worth catching.
+       */
+      ["brand voice from your own site", /reads what you sell|learns how you sound/i],
+      ["prospect research", /each prospect's own website/i],
     ];
     for (const [name, pattern] of capabilities) {
       expect(pattern.test(landing), `${name} is named on the page`).toBe(true);

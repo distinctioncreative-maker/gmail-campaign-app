@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { env } from "@/lib/env";
-import { PLANS } from "@/lib/billing/plans";
+import { PLANS, trialDaysFor } from "@/lib/billing/plans";
 import { billingConfigured, createCheckoutSession } from "@/lib/billing/stripe";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { listMembers } from "@/lib/repositories/orgSettings";
@@ -61,6 +61,10 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       plan,
       seats: String(quantity),
     },
+    // Only on a workspace's first subscription. See trialDaysFor: Stripe honours
+    // this on any session it is given, so an unconditional trial hands a free
+    // week to anyone willing to cancel and come back.
+    trialDays: trialDaysFor(settings.billing.stripeSubscriptionId),
     successUrl: `${base}/settings?billing=success`,
     cancelUrl: `${base}/settings?billing=cancelled`,
   });
