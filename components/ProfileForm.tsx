@@ -28,6 +28,69 @@ export function ProfileForm({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
+  const [readNote, setReadNote] = useState<string | null>(null);
+  const [readError, setReadError] = useState<string | null>(null);
+
+  /**
+   * Fill in what the company's own website publishes.
+   *
+   * The two fields worth the most here are the company name and the postal
+   * address, and the address is the one that matters: it blocks campaign
+   * launch, it is tedious to type, and it is almost always already in the
+   * footer of the site being read, because the same rules that require it on an
+   * email required it there.
+   *
+   * Only ever fills blanks. Someone who has typed their address and then
+   * presses this to fill the rest would not expect their own answer replaced by
+   * a scraped one.
+   */
+  async function readSite() {
+    const url = profile.companyWebsite.trim();
+    if (!url) return;
+    setReading(true);
+    setReadError(null);
+    setReadNote(null);
+    try {
+      const res = await fetch("/api/settings/profile/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Could not read that site.");
+
+      /**
+       * Decided out here rather than inside the state updater. An updater must
+       * be a pure function of its argument: React is free to call it twice, and
+       * a version that appended to this list from inside would report each
+       * filled field twice while still filling it once.
+       */
+      const takesName = !profile.companyName.trim() && Boolean(body.companyName);
+      const takesAddress = !profile.physicalAddress.trim() && Boolean(body.physicalAddress);
+
+      setProfile((p) => ({
+        ...p,
+        companyName: takesName ? body.companyName : p.companyName,
+        physicalAddress: takesAddress ? body.physicalAddress : p.physicalAddress,
+      }));
+
+      const filled = [
+        takesName ? "company name" : "",
+        takesAddress ? "mailing address" : "",
+      ].filter(Boolean);
+
+      setReadNote(
+        filled.length > 0
+          ? `Filled in your ${filled.join(" and ")} from ${body.readFrom}. Check it before saving.`
+          : "Nothing new to fill in: that page did not publish anything the blank fields need."
+      );
+    } catch (err) {
+      setReadError(err instanceof Error ? err.message : "Could not read that site.");
+    } finally {
+      setReading(false);
+    }
+  }
 
   function set<K extends keyof SenderProfile>(key: K, value: SenderProfile[K]) {
     setProfile((p) => ({ ...p, [key]: value }));
@@ -93,9 +156,41 @@ export function ProfileForm({
         </label>
         <label className="text-sm font-medium text-foreground">
           Company website
-          <input value={profile.companyWebsite} onChange={(e) => set("companyWebsite", e.target.value)} className={input} />
+          <input
+            value={profile.companyWebsite}
+            onChange={(e) => set("companyWebsite", e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void readSite();
+              }
+            }}
+            placeholder="yourcompany.com"
+            className={input}
+          />
         </label>
       </div>
+
+      {/* Sits directly under the website field, because that field is its
+          input. Nine text fields is the longest form in the product and it is
+          the one a trial user meets on day one, right after connecting Gmail.
+          Most of what it asks for is already published on the address just
+          above. */}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => void readSite()}
+          disabled={reading || !profile.companyWebsite.trim()}
+          className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+        >
+          {reading ? "Reading your site…" : "Fill the rest from my website"}
+        </button>
+        <span className="text-xs text-muted">
+          Reads your company name and mailing address off your own site.
+        </span>
+      </div>
+      {readError && <p className="mt-2 text-xs text-danger">{readError}</p>}
+      {readNote && !readError && <p className="mt-2 text-xs text-success">{readNote}</p>}
 
       <h3 className="mb-1 mt-6 border-t border-border pt-5 text-sm font-semibold text-muted">
         Legal footer &amp; signature
