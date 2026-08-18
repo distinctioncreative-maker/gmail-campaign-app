@@ -58,6 +58,35 @@ export function AiEmailTools({
     }
   }
 
+  async function addVariations() {
+    setBusy("variations");
+    try {
+      const res = await fetchJson<{
+        subject: string;
+        html: string;
+        variants: number;
+        groups: number;
+      }>("/api/templates/variations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, html }),
+      });
+      onSubject(res.subject);
+      onHtml(res.html);
+      toast(
+        `Added ${res.groups} variation${res.groups === 1 ? "" : "s"}: ${res.variants.toLocaleString()} distinct versions.`,
+        "success"
+      );
+    } catch (err) {
+      // The server rejects a draft that mangled a placeholder or broke the
+      // syntax, and says so. Passing that through matters: "try again" is the
+      // right advice here and a generic failure would not suggest it.
+      toast(err instanceof Error ? err.message : "Couldn't add variations.", "error");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function suggestSubjects() {
     setBusy("subjects");
     try {
@@ -91,6 +120,13 @@ export function AiEmailTools({
             {busy === a.label ? "…" : a.label}
           </button>
         ))}
+        <button
+          onClick={() => void addVariations()}
+          disabled={disabled}
+          className="rounded-full border border-info/20 bg-surface px-2.5 py-1 text-xs font-medium text-info transition hover:border-info disabled:opacity-50"
+        >
+          {busy === "variations" ? "Adding…" : "Add variations"}
+        </button>
         <button
           onClick={() => void suggestSubjects()}
           disabled={disabled}
