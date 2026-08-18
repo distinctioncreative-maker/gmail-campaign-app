@@ -7,6 +7,7 @@ import { ContactSchema } from "@/schemas/contact";
 import { reportError } from "@/lib/observability/report";
 import { enforceRateLimit } from "@/lib/util/rateLimit";
 import { normalizeEmail } from "@/lib/parser/normalize";
+import { SELECTABLE_CONSENT_BASES } from "@/lib/compliance/consent";
 
 /**
  * The public leads API.
@@ -108,6 +109,15 @@ const CreateSchema = z.object({
   lastName: z.string().trim().max(120).default(""),
   businessName: z.string().trim().max(200).default(""),
   phone: z.string().trim().max(40).default(""),
+  /**
+   * Why the caller may email this person. Optional, and deliberately not
+   * defaulted to a real basis: inventing one on the integration's behalf would
+   * manufacture a compliance record nobody actually asserted. Omitting it
+   * leaves the contact UNKNOWN, where the compliance screen surfaces it as
+   * needing an answer rather than letting it pass silently.
+   */
+  consentBasis: z.enum(SELECTABLE_CONSENT_BASES).optional(),
+  consentNote: z.string().trim().max(300).default(""),
 });
 
 export async function POST(req: NextRequest) {
@@ -155,6 +165,9 @@ export async function POST(req: NextRequest) {
       normalizedBusinessName: input.businessName.trim().toLowerCase(),
       phone: input.phone,
       leadSource: "API",
+      consentBasis: input.consentBasis ?? "UNKNOWN",
+      consentNote: input.consentNote,
+      consentRecordedAt: input.consentBasis ? now : null,
       firstSeenAt: now,
       lastSeenAt: now,
       createdAt: now,

@@ -7,6 +7,7 @@ import { isSuppressed } from "@/lib/repositories/suppressions";
 import { LocalTime } from "@/components/LocalTime";
 import { LeadEditor } from "@/components/leads/LeadEditor";
 import { TagChips } from "@/components/leads/TagChips";
+import { CONSENT_BASIS_COPY } from "@/lib/compliance/consent";
 
 function fmt(ms: number | null) {
   return ms ? <LocalTime value={ms} /> : "Not available";
@@ -137,6 +138,15 @@ export default async function ContactDetailPage({
             </dd>
             <dt className="text-muted">Lead source</dt>
             <dd>{contact.leadSource || "Not available"}</dd>
+            {/* Beside lead source rather than replacing it: one says where the
+                row came from, the other why this workspace may email them. */}
+            <dt className="text-muted">Why we can email them</dt>
+            <dd>
+              {CONSENT_BASIS_COPY[contact.consentBasis].label}
+              {contact.consentNote && (
+                <span className="text-muted">: {contact.consentNote}</span>
+              )}
+            </dd>
             <dt className="text-muted">Tags</dt>
             <dd><TagChips tags={contact.tags} /></dd>
             <dt className="text-muted">Date added</dt>

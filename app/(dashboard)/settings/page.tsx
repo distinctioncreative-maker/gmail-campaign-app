@@ -4,6 +4,7 @@ import { InviteTeamCard } from "@/components/admin/InviteTeamCard";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { InboxPoolCard } from "@/components/inboxes/InboxPoolCard";
 import { ProfileForm } from "@/components/ProfileForm";
+import { ComplianceCard } from "@/components/settings/ComplianceCard";
 import { DisplayNameForm } from "@/components/DisplayNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
@@ -86,12 +87,28 @@ export default async function SettingsPage({
         <div className="animate-rise" style={{ animationDelay: "35ms" }}>
           <InboxPoolCard />
         </div>
+        {/* Before the profile, because it is what tells you which parts of the
+            profile you actually have to fill in. */}
         <div className="animate-rise" style={{ animationDelay: "70ms" }}>
+          <ComplianceCard />
+        </div>
+        <div
+          id="sender-profile"
+          className="animate-rise scroll-mt-24"
+          style={{ animationDelay: "105ms" }}
+        >
           <CollapsibleCard
             title="Sender profile & sending defaults"
-            description="Optional: fills in your signature, footer, and default campaign pacing. Not using it? Collapse it and it stays out of your way."
+            /* Was "Optional", and collapsed by default, while two fields inside
+               it, the postal address and the opt-out sentence, block campaign
+               launch. Anyone who took that description at face value met the
+               rule as a refusal rather than as a step. It now opens by itself
+               when either is still missing. */
+            description="Your signature, the postal address and opt-out line required on commercial email, and default campaign pacing."
             storageKey="settings.senderProfile"
-            defaultOpen={false}
+            defaultOpen={
+              !profile.physicalAddress.trim() || !profile.unsubscribeText.trim()
+            }
           >
             <ProfileForm initial={profile} />
           </CollapsibleCard>

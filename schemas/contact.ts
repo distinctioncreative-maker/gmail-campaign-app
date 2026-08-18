@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { EpochMillis } from "./common";
 import { MAX_CONTACT_TAG_LENGTH, MAX_CONTACT_TAGS } from "@/lib/leads/tags";
+import { CONSENT_BASES } from "@/lib/compliance/consent";
+
+export const ConsentBasisSchema = z.enum(CONSENT_BASES);
 
 export const ContactSchema = z.object({
   contactId: z.string().min(1),
@@ -18,6 +21,16 @@ export const ContactSchema = z.object({
   region: z.string().default(""),
   requestedAmount: z.number().nullable().default(null),
   leadSource: z.string().default(""),
+  /**
+   * Why this workspace may email this person. Distinct from `leadSource`, which
+   * says where the row came from but not what it entitles you to do. Defaults to
+   * UNKNOWN so contacts written before this field existed still parse on read.
+   */
+  consentBasis: ConsentBasisSchema.default("UNKNOWN"),
+  /** Optional detail: which form, which event, which customer relationship. */
+  consentNote: z.string().max(300).default(""),
+  /** When the basis was declared — the import, not the opt-in itself. */
+  consentRecordedAt: EpochMillis.nullable().default(null),
   sourceCreatedAt: EpochMillis.nullable().default(null),
   sourceUpdatedAt: EpochMillis.nullable().default(null),
   sourceRecordId: z.string().nullable().default(null),

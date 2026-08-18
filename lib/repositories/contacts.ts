@@ -22,6 +22,7 @@ import {
   sameContactTags,
 } from "@/lib/leads/tags";
 import type { ContactCursor } from "@/lib/leads/contactPagination";
+import { SELECTABLE_CONSENT_BASES, type ConsentBasis } from "@/lib/compliance/consent";
 
 /**
  * All contact access is scoped by the verified AuthContext. The owner's
@@ -451,7 +452,11 @@ function parseSourceTimestamp(value: string | null): number | null {
 export async function upsertFromParsedLead(
   ctx: Scope,
   lead: ParsedLead,
-  importId: string
+  importId: string,
+  consent: { basis: ConsentBasis; note: string } = {
+    basis: "UNKNOWN",
+    note: "",
+  }
 ): Promise<{ contact: Contact; existed: boolean }> {
   if (!lead.email || !lead.emailValid) {
     throw new Error("Cannot import a lead without a valid email");
@@ -462,6 +467,15 @@ export async function upsertFromParsedLead(
 
   if (existing) {
     const ref = contactsRef(ctx).doc(existing.contactId);
+    /**
+     * A re-import fills in a missing basis but never overwrites a recorded one.
+     * The asymmetry is deliberate: a declared basis is the evidence you would
+     * produce if challenged, and a later bulk import, where one choice covers
+     * a whole file, is weaker evidence than whatever was recorded the first
+     * time. Upgrading UNKNOWN is pure gain; clobbering CONSENT with a blanket
+     * "business research" would quietly destroy the stronger record.
+     */
+    const adoptsBasis = existing.consentBasis === "UNKNOWN" && consent.basis !== "UNKNOWN";
     await ref.update({
       lastSeenAt: now,
       updatedAt: now,
@@ -471,8 +485,25 @@ export async function upsertFromParsedLead(
       requestedAmount: lead.requestedAmount ?? existing.requestedAmount,
       emailOptOut: lead.emailOptOut ?? existing.emailOptOut,
       sourceUpdatedAt: parseSourceTimestamp(lead.sourceUpdatedAt) ?? existing.sourceUpdatedAt,
+      ...(adoptsBasis
+        ? {
+            consentBasis: consent.basis,
+            consentNote: consent.note,
+            consentRecordedAt: now,
+          }
+        : {}),
     });
-    return { contact: existing, existed: true };
+    return {
+      contact: adoptsBasis
+        ? {
+            ...existing,
+            consentBasis: consent.basis,
+            consentNote: consent.note,
+            consentRecordedAt: now,
+          }
+        : existing,
+      existed: true,
+    };
   }
 
   const contactId = crypto.randomUUID();
@@ -492,6 +523,9 @@ export async function upsertFromParsedLead(
     region: lead.region ?? "",
     requestedAmount: lead.requestedAmount,
     leadSource: lead.leadSource ?? "",
+    consentBasis: consent.basis,
+    consentNote: consent.note,
+    consentRecordedAt: consent.basis === "UNKNOWN" ? null : now,
     sourceCreatedAt: parseSourceTimestamp(lead.sourceCreatedAt),
     sourceUpdatedAt: parseSourceTimestamp(lead.sourceUpdatedAt),
     sourceRecordId: lead.sourceRecordId,
@@ -512,6 +546,100 @@ export async function upsertFromParsedLead(
 export async function countContacts(ctx: Scope): Promise<number> {
   const agg = await contactsRef(ctx).count().get();
   return agg.data().count;
+}
+
+/**
+ * How many contacts have no recorded lawful basis, and how many exist at all.
+ *
+ * Counted by subtraction rather than by querying for UNKNOWN, and the reason is
+ * a Firestore property that would otherwise make this quietly wrong. Contacts
+ * written before `consentBasis` existed do not hold the field at all, and a
+ * document missing a field matches no equality filter on it: not `== UNKNOWN`,
+ * not `!= LEGITIMATE_INTEREST`, nothing. Querying for the unrecorded ones
+ * directly would therefore report zero on precisely the workspaces that have
+ * the problem.
+ *
+ * Counting the recorded ones and subtracting inverts that: a missing field
+ * fails the `in` filter, so it lands in the remainder where it belongs. Both
+ * halves are aggregation queries, so this stays cheap on a large workspace.
+ */
+export async function consentCoverage(
+  ctx: Scope
+): Promise<{ total: number; recorded: number; unrecorded: number }> {
+  const [totalAgg, recordedAgg] = await Promise.all([
+    contactsRef(ctx).count().get(),
+    contactsRef(ctx)
+      .where("consentBasis", "in", [...SELECTABLE_CONSENT_BASES])
+      .count()
+      .get(),
+  ]);
+  const total = totalAgg.data().count;
+  const recorded = recordedAgg.data().count;
+  return { total, recorded, unrecorded: Math.max(0, total - recorded) };
+}
+
+/**
+ * Record a lawful basis on contacts that have none, one page at a time.
+ *
+ * Paged rather than done in a single sweep because the set cannot be queried
+ * for directly (see `consentCoverage`), so finding it means reading contacts
+ * and filtering in memory: unbounded work on a large workspace, and a request
+ * that would time out on exactly the accounts that need it most. The caller
+ * repeats until `remaining` reaches zero, which is the same batching shape the
+ * lead import already uses.
+ *
+ * Only ever fills a gap. A contact with a basis already recorded is skipped, so
+ * running this twice cannot overwrite a stronger record with a blanket one.
+ */
+export async function recordConsentBasisForUnrecorded(
+  ctx: Scope,
+  basis: Exclude<ConsentBasis, "UNKNOWN">,
+  note: string,
+  cursor: string | null = null,
+  pageSize = 200
+): Promise<{ updated: number; scanned: number; cursor: string | null; done: boolean }> {
+  /**
+   * Ordered by document ID with a cursor, which is the part that makes this
+   * terminate. Re-querying from the start each call would walk the same page
+   * forever: the first page gets updated, the next call finds nothing left to
+   * update *on that page*, and reporting "done" from that would stop the sweep
+   * while every later page is still unrecorded. Ordering gives the pages a
+   * stable sequence and the cursor advances through them exactly once.
+   */
+  let query = contactsRef(ctx).orderBy(FieldPath.documentId()).limit(pageSize);
+  if (cursor) query = query.startAfter(cursor);
+
+  const snapshot = await query.get();
+  const now = Date.now();
+
+  const targets = snapshot.docs.filter((doc) => {
+    const value = doc.data().consentBasis;
+    return value === undefined || value === null || value === "UNKNOWN";
+  });
+
+  if (targets.length > 0) {
+    const batch = firestore().batch();
+    for (const doc of targets) {
+      batch.update(doc.ref, {
+        consentBasis: basis,
+        consentNote: note,
+        consentRecordedAt: now,
+        updatedAt: now,
+      });
+    }
+    await batch.commit();
+  }
+
+  // A short page is the last page: only exhausting the collection ends the
+  // sweep, never the contents of any single page.
+  const done = snapshot.size < pageSize;
+
+  return {
+    updated: targets.length,
+    scanned: snapshot.size,
+    cursor: done ? null : (snapshot.docs[snapshot.docs.length - 1]?.id ?? null),
+    done,
+  };
 }
 
 /** Contacts belonging to a lead list. Uses the automatic array-contains

@@ -11,6 +11,8 @@ import {
 } from "./leadBadges";
 import { batchLeadImport } from "@/lib/leads/importBatching";
 import { DataTable } from "@/components/ui/DataTable";
+import { ConsentPicker } from "./ConsentPicker";
+import { DEFAULT_CONSENT_BASIS, type ConsentBasis } from "@/lib/compliance/consent";
 
 export function LeadPreviewTable({
   leads,
@@ -38,6 +40,8 @@ export function LeadPreviewTable({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ completed: number; total: number } | null>(null);
+  const [consentBasis, setConsentBasis] = useState<ConsentBasis>(DEFAULT_CONSENT_BASIS);
+  const [consentNote, setConsentNote] = useState("");
 
   function toggle(index: number, selectable: boolean) {
     if (!selectable) return;
@@ -75,6 +79,11 @@ export function LeadPreviewTable({
           body: JSON.stringify({
             leads: batches[index],
             ...(listId ? { listId } : {}),
+            // Sent with every batch: a large file becomes several requests and
+            // each one must carry the same declaration, or the tail of a list
+            // lands with no recorded basis.
+            consentBasis,
+            consentNote,
           }),
         });
         const body = await res.json();
@@ -206,6 +215,13 @@ export function LeadPreviewTable({
               );
             })}
           </DataTable>
+
+      <ConsentPicker
+        value={consentBasis}
+        note={consentNote}
+        onChange={setConsentBasis}
+        onNoteChange={setConsentNote}
+      />
 
       {error && <p className="mt-3 text-sm text-danger">{error}</p>}
 

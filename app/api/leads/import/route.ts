@@ -12,10 +12,21 @@ import { getLeadList, bumpLeadListCount } from "@/lib/repositories/leadLists";
 import { normalizeEmail } from "@/lib/parser/normalize";
 import { firestore } from "@/lib/firebase/admin";
 import { LEAD_IMPORT_BATCH_SIZE } from "@/lib/leads/importBatching";
+import { SELECTABLE_CONSENT_BASES } from "@/lib/compliance/consent";
 
 const ImportRequestSchema = z.object({
   leads: z.array(ParsedLeadSchema).min(1).max(LEAD_IMPORT_BATCH_SIZE),
   listId: z.string().min(1).optional(),
+  /**
+   * Why this workspace may email the people in this file.
+   *
+   * Required, and UNKNOWN is not in the accepted set: that value exists only
+   * for rows imported before this field did, so accepting it from a client
+   * would reintroduce the gap it closes. The import screen preselects the
+   * common case, so answering costs a glance rather than a decision.
+   */
+  consentBasis: z.enum(SELECTABLE_CONSENT_BASES),
+  consentNote: z.string().max(300).default(""),
 });
 
 /**
@@ -25,12 +36,17 @@ const ImportRequestSchema = z.object({
  * - Email Opt Out = true is never imported as contactable: the contact
  *   is recorded with an EMAIL_OPT_OUT suppression so every later stage
  *   excludes it.
+ * - every contact is stamped with the lawful basis declared for this import,
+ *   and the declaration is recorded on the import document so the answer
+ *   survives even if the contacts are later edited.
  */
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
   await enforceUserRateLimit(ctx, RATE_LIMITS.leadImport);
   await assertWritesAllowed();
-  const { leads, listId } = ImportRequestSchema.parse(await req.json());
+  const { leads, listId, consentBasis, consentNote } = ImportRequestSchema.parse(
+    await req.json()
+  );
 
   // Validate the target list up front (if adding to one).
   const targetList = listId ? await getLeadList(ctx, listId) : null;
@@ -53,7 +69,10 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       skippedInvalid++;
       continue;
     }
-    const { contact, existed } = await upsertFromParsedLead(ctx, lead, importId);
+    const { contact, existed } = await upsertFromParsedLead(ctx, lead, importId, {
+      basis: consentBasis,
+      note: consentNote,
+    });
     if (existed) updated++;
     else imported++;
 
@@ -88,6 +107,11 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       organizationId: ctx.organizationId,
       createdByUserId: ctx.userId,
       source: "SALESFORCE_PASTE",
+      // Kept on the import as well as on each contact: this is the record of
+      // what was declared at the time, and it stays true even if a contact is
+      // later edited or deleted.
+      consentBasis,
+      consentNote,
       totalSubmitted: leads.length,
       imported,
       updated,
