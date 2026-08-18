@@ -15,6 +15,7 @@ import {
   encodeContactCursor,
 } from "@/lib/leads/contactPagination";
 import { LeadDirectoryPagination } from "@/components/leads/LeadDirectoryPagination";
+import { OrganizeLeads } from "@/components/leads/OrganizeLeads";
 
 export default async function LeadsPage({
   searchParams,
@@ -130,6 +131,16 @@ export default async function LeadsPage({
       </div>
 
       <ImportChooser />
+
+      {/* After the import chooser, before the table: the moment this is useful
+          is when leads exist but are an undifferentiated pile, which is exactly
+          where someone is looking when they scroll past importing more. Hidden
+          below the threshold where grouping means anything. */}
+      {totalContacts >= 4 && (
+        <div className="mt-6">
+          <OrganizeLeads />
+        </div>
+      )}
 
       <div className="mt-10">
         <div className="mb-3">
