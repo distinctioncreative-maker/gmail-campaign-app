@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LocalTime } from "@/components/LocalTime";
+import { DataTable } from "@/components/ui/DataTable";
 
 export interface SuppressionRow {
   suppressionId: string;
@@ -181,18 +182,15 @@ export function SuppressionsManager({
             : "No entries match this search."}
         </p>
       ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase text-muted">
-              <tr>
+        <DataTable className="mt-4"
+        head={<>
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Why</th>
                 <th className="px-3 py-2">Applies to</th>
                 <th className="px-3 py-2">Added</th>
                 <th className="px-3 py-2" />
-              </tr>
-            </thead>
-            <tbody>
+              </>}
+      >
               {visible.map((r) => (
                 <tr key={r.suppressionId} className="border-b border-border last:border-0">
                   <td className="px-3 py-2 font-medium">{r.email}</td>
@@ -218,9 +216,7 @@ export function SuppressionsManager({
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
       )}
     </div>
   );

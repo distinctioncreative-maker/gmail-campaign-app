@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
+import { DataTable } from "@/components/ui/DataTable";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
 import { Icon } from "@/components/ui/Icon";
@@ -399,10 +400,8 @@ export function ContactsTable({
         </ul>
 
         {/* Desktop: table */}
-        <div className="mt-3 hidden overflow-x-auto card sm:block">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase text-muted">
-              <tr>
+        <DataTable className="mt-3 hidden  card sm:block"
+        head={<>
                 <th className="w-10 px-3 py-3">
                   <input
                     type="checkbox"
@@ -420,9 +419,8 @@ export function ContactsTable({
                 <SortTh label="Engagement" sortKey="engagement" sort={sort} onToggle={toggle} />
                 <SortTh label="Status" sortKey="status" sort={sort} onToggle={toggle} />
                 <SortTh label="Date added" sortKey="added" sort={sort} onToggle={toggle} />
-              </tr>
-            </thead>
-            <tbody>
+              </>}
+      >
               {sorted.map((c) => (
                 <tr
                   key={c.contactId}
@@ -475,9 +473,7 @@ export function ContactsTable({
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         </>
       )}
     </div>

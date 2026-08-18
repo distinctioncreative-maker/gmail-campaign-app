@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CustomRoleDefinition } from "@/schemas/user";
+import { DataTable } from "@/components/ui/DataTable";
 
 interface MemberRow {
   userId: string;
@@ -71,16 +72,13 @@ export function AdminPanel({
 
       <div className="card p-6 sm:p-7">
         <h2 className="font-medium">Team members</h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase text-muted">
-              <tr>
+        <DataTable className="mt-4"
+        head={<>
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Role</th>
                 <th className="px-3 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
+              </>}
+      >
               {members.map((m) => (
                 <tr key={m.userId} className="border-b border-border last:border-0">
                   <td className="px-3 py-2 font-medium">{m.email}</td>
@@ -122,9 +120,7 @@ export function AdminPanel({
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
       </div>
 
       <div className="card p-6 sm:p-7">

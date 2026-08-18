@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DataTable } from "@/components/ui/DataTable";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
@@ -101,10 +102,8 @@ export default async function RepDetailPage({
           description={`${repName} has not launched a campaign. Their results will appear here once they do.`}
         />
       ) : (
-        <div className="overflow-x-auto card">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase text-muted">
-              <tr>
+        <DataTable className="card"
+        head={<>
                 <th className="px-4 py-3">Campaign</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Sent</th>
@@ -112,9 +111,8 @@ export default async function RepDetailPage({
                 <th className="px-4 py-3">Reply rate</th>
                 <th className="px-4 py-3">Updated</th>
                 <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
+              </>}
+      >
               {campaigns.map((c) => {
                 const badge = CAMPAIGN_STATUS_LABELS[c.status] ?? {
                   label: c.status,
@@ -146,9 +144,7 @@ export default async function RepDetailPage({
                   </tr>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
       )}
     </div>
   );

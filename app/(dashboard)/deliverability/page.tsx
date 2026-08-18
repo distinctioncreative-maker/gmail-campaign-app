@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { checkDomainAuth } from "@/lib/deliverability/dnsLookup";
 import { getPostmasterStats } from "@/lib/deliverability/postmaster";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DataTable } from "@/components/ui/DataTable";
 import { formatPercent } from "@/lib/analytics/metrics";
 import { getBenchmarksSnapshot } from "@/lib/benchmarks/read";
 import { bucketBatchSize, bucketDailyLimit, type DimensionAggregate } from "@/lib/benchmarks/buckets";
@@ -131,19 +132,16 @@ export default async function DeliverabilityPage() {
               />
             </StatGrid>
           </div>
-          <div className="overflow-x-auto card">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase text-muted">
-                <tr>
+          <DataTable className="card"
+        head={<>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Spam rate</th>
                   <th className="px-4 py-3">Reputation</th>
                   <th className="px-4 py-3">SPF pass</th>
                   <th className="px-4 py-3">DKIM pass</th>
                   <th className="px-4 py-3">DMARC pass</th>
-                </tr>
-              </thead>
-              <tbody>
+                </>}
+      >
                 {postmaster.days.map((d) => (
                   <tr key={d.date} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 tabular-nums">{d.date}</td>
@@ -162,9 +160,7 @@ export default async function DeliverabilityPage() {
                     <td className="px-4 py-3 tabular-nums">{spamPct(d.dmarcSuccess)}</td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </DataTable>
           <p className="mt-2 text-xs text-muted">
             Google only publishes daily stats when enough of your mail reached Gmail inboxes that
             day: gaps are normal for lower volumes.

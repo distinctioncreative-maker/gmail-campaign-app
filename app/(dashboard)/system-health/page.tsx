@@ -9,6 +9,7 @@ import { getUser } from "@/lib/repositories/users";
 import { resolveSendingState } from "@/lib/sending/mode";
 import { env } from "@/lib/env";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DataTable } from "@/components/ui/DataTable";
 import { LocalTime } from "@/components/LocalTime";
 import { Icon } from "@/components/ui/Icon";
 import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
@@ -153,18 +154,15 @@ export default async function SystemHealthPage() {
       </div>
 
       <h2 className="mt-8 mb-3 font-medium">People</h2>
-      <div className="overflow-x-auto card">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
+      <DataTable className="card"
+        head={<>
               <th className="px-4 py-3">Person</th>
               <th className="px-4 py-3">Gmail</th>
               <th className="px-4 py-3">Active campaigns</th>
               <th className="px-4 py-3">Problems</th>
               <th className="px-4 py-3">Last sign-in</th>
-            </tr>
-          </thead>
-          <tbody>
+            </>}
+      >
             {memberRows.map(({ member: m, ...r }) => {
               const conn = CONNECTION_LABELS[r.connectionStatus] ?? { label: r.connectionStatus, ok: false };
               return (
@@ -202,9 +200,7 @@ export default async function SystemHealthPage() {
                 </tr>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </DataTable>
       <p className="mt-3 text-xs text-muted">
         “Needs reconnect” means that person must open Settings and reconnect Gmail before their
         campaigns can send or scan replies.

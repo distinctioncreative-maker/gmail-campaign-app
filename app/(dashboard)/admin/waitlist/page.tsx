@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { listWaitlist } from "@/lib/repositories/waitlist";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DataTable } from "@/components/ui/DataTable";
 import { LocalTime } from "@/components/LocalTime";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
 import { StatTile } from "@/components/ui/StatTile";
@@ -69,16 +70,13 @@ export default async function WaitlistPage() {
           />
         </div>
       ) : (
-        <div className="mt-6 overflow-x-auto card">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase text-muted">
-              <tr>
+        <DataTable className="mt-6  card"
+        head={<>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Source</th>
                 <th className="px-4 py-3">Joined</th>
-              </tr>
-            </thead>
-            <tbody>
+              </>}
+      >
               {entries.map((e) => (
                 <tr key={e.email} className="border-b border-border last:border-0 hover:bg-surface-2">
                   <td className="px-4 py-3 font-medium">{e.email}</td>
@@ -88,9 +86,7 @@ export default async function WaitlistPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
       )}
     </div>
   );

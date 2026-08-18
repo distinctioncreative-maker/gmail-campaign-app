@@ -10,6 +10,7 @@ import {
   type ClassifiedLead,
 } from "./leadBadges";
 import { batchLeadImport } from "@/lib/leads/importBatching";
+import { DataTable } from "@/components/ui/DataTable";
 
 export function LeadPreviewTable({
   leads,
@@ -153,10 +154,8 @@ export function LeadPreviewTable({
         </div>
       )}
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
+      <DataTable className="mt-4"
+        head={<>
               <th className="px-3 py-2" />
               <th className="px-3 py-2">Name</th>
               <th className="px-3 py-2">Business</th>
@@ -164,9 +163,8 @@ export function LeadPreviewTable({
               <th className="px-3 py-2">Address</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Notes</th>
-            </tr>
-          </thead>
-          <tbody>
+            </>}
+      >
             {leads.map((lead) => {
               const badge = badgeFor(lead.classification);
               const selectable = isSelectable(lead);
@@ -207,9 +205,7 @@ export function LeadPreviewTable({
                 </tr>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </DataTable>
 
       {error && <p className="mt-3 text-sm text-danger">{error}</p>}
 

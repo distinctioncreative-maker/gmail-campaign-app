@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DataTable } from "@/components/ui/DataTable";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { getCampaign, listRecipients } from "@/lib/repositories/campaigns";
@@ -63,17 +64,14 @@ export default async function RepCampaignPage({
         }
       />
 
-      <div className="mt-6 overflow-x-auto card">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
+      <DataTable className="mt-6  card"
+        head={<>
               <th className="px-4 py-3">Recipient</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Sent</th>
-            </tr>
-          </thead>
-          <tbody>
+            </>}
+      >
             {recipients.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-4 text-sm text-muted">
@@ -97,9 +95,7 @@ export default async function RepCampaignPage({
                 );
               })
             )}
-          </tbody>
-        </table>
-      </div>
+          </DataTable>
     </div>
   );
 }
