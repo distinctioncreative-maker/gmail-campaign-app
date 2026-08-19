@@ -8,10 +8,33 @@ const EnvSchema = z.object({
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
   GOOGLE_OAUTH_REDIRECT_URI: z.string().default("http://localhost:3000/api/gmail/callback"),
   ALLOWED_GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
-  // Who may sign in. "allowlist" (default) restricts to the allowed domains
-  // above (locked to your own orgs). "open" lets any Google account sign in,
-  // with consumer accounts routed to private per-user workspaces. Flip to
-  // "open" only once billing + Google OAuth verification are in place.
+  /**
+   * Who may sign in.
+   *
+   * "allowlist" (default) restricts sign-in to ALLOWED_GOOGLE_WORKSPACE_DOMAIN.
+   * In production an empty allowlist fails closed, so a deployment that sets
+   * neither refuses everyone, which is the intended safe state rather than a
+   * bug to work around.
+   *
+   * "open" lets any verified Google account sign in. Two consequences are worth
+   * knowing before flipping it, because neither is obvious from the value:
+   *
+   * Consumer addresses (gmail.com and friends) each get a private one-person
+   * workspace. That part is uncomplicated.
+   *
+   * A custom domain gets one shared workspace per domain, and the first person
+   * to arrive claims ADMIN of it. Everyone who signs up from that domain
+   * afterwards joins that same workspace as a rep. For real colleagues this is
+   * the point. For a large employer where two unrelated people happen to sign
+   * up, the second lands inside the first one's workspace, under their
+   * administration and against their seat count.
+   *
+   * Billing is now in place, so that half of the old precondition is met. The
+   * remaining gate is Google OAuth verification: this app requests
+   * gmail.compose and gmail.readonly, which are restricted scopes, so until the
+   * app is verified only listed test users can connect at all and their refresh
+   * tokens expire after seven days.
+   */
   SIGNUP_MODE: z.string().default("allowlist"),
   // Who operates the platform, comma separated. Deliberately configuration
   // rather than a database collection: this is the floor under every other
