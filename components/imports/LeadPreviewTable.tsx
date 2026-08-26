@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   badgeFor,
@@ -13,6 +13,17 @@ import { batchLeadImport } from "@/lib/leads/importBatching";
 import { DataTable } from "@/components/ui/DataTable";
 import { ConsentPicker } from "./ConsentPicker";
 import { DEFAULT_CONSENT_BASIS, type ConsentBasis } from "@/lib/compliance/consent";
+
+/**
+ * How many rows are painted at once.
+ *
+ * Not virtualization, deliberately: with search and verdict filters in place
+ * the realistic working set is small, and a windowing library would be a
+ * dependency plus a scroll-restoration problem for a table people spend
+ * seconds in. The cap exists so a ten-thousand row paste cannot lock the tab,
+ * and the footer says plainly when it is in effect.
+ */
+const RENDER_STEP = 200;
 
 export function LeadPreviewTable({
   leads,
@@ -42,6 +53,60 @@ export function LeadPreviewTable({
   const [progress, setProgress] = useState<{ completed: number; total: number } | null>(null);
   const [consentBasis, setConsentBasis] = useState<ConsentBasis>(DEFAULT_CONSENT_BASIS);
   const [consentNote, setConsentNote] = useState("");
+  const [query, setQuery] = useState("");
+  const [verdictFilter, setVerdictFilter] = useState<string | null>(null);
+  const [shown, setShown] = useState(RENDER_STEP);
+
+  /**
+   * The rows currently on screen.
+   *
+   * This is the whole fix. The table used to render every parsed row with no
+   * filter and no cap, so including the risky addresses out of a two-thousand
+   * row import meant scrolling the entire list hunting for amber pills and
+   * ticking them one at a time. The counts above the table already knew which
+   * rows those were; they were just printed as static text.
+   *
+   * Filtering happens before the cap, so narrowing to a verdict always shows
+   * that whole set rather than whatever survived the first N rows.
+   */
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return leads.filter((lead) => {
+      if (verdictFilter && (lead.verification?.verdict ?? "NONE") !== verdictFilter) {
+        return false;
+      }
+      if (!q) return true;
+      return (
+        lead.fullName.toLowerCase().includes(q) ||
+        lead.businessName.toLowerCase().includes(q) ||
+        (lead.email ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [leads, query, verdictFilter]);
+
+  const rendered = visible.slice(0, shown);
+  const selectableVisible = visible.filter(isSelectable);
+  const allShownSelected =
+    selectableVisible.length > 0 && selectableVisible.every((l) => selected.has(l.index));
+
+  function setFilter(verdict: string | null) {
+    setVerdictFilter((current) => (current === verdict ? null : verdict));
+    // Reset the cap: a narrowed list is usually short enough to show whole, and
+    // carrying a stale offset would hide rows the filter just surfaced.
+    setShown(RENDER_STEP);
+  }
+
+  /** Tick or untick every row currently passing the filter. */
+  function toggleShown() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const lead of selectableVisible) {
+        if (allShownSelected) next.delete(lead.index);
+        else next.add(lead.index);
+      }
+      return next;
+    });
+  }
 
   function toggle(index: number, selectable: boolean) {
     if (!selectable) return;
@@ -133,37 +198,86 @@ export function LeadPreviewTable({
         </p>
       ))}
 
-      {/* Checked before anything is saved, so a dead domain or a typo is
-          something you see now rather than a bounce next week. */}
+      {/* The counts are the filter.
+          They were static text before, which is the odd part: the strip already
+          knew exactly which rows were risky and printed the number, while the
+          only way to act on that set was to scroll the whole table hunting for
+          amber pills. Pressing a count now narrows to it, and "Select all
+          shown" ticks the lot, so including twelve risky addresses is two
+          clicks instead of twelve finds. */}
       {verificationCounts && (
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
           <span className="font-medium text-foreground">Address check:</span>
-          <span className="badge bg-success-soft text-success">
-            {verificationCounts.deliverable} checked
-          </span>
-          {verificationCounts.unconfirmable > 0 && (
-            <span className="badge bg-surface-2 text-muted">
-              {verificationCounts.unconfirmable} cannot confirm
-            </span>
+          {(
+            [
+              ["DELIVERABLE", verificationCounts.deliverable, "checked", "bg-success-soft text-success"],
+              ["UNCONFIRMABLE", verificationCounts.unconfirmable, "cannot confirm", "bg-surface-2 text-muted"],
+              ["RISKY", verificationCounts.risky, "risky", "bg-warning-soft text-warning"],
+              ["UNDELIVERABLE", verificationCounts.undeliverable, "undeliverable", "bg-danger-soft text-danger"],
+            ] as const
+          )
+            .filter(([, count]) => count > 0)
+            .map(([verdict, count, label, className]) => {
+              const active = verdictFilter === verdict;
+              return (
+                <button
+                  key={verdict}
+                  type="button"
+                  onClick={() => setFilter(verdict)}
+                  aria-pressed={active}
+                  className={`badge transition-colors duration-[--dur-fast] ${className} ${
+                    active ? "ring-2 ring-ring" : "hover:brightness-95"
+                  }`}
+                >
+                  {count} {label}
+                </button>
+              );
+            })}
+          {verdictFilter && (
+            <button
+              type="button"
+              onClick={() => setFilter(null)}
+              className="text-muted underline decoration-border underline-offset-4 hover:text-foreground"
+            >
+              Clear filter
+            </button>
           )}
-          {verificationCounts.risky > 0 && (
-            <span className="badge bg-warning-soft text-warning">
-              {verificationCounts.risky} risky
-            </span>
-          )}
-          {verificationCounts.undeliverable > 0 && (
-            <span className="badge bg-danger-soft text-danger">
-              {verificationCounts.undeliverable} undeliverable
-            </span>
-          )}
-          <span className="text-muted">
-            Undeliverable rows cannot be imported. Risky ones are left unticked. Cannot confirm
-            means the domain accepts every address, so no check can prove that mailbox exists.
-          </span>
         </div>
       )}
+      {verificationCounts && (
+        <p className="mt-1.5 text-xs text-muted">
+          Undeliverable rows cannot be imported. Risky ones start unticked. Cannot confirm
+          means the domain accepts every address, so no check can prove that mailbox exists.
+        </p>
+      )}
 
-      <DataTable className="mt-4"
+      {/* Search and bulk selection. The wizard's lead picker has had both for a
+          while; this table did the same job without either. */}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <input
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setShown(RENDER_STEP);
+          }}
+          placeholder="Search name, business or email"
+          className="min-w-0 flex-1 rounded-md border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={toggleShown}
+          disabled={selectableVisible.length === 0}
+          className="btn-ghost px-3 py-1.5 text-xs"
+        >
+          {allShownSelected ? "Clear shown" : `Select all shown (${selectableVisible.length})`}
+        </button>
+      </div>
+      <p className="mt-1.5 text-xs text-muted">
+        Showing {visible.length.toLocaleString()} of {leads.length.toLocaleString()} ·{" "}
+        {selected.size.toLocaleString()} selected
+      </p>
+
+      <DataTable className="mt-3 max-h-[32rem] overflow-y-auto"
         head={<>
               <th className="px-3 py-2" />
               <th className="px-3 py-2">Name</th>
@@ -174,7 +288,7 @@ export function LeadPreviewTable({
               <th className="px-3 py-2">Notes</th>
             </>}
       >
-            {leads.map((lead) => {
+            {rendered.map((lead) => {
               const badge = badgeFor(lead.classification);
               const selectable = isSelectable(lead);
               const verdict = lead.verification
@@ -200,9 +314,11 @@ export function LeadPreviewTable({
                     )}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
-                      {badge.label}
-                    </span>
+                    {/* One badge shape. This column used `.badge` (6px) while
+                        the Address column beside it used a full pill, so two
+                        differently-shaped status chips sat in adjacent cells of
+                        the same row. */}
+                    <span className={`badge ${badge.className}`}>{badge.label}</span>
                   </td>
                   <td className="px-3 py-2 text-xs text-muted">
                     {lead.verification && lead.verification.findings.length > 0
@@ -215,6 +331,29 @@ export function LeadPreviewTable({
               );
             })}
           </DataTable>
+
+      {visible.length > rendered.length && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShown((n) => n + RENDER_STEP)}
+            className="btn-ghost px-3 py-1.5 text-xs"
+          >
+            Show {Math.min(RENDER_STEP, visible.length - rendered.length)} more
+          </button>
+          <span className="text-xs text-muted">
+            {rendered.length.toLocaleString()} of {visible.length.toLocaleString()} rows drawn.
+            Selecting all shown applies to every row that passes the filter, not just the
+            drawn ones.
+          </span>
+        </div>
+      )}
+
+      {visible.length === 0 && (
+        <p className="mt-4 rounded-lg border border-border p-4 text-center text-sm text-muted">
+          No leads match that search or filter.
+        </p>
+      )}
 
       <ConsentPicker
         value={consentBasis}
