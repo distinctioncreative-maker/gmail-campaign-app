@@ -553,10 +553,18 @@ describe("landing-page experience", () => {
     );
     expect(literal).toEqual([]);
 
-    // The marks stay flat. Dots, pill indicators, tab states and keyframes were
-    // right to have no shadow, and there are far more of them than there are
-    // cards, so a blanket find-and-replace would have been the wrong move.
-    expect((landingDeclarations.match(/box-shadow:\s*none/g) ?? []).length).toBeGreaterThan(30);
+    /**
+     * The marks stay flat. Dots, pill indicators and tab states were right to
+     * have no shadow, so a blanket find-and-replace would have been wrong.
+     *
+     * The floor stepped from 30 to 6 when ~2,200 lines of dead CSS came out of
+     * this file. Most of those `none` declarations lived inside the four
+     * interactive demos that were removed from the JSX long ago and whose rules
+     * were never deleted, so the old number was counting code that had not
+     * rendered in months. Recalibrated against what actually ships rather than
+     * relaxed: it is still tight enough that flattening the real marks fails.
+     */
+    expect((landingDeclarations.match(/box-shadow:\s*none/g) ?? []).length).toBeGreaterThan(6);
   });
 
   it("keeps the interactive product demos off the landing page", () => {
@@ -668,12 +676,15 @@ describe("landing-page experience", () => {
     expect(landingStyles).toContain("@media (max-width: 980px)");
     expect(landingStyles).toContain("@media (max-width: 720px)");
     expect(landingStyles).toContain("@media (max-width: 520px)");
-    expect(landingStyles).toMatch(
-      /\.demoStageTabs button \{[\s\S]*?min-height: 52px;/
-    );
-    expect(landingStyles).toMatch(
-      /\.operationsTabs button \{[\s\S]*?min-height: 44px;/
-    );
+    /**
+     * The two assertions that used to sit here pinned touch targets on
+     * `.demoStageTabs` and `.operationsTabs`, both of which belonged to the
+     * interactive demos removed from the JSX. Their CSS survived until the dead
+     * rules were swept, so these were checking a 52px tap target on a control
+     * that had not rendered in months. Deleted rather than repointed: there is
+     * no equivalent control on the page now, and the surviving assertion below
+     * covers the one interactive element the hero actually has.
+     */
     expect(landingStyles).toMatch(
       /@media \(max-width: 720px\) \{[\s\S]*?\.root \.navStart \{[\s\S]*?min-height: 44px;/
     );
