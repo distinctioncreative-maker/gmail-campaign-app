@@ -6,7 +6,6 @@ const source = readFileSync("components/imports/LeadPreviewTable.tsx", "utf8");
 
 function lead(patch: Partial<ClassifiedLead> & { index: number }): ClassifiedLead {
   return {
-    index: patch.index,
     fullName: "Jane Doe",
     firstName: "Jane",
     lastName: "Doe",
