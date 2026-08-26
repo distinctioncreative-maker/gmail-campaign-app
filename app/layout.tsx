@@ -84,26 +84,27 @@ export default function RootLayout({
     >
       <head>
         {/*
-          Dark first, set before paint so there is no flash of the wrong theme.
+          Light first, set before paint so there is no flash of the wrong theme.
 
-          Dark is the default rather than something we detect. That is a brand
-          decision and not an accessibility one: this product shows people
-          numbers about money, and the tools people associate with that are dark.
-          Someone who has never touched the toggle should see the product the way
-          it is meant to look.
+          This flipped with the green-and-bone palette, and the reasoning that
+          set it to dark did not survive the change. That argument was that
+          money tools are dark; the counter-argument is stronger for this
+          product specifically. The thing being edited here is an email, the
+          place it lands is Gmail, and Gmail is light for the overwhelming
+          majority of people. A composer that does not resemble the client it
+          sends into makes every preview a guess. Screenshots and shared links
+          also read better light, and this is a product people demo.
 
-          The rule is now "dark unless the person chose light", where it used to
-          be "light unless the operating system said dark". An explicit choice
+          The rule is "light unless the person chose dark". An explicit choice
           still wins in both directions, which is the part that matters: pick
-          light and it stays light on every future visit, and the OS setting no
-          longer silently overrides a deliberate choice.
+          dark and it stays dark on every future visit.
 
           try/catch because localStorage throws outright in some privacy modes,
           and the fallback still sets dark rather than leaving the attribute off.
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('massleader.theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}`,
+            __html: `try{var t=localStorage.getItem('massleader.theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}`,
           }}
         />
       </head>

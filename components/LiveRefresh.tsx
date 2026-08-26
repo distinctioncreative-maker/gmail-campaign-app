@@ -36,7 +36,7 @@ export function LiveRefresh({ intervalMs = 15000, label = "Live" }: { intervalMs
       <span
         aria-hidden
         className={`h-1.5 w-1.5 rounded-full bg-success ${pulse ? "" : "live-dot"}`}
-        style={pulse ? { boxShadow: "0 0 0 4px rgba(34,197,94,0.25)", transition: "box-shadow 0.9s ease" } : undefined}
+        style={pulse ? { boxShadow: "0 0 0 4px color-mix(in srgb, var(--success) 25%, transparent)", transition: "box-shadow 0.9s ease" } : undefined}
       />
       {label}
     </span>

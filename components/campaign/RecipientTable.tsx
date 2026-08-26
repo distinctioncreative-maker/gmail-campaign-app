@@ -243,7 +243,7 @@ export function RecipientTable({
           )
         ) : (
           <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 bg-surface text-xs text-muted shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
+            <thead className="sticky top-0 bg-surface text-xs text-muted shadow-sm">
               <tr>
                 <SortTh label="Name" sortKey="fullName" sort={sort} onToggle={toggle} className="py-2" />
                 <SortTh label="Email" sortKey="email" sort={sort} onToggle={toggle} className="py-2" />

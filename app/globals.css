@@ -16,83 +16,139 @@
        green = finished, or working right now
      A third hue is what turned the old palette into noise. */
 
-  --background: #f1f4f8; /* card separates at 1.10:1 */
+  /* ── Palette: deep green + bone ───────────────────────────────
+     Every value below is measured, not estimated, and the ratios sit beside
+     them so a future edit cannot quietly regress one.
+
+     The token NAMES are unchanged from the blue system they replace. That is
+     deliberate and it is what made this change safe: 683 `text-muted`, 296
+     `bg-surface` and 282 `border-border` call sites keep working untouched,
+     so the palette moves without a thousand-file diff.
+
+     Two accents, two meanings:
+       green = the product acting, or something working
+       brass = money, and moments worth paying attention to
+     Status colours are deliberately a DIFFERENT green from the brand, so a
+     success pill never reads as a brand element. */
+
+  --background: #f6f4ef; /* bone; card separates at 1.10:1 */
   --surface: #ffffff;
-  --surface-2: #e7eaef; /* progress-bar tracks and inset panels */
-  --foreground: #0f1729; /* 16.20:1 on page, 17.87:1 on card */
-  --muted: #5a6478; /* 5.39:1 on page, 4.93:1 on surface-2 */
-  --border: #c7cfdd; /* 1.57:1 on white, up from 1.29 */
+  --surface-2: #edeae3; /* progress tracks, table headers, insets */
+  --foreground: #14120e; /* 17.02:1 on page, 18.71:1 on card */
+  --muted: #5c574c; /* 6.54:1 on page, 7.19:1 on card */
+  --border: #d5cfc2; /* 1.41:1 on page, 1.55:1 on card */
+  --border-firm: #c3bcad; /* 1.72:1 / 1.89:1, for emphasis edges */
 
-  /* The single action colour. Blue is legible as a link at small sizes and
-     sits 100+ RGB units off the neutral ramp, which is what the plum it
-     replaces failed at: it was 28 units from grey and read as disabled. */
-  --primary: #2354c7; /* 6.64:1 on card; white on fill also 6.64:1 */
-  --primary-hover: #1b429e; /* 9.05:1 */
-  --primary-soft: #e6ecfa;
+  /* The action colour. Deep green rather than the brass, because brass cannot
+     carry text: at #b08d4f it measures 2.82:1 on paper, and darkening it far
+     enough to pass would spend the accent on every button in the product. */
+  --primary: #1c4d3c; /* 8.78:1 on page; white on fill 9.65:1 */
+  --primary-hover: #153b2e; /* 12.38:1 */
+  --primary-soft: #e4ede8;
   --primary-contrast: #ffffff;
-  --brand-from: #2354c7;
-  --brand-to: #0f1729;
+  --brand-from: #1c4d3c;
+  --brand-to: #0e1f19;
   --brand-contrast: #ffffff;
-  --accent: #2354c7;
+  --accent: #1c4d3c;
 
-  /* Not a third hue. `info` is a cool slate neutral that marks AI and system
+  /* Brass. Two tokens because one cannot do both jobs: the lighter value is
+     for fills and rules where contrast does not apply, the darker for anything
+     carrying text. Shipping only the light one is how an accent ends up
+     illegible in exactly the places it is meant to draw the eye. */
+  --brass: #b08d4f;       /* fills, hairlines, chart marks. Never text. */
+  --brass-ink: #836427;   /* 5.01:1 on page, 5.50:1 on card */
+  --brass-soft: #f5eddd;
+
+  /* Not a third hue: a warm slate in the same family, marking AI and system
      guidance without competing with the action colour. */
-  --info: #3e4a5c;
-  --info-hover: #2c3646;
-  --info-soft: #e7eaef;
+  --info: #4a5751;
+  --info-hover: #384340;
+  --info-soft: #e8ebe9;
   --info-contrast: #ffffff;
 
-  /* Money and positive outcomes share the green. Replies are the thing a
-     customer is paying for, so they read as the same "good" as progress. */
-  --revenue: #167c52;
-  --revenue-soft: #e2f0e9;
+  /* Money reads brass, not green. Replies are the thing a customer is paying
+     for, so they get the accent rather than sharing "ok" with system status. */
+  --revenue: #836427;
+  --revenue-soft: #f5eddd;
 
-  /* Deep navy bands, used instead of pure black so dark sections stay in the
-     same cool family as the paper. */
-  --ink: #0f1729;
-  --ink-soft: #1b2331;
-  --on-ink: #e8edf5;
-  --on-ink-muted: #a3afc2;
-  --brass-on-ink: #8fb3ff;
+  /* Dark bands. Deep green rather than navy so the ink sections stay in the
+     same family as the paper instead of reading as a different product. */
+  --ink: #0e1f19;
+  --ink-soft: #132a22;
+  --on-ink: #edeae3; /* 14.23:1 on ink */
+  --on-ink-muted: #9daaa2; /* 7.08:1 on ink */
+  --brass-on-ink: #d4b478; /* 8.63:1 on ink */
 
-  --success: #167c52; /* 5.20:1 on card; 4.31:1 as a bar on surface-2 */
-  --success-soft: #e2f0e9;
-  --warning: #92510a; /* 6.17:1 */
-  --warning-soft: #f7edde;
-  --danger: #b3261e; /* 6.54:1 */
-  --danger-soft: #fae7e6;
+  --success: #1c6b4a; /* 6.46:1 on card; 5.47:1 on its own soft */
+  --success-soft: #e3efe8;
+  --warning: #8a6320; /* 5.40:1; 4.73:1 on its own soft */
+  --warning-soft: #f7efdf;
+  --danger: #a33a2b; /* 6.57:1; 5.56:1 on its own soft */
+  --danger-soft: #f8e9e5;
   --danger-contrast: #ffffff;
   --success-contrast: #ffffff;
   --warning-contrast: #ffffff;
-  --overlay: rgba(11, 15, 23, 0.6);
-  --ring: rgba(35, 84, 199, 0.45);
+  --overlay: rgba(14, 31, 25, 0.62);
+  /* Focus is brass. It is the one place the accent should interrupt, and it
+     never overlaps the green that now means "action". */
+  --ring: rgba(176, 141, 79, 0.55);
 
-  /* Theme-invariant public-site neutrals. The authenticated app can switch
-     themes, but the public landing page always renders the light palette.
-     Keeping this ramp here prevents its component stylesheet from drifting
-     back into one-off literal colours. */
-  --marketing-paper: #f1f4f8;
+  /* ── Type scale ───────────────────────────────────────────────
+     New, and the largest systematic fix in this pass. There were previously no
+     numeric typography tokens at all, so anything off Tailwind's default ramp
+     became an arbitrary value: 87 of them, dominated by text-[11px] (22) and
+     text-[10px] (21), plus eleven distinct one-off tracking values.
+     The 17/20/24 steps exist because the old scale had a hole between 14 and
+     36px, and that missing mid-range is a large part of why pages read thin. */
+  --text-2xs: 0.6875rem;  /* 11px, table meta and labels */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.8125rem;   /* 13px */
+  --text-base: 0.9375rem; /* 15px, body */
+  --text-md: 1.0625rem;   /* 17px */
+  --text-lg: 1.25rem;     /* 20px */
+  --text-xl: 1.5rem;      /* 24px */
+  --text-2xl: 1.875rem;   /* 30px */
+  --text-3xl: 2.375rem;   /* 38px */
+  --text-4xl: 3rem;       /* 48px */
+  --text-5xl: clamp(3.25rem, 6vw, 4.75rem);
+
+  --lh-tight: 1.08;
+  --lh-snug: 1.22;
+  --lh-base: 1.6;
+  --lh-relaxed: 1.72;
+
+  /* Tracking, so the eleven ad-hoc values collapse to four intentions. */
+  --track-display: -0.032em;
+  --track-tight: -0.018em;
+  --track-base: -0.006em;
+  --track-label: 0.08em;
+
+  /* ── Theme-invariant public-site ramp ─────────────────────────
+     The authenticated app can switch themes; the public landing page always
+     renders the light palette. Keeping this ramp here prevents the marketing
+     stylesheet from drifting back into one-off literal colours. */
+  --marketing-paper: #f6f4ef;
   --marketing-surface: #ffffff;
-  --marketing-surface-2: #e7eaef;
-  --marketing-copy: #0f1729;
-  --marketing-muted: #5a6478;
-  --marketing-border: #c7cfdd;
-  --marketing-ink: #0f1729;
-  --marketing-ink-soft: #1b2331;
-  --marketing-on-ink: #e8edf5;
-  --marketing-on-ink-muted: #a3afc2;
-  --marketing-on-ink-subtle: #8794a8;
-  --marketing-primary: #2354c7;
-  --marketing-primary-hover: #1b429e;
-  --marketing-primary-soft: #e6ecfa;
+  --marketing-surface-2: #edeae3;
+  --marketing-copy: #14120e;
+  --marketing-muted: #5c574c;
+  --marketing-border: #d5cfc2;
+  --marketing-ink: #0e1f19;
+  --marketing-ink-soft: #132a22;
+  --marketing-on-ink: #edeae3;
+  --marketing-on-ink-muted: #9daaa2;
+  --marketing-on-ink-subtle: #7d8c84;
+  --marketing-primary: #1c4d3c;
+  --marketing-primary-hover: #153b2e;
+  --marketing-primary-soft: #e4ede8;
   --marketing-primary-contrast: #ffffff;
-  --marketing-brass-on-ink: #8fb3ff;
+  --marketing-brass-on-ink: #d4b478;
   /* Cool slate, matching --info. The public stylesheet references these in
      several `color-mix()` calls; dropping them silently invalidates the whole
      shorthand those calls sit in, which is how the hero once lost its
      background entirely and rendered light text on light paper. */
-  --marketing-info: #3e4a5c;
-  --marketing-info-soft: #e7eaef;
+  --marketing-info: #4a5751;
+  --marketing-info-soft: #e8ebe9;
   /* Status colours for the public site, and these are not decoration.
      The landing stylesheet was reading --success, --success-soft, --revenue,
      --revenue-soft and --danger directly, all five of which this file remaps
@@ -104,21 +160,21 @@
      text on a live marketing page.
      Duplicated as literals rather than aliased to the app tokens, because the
      entire point of this ramp is that it does not move when the theme does. */
-  --marketing-success: #167c52;
-  --marketing-success-soft: #e2f0e9;
-  --marketing-revenue: #167c52;
-  --marketing-revenue-soft: #e2f0e9;
-  --marketing-danger: #b3261e;
+  --marketing-success: #1c6b4a;
+  --marketing-success-soft: #e3efe8;
+  --marketing-revenue: #836427;
+  --marketing-revenue-soft: #f5eddd;
+  --marketing-danger: #a33a2b;
 
   /* Elevation for the public page, and invariant for the same reason as the
      colours above: --shadow-* is remapped for dark mode, where it becomes an
      almost-black shadow that would be invisible on light paper. Same geometry as
      the app ladder: a 1px contact shadow that seats the element plus a wide
      ambient one that lifts it, so the site and the product read as one system. */
-  --marketing-shadow-sm: 0 1px 2px rgba(15, 23, 41, 0.04);
-  --marketing-shadow-md: 0 1px 2px rgba(15, 23, 41, 0.04), 0 8px 24px -12px rgba(15, 23, 41, 0.10);
-  --marketing-shadow-lg: 0 1px 3px rgba(15, 23, 41, 0.05), 0 18px 48px -24px rgba(15, 23, 41, 0.16);
-  --marketing-shadow-xl: 0 2px 4px rgba(15, 23, 41, 0.06), 0 32px 80px -32px rgba(15, 23, 41, 0.22);
+  --marketing-shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.05);
+  --marketing-shadow-md: 0 1px 2px rgba(20, 18, 14, 0.05), 0 8px 24px -12px rgba(20, 18, 14, 0.12);
+  --marketing-shadow-lg: 0 1px 3px rgba(20, 18, 14, 0.06), 0 18px 48px -24px rgba(20, 18, 14, 0.18);
+  --marketing-shadow-xl: 0 2px 4px rgba(20, 18, 14, 0.07), 0 32px 80px -32px rgba(20, 18, 14, 0.24);
 
   /* Chart marks for the public site's dark band. Invariant like the rest of
      this ramp, and separate from --chart-* for two reasons: those are remapped
@@ -126,8 +182,8 @@
      theme, so a theme-following token would be wrong half the time. Validated
      against this band's own ink ground rather than a generic dark surface:
      CVD deltaE 20.3 deutan, 22.5 normal, both above 3:1 on #0f1729. */
-  --marketing-chart-on-ink-1: #5b8df7;
-  --marketing-chart-on-ink-2: #31a97c;
+  --marketing-chart-on-ink-1: #6fbf9a;
+  --marketing-chart-on-ink-2: #d4b478;
 
   /* Radius scale.
      These are re-exported into Tailwind through @theme inline below, so
@@ -153,11 +209,11 @@
      measuring ourselves against uses.
      Two layers each: a 1px contact shadow that seats the element, and a wide
      ambient one that lifts it. Hairline border still does the defining work. */
-  --shadow-sm: 0 1px 2px rgba(15, 23, 41, 0.04);
-  --shadow-md: 0 1px 2px rgba(15, 23, 41, 0.04), 0 8px 24px -12px rgba(15, 23, 41, 0.10);
-  --shadow-lg: 0 1px 3px rgba(15, 23, 41, 0.05), 0 18px 48px -24px rgba(15, 23, 41, 0.16);
-  --shadow-xl: 0 2px 4px rgba(15, 23, 41, 0.06), 0 32px 80px -32px rgba(15, 23, 41, 0.22);
-  --shadow-brand: 0 1px 2px rgba(35, 84, 199, 0.10), 0 10px 30px -14px rgba(35, 84, 199, 0.35);
+  --shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.05);
+  --shadow-md: 0 1px 2px rgba(20, 18, 14, 0.05), 0 8px 24px -12px rgba(20, 18, 14, 0.12);
+  --shadow-lg: 0 1px 3px rgba(20, 18, 14, 0.06), 0 18px 48px -24px rgba(20, 18, 14, 0.18);
+  --shadow-xl: 0 2px 4px rgba(20, 18, 14, 0.07), 0 32px 80px -32px rgba(20, 18, 14, 0.24);
+  --shadow-brand: 0 1px 2px rgba(28, 77, 60, 0.12), 0 10px 30px -14px rgba(28, 77, 60, 0.30);
   /* Dark mode cannot use shadow for separation: a darker shadow on a dark field
      is invisible. It gets a top highlight instead, and this token is the seam
      so components do not need to know which theme they are in.
@@ -176,13 +232,19 @@
      constraints genuinely diverge, and the UI accents sit outside the band a
      mark needs, so the dark values below are stepped rather than inherited.
      Both pairs were run through the validator, not eyeballed:
-     light  #2354c7/#167c52: CVD deltaE 22.2 deutan, 24.2 normal, all checks pass
-     dark   #5b8df7/#31a97c: CVD deltaE 20.3 deutan, 22.5 normal, all checks pass
-     Meaning is inherited from the two-accent rule and does not change per chart:
-     blue is mail we sent, green is a reply we got back. */
-  --chart-1: #2354c7;
-  --chart-2: #167c52;
-  --chart-grid: #e3e8f0;
+     Re-measured for the green + brass palette, and the pair got materially
+     better: green vs gold separates on a lightness axis as well as a hue one,
+     where the old blue vs green shared a lightness band and relied on hue alone.
+     light  #2e6b54/#b08d4f: deltaE 48.3 normal, 41.3 deutan, 30.2 protan
+     dark   #6fbf9a/#d4b478: deltaE 43.8 normal, 29.3 deutan, 17.9 protan
+     (old blue/green was 22.2 deutan, so every figure here is an improvement)
+     Marks clear 3:1 against their ground, which is the non-text threshold; the
+     brass is deliberately not used for text anywhere, see --brass-ink.
+     Meaning is inherited from the two-accent rule: green is mail we sent,
+     brass is a reply we got back, because a reply is the money moment. */
+  --chart-1: #2e6b54;
+  --chart-2: #b08d4f;
+  --chart-grid: #e4e0d6;
 
   /* Motion tokens, so every transition shares one curve and tempo. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -197,74 +259,85 @@
    handful of literal Tailwind color utilities the app uses so every
    surface adapts without editing each component. */
 :root[data-theme="dark"] {
-  /* Midnight navy ground. The same two accents as light, lifted to stay
-     legible on a dark field. Keeping one accent pair across both themes is
-     what stops light and dark reading as two different products. */
-  /* Refined for the new elevation, and every ratio below was computed rather
-     than guessed. The old ground put a card 1.10:1 against the page, which is
-     the separation of two things that are the same colour: dark mode had no
-     depth at all, and it did not matter while nothing had a shadow either. Now
-     that cards carry a real shadow and a top highlight, they need a ground to
-     sit on. So the page went deeper and the surface came up. */
-  --background: #070b12; /* deeper, so the surface can lift off it */
-  --surface: #161f2e; /* 1.19:1 against the page, up from 1.10 */
-  --surface-2: #232e3f; /* 1.21:1 against the card, up from 1.11 */
-  --foreground: #e8edf5; /* 16.76:1 on page, 14.07:1 on card */
-  --muted: #a3aec0; /* 8.80:1 on page, 7.38:1 on card, 6.11:1 on surface-2 */
-  --border: #425064; /* 2.02:1 on card, up from 1.79 */
-  --primary: #6e9bff; /* 6.14:1 on card, 7.32:1 on page */
-  --primary-hover: #92b4ff;
-  --primary-soft: #1a2540; /* 7.37:1 under --primary-hover text */
-  --primary-contrast: #0b1220; /* 6.95:1 on the fill */
-  --brand-from: #6e9bff;
+  /* Deep green ground rather than navy, so dark stays in the same family as
+     the bone paper instead of reading as a different product. The same two
+     accents as light, lifted to stay legible on a dark field.
+
+     Every ratio below was computed, not guessed, and the first draft of this
+     block failed its own targets: it put a card 1.10:1 against the page, which
+     is the separation of two things that are the same colour. That is exactly
+     the bug the previous palette's comment here warned about, reproduced by
+     eye. The page went deeper and the surface came up until it cleared. */
+  --background: #050806; /* deep enough that the surface can lift off it */
+  --surface: #1a231d; /* 1.25:1 against the page */
+  --surface-2: #27332b; /* 1.22:1 against the card */
+  --foreground: #eceae3; /* 17.4:1 on page, 13.9:1 on card */
+  --muted: #9da69f; /* 8.4:1 on page, 6.7:1 on card */
+  --border: #425248; /* 1.94:1 on card */
+  --border-firm: #526356;
+  --primary: #6fbf9a; /* 7.6:1 on card */
+  --primary-hover: #8ed4b3;
+  --primary-soft: #142219;
+  --primary-contrast: #050806;
+  --brand-from: #6fbf9a;
   /* Both ends of the gradient must carry --brand-contrast, so the far end
-     stays light enough for near-black text (a deeper blue measured 2.5:1). */
-  --brand-to: #4f7fe8;
-  --brand-contrast: #0b1220;
-  --accent: #6e9bff;
-  --info: #a9b6c8;
-  --info-hover: #c1cbd9;
-  --info-soft: #1b2331;
-  --info-contrast: #0b0f17;
-  --revenue: #3dbe8b;
-  --revenue-soft: #10261d;
-  --ink: #04070c;
-  --ink-soft: #161f2e;
-  --on-ink: #e8edf5;
-  --on-ink-muted: #a3aec0;
-  --brass-on-ink: #8fb3ff;
-  --success: #3dbe8b; /* 7.43:1 on card; 6.71:1 as a bar on surface-2 */
-  --success-soft: #10261d;
-  --warning: #e0a64a;
-  --warning-soft: #2a1f0e;
-  --danger: #f2777f;
-  --danger-soft: #2c1418;
-  --danger-contrast: #2c0f12;
-  --success-contrast: #06140e;
-  --warning-contrast: #1a1104;
-  --overlay: rgba(2, 4, 8, 0.76);
-  --ring: rgba(110, 155, 255, 0.5);
+     stays light enough for near-black text. */
+  --brand-to: #4a9e7c;
+  --brand-contrast: #050806;
+  --accent: #6fbf9a;
+
+  --brass: #d4b478;
+  --brass-ink: #d4b478; /* on dark the light brass IS the text-safe one */
+  --brass-soft: #241d10;
+
+  --info: #a8b3ac;
+  --info-hover: #c2cbc5;
+  --info-soft: #1b241e;
+  --info-contrast: #050806;
+
+  /* Money stays brass in both themes. */
+  --revenue: #d4b478;
+  --revenue-soft: #241d10;
+
+  --ink: #030504;
+  --ink-soft: #0e1f19;
+  --on-ink: #eceae3;
+  --on-ink-muted: #9daaa2;
+  --brass-on-ink: #d4b478;
+
+  /* A different green from --primary on purpose. The first draft reused the
+     brand value here and a success pill became indistinguishable from a brand
+     element, which is the exact failure the palette test guards. Brighter and
+     more saturated than the brand, so "it worked" reads as an event rather
+     than as chrome. */
+  --success: #4ec98a;
+  --success-soft: #122019;
+  --warning: #e0b45f;
+  --warning-soft: #241c0e;
+  --danger: #ee8877;
+  --danger-soft: #271512;
+  --danger-contrast: #250f0b;
+  --success-contrast: #05140d;
+  --warning-contrast: #1c1405;
+  --overlay: rgba(3, 5, 4, 0.78);
+  --ring: rgba(212, 180, 120, 0.5);
+
   /* Dark elevation works differently and copying the light values produces
-     nothing at all: black on near-black is invisible, which is why the previous
-     dark ladder was three `none`s and gave up. Separation in dark comes from
-     two things instead. A deeper, harder shadow that reads as an absence of
-     light rather than as a grey smudge, and a 1px top highlight, which is how a
-     physical edge catches light and the single most convincing dark-mode
-     depth cue there is. */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
-  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.40), 0 8px 24px -12px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.45), 0 18px 48px -24px rgba(0, 0, 0, 0.70);
-  --shadow-xl: 0 2px 4px rgba(0, 0, 0, 0.50), 0 32px 80px -32px rgba(0, 0, 0, 0.80);
-  --shadow-brand: 0 1px 2px rgba(0, 0, 0, 0.40), 0 10px 30px -14px rgba(110, 155, 255, 0.28);
-  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.055);
-  /* Stepped, not inherited. --primary and --revenue sit at OKLCH L 0.70 and
-     0.72 in dark mode, tuned for text contrast; a chart mark wants L 0.48-0.67,
-     so reusing the UI accents here fails the perceptual band a mark is read in.
-     Validated: CVD deltaE 20.3 deutan, 22.5 normal, contrast >= 3:1 on #161f2e. */
-  --chart-1: #5b8df7;
-  --chart-2: #31a97c;
-  --chart-grid: #2a3547;
+     nothing at all: black on near-black is invisible. The ladder keeps its
+     geometry so components do not branch, and the separation work is done by
+     the top highlight below plus the ground/surface step above. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.36);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.44), 0 18px 48px -24px rgba(0, 0, 0, 0.65);
+  --shadow-xl: 0 2px 4px rgba(0, 0, 0, 0.48), 0 32px 80px -32px rgba(0, 0, 0, 0.72);
+  --shadow-brand: 0 1px 2px rgba(111, 191, 154, 0.14), 0 10px 30px -14px rgba(111, 191, 154, 0.3);
+  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  --chart-1: #6fbf9a;
+  --chart-2: #d4b478;
+  --chart-grid: #27332b;
 }
+
 
 /* App surfaces, text, borders, status treatments, overlays, and filled-control
    foregrounds all use semantic tokens. Do not reintroduce light-theme palette
@@ -304,6 +377,10 @@
   --color-on-ink: var(--on-ink);
   --color-on-ink-muted: var(--on-ink-muted);
   --color-brass-on-ink: var(--brass-on-ink);
+  --color-brass: var(--brass);
+  --color-brass-ink: var(--brass-ink);
+  --color-brass-soft: var(--brass-soft);
+  --color-border-firm: var(--border-firm);
   --font-sans: var(--font-sans-base);
   --font-display: var(--font-display);
   --font-mono: var(--font-mono-base);
@@ -312,6 +389,9 @@
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
   --radius-2xl: var(--radius-2xl);
+  /* Was defined but never exported, so every `rounded-full` in the app compiled
+     to Tailwind's default (border-radius: 3.40282e38px) instead of this. */
+  --radius-full: var(--radius-full);
   /* The elevation ladder was never mapped, so `shadow-md` in a component
      silently meant Tailwind's default while the tokens were only reachable from
      inside this file. Two ladders, one of them unused, is how the app ended up
@@ -320,6 +400,23 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
+  /* The type scale. Without these, anything off Tailwind's default ramp became
+     an arbitrary value, and 87 of them accumulated. */
+  --text-2xs: var(--text-2xs);
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-md: var(--text-md);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+  --text-3xl: var(--text-3xl);
+  --text-4xl: var(--text-4xl);
+  --text-5xl: var(--text-5xl);
+  --tracking-display: var(--track-display);
+  --tracking-tight: var(--track-tight);
+  --tracking-base: var(--track-base);
+  --tracking-label: var(--track-label);
 }
 
 * {

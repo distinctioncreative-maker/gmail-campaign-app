@@ -9,11 +9,22 @@ const MARK: Record<SpamStatus, { icon: string; className: string }> = {
   fail: { icon: "✕", className: "bg-danger-soft text-danger" },
 };
 
+/**
+ * The score ring's colour.
+ *
+ * Was four off-palette literals, one of them a lime (#84cc16) that introduced a
+ * third hue the palette explicitly forbids. They were also fixed values, so the
+ * ring stayed light-mode bright on a dark ground. The file already used
+ * `bg-success-soft text-success` correctly ten lines above, so it was
+ * contradicting itself.
+ *
+ * Four bands collapse to three because there were never four meanings: the old
+ * green and lime both said "fine".
+ */
 function ringColor(score: number): string {
-  if (score >= 85) return "#12b76a";
-  if (score >= 70) return "#84cc16";
-  if (score >= 50) return "#f79009";
-  return "#f04438";
+  if (score >= 70) return "var(--success)";
+  if (score >= 50) return "var(--warning)";
+  return "var(--danger)";
 }
 
 /** Apple-style inbox-friendliness score for the current email content. */

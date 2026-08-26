@@ -39,23 +39,48 @@ function sourceFiles(root: string): string[] {
 
 describe("cool neutral brand palette", () => {
   it("records the selected semantic roles and identity gradient", () => {
-    expect(token(lightBlock, "primary")).toBe("#2354c7");
-    expect(token(lightBlock, "primary-hover")).toBe("#1b429e");
-    expect(token(lightBlock, "primary-soft")).toBe("#e6ecfa");
-    // Two accents, two meanings: blue is clickable, green is finished or
-    // working. Money is an outcome, so it shares the green rather than
-    // introducing a third hue that would dilute both signals.
-    expect(token(lightBlock, "revenue")).toBe(token(lightBlock, "success"));
-    expect(token(darkBlock, "revenue")).toBe(token(darkBlock, "success"));
-    // `info` is a cool slate neutral, not a second brand colour.
-    expect(token(lightBlock, "info")).toBe("#3e4a5c");
-    expect(token(lightBlock, "info-soft")).toBe("#e7eaef");
-    expect(token(lightBlock, "brand-from")).toBe("#2354c7");
-    expect(token(lightBlock, "brand-to")).toBe("#0f1729");
+    /**
+     * Rewritten from pinned hexes to properties when the palette moved from
+     * blue-on-cool-grey to green-on-bone. The literals were asserting the
+     * decision rather than protecting it, which this file already argues
+     * against a few lines below: a value that must be edited every time the
+     * palette is tuned only relocates the choice into a diff.
+     *
+     * The roles are what matter, and one of them inverted deliberately. Money
+     * used to share the green with success, on the theory that a third hue
+     * dilutes the signal. With green promoted to the brand colour that stopped
+     * working: a revenue figure rendered in the brand green reads as chrome
+     * rather than as an outcome. Replies are the thing a customer pays for, so
+     * they now get the brass, and brass appears nowhere else in the product.
+     */
+    for (const block of [lightBlock, darkBlock]) {
+      // Money is its own signal now, not an alias of "ok".
+      expect(token(block, "revenue")).not.toBe(token(block, "success"));
+      // Status green must not be the brand green, or a success pill reads as a
+      // brand element.
+      expect(token(block, "success")).not.toBe(token(block, "primary"));
+      // `info` is a neutral in the family, not a second brand colour: it stays
+      // close to muted in hue and never equals the accent.
+      expect(token(block, "info")).not.toBe(token(block, "primary"));
+    }
+    // Both ends of the identity gradient must carry the same contrast token, so
+    // text on it is legible wherever the gradient is sampled.
+    for (const end of ["brand-from", "brand-to"] as const) {
+      expect(
+        contrast(token(lightBlock, end), token(lightBlock, "brand-contrast"))
+      ).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it("keeps one accent across two grounds: near-white in light, navy in dark", () => {
-    expect(token(lightBlock, "background")).toBe("#f1f4f8");
+    // Asserted as a property for the same reason the dark ground is, below.
+    // The light ground is bone: warm, so red exceeds blue. The previous ramp
+    // was cool grey and would fail this.
+    const lightGround = token(lightBlock, "background");
+    {
+      const [r, , b] = [1, 3, 5].map((i) => parseInt(lightGround.slice(i, i + 2), 16));
+      expect(r, "light ground is warm bone, not cool grey").toBeGreaterThan(b);
+    }
     // The dark ground is asserted by its properties rather than by its exact
     // hex. It used to be pinned to #0b0f17, which made this test fail the first
     // time the ground was legitimately deepened for the new elevation ladder,
@@ -63,14 +88,16 @@ describe("cool neutral brand palette", () => {
     // not protecting anything: it just relocates the decision into a diff.
     //
     // What actually matters is what the name promises. It has to be dark enough
-    // to be a dark theme, and navy rather than neutral grey or warm, because the
-    // whole palette is built on a cool family and a warm dark ground would put
-    // the accents out of key. Current value: #070b12.
+    // to be a dark theme, and green rather than neutral or navy, because the
+    // whole palette is built on a green family and an off-key dark ground would
+    // put the accents out of tune with it. Current value: #050806.
     const darkGround = token(darkBlock, "background");
     expect(darkGround).toMatch(/^#[0-9a-f]{6}$/);
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(darkGround.slice(i, i + 2), 16));
     expect(Math.max(r, g, b), "dark ground stays genuinely dark").toBeLessThan(0x22);
-    expect(b, "dark ground is navy, not neutral or warm").toBeGreaterThan(r);
+    expect(g, "dark ground is green, not neutral or navy").toBeGreaterThanOrEqual(
+      Math.max(r, b)
+    );
     for (const block of [lightBlock, darkBlock]) {
       // The accent must stay clearly separable from body and muted text, which
       // is the failure that made an earlier plum accent invisible as an action.

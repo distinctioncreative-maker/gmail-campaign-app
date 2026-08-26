@@ -232,11 +232,19 @@ describe("token ladders", () => {
     expect(reel).toContain('type="button"');
   });
 
-  it("defaults to dark without consulting the operating system", () => {
-    // Dark first is a brand decision. An explicit choice still wins both ways,
-    // which is the part that matters for anyone who wants light.
+  it("defaults to light without consulting the operating system", () => {
+    /**
+     * Flipped with the green-and-bone palette. The old argument was that money
+     * tools are dark; the specific counter-argument is stronger here. The thing
+     * being edited is an email, the place it lands is Gmail, and Gmail is light
+     * for nearly everyone, so a dark composer makes every preview a guess.
+     *
+     * What this actually protects is unchanged: the default is decided by us
+     * and set before paint, an explicit choice still wins in both directions,
+     * and the OS setting never silently overrides a deliberate one.
+     */
     const layout = read("app/layout.tsx");
-    expect(layout).toContain("t==='light'?'light':'dark'");
+    expect(layout).toContain("t==='dark'?'dark':'light'");
     expect(layout).not.toContain("prefers-color-scheme");
   });
 });

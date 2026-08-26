@@ -184,7 +184,7 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
               <>
                 <line x1={active.px} y1={PAD_TOP - 8} x2={active.px} y2={H - PAD_BOTTOM} stroke="var(--primary)" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
                 <circle cx={active.px} cy={active.py} r="8" fill="var(--primary)" opacity="0.16" className="pulse-ring" />
-                <circle cx={active.px} cy={active.py} r="4.5" fill="var(--primary)" stroke="#fff" strokeWidth="1.5" />
+                <circle cx={active.px} cy={active.py} r="4.5" fill="var(--primary)" stroke="var(--surface)" strokeWidth="1.5" />
               </>
             )}
           </>

@@ -117,7 +117,7 @@ export function StatGrid({
     6: "sm:grid-cols-3 lg:grid-cols-6",
   };
   return (
-    <div className="overflow-hidden rounded-[--radius-lg] border border-border bg-surface">
+    <div className="overflow-hidden rounded-lg border border-border bg-surface">
       <div
         className={`-mb-px -mr-px grid [&>*]:border-b [&>*]:border-r [&>*]:border-border ${cols[columns]}`}
       >

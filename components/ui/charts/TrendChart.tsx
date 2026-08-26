@@ -205,7 +205,7 @@ export function TrendChart({
 
         {active !== null && (
           <div
-            className="pointer-events-none absolute top-2 rounded-[--radius-md] border border-border bg-surface px-3 py-2 text-xs shadow-[--shadow-lg]"
+            className="pointer-events-none absolute top-2 rounded-md border border-border bg-surface px-3 py-2 text-xs shadow-lg"
             style={{
               left: `${(scale(active, 0, Math.max(1, count - 1), padding.left, width - padding.right) / width) * 100}%`,
               transform: "translateX(-50%)",

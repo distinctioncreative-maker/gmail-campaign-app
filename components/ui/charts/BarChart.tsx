@@ -142,7 +142,7 @@ export function BarChart({
 
         {active !== null && (
           <div
-            className="pointer-events-none absolute top-1 rounded-[--radius-md] border border-border bg-surface px-3 py-1.5 text-xs shadow-[--shadow-lg]"
+            className="pointer-events-none absolute top-1 rounded-md border border-border bg-surface px-3 py-1.5 text-xs shadow-lg"
             style={{
               left: `${((padding.left + active * band + band / 2) / width) * 100}%`,
               transform: "translateX(-50%)",
