@@ -21,14 +21,14 @@ export function ReplyHeatmap({ grid }: { grid: number[][] }) {
         <div className="flex">
           <div className="w-9" />
           {Array.from({ length: 24 }, (_, h) => (
-            <div key={h} className="w-[13px] text-center text-[8px] text-muted">
+            <div key={h} className="w-[13px] text-center text-3xs text-muted">
               {h % 6 === 0 ? h : ""}
             </div>
           ))}
         </div>
         {grid.map((row, d) => (
           <div key={d} className="flex items-center">
-            <div className="w-9 pr-1 text-right text-[10px] text-muted">{WEEKDAYS[d]}</div>
+            <div className="w-9 pr-1 text-right text-3xs text-muted">{WEEKDAYS[d]}</div>
             {row.map((count, h) => {
               const intensity = count / max;
               return (

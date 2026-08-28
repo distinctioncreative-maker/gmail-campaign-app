@@ -66,7 +66,7 @@ export default function SignInPage() {
         </Link>
 
         <div className="relative mt-auto">
-          <h2 className="text-[2rem] font-semibold leading-[1.15] tracking-tight">
+          <h2 className="text-2xl font-semibold leading-tight tracking-tight">
             Personal email campaigns,
             <br /> sent from your own Gmail.
           </h2>
@@ -95,13 +95,13 @@ export default function SignInPage() {
           </div>
 
           <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
-            <h1 className="text-[1.75rem] font-semibold tracking-tight text-foreground">Welcome back</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Welcome back</h1>
             <p className="mt-2 text-sm text-muted">Sign in with your work Google account to continue.</p>
 
             <button
               onClick={handleSignIn}
               disabled={busy}
-              className="btn-secondary mt-7 w-full px-4 py-3.5 text-[15px] disabled:opacity-50"
+              className="btn-secondary mt-7 w-full px-4 py-3.5 text-base disabled:opacity-50"
             >
               {busy ? (
                 "Signing in…"

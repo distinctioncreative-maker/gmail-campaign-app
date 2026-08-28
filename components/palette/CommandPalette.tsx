@@ -176,7 +176,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
         <span>Search</span>
         {/* The shortcut is printed on the affordance, because a keyboard
             feature nobody knows about is a keyboard feature nobody uses. */}
-        <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 font-sans text-[10px] font-medium">
+        <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 font-sans text-3xs font-medium">
           ⌘K
         </kbd>
       </button>
@@ -216,7 +216,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
             autoComplete="off"
             spellCheck={false}
           />
-          <kbd className="hidden shrink-0 rounded border border-border px-1.5 py-0.5 font-sans text-[10px] text-muted sm:block">
+          <kbd className="hidden shrink-0 rounded border border-border px-1.5 py-0.5 font-sans text-3xs text-muted sm:block">
             esc
           </kbd>
         </div>
@@ -239,7 +239,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
           ) : (
             sections.map((section) => (
               <div key={section.group} className="px-2 py-1">
-                <p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+                <p className="px-2 py-1 text-2xs font-semibold uppercase tracking-wide text-muted">
                   {section.group}
                 </p>
                 {section.items.map((item) => {
@@ -272,7 +272,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
                         ) : null}
                       </span>
                       {item.meta ? (
-                        <span className="shrink-0 text-[11px] uppercase tracking-wide text-muted">
+                        <span className="shrink-0 text-2xs uppercase tracking-wide text-muted">
                           {item.meta}
                         </span>
                       ) : null}
@@ -284,7 +284,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2.5 text-[11px] text-muted">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2.5 text-2xs text-muted">
           <span>↑↓ to move</span>
           <span>↵ to open</span>
           <span>esc to close</span>

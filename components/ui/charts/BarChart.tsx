@@ -78,7 +78,7 @@ export function BarChart({
                     y={y}
                     textAnchor="end"
                     dominantBaseline="middle"
-                    className="fill-muted text-[11px] tabular-nums"
+                    className="fill-muted text-2xs tabular-nums"
                   >
                     {compact(tick)}
                   </text>
@@ -131,7 +131,7 @@ export function BarChart({
                   x={index * band + band / 2}
                   y={plotHeight + 17}
                   textAnchor="middle"
-                  className="fill-muted text-[11px]"
+                  className="fill-muted text-2xs"
                 >
                   {item.label}
                 </text>

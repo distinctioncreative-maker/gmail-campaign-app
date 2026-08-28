@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -431,5 +432,110 @@ describe("route transitions", () => {
     const reduced = css.slice(css.lastIndexOf("(prefers-reduced-motion: reduce)"));
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.route-enter \{ animation: none/);
     expect(reduced.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The type scale, which is the part of the system that did not exist at all.
+ *
+ * There were no numeric typography tokens anywhere, so every size off
+ * Tailwind's default ramp became an arbitrary value. That produced 75 of them
+ * across two properties, with the body clustered at 10 to 14px, headings
+ * jumping straight to 30 and beyond, and almost nothing between 15 and 30. The
+ * missing middle is a large part of why pages read thin, and it is not a thing
+ * anyone fixes by tuning one screen: an arbitrary value is invisible to every
+ * other screen, so the same decision gets made again from scratch each time.
+ *
+ * These rules exist so the scale cannot quietly stop being the scale. Each one
+ * carries a floor, because a rule that stops matching anything passes forever.
+ */
+describe("type scale", () => {
+  const css = read("app/globals.css");
+  const rootBlock = css.slice(css.indexOf(":root {"), css.indexOf("\n}", css.indexOf(":root {")));
+  const themeBlock = css.slice(css.indexOf("@theme inline"));
+
+  const STEPS = [
+    "3xs",
+    "2xs",
+    "xs",
+    "sm",
+    "base",
+    "md",
+    "lg",
+    "xl",
+    "2xl",
+    "3xl",
+    "4xl",
+    "5xl",
+  ];
+
+  function sources(): string[] {
+    const out: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (entry.name.endsWith(".tsx")) out.push(path);
+      }
+    };
+    walk("app");
+    walk("components");
+    return out;
+  }
+
+  const markup = sources().map(read).join("\n");
+
+  it("ascends without a gap it has to be worked around", () => {
+    const rem = (step: string): number => {
+      const raw = rootBlock.match(new RegExp(`--text-${step}:\\s*([^;]+);`))?.[1];
+      if (!raw) throw new Error(`Missing --text-${step}`);
+      // The top step is fluid, so read the middle of its clamp.
+      const value = raw.startsWith("clamp(")
+        ? raw.slice(6).split(",")[2]
+        : raw;
+      return Number.parseFloat(value);
+    };
+    const sizes = STEPS.map(rem);
+    for (let index = 1; index < sizes.length; index += 1) {
+      expect(sizes[index]).toBeGreaterThan(sizes[index - 1]);
+    }
+    // The hole the scale was built to close. Two steps have to land strictly
+    // between body and the first heading, or the jump comes straight back.
+    const body = rem("base");
+    const heading = rem("2xl");
+    expect(sizes.filter((size) => size > body && size < heading).length)
+      .toBeGreaterThanOrEqual(3);
+  });
+
+  it("exports every step, so a token without a utility cannot exist", () => {
+    for (const step of STEPS) {
+      expect(themeBlock).toContain(`--text-${step}: var(--text-${step});`);
+    }
+    for (const name of ["display", "tight", "base", "label", "caps"]) {
+      expect(themeBlock).toContain(`--tracking-${name}: var(--track-`);
+    }
+    for (const name of ["tight", "snug", "base", "relaxed"]) {
+      expect(themeBlock).toContain(`--leading-${name}: var(--lh-${name});`);
+    }
+  });
+
+  it("sets no size, tracking, or line height outside the scale", () => {
+    // Floor first. If the markup stops using the scale, the ban below becomes
+    // trivially true and this rule stops meaning anything.
+    const onScale = markup.match(
+      new RegExp(`\\btext-(?:${STEPS.join("|")})\\b`, "g")
+    ) ?? [];
+    expect(onScale.length).toBeGreaterThan(600);
+
+    const arbitrary = markup.match(/\b(?:text|tracking|leading)-\[[^\]]+\]/g) ?? [];
+    expect(arbitrary).toEqual([]);
+  });
+
+  it("does not reach for a weight the scale does not define", () => {
+    // 660, 680, 730, 740 and 780 all shipped at once, which is five weights
+    // nobody chose on purpose and a variable font will happily render.
+    expect(markup.match(/font-\[\d+\]/g) ?? []).toEqual([]);
+    const weights = markup.match(/font-(?:normal|medium|semibold|bold)\b/g) ?? [];
+    expect(weights.length).toBeGreaterThan(200);
   });
 });

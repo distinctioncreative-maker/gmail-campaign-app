@@ -186,7 +186,7 @@ export function AccountMenu({
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
               <p className="truncate text-xs text-muted">{email}</p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted">{roleLabel}</p>
+              <p className="mt-1 text-3xs font-semibold uppercase tracking-wide text-muted">{roleLabel}</p>
             </div>
           </div>
           <div className="p-1.5">

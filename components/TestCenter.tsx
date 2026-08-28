@@ -114,7 +114,7 @@ export function TestCenter() {
             <div key={c.id} className="card p-6 sm:p-7">
               <div className="flex items-start justify-between gap-3">
                 <p className="font-medium">{c.label}</p>
-                <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-semibold ${presentation.className}`}>
+                <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-2xs font-semibold ${presentation.className}`}>
                   <Icon name={presentation.icon} size={13} aria-hidden />
                   {presentation.label}
                 </span>

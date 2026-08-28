@@ -388,7 +388,7 @@ export default async function CampaignDetailPage({
                   return (
                     <tr key={i} className="border-t border-border">
                       <td className="py-2 pr-4 font-medium">
-                        <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-2 text-[10px] font-bold text-foreground">
+                        <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-2 text-3xs font-bold text-foreground">
                           {String.fromCharCode(65 + i)}
                         </span>
                         {r.name}

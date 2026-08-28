@@ -753,7 +753,7 @@ export function CampaignWizard() {
                       }`}
                     >
                       {selected && (
-                        <span className="absolute right-3 top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-contrast">
+                        <span className="absolute right-3 top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-3xs font-bold text-primary-contrast">
                           {idx === 0 ? "A" : idx === 1 ? "B" : idx === 2 ? "C" : idx + 1}
                         </span>
                       )}
@@ -877,7 +877,7 @@ export function CampaignWizard() {
                         }
                         className="mt-1 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
                       />
-                      <span className="mt-0.5 block text-[11px] font-normal text-muted">{hint}</span>
+                      <span className="mt-0.5 block text-2xs font-normal text-muted">{hint}</span>
                     </label>
                   ))}
                 </div>
@@ -904,7 +904,7 @@ export function CampaignWizard() {
                           }
                           className="mt-1 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
                         />
-                        <span className="mt-0.5 block text-[11px] font-normal text-muted">{hint}</span>
+                        <span className="mt-0.5 block text-2xs font-normal text-muted">{hint}</span>
                       </label>
                     )
                   )}

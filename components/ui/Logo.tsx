@@ -14,11 +14,11 @@ export const APP_NAME = "Cadence";
  */
 const WORDMARK_SIZE = {
   /** Mobile header and other tight chrome. */
-  sm: "text-[1.0625rem] tracking-[-0.038em]",
+  sm: "text-md tracking-display",
   /** Sidebar and top bar. */
-  md: "text-[1.1875rem] tracking-[-0.042em]",
+  md: "text-lg tracking-display",
   /** Sign-in and anywhere the mark is the only thing on screen. */
-  lg: "text-[1.5rem] tracking-[-0.046em]",
+  lg: "text-xl tracking-display",
 } as const;
 
 export function Wordmark({
@@ -48,7 +48,7 @@ export function Wordmark({
         // text-muted rather than opacity, which is what this used. Opacity on
         // text over a themed surface produces a different colour in light and
         // dark and cannot be checked for contrast; the token is measured.
-        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+        <span className="truncate text-3xs font-semibold uppercase tracking-caps text-muted">
           {descriptor}
         </span>
       )}
@@ -99,7 +99,7 @@ export function Logo({
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark size={size} />
       {wordmark && (
-        <span className="font-display text-[1.1875rem] font-semibold tracking-[-0.042em] text-foreground">
+        <span className="font-display text-lg font-semibold tracking-display text-foreground">
           {APP_NAME}
         </span>
       )}

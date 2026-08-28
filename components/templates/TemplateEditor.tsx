@@ -719,7 +719,7 @@ export function TemplateEditor({
               </p>
             )}
             <div className="mt-4 rounded-xl border border-border bg-surface-2 p-3">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted">Subject preview</p>
+              <p className="text-2xs font-medium uppercase tracking-wide text-muted">Subject preview</p>
               <p className="mt-1 break-words text-sm font-medium">{preview.subject}</p>
             </div>
             {/* Isolated in an iframe so the email's own CSS can never leak

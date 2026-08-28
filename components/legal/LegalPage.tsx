@@ -32,7 +32,7 @@ export function LegalPage({
       </header>
 
       <main className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
+        <p className="text-xs font-semibold uppercase tracking-caps text-foreground">
           {eyebrow}
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
@@ -47,7 +47,7 @@ export function LegalPage({
           any negotiated data terms. If an order form conflicts with these public terms,
           the signed order form controls.
         </div>
-        <article className="mt-10 space-y-10 text-[15px] leading-7 text-muted">
+        <article className="mt-10 space-y-10 text-base leading-7 text-muted">
           {children}
         </article>
       </main>

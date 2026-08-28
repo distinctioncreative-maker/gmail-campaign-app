@@ -119,7 +119,7 @@ export default async function DashboardLayout({
               <Wordmark />
             </span>
             {workspaceName && (
-              <span className="truncate text-sm font-medium text-foreground max-sm:max-w-[7rem] max-sm:border-l max-sm:border-border max-sm:pl-2.5 max-sm:text-[11px] max-sm:text-muted">
+              <span className="truncate text-sm font-medium text-foreground max-sm:max-w-[7rem] max-sm:border-l max-sm:border-border max-sm:pl-2.5 max-sm:text-2xs max-sm:text-muted">
                 {workspaceName}
               </span>
             )}

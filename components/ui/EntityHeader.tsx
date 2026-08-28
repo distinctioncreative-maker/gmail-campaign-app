@@ -83,7 +83,7 @@ export function EntityHeader({
             {/* Breaks on a long name rather than truncating it: a campaign called
                 "07/22 A2C + NL Blast" clipped to "07/22 A2C + NL..." is a name
                 that no longer identifies anything. */}
-            <h1 className="min-w-0 break-words text-[1.9375rem] leading-[1.12] text-foreground">
+            <h1 className="min-w-0 break-words text-2xl leading-tight text-foreground">
               {title}
             </h1>
             {status && <span className={`badge ${status.className}`}>{status.label}</span>}
@@ -100,7 +100,7 @@ export function EntityHeader({
         <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-3">
           {meta.map((item) => (
             <div key={item.label} className="min-w-0">
-              <dt className="text-[0.6875rem] font-medium uppercase leading-none tracking-[0.09em] text-muted">
+              <dt className="text-2xs font-medium uppercase leading-none tracking-label text-muted">
                 {item.label}
               </dt>
               <dd className="mt-1.5 text-sm text-foreground">{item.value}</dd>

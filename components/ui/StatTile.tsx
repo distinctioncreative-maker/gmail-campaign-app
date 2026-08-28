@@ -28,9 +28,9 @@ const TONE: Record<StatTone, string> = {
  * figure's absolute size.
  */
 const VALUE_SIZE = {
-  sm: "text-[2rem]",
-  md: "text-[2.375rem]",
-  lg: "text-[3rem]",
+  sm: "text-2xl",
+  md: "text-3xl",
+  lg: "text-4xl",
 } as const;
 
 export type StatTileProps = {

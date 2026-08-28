@@ -16,7 +16,7 @@ export function HelpTip({ text, label }: { text: string; label?: string }) {
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
         onBlur={() => setOpen(false)}
-        className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-border text-[10px] font-bold text-muted transition-opacity hover:opacity-70"
+        className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-border text-3xs font-bold text-muted transition-opacity hover:opacity-70"
       >
         ?
       </button>

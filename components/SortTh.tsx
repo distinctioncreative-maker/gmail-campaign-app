@@ -29,7 +29,7 @@ export function SortTh<K extends string>({
         className={`inline-flex items-center gap-1 hover:text-foreground ${active ? "text-foreground" : ""}`}
       >
         {label}
-        <span className="text-[10px] text-muted">
+        <span className="text-3xs text-muted">
           {active ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}
         </span>
       </button>

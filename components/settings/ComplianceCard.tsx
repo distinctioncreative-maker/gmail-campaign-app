@@ -178,7 +178,7 @@ function ComplianceRow({
             {ok ? ": done" : required ? ": required, not set" : ": not recorded"}
           </span>
           {automatic && (
-            <span className="ml-2 badge bg-surface-2 align-middle text-[10px] text-muted">
+            <span className="ml-2 badge bg-surface-2 align-middle text-3xs text-muted">
               Automatic
             </span>
           )}

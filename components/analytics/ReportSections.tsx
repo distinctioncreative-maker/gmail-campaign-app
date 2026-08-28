@@ -335,7 +335,7 @@ export function TrackedEngagementPanel({
           </p>
           <div className="mt-5 grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-surface-2 p-4">
-              <p className="text-[0.8125rem] font-medium leading-tight text-muted">Open detected</p>
+              <p className="text-sm font-medium leading-tight text-muted">Open detected</p>
               <p className="mt-2.5 display-figure text-2xl leading-none text-foreground">
                 {tracking.sent > 0 ? (
                   <CountUp value={tracking.openRate} decimals={1} suffix="%" />
@@ -348,7 +348,7 @@ export function TrackedEngagementPanel({
               </p>
             </div>
             <div className="rounded-xl bg-surface-2 p-4">
-              <p className="text-[0.8125rem] font-medium leading-tight text-muted">Click rate</p>
+              <p className="text-sm font-medium leading-tight text-muted">Click rate</p>
               <p className="mt-2.5 display-figure text-2xl leading-none text-revenue">
                 {tracking.sent > 0 ? (
                   <CountUp value={tracking.clickRate} decimals={1} suffix="%" />

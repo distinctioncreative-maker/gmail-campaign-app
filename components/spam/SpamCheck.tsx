@@ -66,7 +66,7 @@ export function SpamCheck({ subject, html }: { subject: string; html: string }) 
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-2xl font-semibold tabular-nums text-foreground">{score}</span>
-            <span className="text-[10px] font-medium uppercase tracking-wide text-muted">Grade {grade}</span>
+            <span className="text-3xs font-medium uppercase tracking-wide text-muted">Grade {grade}</span>
           </div>
         </div>
         <div>

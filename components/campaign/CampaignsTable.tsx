@@ -268,7 +268,7 @@ export function CampaignsTable({
               {/* The track is derived from the fill inside Meter, so the
                   1.00:1 invisible-bar bug this rule used to carry cannot recur. */}
               <Meter value={c.progressRate} tone="good" height={8} className="mt-2" />
-              <p className="mt-1 text-[11px] text-muted">
+              <p className="mt-1 text-2xs text-muted">
                 {Math.min(c.recipients, c.initialSent)} of {c.recipients} leads
                 contacted
               </p>
@@ -276,7 +276,7 @@ export function CampaignsTable({
 
             <dl className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-surface-2 p-3">
               <div>
-                <dt className="text-[10px] uppercase tracking-wide text-muted">
+                <dt className="text-3xs uppercase tracking-wide text-muted">
                   Sent
                 </dt>
                 <dd className="mt-1 text-sm font-semibold tabular-nums">
@@ -284,18 +284,18 @@ export function CampaignsTable({
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-wide text-muted">
+                <dt className="text-3xs uppercase tracking-wide text-muted">
                   Replies
                 </dt>
                 <dd className="mt-1 text-sm font-semibold tabular-nums">
                   {c.replies.toLocaleString()}{" "}
-                  <span className="text-[10px] font-normal text-muted">
+                  <span className="text-3xs font-normal text-muted">
                     {c.replyRate.toFixed(1)}%
                   </span>
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-wide text-muted">
+                <dt className="text-3xs uppercase tracking-wide text-muted">
                   Problems
                 </dt>
                 <dd
@@ -403,14 +403,14 @@ export function CampaignsTable({
                       {c.progressRate.toFixed(0)}%
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-muted">
+                  <p className="mt-1 text-2xs text-muted">
                     {Math.min(c.recipients, c.initialSent)} of {c.recipients}
                   </p>
                 </td>
                 <td className="px-4 py-3 tabular-nums">{c.sent.toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <p className="font-medium tabular-nums">{c.replyRate.toFixed(1)}%</p>
-                  <p className="text-[11px] text-muted">
+                  <p className="text-2xs text-muted">
                     {c.replies.toLocaleString()} repl{c.replies === 1 ? "y" : "ies"}
                   </p>
                 </td>

@@ -118,7 +118,7 @@ export function TrendChart({
                     y={y}
                     textAnchor="end"
                     dominantBaseline="middle"
-                    className="fill-muted text-[11px] tabular-nums"
+                    className="fill-muted text-2xs tabular-nums"
                   >
                     {compact(tick)}
                   </text>
@@ -194,7 +194,7 @@ export function TrendChart({
                   x={scale(index, 0, Math.max(1, count - 1), 0, plotWidth)}
                   y={plotHeight + 18}
                   textAnchor="middle"
-                  className="fill-muted text-[11px]"
+                  className="fill-muted text-2xs"
                 >
                   {label}
                 </text>

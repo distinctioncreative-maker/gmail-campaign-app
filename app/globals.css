@@ -100,6 +100,7 @@
      text-[10px] (21), plus eleven distinct one-off tracking values.
      The 17/20/24 steps exist because the old scale had a hole between 14 and
      36px, and that missing mid-range is a large part of why pages read thin. */
+  --text-3xs: 0.625rem;   /* 10px, the floor. Chart axes and micro-labels only. */
   --text-2xs: 0.6875rem;  /* 11px, table meta and labels */
   --text-xs: 0.75rem;     /* 12px */
   --text-sm: 0.8125rem;   /* 13px */
@@ -122,6 +123,10 @@
   --track-tight: -0.018em;
   --track-base: -0.006em;
   --track-label: 0.08em;
+  /* Uppercase micro-labels need roughly twice the label tracking to stay
+     readable at 10 and 11px. Four ad-hoc values between 0.14 and 0.18em were
+     all reaching for this. */
+  --track-caps: 0.16em;
 
   /* ── Theme-invariant public-site ramp ─────────────────────────
      The authenticated app can switch themes; the public landing page always
@@ -402,6 +407,7 @@
   --shadow-xl: var(--shadow-xl);
   /* The type scale. Without these, anything off Tailwind's default ramp became
      an arbitrary value, and 87 of them accumulated. */
+  --text-3xs: var(--text-3xs);
   --text-2xs: var(--text-2xs);
   --text-xs: var(--text-xs);
   --text-sm: var(--text-sm);
@@ -417,6 +423,13 @@
   --tracking-tight: var(--track-tight);
   --tracking-base: var(--track-base);
   --tracking-label: var(--track-label);
+  --tracking-caps: var(--track-caps);
+  /* Line height was the one part of the scale with tokens but no utilities, so
+     three display headings still carried arbitrary values. */
+  --leading-tight: var(--lh-tight);
+  --leading-snug: var(--lh-snug);
+  --leading-base: var(--lh-base);
+  --leading-relaxed: var(--lh-relaxed);
 }
 
 * {

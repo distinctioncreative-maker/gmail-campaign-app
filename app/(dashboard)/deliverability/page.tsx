@@ -289,7 +289,7 @@ function DimensionCard({
         {formatPercent(best.avgReplyRate)} reply rate · {formatPercent(best.avgBounceRate)} bounce rate
         {best.avgOpenRate !== null && ` · ${formatPercent(best.avgOpenRate)} open rate`}
       </p>
-      <p className="mt-1 text-[11px] text-muted">Best of {dimension.buckets.length} groups · {best.campaigns} campaigns</p>
+      <p className="mt-1 text-2xs text-muted">Best of {dimension.buckets.length} groups · {best.campaigns} campaigns</p>
       {ownBucket !== null && (
         <p className={`mt-2 text-xs font-medium ${ownBucket === best.bucket ? "text-success" : "text-warning"}`}>
           {ownBucket === best.bucket ? "✓ Your default matches this" : `Your default: ${ownBucket}`}

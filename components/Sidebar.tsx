@@ -26,7 +26,7 @@ function NavLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
         return (
           <div key={`${item.href}-wrap`} className="contents">
           {showHeading && (
-            <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-muted first:pt-1">
+            <p className="px-3 pb-1 pt-4 text-3xs font-semibold uppercase tracking-wider text-muted first:pt-1">
               {item.section}
             </p>
           )}
@@ -67,7 +67,7 @@ function Brand({ workspaceName }: { workspaceName?: string }) {
     <div className="px-2">
       <Wordmark />
       {workspaceName && (
-        <p className="mt-2 truncate text-[11px] font-medium text-muted">
+        <p className="mt-2 truncate text-2xs font-medium text-muted">
           {workspaceName}
         </p>
       )}

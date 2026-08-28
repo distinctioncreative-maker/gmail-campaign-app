@@ -81,7 +81,7 @@ export function ReplyFocus({
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <Link
                 href={`/leads/${contactId}`}
-                className="text-[1.375rem] font-semibold leading-tight tracking-[-0.02em] text-foreground hover:underline"
+                className="text-xl font-semibold leading-snug tracking-tight text-foreground hover:underline"
               >
                 {name || email}
               </Link>
@@ -96,7 +96,7 @@ export function ReplyFocus({
 
         {/* Their words, in a quoted block rather than a table cell: this is the
             thing that decides what the rep does next. */}
-        <blockquote className="mt-5 border-l-2 border-border pl-4 text-[0.9375rem] leading-relaxed text-foreground">
+        <blockquote className="mt-5 border-l-2 border-border pl-4 text-base leading-relaxed text-foreground">
           {snippet}
         </blockquote>
 

@@ -76,7 +76,7 @@ function SetupPreview() {
           >
             <Icon name={stage.icon} size={19} />
           </span>
-          <span className="text-[11px] font-semibold text-muted">{stage.label}</span>
+          <span className="text-2xs font-semibold text-muted">{stage.label}</span>
         </div>
       ))}
     </div>
@@ -203,7 +203,7 @@ export function OnboardingWizard({
     <div className="mx-auto max-w-4xl">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">Workspace setup</p>
+          <p className="text-xs font-semibold uppercase tracking-caps text-foreground">Workspace setup</p>
           <p className="mt-1 text-sm text-muted">A guided path to your first safe test campaign.</p>
         </div>
         <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted">
@@ -212,7 +212,7 @@ export function OnboardingWizard({
       </div>
 
       <Meter value={step + 1} max={STEPS.length} tone="good" />
-      <ol className="mt-3 grid grid-cols-4 gap-1 text-[10px] sm:grid-cols-7 sm:text-xs" aria-label="Setup progress">
+      <ol className="mt-3 grid grid-cols-4 gap-1 text-3xs sm:grid-cols-7 sm:text-xs" aria-label="Setup progress">
         {STEPS.map((label, index) => (
           <li
             key={label}
@@ -252,7 +252,7 @@ export function OnboardingWizard({
                 </button>
               </div>
               <div className="rounded-2xl border border-border bg-surface-2 p-5 sm:p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-info">Your first workflow</p>
+                <p className="text-xs font-semibold uppercase tracking-caps text-info">Your first workflow</p>
                 <SetupPreview />
                 <div className="mt-6 grid gap-2 text-sm text-muted">
                   <p className="flex items-center gap-2"><Icon name="shield" size={16} className="text-success" /> Test mode stays on during setup.</p>
@@ -265,7 +265,7 @@ export function OnboardingWizard({
 
           {step === 1 && (
             <>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">Workspace profile</p>
+              <p className="text-xs font-semibold uppercase tracking-caps text-foreground">Workspace profile</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Make Cadence fit the way you work.</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
                 {canConfigureWorkspace
@@ -376,7 +376,7 @@ export function OnboardingWizard({
 
           {step === 2 && (
             <>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground">Connection</p>
+              <p className="text-xs font-semibold uppercase tracking-caps text-foreground">Connection</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Connect your Gmail.</h1>
               <p className="mt-3 max-w-2xl leading-7 text-muted">
                 Cadence can send approved messages as you and read replies to campaign threads.
@@ -451,7 +451,7 @@ export function OnboardingWizard({
                 </div>
               </div>
               <div className="rounded-2xl border border-border bg-surface-2 p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-info">First success milestone</p>
+                <p className="text-xs font-semibold uppercase tracking-caps text-info">First success milestone</p>
                 <ol className="mt-4 space-y-4 text-sm">
                   {[
                     "Edit one of your three starter templates",

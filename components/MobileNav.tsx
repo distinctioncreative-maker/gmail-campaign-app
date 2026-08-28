@@ -102,7 +102,7 @@ export function MobileNav({
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium"
+              className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-3xs font-medium"
             >
               {active && (
                 <span aria-hidden className="brand-gradient absolute top-0 h-0.5 w-8 rounded-full" />
@@ -122,7 +122,7 @@ export function MobileNav({
           aria-label="More"
           aria-expanded={moreOpen}
           aria-controls="mobile-more-menu"
-          className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium"
+          className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-3xs font-medium"
         >
           {(moreOpen || moreActive) && (
             <span aria-hidden className="brand-gradient absolute top-0 h-0.5 w-8 rounded-full" />
