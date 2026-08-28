@@ -133,7 +133,7 @@ export function SuppressionsManager({
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search email"
           aria-label="Search do-not-email list"
-          className="w-64 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="w-64"
         />
         <button onClick={() => setShowAdd((s) => !s)} className="btn-primary px-4 py-2 text-sm">
           Add emails
@@ -153,7 +153,7 @@ export function SuppressionsManager({
             value={addText}
             onChange={(e) => setAddText(e.target.value)}
             rows={4}
-            className="mt-2 w-full rounded-md border border-border p-3 font-mono text-sm focus:border-primary focus:outline-none"
+            className="mt-2 w-full p-3 font-mono"
           />
           {isAdmin && (
             <label className="mt-2 flex items-center gap-2 text-sm text-muted">

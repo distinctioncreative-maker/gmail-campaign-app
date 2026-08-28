@@ -181,7 +181,7 @@ export function BrandVoiceEditor({
           value={selected.name}
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder="Brand name"
-          className="mb-4 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm font-medium focus:border-info focus:outline-none"
+          className="mb-4 w-full rounded-lg px-2.5 py-1.5 font-medium focus:border-info"
         />
       )}
 
@@ -208,7 +208,7 @@ export function BrandVoiceEditor({
                 }
               }}
               placeholder="yourcompany.com"
-              className="min-w-0 flex-1 rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-info focus:outline-none"
+              className="min-w-0 flex-1 rounded-lg px-2.5 py-1.5 focus:border-info"
             />
             <button
               type="button"
@@ -296,7 +296,7 @@ export function BrandVoiceEditor({
               onChange={(e) => onChange({ notes: e.target.value })}
               disabled={!canEdit}
               rows={3}
-              className="mt-1.5 w-full rounded-lg border border-border p-2.5 text-sm focus:border-info focus:outline-none disabled:bg-surface-2 disabled:text-muted"
+              className="mt-1.5 w-full rounded-lg p-2.5 focus:border-info disabled:bg-surface-2 disabled:text-muted"
             />
           </label>
         ) : (

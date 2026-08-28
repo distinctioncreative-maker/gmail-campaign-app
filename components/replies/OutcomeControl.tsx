@@ -177,7 +177,7 @@ export function OutcomeControl({
               }}
               inputMode="decimal"
               placeholder="Value"
-              className="field-input h-11 w-24 px-2 py-0 text-xs sm:h-8"
+              className="h-11 w-24 px-2 py-0 text-xs sm:h-8"
             />
           </span>
         ) : (

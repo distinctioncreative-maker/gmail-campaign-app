@@ -189,7 +189,7 @@ export function RecipientTable({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name or email…"
-            className="min-w-0 flex-1 rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+            className="min-w-0 flex-1 rounded-lg px-3 py-1.5"
           />
           <span className="text-xs text-muted">
             {filter === "Batches" ? `${batches.length} batches` : `${sorted.length} shown`}

@@ -251,7 +251,7 @@ export function InboxPoolCard() {
                     }
                   }}
                   placeholder={row.connectedEmail}
-                  className="mt-1 w-48 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs focus:border-primary focus:outline-none"
+                  className="mt-1 w-48 rounded-lg px-2 py-1.5 text-xs"
                 />
               </label>
               <label className="text-xs">
@@ -269,7 +269,7 @@ export function InboxPoolCard() {
                     }
                   }}
                   placeholder="No extra limit"
-                  className="mt-1 w-40 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs focus:border-primary focus:outline-none"
+                  className="mt-1 w-40 rounded-lg px-2 py-1.5 text-xs"
                 />
               </label>
             </div>

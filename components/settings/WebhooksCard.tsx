@@ -299,13 +299,13 @@ export function WebhooksCard() {
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://hooks.yourcompany.com/cadence"
             inputMode="url"
-            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="w-full"
           />
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What receives it? e.g. HubSpot sync"
-            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="w-full"
           />
         </div>
 

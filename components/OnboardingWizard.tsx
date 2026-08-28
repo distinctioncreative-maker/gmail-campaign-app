@@ -282,7 +282,7 @@ export function OnboardingWizard({
                         value={workspaceName}
                         onChange={(event) => setWorkspaceName(event.target.value)}
                         maxLength={80}
-                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full"
                       />
                     </label>
                     <label className="text-sm font-medium text-foreground">
@@ -292,7 +292,7 @@ export function OnboardingWizard({
                         onChange={(event) => setIndustry(event.target.value)}
                         maxLength={80}
                         placeholder="Financial services, software, recruiting..."
-                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full"
                       />
                     </label>
                     <label className="text-sm font-medium text-foreground">
@@ -300,7 +300,7 @@ export function OnboardingWizard({
                       <select
                         value={teamSize}
                         onChange={(event) => setTeamSize(event.target.value as WorkspaceProfile["teamSize"])}
-                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full"
                       >
                         <option value="JUST_ME">Just me</option>
                         <option value="2_5">2 to 5 people</option>
@@ -314,7 +314,7 @@ export function OnboardingWizard({
                       <select
                         value={monthlyEmailGoal}
                         onChange={(event) => setMonthlyEmailGoal(event.target.value as WorkspaceProfile["monthlyEmailGoal"])}
-                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full"
                       >
                         <option value="UNDER_500">Fewer than 500 emails</option>
                         <option value="500_2000">500 to 2,000 emails</option>

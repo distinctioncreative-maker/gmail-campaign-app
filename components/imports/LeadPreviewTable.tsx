@@ -261,7 +261,7 @@ export function LeadPreviewTable({
             setShown(RENDER_STEP);
           }}
           placeholder="Search name, business or email"
-          className="min-w-0 flex-1 rounded-md border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+          className="min-w-0 flex-1 px-3 py-1.5"
         />
         <button
           type="button"

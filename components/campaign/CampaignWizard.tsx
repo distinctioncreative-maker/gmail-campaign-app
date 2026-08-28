@@ -488,7 +488,7 @@ export function CampaignWizard() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. July new leads: Central region"
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="mt-1 w-full"
               />
             </label>
             <label className="mt-4 block text-sm font-medium text-foreground">
@@ -496,7 +496,7 @@ export function CampaignWizard() {
               <input
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="mt-1 w-full"
               />
             </label>
           </>
@@ -530,7 +530,7 @@ export function CampaignWizard() {
                       <select
                         value={listFilter}
                         onChange={(e) => chooseList(e.target.value)}
-                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:max-w-md"
+                        className="mt-1 min-h-11 w-full sm:max-w-md"
                       >
                         <option value="">All leads ({contacts.length})</option>
                         {leadLists.map((l) => (
@@ -549,13 +549,13 @@ export function CampaignWizard() {
                     onChange={(e) => setLeadSearch(e.target.value)}
                     placeholder="Search name, business, or email"
                     aria-label="Search leads"
-                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:col-span-2 lg:col-span-1"
+                    className="min-h-11 w-full sm:col-span-2 lg:col-span-1"
                   />
                   <select
                     value={leadFilter}
                     onChange={(e) => setLeadFilter(e.target.value as typeof leadFilter)}
                     aria-label="Filter leads"
-                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+                    className="min-h-11 w-full"
                   >
                     <option value="all">All</option>
                     <option value="ready">Ready</option>
@@ -566,7 +566,7 @@ export function CampaignWizard() {
                     value={tagFilter}
                     onChange={(event) => setTagFilter(event.target.value)}
                     aria-label="Filter leads by tag"
-                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+                    className="min-h-11 w-full"
                   >
                     <option value="">Any tag</option>
                     {availableTags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}
@@ -575,7 +575,7 @@ export function CampaignWizard() {
                     value={leadSort}
                     onChange={(e) => setLeadSort(e.target.value as typeof leadSort)}
                     aria-label="Sort leads"
-                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+                    className="min-h-11 w-full"
                   >
                     <option value="name">Sort: Name</option>
                     <option value="business">Sort: Business</option>
@@ -662,7 +662,7 @@ export function CampaignWizard() {
               <select
                 value={priorPolicy}
                 onChange={(e) => setPriorPolicy(e.target.value)}
-                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                className="mt-1 w-full"
               >
                 <option value="ONLY_NEW">Skip them: only email new people (recommended)</option>
                 <option value="EXCLUDE_RECENT">Skip anyone contacted in the last 30 days</option>
@@ -874,7 +874,7 @@ export function CampaignWizard() {
                         onChange={(e) =>
                           setCustomPace((c) => ({ ...c, [k]: e.target.value }))
                         }
-                        className="mt-1 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                        className="mt-1 w-full rounded-lg px-2.5 py-1.5"
                       />
                       <span className="mt-0.5 block text-2xs font-normal text-muted">{hint}</span>
                     </label>
@@ -901,7 +901,7 @@ export function CampaignWizard() {
                           onChange={(e) =>
                             setCustomPace((c) => ({ ...c, [k]: Math.max(0, Number(e.target.value) || 0) }))
                           }
-                          className="mt-1 w-full rounded-lg border border-border px-2.5 py-1.5 text-sm focus:border-primary focus:outline-none"
+                          className="mt-1 w-full rounded-lg px-2.5 py-1.5"
                         />
                         <span className="mt-0.5 block text-2xs font-normal text-muted">{hint}</span>
                       </label>
@@ -946,7 +946,7 @@ export function CampaignWizard() {
                 <select
                   value={sequenceId ?? ""}
                   onChange={(e) => setSequenceId(e.target.value || null)}
-                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+                  className="mt-1 w-full"
                 >
                   <option value="">No follow-ups</option>
                   {sequences.map((s) => (
@@ -1111,7 +1111,7 @@ export function CampaignWizard() {
                 <input
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
-                  className="mt-1 w-40 rounded-md border border-border px-3 py-2 text-sm"
+                  className="mt-1 w-40"
                 />
               </label>
             )}

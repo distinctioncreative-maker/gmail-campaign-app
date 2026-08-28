@@ -126,7 +126,7 @@ export function SendingModeCard() {
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="GO LIVE"
-                  className="w-40 rounded-md border border-danger px-3 py-2 text-sm"
+                  className="w-40 border border-danger"
                 />
                 <button
                   onClick={() => flip("LIVE")}

@@ -207,7 +207,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
             onChange={(e) => onQueryChange(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Search campaigns, leads, templates, or type a command"
-            className="w-full bg-transparent py-4 text-sm outline-none placeholder:text-muted"
+            className="w-full bg-transparent py-4 placeholder:text-muted"
             role="combobox"
             aria-expanded
             aria-controls="palette-listbox"

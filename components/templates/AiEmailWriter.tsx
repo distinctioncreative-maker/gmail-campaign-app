@@ -199,7 +199,7 @@ export function AiEmailWriter({
                   <select
                     value={selectedId ?? ""}
                     onChange={(e) => setSelectedId(e.target.value)}
-                    className="rounded-full border border-info/20 bg-surface px-2 py-1 text-xs font-medium text-foreground focus:border-info focus:outline-none"
+                    className="rounded-full border border-info/20 px-2 py-1 text-xs font-medium focus:border-info"
                   >
                     {profiles.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -242,7 +242,7 @@ export function AiEmailWriter({
             rows={2}
             autoFocus
             placeholder="e.g. Warm first-touch offering fast working capital to a busy auto-repair shop owner"
-            className="mt-2 w-full rounded-md border border-info/20 bg-surface p-2.5 text-sm focus:border-info focus:outline-none"
+            className="mt-2 w-full border border-info/20 p-2.5 focus:border-info"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
             {PRESETS.map((p) => (

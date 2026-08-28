@@ -253,7 +253,7 @@ export function ContactsTable({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, business, or email"
             aria-label="Search leads"
-            className="min-h-11 w-full rounded-md border border-border bg-surface py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+            className="min-h-11 w-full py-2 pl-9 pr-3"
           />
         </div>
         <div className="overflow-x-auto pb-1 xl:justify-self-end">
@@ -281,7 +281,7 @@ export function ContactsTable({
               id="lead-tag-filter"
               value={tagFilter}
               onChange={(event) => setTagFilter(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="mt-1 min-h-11 w-full px-3"
             >
               <option value="">All tags</option>
               {availableTags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}
@@ -293,7 +293,7 @@ export function ContactsTable({
               id="lead-list-filter"
               value={listFilter}
               onChange={(event) => setListFilter(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="mt-1 min-h-11 w-full px-3"
             >
               <option value="">All lead lists</option>
               {leadLists.map((list) => <option key={list.listId} value={list.listId}>{list.name}</option>)}

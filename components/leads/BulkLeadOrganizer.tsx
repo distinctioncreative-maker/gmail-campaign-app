@@ -68,7 +68,7 @@ export function BulkLeadOrganizer({
               }}
               maxLength={32}
               placeholder="Example: Decision maker"
-              className="min-h-11 min-w-0 flex-1 rounded-md border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
+              className="min-h-11 min-w-0 flex-1 px-3"
             />
             <datalist id="lead-tag-suggestions">
               {availableTags.map((item) => <option key={item} value={item} />)}
@@ -91,7 +91,7 @@ export function BulkLeadOrganizer({
                   id="bulk-existing-tag"
                   value={selectedExistingTag}
                   onChange={(event) => setExistingTag(event.target.value)}
-                  className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
+                  className="mt-1 min-h-11 w-full px-3"
                 >
                   {availableTags.map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
@@ -121,7 +121,7 @@ export function BulkLeadOrganizer({
                 id="bulk-lead-list"
                 value={selectedListId}
                 onChange={(event) => setListId(event.target.value)}
-                className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
+                className="mt-1 min-h-11 w-full px-3"
               >
                 {leadLists.map((list) => <option key={list.listId} value={list.listId}>{list.name}</option>)}
               </select>

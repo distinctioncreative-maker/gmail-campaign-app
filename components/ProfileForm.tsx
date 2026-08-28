@@ -125,7 +125,7 @@ export function ProfileForm({
   }
 
   const input =
-    "mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "mt-1 w-full";
 
   return (
     <div>

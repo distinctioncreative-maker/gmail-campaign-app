@@ -80,7 +80,11 @@ describe("token ladders", () => {
     // raised and nothing changed, because .btn, .segmented, .seg-btn and
     // .field-input each carried a hardcoded rem value, so the buttons and inputs
     // in the product never saw it. A ladder nothing references is decoration.
-    for (const selector of [".btn,", ".segmented {", ".seg-btn {", ".field-input {"]) {
+    //
+    // .field-input is off this list because it no longer exists. It had one call
+    // site and, once the base rule below owned the border, radius, surface and
+    // padding, it was down to a width that call site was already setting.
+    for (const selector of [".btn,", ".segmented {", ".seg-btn {"]) {
       const start = css.indexOf(selector);
       expect(start, selector).toBeGreaterThan(0);
       const block = css.slice(start, css.indexOf("\n}", start));
@@ -580,29 +584,38 @@ describe("radius by element class", () => {
   const withoutComments = (source: string) =>
     source.replace(/\/\*[\s\S]*?\*\//g, "");
   const markup = files.map((file) => withoutComments(read(file))).join("\n");
+  const css = read("app/globals.css");
 
-  it("spreads across the ladder instead of piling onto one rung", () => {
+  it("keeps every rung of the ladder in service", () => {
     const count = (rung: string) =>
       (markup.match(new RegExp(`\\brounded-${rung}\\b`, "g")) ?? []).length;
 
     /**
-     * The measure is whether the working rungs are all in service, not whether
-     * the biggest one is small. Panels really are the most common element in a
-     * product like this, so the card rung leading is correct and a cap much
-     * below 60% would just be a rule against the app's own shape.
+     * The old distribution was 182 uses on one rung, 109 on another, and 7 and
+     * 2 on the two below. A rung in single digits is proof nobody was choosing
+     * a rung at all, which is the state this rule exists to prevent returning.
      *
-     * What the old distribution actually looked like was 182 on one rung, 109
-     * on another, and 7 and 2 on the two below it. Controls outnumber dialogs
-     * in every screen here, so a control rung in single digits is proof nobody
-     * was choosing a rung at all. That is what the floor catches, and it is the
-     * half of this rule that fails on the state this pass was fixing.
+     * The control rung is checked differently on purpose, and the difference is
+     * an improvement rather than a loophole. Seventy-five controls used to carry
+     * `rounded-md` because they carried a whole border recipe by hand; the base
+     * rule owns that now, so the decision is made once in CSS instead of
+     * seventy-five times in markup. Counting utilities would read that as the
+     * control rung falling out of use, when what actually happened is that it
+     * stopped needing to be repeated.
      */
-    const working = ["sm", "md", "lg", "full"].map(count);
-    for (const uses of working) expect(uses).toBeGreaterThanOrEqual(10);
+    for (const rung of ["sm", "lg", "full"]) {
+      expect(count(rung), `rounded-${rung} in service`).toBeGreaterThanOrEqual(10);
+    }
+    // Buttons and icon tiles still opt in explicitly.
+    expect(count("md")).toBeGreaterThanOrEqual(10);
+    // Text-like form controls get it from one place.
+    expect(css).toMatch(
+      /@layer base \{[\s\S]*?textarea \{[\s\S]*?border-radius: var\(--radius-md\);/
+    );
 
-    const total = working.reduce((sum, uses) => sum + uses, 0) + count("2xl");
+    const total =
+      ["sm", "md", "lg", "full", "2xl"].reduce((sum, rung) => sum + count(rung), 0);
     expect(total).toBeGreaterThan(300);
-    expect(Math.max(...working) / total).toBeLessThan(0.6);
   });
 
   it("holds the 20px rung in reserve, since it is the one everything reached for", () => {
@@ -678,6 +691,62 @@ describe("syntax that compiles to nothing", () => {
     // nobody was reaching for and would keep passing after the utilities left.
     const markup = allSources().map(read).join("\n");
     expect((markup.match(/-\(--[\w-]+\)/g) ?? []).length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("styles form controls once, in a layer a call site can still beat", () => {
+    /**
+     * Sixty-six controls spelled out the same six utilities: a radius, a
+     * hairline, a surface, a type size, and a focus pair that duplicated the
+     * :focus-visible rule already in the file. Four of them drew a second,
+     * greyer ring on top of the first.
+     *
+     * The layer is the part that has to hold. Unlayered, this rule would win
+     * against every utility, including the search field with its own left
+     * padding for the icon and the API-key field set in mono. In @layer base it
+     * is a default rather than a mandate, which is the difference between a
+     * system and a straitjacket.
+     */
+    const css = read("app/globals.css");
+    const base = css.slice(css.indexOf("@layer base {", css.indexOf("── Form controls")));
+    const block = base.slice(0, base.indexOf("\n}"));
+    expect(block).toContain("textarea");
+    for (const declaration of [
+      "border: 1px solid var(--border);",
+      "border-radius: var(--radius-md);",
+      "background: var(--surface);",
+      "font-size: var(--text-sm);",
+    ]) {
+      expect(block, declaration).toContain(declaration);
+    }
+    // Checkboxes and radios keep the native control.
+    expect(block).toContain(':not([type="checkbox"])');
+
+    const markup = allSources()
+      .filter((file) => file.endsWith(".tsx"))
+      .map(read)
+      .join("\n");
+    // The recipe, checked on the elements it belongs to rather than as a bare
+    // substring: the same tokens are correct on a chart tooltip, which is a
+    // panel that happens to be small.
+    // The tag cannot be matched with `[^>]*`, because a JSX attribute routinely
+    // contains a `>` of its own inside an arrow function and that ends the match
+    // before className is reached. Take the text after the tag up to whatever
+    // opens next instead.
+    const controls = [...markup.matchAll(/<(?:input|select|textarea)\b/g)]
+      .map((match) => {
+        const rest = markup.slice(match.index! + match[0].length);
+        const attributes = rest.slice(0, rest.search(/<[a-zA-Z]/));
+        return attributes.match(/className="([^"]*)"/)?.[1] ?? null;
+      })
+      .filter((cls): cls is string => cls !== null);
+    const respelt = controls.filter((cls) =>
+      /\bborder border-border\b/.test(cls) || /\brounded-md\b/.test(cls)
+    );
+    expect(respelt, "controls respelling what the base rule owns").toEqual([]);
+    // And the focus pair that drew a second ring over the global one.
+    expect(markup).not.toContain("focus:ring-2 focus:ring-border");
+    // Floor: controls still exist, so this is banning a live pattern.
+    expect(controls.length).toBeGreaterThan(50);
   });
 
   it("owns the inline link instead of respelling it forty-one times", () => {

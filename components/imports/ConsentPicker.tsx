@@ -97,7 +97,7 @@ export function ConsentPicker({
             maxLength={300}
             onChange={(event) => onNoteChange(event.target.value)}
             placeholder="Pricing page form, March 2026 webinar, …"
-            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg"
           />
         </label>
       ) : (

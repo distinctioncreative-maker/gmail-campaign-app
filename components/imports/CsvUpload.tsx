@@ -144,7 +144,7 @@ export function CsvUpload({ listId }: { listId?: string }) {
                     value={state.mapping[header] ?? "ignore"}
                     onChange={(e) => updateMapping(header, e.target.value)}
                     disabled={busy}
-                    className="rounded-lg border border-border px-2 py-1 text-sm"
+                    className="rounded-lg px-2 py-1"
                   >
                     {state.fields.map((f) => (
                       <option key={f} value={f}>

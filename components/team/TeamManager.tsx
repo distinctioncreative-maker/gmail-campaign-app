@@ -13,9 +13,6 @@ export interface MemberOption {
   teamId: string | null;
 }
 
-const field =
-  "rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
-
 /** Admin panel: create teams, rename, pick leads, delete. */
 export function TeamManager({
   teams,
@@ -122,7 +119,6 @@ export function TeamManager({
                   value={t.parentTeamId ?? ""}
                   onChange={(e) => setParent(t.teamId, e.target.value)}
                   disabled={busy}
-                  className={field}
                 >
                   <option value="">Top level</option>
                   {teams.filter((candidate) => candidate.teamId !== t.teamId).map((candidate) => (
@@ -138,7 +134,6 @@ export function TeamManager({
                   value={t.leadUserId ?? ""}
                   onChange={(e) => setLead(t.teamId, e.target.value)}
                   disabled={busy}
-                  className={field}
                 >
                   <option value="">No lead</option>
                   {leadCandidates.map((m) => (
@@ -165,9 +160,9 @@ export function TeamManager({
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="New team name"
-          className={`${field} w-44`}
+          className="w-44"
         />
-        <select value={newLead} onChange={(e) => setNewLead(e.target.value)} className={field}>
+        <select value={newLead} onChange={(e) => setNewLead(e.target.value)}>
           <option value="">Pick a lead (optional)</option>
           {leadCandidates.map((m) => (
             <option key={m.userId} value={m.userId}>
@@ -175,7 +170,7 @@ export function TeamManager({
             </option>
           ))}
         </select>
-        <select value={newParent} onChange={(e) => setNewParent(e.target.value)} className={field}>
+        <select value={newParent} onChange={(e) => setNewParent(e.target.value)}>
           <option value="">Top-level team</option>
           {teams.map((team) => (
             <option key={team.teamId} value={team.teamId}>
@@ -229,7 +224,7 @@ export function RosterActions({
   if (assignable.length === 0) return null;
   return (
     <div className="flex items-center gap-2">
-      <select value={pick} onChange={(e) => setPick(e.target.value)} className={field}>
+      <select value={pick} onChange={(e) => setPick(e.target.value)}>
         <option value="">Add a rep…</option>
         {assignable.map((m) => (
           <option key={m.userId} value={m.userId}>

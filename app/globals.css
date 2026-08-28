@@ -861,6 +861,32 @@ a.card-hover:focus-visible {
 input, select, textarea {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
+
+/* Inside @layer base for the same reason .display-figure is, and it matters
+   more here.
+   Sixty-six controls were spelling out the same six utilities: a radius, a
+   hairline, a surface, a type size, and a focus pair that duplicates the
+   :focus-visible rule twenty lines below. Unlayered, this block would have won
+   against every one of those utilities and against the call sites that
+   deliberately differ, so a search field with its own left padding or a mono
+   API-key field would have been quietly overridden. In base it is a default a
+   call site may override, which is what a default is.
+
+   Padding is 0.625rem rather than 0.5rem: the app was split between the two,
+   and the taller one puts a control at 42px, which is nearer the 44px touch
+   target than the height most of these were shipping. */
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--foreground);
+    padding: 0.625rem 0.75rem;
+    font-size: var(--text-sm);
+  }
+}
 input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 76%, var(--surface)); }
 select {
   background-color: var(--surface);
@@ -876,15 +902,6 @@ textarea:focus-visible {
 }
 input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
 
-/* Optional shared field class for new forms. */
-.field-input {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  background: var(--surface);
-}
 
 /* Subtle entrance for page content. */
 @keyframes rise {

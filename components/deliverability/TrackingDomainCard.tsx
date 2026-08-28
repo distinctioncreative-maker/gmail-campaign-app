@@ -170,7 +170,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
                 placeholder="track.yourcompany.com"
                 autoComplete="off"
                 spellCheck={false}
-                className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                className="min-w-0 flex-1"
               />
               <button
                 onClick={() => void save()}

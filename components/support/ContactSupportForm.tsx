@@ -102,7 +102,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as SupportCategory)}
-            className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1.5 w-full"
           >
             {supportCategoryOptions().map((option) => (
               <option key={option.value} value={option.value}>
@@ -120,7 +120,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
             value={replyTo}
             onChange={(e) => setReplyTo(e.target.value)}
             placeholder={signedInEmail}
-            className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1.5 w-full"
           />
           <span className="mt-1.5 block text-xs text-muted">
             Leave blank and we reply to {signedInEmail}.
@@ -134,7 +134,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder="e.g. Campaign stopped sending halfway through"
-          className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="mt-1.5 w-full"
         />
       </label>
 
@@ -145,7 +145,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
           onChange={(e) => setMessage(e.target.value)}
           rows={6}
           placeholder="What you did, what happened, and what you expected instead."
-          className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="mt-1.5 w-full"
         />
       </label>
 

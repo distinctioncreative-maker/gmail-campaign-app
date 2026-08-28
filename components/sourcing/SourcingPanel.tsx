@@ -168,7 +168,7 @@ export function SourcingPanel({
             value={titles}
             onChange={(e) => setTitles(e.target.value)}
             placeholder="Owner, Founder, CFO"
-            className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 min-h-11 w-full"
           />
         </label>
         <label className="text-sm">
@@ -177,7 +177,7 @@ export function SourcingPanel({
             value={industries}
             onChange={(e) => setIndustries(e.target.value)}
             placeholder="construction, logistics"
-            className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 min-h-11 w-full"
           />
         </label>
         <label className="text-sm">
@@ -186,7 +186,7 @@ export function SourcingPanel({
             value={locations}
             onChange={(e) => setLocations(e.target.value)}
             placeholder="New York, Texas"
-            className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 min-h-11 w-full"
           />
         </label>
         <label className="text-sm">
@@ -195,7 +195,7 @@ export function SourcingPanel({
             value={keywords}
             onChange={(e) => setKeywords(e.target.value)}
             placeholder="equipment financing"
-            className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 min-h-11 w-full"
           />
         </label>
         <label className="text-sm">
@@ -205,7 +205,7 @@ export function SourcingPanel({
             onChange={(e) => setMinEmployees(e.target.value.replace(/\D/g, ""))}
             inputMode="numeric"
             placeholder="5"
-            className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 min-h-11 w-full"
           />
         </label>
         <label className="text-sm">
@@ -215,7 +215,7 @@ export function SourcingPanel({
             onChange={(e) => setMaxEmployees(e.target.value.replace(/\D/g, ""))}
             inputMode="numeric"
             placeholder="200"
-            className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 min-h-11 w-full"
           />
         </label>
       </div>
@@ -226,7 +226,7 @@ export function SourcingPanel({
           <select
             value={perPage}
             onChange={(e) => setPerPage(Number(e.target.value))}
-            className="mt-1 block min-h-11 rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 block min-h-11"
           >
             {[10, 25, 50].map((n) => (
               <option key={n} value={n}>

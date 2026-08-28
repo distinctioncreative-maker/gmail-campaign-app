@@ -61,7 +61,7 @@ export function FeatureSuggestions() {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void submit()}
           placeholder="e.g. Add a LinkedIn message step to sequences"
-          className="flex-1 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="flex-1"
         />
         <button
           onClick={() => void submit()}

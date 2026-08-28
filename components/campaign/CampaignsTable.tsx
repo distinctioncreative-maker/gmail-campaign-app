@@ -181,7 +181,7 @@ export function CampaignsTable({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by campaign or status"
-              className="w-full rounded-md border border-border bg-surface py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+              className="w-full py-2 pl-9 pr-3"
             />
           </div>
           <div className="overflow-x-auto pb-1">

@@ -126,7 +126,7 @@ export function SequenceBuilder({
   }
 
   const input =
-    "mt-1 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "mt-1";
 
   return (
     <div className="max-w-2xl">

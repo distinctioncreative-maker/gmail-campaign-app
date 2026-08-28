@@ -102,7 +102,7 @@ export function AuditLogList() {
           value={action}
           onChange={(e) => changeAction(e.target.value)}
           aria-label="Filter by action"
-          className="rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className=""
         >
           <option value="">Every action</option>
           {allAuditActions().map((a) => (

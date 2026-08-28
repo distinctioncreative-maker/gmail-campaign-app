@@ -64,7 +64,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && void create()}
             placeholder="e.g. Alpine offers: all time"
-            className="w-72 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="w-72"
           />
           <button onClick={() => void create()} disabled={busy || !name.trim()} className="btn-primary px-4 py-2 text-sm">
             Create

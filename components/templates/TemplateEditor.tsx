@@ -370,7 +370,7 @@ export function TemplateEditor({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. First outreach: funding intro"
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 w-full"
           />
         </label>
 
@@ -385,7 +385,7 @@ export function TemplateEditor({
                 e.target.value = "";
               }}
               defaultValue=""
-              className="rounded-lg border border-border px-2 py-1 text-xs"
+              className="rounded-lg px-2 py-1 text-xs"
               aria-label="Insert placeholder into subject"
             >
               <option value="" disabled>Insert placeholder…</option>
@@ -400,7 +400,7 @@ export function TemplateEditor({
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Quick question for {{business_name}}"
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 w-full"
           />
           <p className="mt-1 text-xs text-muted">
             Placeholders work in the subject too: personalize it the same way as the body.
@@ -522,7 +522,7 @@ export function TemplateEditor({
                   e.target.value = "";
                 }}
                 defaultValue=""
-                className="ml-auto rounded-lg border border-border px-2 py-1 text-xs"
+                className="ml-auto rounded-lg px-2 py-1 text-xs"
                 aria-label="Insert placeholder"
               >
                 <option value="" disabled>Insert placeholder…</option>
@@ -585,7 +585,7 @@ export function TemplateEditor({
             rows={28}
             spellCheck={false}
             aria-label="Email HTML"
-            className="mt-3 min-h-[32rem] w-full resize-y rounded-md border border-border bg-surface p-4 font-mono text-xs leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
+            className="mt-3 min-h-[32rem] w-full resize-y p-4 font-mono text-xs leading-relaxed sm:min-h-[38rem]"
           />
         )}
 
@@ -597,7 +597,7 @@ export function TemplateEditor({
                 value={draftSearch}
                 onChange={(e) => setDraftSearch(e.target.value)}
                 placeholder="Search drafts by subject"
-                className="flex-1 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="flex-1"
               />
               <button
                 onClick={() => void loadDrafts(draftSearch)}

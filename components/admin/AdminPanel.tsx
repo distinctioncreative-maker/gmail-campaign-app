@@ -64,8 +64,6 @@ export function AdminPanel({
     setNotice(res.ok ? "Settings saved." : "Could not save settings.");
   }
 
-  const input = "rounded-md border border-border px-3 py-2 text-sm";
-
   return (
     <div className="space-y-6">
       {notice && <p className="rounded-lg bg-info-soft p-3 text-sm text-info">{notice}</p>}
@@ -87,7 +85,6 @@ export function AdminPanel({
                       value={m.customRoleId ? `custom:${m.customRoleId}` : `builtin:${m.role}`}
                       disabled={busy || m.userId === currentUserId}
                       onChange={(e) => updateMember(m.userId, { accessRoleId: e.target.value })}
-                      className={input}
                     >
                       <optgroup label="Built-in access">
                         <option value="builtin:SALES_REP">Member</option>
@@ -131,7 +128,7 @@ export function AdminPanel({
           <select
             value={settings.collisionPolicy}
             onChange={(e) => setSettings((s) => ({ ...s, collisionPolicy: e.target.value }))}
-            className={`mt-1 block w-full ${input}`}
+            className="mt-1 block w-full"
           >
             <option value="OFF">Off: each rep only sees their own history</option>
             <option value="PRIVATE_WARNING">Warn privately (no names revealed)</option>
@@ -149,7 +146,7 @@ export function AdminPanel({
               max={365}
               value={settings.collisionBlockDays}
               onChange={(e) => setSettings((s) => ({ ...s, collisionBlockDays: Number(e.target.value) }))}
-              className={`mt-1 block w-full ${input}`}
+              className="mt-1 block w-full"
             />
           </label>
           <label className="text-sm font-medium text-foreground">
@@ -159,7 +156,7 @@ export function AdminPanel({
               min={1}
               value={settings.sendConfirmThreshold}
               onChange={(e) => setSettings((s) => ({ ...s, sendConfirmThreshold: Number(e.target.value) }))}
-              className={`mt-1 block w-full ${input}`}
+              className="mt-1 block w-full"
             />
           </label>
         </div>

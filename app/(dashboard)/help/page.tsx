@@ -68,7 +68,7 @@ export default function HelpPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search campaigns, leads, Gmail, tracking, reports..."
-              className="w-full rounded-md border border-border bg-surface py-3 pl-10 pr-4 text-sm outline-none focus:border-primary"
+              className="w-full py-3 pl-10 pr-4"
             />
           </div>
         </div>
