@@ -10,6 +10,7 @@ import { SortTh } from "@/components/SortTh";
 import { Icon } from "@/components/ui/Icon";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 
 export interface CampaignRow {
   campaignId: string;
@@ -362,10 +363,11 @@ export function CampaignsTable({
           </div>
         )}
       </div>
-      <div className="hidden overflow-x-auto md:block">
-        <table className="w-full min-w-[960px] text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
+      <DataTable
+        className="hidden md:block"
+        minWidth="960px"
+        head={
+          <>
               <SortTh label="Campaign" sortKey="name" sort={sort} onToggle={toggle} />
               <SortTh label="Status" sortKey="status" sort={sort} onToggle={toggle} />
               <SortTh label="Progress" sortKey="progress" sort={sort} onToggle={toggle} />
@@ -378,14 +380,14 @@ export function CampaignsTable({
                 sort={sort}
                 onToggle={toggle}
               />
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
+            <th className="px-4 py-3" />
+          </>
+        }
+      >
             {sorted.map((c, i) => (
-              <tr
+              <TableRow
                 key={c.campaignId}
-                className="animate-rise border-b border-border last:border-0 hover:bg-surface-2"
+                className="animate-rise"
                 style={{ animationDelay: `${Math.min(i, 10) * 25}ms` }}
               >
                 <td className="px-4 py-3 font-medium">
@@ -487,7 +489,7 @@ export function CampaignsTable({
                     )}
                   </div>
                 </td>
-              </tr>
+              </TableRow>
             ))}
             {sorted.length === 0 ? (
               <tr>
@@ -501,9 +503,7 @@ export function CampaignsTable({
                 </td>
               </tr>
             ) : null}
-          </tbody>
-        </table>
-      </div>
+      </DataTable>
     </div>
   );
 }

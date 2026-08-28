@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { CountUp } from "@/components/ui/CountUp";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { DEMO_LEADS } from "@/lib/demo/fixtures";
 
 const STATUS: Record<string, string> = {
@@ -27,22 +28,23 @@ export default function DemoLeadsPage() {
         <StatTile label="Excluded" value={<CountUp value={count("Excluded")} />} icon="ban" tone="warning" size="sm" hint="Suppressed or opted out" />
       </StatGrid>
 
-      <div className="card mt-8 overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Business</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Campaigns</th>
-              <th className="px-4 py-3">Sent</th>
-              <th className="px-4 py-3">Replies</th>
-              <th className="px-4 py-3">Status</th>
-            </tr>
-          </thead>
-          <tbody>
+      <DataTable
+        className="card mt-8"
+        minWidth="760px"
+        head={
+          <>
+            <th className="px-4 py-3">Name</th>
+            <th className="px-4 py-3">Business</th>
+            <th className="px-4 py-3">Email</th>
+            <th className="px-4 py-3">Campaigns</th>
+            <th className="px-4 py-3">Sent</th>
+            <th className="px-4 py-3">Replies</th>
+            <th className="px-4 py-3">Status</th>
+          </>
+        }
+      >
             {DEMO_LEADS.map((l) => (
-              <tr key={l.email} className="border-b border-border last:border-0 hover:bg-surface-2">
+              <TableRow key={l.email}>
                 <td className="px-4 py-3 font-medium">{l.name}</td>
                 <td className="px-4 py-3 text-muted">{l.business}</td>
                 <td className="px-4 py-3 text-muted">{l.email}</td>
@@ -50,11 +52,9 @@ export default function DemoLeadsPage() {
                 <td className="px-4 py-3 tabular-nums">{l.sent}</td>
                 <td className="px-4 py-3 tabular-nums">{l.replies}</td>
                 <td className="px-4 py-3"><span className={`badge ${STATUS[l.status]}`}>{l.status}</span></td>
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+      </DataTable>
     </div>
   );
 }

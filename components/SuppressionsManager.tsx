@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LocalTime } from "@/components/LocalTime";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 
 export interface SuppressionRow {
   suppressionId: string;
@@ -192,7 +192,7 @@ export function SuppressionsManager({
               </>}
       >
               {visible.map((r) => (
-                <tr key={r.suppressionId} className="border-b border-border last:border-0">
+                <TableRow key={r.suppressionId} interactive={false}>
                   <td className="px-3 py-2 font-medium">{r.email}</td>
                   <td className="px-3 py-2 text-muted">
                     {REASON_LABELS[r.reason] ?? r.reason}
@@ -214,7 +214,7 @@ export function SuppressionsManager({
                       </button>
                     )}
                   </td>
-                </tr>
+                </TableRow>
               ))}
             </DataTable>
       )}

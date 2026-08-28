@@ -3,6 +3,7 @@ import { Meter } from "@/components/ui/charts/Meter";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { Icon } from "@/components/ui/Icon";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { formatDuration, formatPercent } from "@/lib/analytics/metrics";
@@ -407,28 +408,26 @@ export function CampaignLeaderboard({
           action={{ href: "/campaigns/new", label: "Start a campaign" }}
         />
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="w-full min-w-[840px] text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase text-muted">
-              <tr>
-                <th className="px-4 py-3">Campaign</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Total sends</th>
-                <th className="px-4 py-3">Replies</th>
-                <th className="min-w-44 px-4 py-3">Reply rate</th>
-                <th className="px-4 py-3">Bounce rate</th>
-                <th className="px-4 py-3">Progress</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
+        <DataTable
+          className="card"
+          minWidth="840px"
+          head={
+            <>
+              <th className="px-4 py-3">Campaign</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Total sends</th>
+              <th className="px-4 py-3">Replies</th>
+              <th className="min-w-44 px-4 py-3">Reply rate</th>
+              <th className="px-4 py-3">Bounce rate</th>
+              <th className="px-4 py-3">Progress</th>
+              <th className="px-4 py-3" />
+            </>
+          }
+        >
               {rows.map(({ campaign, performance }) => {
                 const badge = CAMPAIGN_STATUS_LABELS[campaign.status];
                 return (
-                  <tr
-                    key={campaign.campaignId}
-                    className="border-b border-border last:border-0 hover:bg-surface-2"
-                  >
+                  <TableRow key={campaign.campaignId}>
                     <td className="px-4 py-3 font-medium">
                       <Link
                         href={`/reports?campaign=${campaign.campaignId}&range=${rangeDays}`}
@@ -468,12 +467,10 @@ export function CampaignLeaderboard({
                         View
                       </Link>
                     </td>
-                  </tr>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+        </DataTable>
       )}
     </section>
   );
@@ -500,23 +497,24 @@ export function InboxBreakdownPanel({ inboxes }: { inboxes: ReportData["inboxes"
       <p className="mt-1 text-xs text-muted">
         Volume and bounce rate per address. A pooled rate hides which inbox is producing it.
       </p>
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[30rem] text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
-              <th className="py-2 pr-3 font-medium">Inbox</th>
-              <th className="py-2 pr-3 text-right font-medium">Sent</th>
-              <th className="py-2 pr-3 text-right font-medium">Bounced</th>
-              <th className="py-2 text-right font-medium">Rate</th>
-            </tr>
-          </thead>
-          <tbody>
+      <DataTable
+        className="mt-4"
+        minWidth="30rem"
+        head={
+          <>
+            <th className="py-2 pr-3 font-medium">Inbox</th>
+            <th className="py-2 pr-3 text-right font-medium">Sent</th>
+            <th className="py-2 pr-3 text-right font-medium">Bounced</th>
+            <th className="py-2 text-right font-medium">Rate</th>
+          </>
+        }
+      >
             {inboxes.map((inbox) => {
               // Flagged only when it is both the worst and genuinely high, so a
               // pool of three healthy inboxes gets no red herring.
               const concerning = inbox.bounceRate >= 2 && inbox.bounceRate === worst;
               return (
-                <tr key={inbox.connectionId} className="border-b border-border last:border-0">
+                <TableRow key={inbox.connectionId} interactive={false}>
                   <td className="py-2.5 pr-3">
                     <span className="block truncate font-medium">
                       {inbox.label || inbox.connectedEmail}
@@ -538,12 +536,10 @@ export function InboxBreakdownPanel({ inboxes }: { inboxes: ReportData["inboxes"
                   >
                     {inbox.sent === 0 ? "None yet" : `${inbox.bounceRate.toFixed(1)}%`}
                   </td>
-                </tr>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+      </DataTable>
       {worst >= 2 ? (
         <p className="mt-3 text-xs text-warning">
           The highlighted inbox is bouncing more than the others. Cadence brakes a single inbox

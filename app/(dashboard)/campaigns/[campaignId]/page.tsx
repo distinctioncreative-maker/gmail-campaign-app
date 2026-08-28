@@ -29,6 +29,7 @@ import { assessEngagement } from "@/lib/campaigns/engagementPace";
 import { CampaignSectionNav } from "@/components/campaign/CampaignSectionNav";
 import { LaunchCelebration } from "@/components/campaign/LaunchCelebration";
 import { EntityHeader } from "@/components/ui/EntityHeader";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 
 export default async function CampaignDetailPage({
   params,
@@ -370,23 +371,23 @@ export default async function CampaignDetailPage({
       {abRows.length > 0 && (
         <div className="mt-4 card p-6 sm:p-7">
           <h2 className="font-medium">Template performance (A/B)</h2>
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase text-muted">
-                <tr>
-                  <th className="py-2 pr-4">Template</th>
-                  <th className="py-2 pr-4">Sent</th>
-                  <th className="py-2 pr-4">Replies</th>
-                  <th className="py-2">Reply rate</th>
-                </tr>
-              </thead>
-              <tbody>
+          <DataTable
+            className="mt-3"
+            head={
+              <>
+                <th className="py-2 pr-4">Template</th>
+                <th className="py-2 pr-4">Sent</th>
+                <th className="py-2 pr-4">Replies</th>
+                <th className="py-2">Reply rate</th>
+              </>
+            }
+          >
                 {abRows.map((r, i) => {
                   const rate = r.sent > 0 ? (r.replied / r.sent) * 100 : 0;
                   const best = Math.max(...abRows.map((x) => (x.sent > 0 ? x.replied / x.sent : 0)));
                   const isBest = r.sent > 0 && r.replied / r.sent === best && best > 0;
                   return (
-                    <tr key={i} className="border-t border-border">
+                    <TableRow key={i} interactive={false}>
                       <td className="py-2 pr-4 font-medium">
                         <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-2 text-3xs font-bold text-foreground">
                           {String.fromCharCode(65 + i)}
@@ -404,12 +405,10 @@ export default async function CampaignDetailPage({
                           </span>
                         </div>
                       </td>
-                    </tr>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+          </DataTable>
         </div>
       )}
 

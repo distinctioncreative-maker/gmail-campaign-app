@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
 import { listTeams } from "@/lib/repositories/teams";
 import { getCampaign, listRecipients } from "@/lib/repositories/campaigns";
@@ -82,16 +82,16 @@ export default async function RepCampaignPage({
               recipients.map((r) => {
                 const rb = recipientStatusBadge(r.status);
                 return (
-                  <tr key={r.recipientId} className="border-b border-border last:border-0">
+                  <TableRow key={r.recipientId} interactive={false}>
                     <td className="px-4 py-3 font-medium">{r.fullNameSnapshot || "Not available"}</td>
                     <td className="px-4 py-3 text-muted">{r.emailSnapshot}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${rb.className}`}>{rb.label}</span>
+                      <span className={`badge ${rb.className}`}>{rb.label}</span>
                     </td>
                     <td className="px-4 py-3 text-xs text-muted">
                       {r.initialSentAt ? <LocalTime value={r.initialSentAt} /> : "Not available"}
                     </td>
-                  </tr>
+                  </TableRow>
                 );
               })
             )}

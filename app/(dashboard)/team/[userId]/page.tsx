@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getOrgSettings, listMembers } from "@/lib/repositories/orgSettings";
@@ -120,7 +120,7 @@ export default async function RepDetailPage({
                 };
                 const cSent = c.sentCount + c.followupSentCount;
                 return (
-                  <tr key={c.campaignId} className="border-b border-border last:border-0 hover:bg-surface-2">
+                  <TableRow key={c.campaignId}>
                     <td className="px-4 py-3 font-medium">{c.name}</td>
                     <td className="px-4 py-3">
                       <span className={`badge ${badge.className}`}>{badge.label}</span>
@@ -141,7 +141,7 @@ export default async function RepDetailPage({
                         Open →
                       </Link>
                     </td>
-                  </tr>
+                  </TableRow>
                 );
               })}
             </DataTable>

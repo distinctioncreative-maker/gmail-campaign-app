@@ -10,7 +10,7 @@ import {
   type ClassifiedLead,
 } from "./leadBadges";
 import { batchLeadImport } from "@/lib/leads/importBatching";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { ConsentPicker } from "./ConsentPicker";
 import { DEFAULT_CONSENT_BASIS, type ConsentBasis } from "@/lib/compliance/consent";
 
@@ -295,7 +295,7 @@ export function LeadPreviewTable({
                 ? VERDICT_BADGES[lead.verification.verdict]
                 : null;
               return (
-                <tr key={lead.index} className="border-b border-border last:border-0">
+                <TableRow key={lead.index} interactive={false}>
                   <td className="px-3 py-2">
                     <input
                       type="checkbox"
@@ -327,7 +327,7 @@ export function LeadPreviewTable({
                         ? `Last contacted ${new Date(lead.lastCampaignAt).toLocaleDateString()}`
                         : lead.warnings.slice(0, 2).join("; ")}
                   </td>
-                </tr>
+                </TableRow>
               );
             })}
           </DataTable>

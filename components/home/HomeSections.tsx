@@ -319,7 +319,7 @@ export function RecentCampaigns({ campaigns }: { campaigns: Campaign[] }) {
                   {totalSent(c)} sent · {c.replyCount} replies
                 </p>
               </div>
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
+              <span className={`badge ${badge.className}`}>
                 {badge.label}
               </span>
             </Link>

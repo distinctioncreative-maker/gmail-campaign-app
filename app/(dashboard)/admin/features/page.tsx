@@ -61,7 +61,7 @@ export default async function FeaturesPage() {
                   <li key={f.id} className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0">
                     <div className="flex items-center justify-between gap-3">
                       <span className="font-medium text-foreground">{f.name}</span>
-                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
+                      <span className={`badge shrink-0 ${badge.className}`}>
                         {badge.label}
                       </span>
                     </div>

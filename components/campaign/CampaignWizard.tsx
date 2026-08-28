@@ -23,6 +23,7 @@ import { buildLaunchSelections, computeListScopedCounts } from "@/lib/campaigns/
 import { describeTracking } from "@/lib/tracking/settings";
 import { SenderPicker } from "@/components/campaign/SenderPicker";
 import { TagChips } from "@/components/leads/TagChips";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import {
   needsSendConfirmation,
   SEND_CONFIRM_WORD,
@@ -605,13 +606,15 @@ export function CampaignWizard() {
                   Showing {visibleContacts.length} of {contacts.length} · {selected.size} selected
                 </p>
 
-                <div className="mt-2 max-h-96 overflow-auto rounded-lg border border-border">
-                  <table className="w-full min-w-[48rem] text-left text-sm">
-                    <tbody>
+                <DataTable
+                  className="mt-2 rounded-lg border border-border"
+                  minWidth="48rem"
+                  maxHeight="24rem"
+                >
                       {visibleContacts.map((c) => {
                         const badge = badgeFor(c.classification);
                         return (
-                          <tr key={c.contactId} className="border-b border-border last:border-0">
+                          <TableRow key={c.contactId} interactive={false}>
                             <td className="px-3 py-2">
                               <input
                                 type="checkbox"
@@ -626,16 +629,12 @@ export function CampaignWizard() {
                             <td className="px-3 py-2 text-muted">{c.email}</td>
                             <td className="min-w-40 px-3 py-2"><TagChips tags={c.tags} limit={2} /></td>
                             <td className="px-3 py-2">
-                              <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
-                                {badge.label}
-                              </span>
+                              <span className={`badge ${badge.className}`}>{badge.label}</span>
                             </td>
-                          </tr>
+                          </TableRow>
                         );
                       })}
-                    </tbody>
-                  </table>
-                </div>
+                </DataTable>
               </>
             )}
           </>

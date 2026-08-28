@@ -18,6 +18,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
 import { formatDealValue } from "@/lib/campaigns/outcomes";
 import type { DealStatus } from "@/schemas/campaign";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 
 // Cap the recipient-level scan so the page stays fast even with many campaigns.
 const MAX_CAMPAIGNS_SCANNED = 60;
@@ -266,7 +267,7 @@ export default async function RepliesPage() {
                     <p className="truncate font-medium">{r.fullName || r.email}</p>
                     {r.fullName && <p className="truncate text-xs text-muted">{r.email}</p>}
                   </Link>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${INTENT_META[r.intent].className}`}>
+                  <span className={`badge shrink-0 ${INTENT_META[r.intent].className}`}>
                     {INTENT_META[r.intent].label}
                   </span>
                 </div>
@@ -318,27 +319,27 @@ export default async function RepliesPage() {
 
           {/* Desktop: table */}
           <RepliesKeyboardNav />
-          <div className="hidden overflow-x-auto card sm:block">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase text-muted">
-                <tr>
-                  <th className="px-4 py-3">Lead</th>
-                  <th className="px-4 py-3">Intent</th>
-                  <th className="px-4 py-3">Campaign</th>
-                  <th className="px-4 py-3">Replied</th>
-                  <th className="px-4 py-3">Outcome</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="stagger-rows">
+          <DataTable
+            className="hidden card sm:block"
+            bodyClassName="stagger-rows"
+            head={
+              <>
+                <th className="px-4 py-3">Lead</th>
+                <th className="px-4 py-3">Intent</th>
+                <th className="px-4 py-3">Campaign</th>
+                <th className="px-4 py-3">Replied</th>
+                <th className="px-4 py-3">Outcome</th>
+                <th className="px-4 py-3" />
+              </>
+            }
+          >
                 {rows.map((r) => (
-                  <tr
+                  <TableRow
                     key={`${r.campaignId}-${r.contactId}-${r.repliedAt}`}
                     // Read by components/replies/RepliesKeyboardNav.tsx, which
                     // is what keeps this table a server component.
                     data-reply-row=""
                     data-reply-href={`/leads/${r.contactId}`}
-                    className="border-b border-border last:border-0 hover:bg-surface-2"
                   >
                     <td className="px-4 py-3">
                       <Link href={`/leads/${r.contactId}`} className="font-medium hover:underline">
@@ -350,7 +351,7 @@ export default async function RepliesPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${INTENT_META[r.intent].className}`}>
+                      <span className={`badge ${INTENT_META[r.intent].className}`}>
                         {INTENT_META[r.intent].label}
                       </span>
                     </td>
@@ -393,11 +394,9 @@ export default async function RepliesPage() {
                         )}
                       </div>
                     </td>
-                  </tr>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+          </DataTable>
           </>
         )}
       </div>

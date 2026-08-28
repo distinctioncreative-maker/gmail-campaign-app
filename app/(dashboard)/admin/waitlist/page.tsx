@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { capabilitiesFor } from "@/lib/tenancy/capabilities";
 import { listWaitlist } from "@/lib/repositories/waitlist";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { LocalTime } from "@/components/LocalTime";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
 import { StatTile } from "@/components/ui/StatTile";
@@ -78,13 +78,13 @@ export default async function WaitlistPage() {
               </>}
       >
               {entries.map((e) => (
-                <tr key={e.email} className="border-b border-border last:border-0 hover:bg-surface-2">
+                <TableRow key={e.email}>
                   <td className="px-4 py-3 font-medium">{e.email}</td>
                   <td className="px-4 py-3 text-muted">{e.source || "Not available"}</td>
                   <td className="px-4 py-3 text-muted">
                     {e.createdAt ? <LocalTime value={e.createdAt} /> : "Not available"}
                   </td>
-                </tr>
+                </TableRow>
               ))}
             </DataTable>
       )}

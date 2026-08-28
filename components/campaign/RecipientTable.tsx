@@ -7,6 +7,7 @@ import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
 import { recipientStatusBadge as statusBadge } from "@/lib/campaigns/statusLabels";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 
 interface RecipientRow {
   recipientId: string;
@@ -225,34 +226,33 @@ export function RecipientTable({
                       )}
                     </span>
                   </div>
-                  <table className="w-full text-left text-sm">
-                    <tbody>
+                  <DataTable>
                       {group.map((r) => (
-                        <tr key={r.recipientId} className="border-t border-border hover:bg-surface-2">
+                        <TableRow key={r.recipientId}>
                           <td className="px-3 py-2 font-medium">{r.fullName || "Not available"}</td>
                           <td className="px-3 py-2 text-muted">{r.email}</td>
                           <td className="px-3 py-2 text-xs">{timeCell(r)}</td>
                           <td className="px-3 py-2 text-right">{rowActions(r)}</td>
-                        </tr>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                  </DataTable>
                 </div>
               ))}
             </div>
           )
         ) : (
-          <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 bg-surface text-xs text-muted shadow-sm">
-              <tr>
+          <DataTable
+            stickyHeader
+            head={
+              <>
                 <SortTh label="Name" sortKey="fullName" sort={sort} onToggle={toggle} className="py-2" />
                 <SortTh label="Email" sortKey="email" sort={sort} onToggle={toggle} className="py-2" />
                 <SortTh label="Status" sortKey="status" sort={sort} onToggle={toggle} className="py-2" />
                 <SortTh label="When" sortKey="time" sort={sort} onToggle={toggle} className="py-2" />
                 <th className="px-3 py-2" />
-              </tr>
-            </thead>
-            <tbody>
+              </>
+            }
+          >
               {sorted.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-4 text-sm text-muted">
@@ -263,25 +263,19 @@ export function RecipientTable({
                 sorted.map((r) => {
                   const badge = statusBadge(r.status);
                   return (
-                    <tr
-                      key={r.recipientId}
-                      className="border-b border-border last:border-0 hover:bg-surface-2/60"
-                    >
+                    <TableRow key={r.recipientId}>
                       <td className="px-3 py-2 font-medium">{r.fullName || "Not available"}</td>
                       <td className="px-3 py-2 text-muted">{r.email}</td>
                       <td className="px-3 py-2">
-                        <span className={`rounded-full px-2 py-0.5 text-xs ${badge.className}`}>
-                          {badge.label}
-                        </span>
+                        <span className={`badge ${badge.className}`}>{badge.label}</span>
                       </td>
                       <td className="px-3 py-2 text-xs">{timeCell(r)}</td>
                       <td className="px-3 py-2 text-right">{rowActions(r)}</td>
-                    </tr>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+          </DataTable>
         )}
       </div>
     </div>

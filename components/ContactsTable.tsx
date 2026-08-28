@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSort } from "@/lib/hooks/useSort";
 import { SortTh } from "@/components/SortTh";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { fetchJson } from "@/lib/fetchJson";
 import { useConfirm, useToast } from "@/components/ui/UIProviders";
 import { Icon } from "@/components/ui/Icon";
@@ -381,7 +381,7 @@ export function ContactsTable({
                   <p className="truncate text-xs text-muted">{c.businessName || c.email}</p>
                   <TagChips tags={c.tags} className="mt-1.5" />
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${b.className}`}>{b.label}</span>
+                    <span className={`badge ${b.className}`}>{b.label}</span>
                     {(c.emailsSentCount > 0 || c.campaignCount > 0) && (
                       <span className="text-xs tabular-nums text-muted">
                         {c.emailsSentCount} sent
@@ -422,11 +422,9 @@ export function ContactsTable({
               </>}
       >
               {sorted.map((c) => (
-                <tr
+                <TableRow
                   key={c.contactId}
-                  className={`border-b border-border last:border-0 hover:bg-surface-2 ${
-                    selected.has(c.contactId) ? "bg-surface-2/40" : ""
-                  }`}
+                  className={selected.has(c.contactId) ? "bg-surface-2/40" : ""}
                 >
                   <td className="px-3 py-3">
                     <input
@@ -462,7 +460,7 @@ export function ContactsTable({
                     {(() => {
                       const b = statusBadge(c);
                       return (
-                        <span className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${b.className}`}>
+                        <span className={`badge whitespace-nowrap ${b.className}`}>
                           {b.label}
                         </span>
                       );
@@ -471,7 +469,7 @@ export function ContactsTable({
                   <td className="whitespace-nowrap px-4 py-3 text-xs text-muted">
                     <LocalTime value={c.createdAt} options={{ dateStyle: "medium" }} />
                   </td>
-                </tr>
+                </TableRow>
               ))}
             </DataTable>
         </>

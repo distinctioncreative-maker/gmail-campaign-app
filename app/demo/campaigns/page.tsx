@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { CountUp } from "@/components/ui/CountUp";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { LocalTime } from "@/components/LocalTime";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { campaignPerformance, formatPercent, totalSent } from "@/lib/analytics/metrics";
@@ -28,27 +29,28 @@ export default function DemoCampaignsPage() {
         <StatTile label="Needs attention" value={<CountUp value={0} />} icon="alert" size="sm" hint="No active issues" />
       </StatGrid>
 
-      <div className="card mt-8 overflow-x-auto">
-        <table className="w-full min-w-[860px] text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
-              <th className="px-4 py-3">Campaign</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Progress</th>
-              <th className="px-4 py-3">Sent</th>
-              <th className="px-4 py-3">Replies</th>
-              <th className="px-4 py-3">Reply rate</th>
-              <th className="px-4 py-3">Updated</th>
-            </tr>
-          </thead>
-          <tbody>
+      <DataTable
+        className="card mt-8"
+        minWidth="860px"
+        head={
+          <>
+            <th className="px-4 py-3">Campaign</th>
+            <th className="px-4 py-3">Status</th>
+            <th className="px-4 py-3">Progress</th>
+            <th className="px-4 py-3">Sent</th>
+            <th className="px-4 py-3">Replies</th>
+            <th className="px-4 py-3">Reply rate</th>
+            <th className="px-4 py-3">Updated</th>
+          </>
+        }
+      >
             {DEMO_CAMPAIGNS.map((c) => {
               const badge = CAMPAIGN_STATUS_LABELS[c.status];
               const perf = campaignPerformance(c);
               const pct = c.eligibleRecipients > 0
                 ? Math.min(100, (c.sentCount / c.eligibleRecipients) * 100) : 0;
               return (
-                <tr key={c.campaignId} className="border-b border-border last:border-0 hover:bg-surface-2">
+                <TableRow key={c.campaignId}>
                   <td className="px-4 py-3 font-medium">{c.name}</td>
                   <td className="px-4 py-3"><span className={`badge ${badge.className}`}>{badge.label}</span></td>
                   <td className="px-4 py-3">
@@ -63,12 +65,10 @@ export default function DemoCampaignsPage() {
                   <td className="px-4 py-3 tabular-nums">{c.replyCount.toLocaleString()}</td>
                   <td className="px-4 py-3 tabular-nums">{formatPercent(perf.replyRate)}</td>
                   <td className="px-4 py-3 text-xs text-muted"><LocalTime value={c.updatedAt} /></td>
-                </tr>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+      </DataTable>
 
       {/* A visitor could previously walk the entire tour without learning that
           Cadence varies the wording per recipient, which is one of the few

@@ -9,7 +9,7 @@ import { getUser } from "@/lib/repositories/users";
 import { resolveSendingState } from "@/lib/sending/mode";
 import { env } from "@/lib/env";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { LocalTime } from "@/components/LocalTime";
 import { Icon } from "@/components/ui/Icon";
 import { campaignsIncludedInWorkspaceStats } from "@/lib/campaigns/lifecycle";
@@ -104,10 +104,9 @@ export default async function SystemHealthPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="overflow-hidden card">
           <h2 className="border-b border-border px-4 py-3 font-medium">Platform checks</h2>
-          <table className="w-full text-left text-sm">
-            <tbody>
+          <DataTable>
               {checks.map(([label, value, ok]) => (
-                <tr key={label} className="border-b border-border last:border-0">
+                <TableRow key={label} interactive={false}>
                   <td className="px-4 py-3 font-medium">{label}</td>
                   <td className="px-4 py-3 text-muted">{value}</td>
                   <td className="px-4 py-3 text-right">
@@ -115,18 +114,16 @@ export default async function SystemHealthPage() {
                       <Icon name={ok ? "check" : "alert"} size={14} aria-hidden />
                     </span>
                   </td>
-                </tr>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+          </DataTable>
         </div>
 
         <div className="overflow-hidden card">
           <h2 className="border-b border-border px-4 py-3 font-medium">Background sweeps</h2>
-          <table className="w-full text-left text-sm">
-            <tbody>
+          <DataTable>
               {sweeps.map(([label, at]) => (
-                <tr key={label} className="border-b border-border last:border-0">
+                <TableRow key={label} interactive={false}>
                   <td className="px-4 py-3 font-medium">{label}</td>
                   <td className="px-4 py-3 text-muted">
                     {at ? (
@@ -142,10 +139,9 @@ export default async function SystemHealthPage() {
                       <Icon name={sweepFresh(at) ? "check" : "alert"} size={14} aria-hidden />
                     </span>
                   </td>
-                </tr>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+          </DataTable>
           <p className="px-4 py-3 text-xs text-muted">
             Sweeps run on a schedule. A warning here usually means Cloud Scheduler isn&apos;t set up
             or hasn&apos;t fired yet: see scripts/setup-cloud.sh.
@@ -166,7 +162,7 @@ export default async function SystemHealthPage() {
             {memberRows.map(({ member: m, ...r }) => {
               const conn = CONNECTION_LABELS[r.connectionStatus] ?? { label: r.connectionStatus, ok: false };
               return (
-                <tr key={m.userId} className="border-b border-border last:border-0 hover:bg-surface-2">
+                <TableRow key={m.userId}>
                   <td className="px-4 py-3">
                     <span className="font-medium">{r.displayName || m.email}</span>
                     {!m.active && <span className="ml-2 badge bg-border text-muted">disabled</span>}
@@ -174,7 +170,7 @@ export default async function SystemHealthPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
+                      className={`badge ${
                         conn.ok ? "bg-success-soft text-success" : "bg-warning-soft text-warning"
                       }`}
                     >
@@ -197,7 +193,7 @@ export default async function SystemHealthPage() {
                   <td className="px-4 py-3 text-xs text-muted">
                     {r.lastLoginAt ? <LocalTime value={r.lastLoginAt} /> : "Never"}
                   </td>
-                </tr>
+                </TableRow>
               );
             })}
           </DataTable>

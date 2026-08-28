@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { checkDomainAuth } from "@/lib/deliverability/dnsLookup";
 import { getPostmasterStats } from "@/lib/deliverability/postmaster";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { formatPercent } from "@/lib/analytics/metrics";
 import { getBenchmarksSnapshot } from "@/lib/benchmarks/read";
 import { bucketBatchSize, bucketDailyLimit, type DimensionAggregate } from "@/lib/benchmarks/buckets";
@@ -143,7 +143,7 @@ export default async function DeliverabilityPage() {
                 </>}
       >
                 {postmaster.days.map((d) => (
-                  <tr key={d.date} className="border-b border-border last:border-0">
+                  <TableRow key={d.date} interactive={false}>
                     <td className="px-4 py-3 tabular-nums">{d.date}</td>
                     <td className="px-4 py-3 tabular-nums">{spamPct(d.spamRatio)}</td>
                     <td className="px-4 py-3">
@@ -158,7 +158,7 @@ export default async function DeliverabilityPage() {
                     <td className="px-4 py-3 tabular-nums">{spamPct(d.spfSuccess)}</td>
                     <td className="px-4 py-3 tabular-nums">{spamPct(d.dkimSuccess)}</td>
                     <td className="px-4 py-3 tabular-nums">{spamPct(d.dmarcSuccess)}</td>
-                  </tr>
+                  </TableRow>
                 ))}
               </DataTable>
           <p className="mt-2 text-xs text-muted">

@@ -15,30 +15,22 @@ const files = [...walk("app"), ...walk("components")]
   .map((path) => [path, readFileSync(path, "utf8")] as const);
 
 /**
- * Tables whose shell genuinely differs, and why each one does.
+ * The only `<table>` elements allowed to exist outside the shared shell.
  *
- * The component owns a wrapper, a `<table>`, and a bordered `<thead>`. A table
- * with no header row at all, or a sticky one, is not the same object wearing
- * different clothes, and routing it through a component that requires `head`
- * would mean inventing a header it does not have or bolting an escape hatch
- * onto the component for a single call site.
+ * Both are the accessible data equivalent of a chart, rendered for screen
+ * readers and for anyone who cannot read a shape. They are not data tables in
+ * the product sense: no header chrome, no rows anyone hovers, no scrolling.
+ * Routing them through a component built for the other kind would mean giving
+ * that component options only these two would ever set.
  */
-const DIFFERENT_SHAPE = new Map([
+const NOT_A_DATA_TABLE = new Map([
   [
-    "app/(dashboard)/system-health/page.tsx",
-    "Two label-and-value lists with no header row. They are tables for alignment, not for columns.",
+    "components/ui/charts/TrendChart.tsx",
+    "The chart's text alternative, at chart type sizes and never interactive.",
   ],
   [
-    "components/campaign/RecipientTable.tsx",
-    "One grouped view with no header, and one with a sticky header carrying its own shadow.",
-  ],
-  [
-    "app/(dashboard)/campaigns/[campaignId]/page.tsx",
-    "Borderless thead, deliberately quieter than a top-level data table.",
-  ],
-  [
-    "app/(dashboard)/replies/page.tsx",
-    "Standard shell, but the desktop table sits inside a responsive wrapper alongside a mobile card list. Convertible; left for a pass that can verify the responsive pair together.",
+    "components/ui/charts/BarChart.tsx",
+    "The chart's text alternative, at chart type sizes and never interactive.",
   ],
 ]);
 
@@ -58,35 +50,59 @@ describe("the shared table shell", () => {
      * replaced. Duplicated markup is cheaper than a wrong abstraction.
      */
     const source = readFileSync("components/ui/DataTable.tsx", "utf8");
-    expect(source).toContain("head: ReactNode");
+    expect(source).toContain("head?: ReactNode");
     expect(source).not.toMatch(/columns\s*[:?]/);
     // The wrapper is the reason this exists: wide tables must scroll inside
     // themselves so the page body never scrolls sideways.
     expect(source).toContain("overflow-x-auto");
   });
 
-  it("has actually displaced the hand-rolled shells", () => {
-    const usingComponent = files.filter(([, s]) => s.includes("<DataTable")).length;
-    const handRolled = files.filter(([, s]) =>
-      s.includes('<table className="w-full text-left text-sm">')
-    );
-    expect(usingComponent).toBeGreaterThanOrEqual(9);
+  it("carries the chrome the hand-rolled tables needed, and nothing structural", () => {
+    // Each of these was the recorded reason a real table stayed hand-rolled.
+    // They are all chrome, which is why they belong here and a column config
+    // does not.
+    const source = readFileSync("components/ui/DataTable.tsx", "utf8");
+    for (const option of ["stickyHeader", "maxHeight", "bodyClassName", "minWidth"]) {
+      expect(source).toContain(`${option}`);
+    }
+    // A header row is optional, because a label-and-value list is a table for
+    // alignment rather than for columns and inventing a header for it is worse
+    // than leaving it out.
+    expect(source).toContain("{head ? (");
+    // Rest props reach the <tr>. Without this a row cannot carry the data-*
+    // attributes a keyboard-navigation script reads, which is the single
+    // reason TableRow had zero importers for as long as it existed.
+    expect(source).toContain("...rest");
+  });
 
-    const unexplained = handRolled
+  it("has displaced every hand-rolled shell", () => {
+    /**
+     * This used to look for the exact string
+     * `<table className="w-full text-left text-sm">`, which six tables slipped
+     * past simply by carrying a min-width. A rule that matches one spelling of
+     * the thing it bans is not a rule, so this matches the element.
+     */
+    const usingComponent = files.filter(([, s]) => s.includes("<DataTable")).length;
+    expect(usingComponent).toBeGreaterThanOrEqual(14);
+
+    const handRolled = files
+      .filter(([, s]) => /<table[\s>]/.test(s))
       .map(([path]) => path)
-      .filter((path) => !DIFFERENT_SHAPE.has(path));
-    expect(unexplained, "hand-rolled tables with no recorded reason").toEqual([]);
+      .filter((path) => !NOT_A_DATA_TABLE.has(path));
+    expect(handRolled, "hand-rolled tables with no recorded reason").toEqual([]);
+
+    // The row is half the point and was the half nobody adopted.
+    expect(files.filter(([, s]) => s.includes("<TableRow")).length)
+      .toBeGreaterThanOrEqual(10);
   });
 
   it("keeps the exemption list honest", () => {
     // An exemption for a file that no longer hand-rolls a table is stale, and a
     // stale exemption is how the rule above quietly stops applying.
     const stillHandRolled = new Set(
-      files
-        .filter(([, s]) => s.includes('<table className="w-full text-left text-sm">'))
-        .map(([path]) => path)
+      files.filter(([, s]) => /<table[\s>]/.test(s)).map(([path]) => path)
     );
-    const unused = [...DIFFERENT_SHAPE.keys()].filter((path) => !stillHandRolled.has(path));
+    const unused = [...NOT_A_DATA_TABLE.keys()].filter((path) => !stillHandRolled.has(path));
     expect(unused, "exemptions that no longer describe anything").toEqual([]);
   });
 });
