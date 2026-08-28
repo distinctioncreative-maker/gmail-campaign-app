@@ -95,7 +95,6 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className=""
         >
           <option value="SALES_REP">Sales Rep</option>
           <option value="MANAGER">Team Lead</option>

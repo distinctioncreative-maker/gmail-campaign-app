@@ -200,7 +200,6 @@ export function ApiKeysCard() {
           <select
             value={environment}
             onChange={(e) => setEnvironment(e.target.value as "live" | "test")}
-            className=""
           >
             <option value="live">Live</option>
             <option value="test">Test</option>

@@ -441,7 +441,6 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
           <select
             value={suspendReason}
             onChange={(e) => setSuspendReason(e.target.value)}
-            className=""
           >
             {SUSPENSION_REASONS.map((reason) => (
               <option key={reason} value={reason}>
@@ -605,7 +604,6 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
           <select
             value={overridePlan}
             onChange={(e) => setOverridePlan(e.target.value)}
-            className=""
           >
             {state.plans.map((plan) => (
               <option key={plan} value={plan}>
@@ -617,7 +615,6 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
             value={overrideNote}
             onChange={(e) => setOverrideNote(e.target.value)}
             placeholder="Why (required)"
-            className=""
           />
         </div>
         <button
