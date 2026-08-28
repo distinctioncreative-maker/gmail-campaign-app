@@ -108,7 +108,7 @@ export default function HelpPage() {
             </p>
           </div>
           {!query ? (
-            <a href="#questions" className="text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+            <a href="#questions" className="text-xs font-medium text-foreground link">
               Jump to troubleshooting
             </a>
           ) : null}

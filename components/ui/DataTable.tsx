@@ -68,7 +68,7 @@ export function TableRow({
   return (
     <tr
       className={`border-b border-border last:border-0 ${
-        interactive ? "transition-colors duration-[--dur-fast] hover:bg-surface-2" : ""
+        interactive ? "transition-colors duration-(--dur-fast) hover:bg-surface-2" : ""
       } ${className}`}
     >
       {children}

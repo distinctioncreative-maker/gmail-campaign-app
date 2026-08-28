@@ -77,7 +77,7 @@ export function StatTile({
 
   if (href) {
     return (
-      <Link href={href} className="block bg-surface p-6 transition-colors duration-[--dur-base] hover:bg-surface-2">
+      <Link href={href} className="block bg-surface p-6 transition-colors duration-(--dur-base) hover:bg-surface-2">
         {body}
       </Link>
     );

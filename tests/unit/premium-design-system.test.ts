@@ -632,3 +632,51 @@ describe("radius by element class", () => {
     expect((editor.match(/editor-tool/g) ?? []).length).toBeGreaterThanOrEqual(9);
   });
 });
+
+/**
+ * Two things that only fail in the browser, silently.
+ *
+ * Tailwind v3 let `duration-[--dur-fast]` mean the variable. v4 does not: it
+ * emits `transition-duration: --dur-fast`, which is not a value, so the
+ * declaration is dropped and the element falls back to the default duration.
+ * Nothing errors. Four of these were found and fixed in an earlier pass and
+ * fourteen more were still shipping, including the one on every table row in
+ * the product, so the pattern clearly comes back on its own.
+ */
+describe("syntax that compiles to nothing", () => {
+  function allSources(): string[] {
+    const out: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (/\.(?:tsx|css)$/.test(entry.name)) out.push(path);
+      }
+    };
+    walk("app");
+    walk("components");
+    return out;
+  }
+
+  it("never uses the v3 bracket form for a custom property", () => {
+    const offenders = allSources().filter((file) => /-\[--[\w-]+\]/.test(read(file)));
+    expect(offenders).toEqual([]);
+
+    // Floor: the v4 form has to actually be in use, or this bans a pattern
+    // nobody was reaching for and would keep passing after the utilities left.
+    const markup = allSources().map(read).join("\n");
+    expect((markup.match(/-\(--[\w-]+\)/g) ?? []).length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("owns the inline link instead of respelling it forty-one times", () => {
+    const css = read("app/globals.css");
+    expect(css).toMatch(/\.link \{[\s\S]*?text-decoration-color: var\(--border\);/);
+    expect(css).toContain(".link:hover { text-decoration-color: currentColor; }");
+    const markup = allSources()
+      .filter((file) => file.endsWith(".tsx"))
+      .map(read)
+      .join("\n");
+    expect(markup).not.toContain("decoration-border");
+    expect((markup.match(/\blink\b/g) ?? []).length).toBeGreaterThan(30);
+  });
+});

@@ -117,7 +117,7 @@ export function DailyAllowanceTile({
   const pct = dailyLimit > 0 ? Math.min(100, (sentToday / dailyLimit) * 100) : 0;
   const remaining = Math.max(0, dailyLimit - sentToday);
   return (
-    <Link href="/settings" className="group block bg-surface p-6 transition-colors duration-[--dur-base] hover:bg-surface-2">
+    <Link href="/settings" className="group block bg-surface p-6 transition-colors duration-(--dur-base) hover:bg-surface-2">
       <p className="display-label leading-none">Today&apos;s sending</p>
       <div className="mt-4 flex items-center gap-3">
         <div
@@ -192,7 +192,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
                   className={
                     isNext
                       ? "btn-primary px-3.5 py-1.5 text-xs"
-                      : "text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                      : "text-xs font-medium text-foreground link"
                   }
                 >
                   {s.cta} →
@@ -212,7 +212,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-medium">Live campaigns</h2>
-        <Link href="/campaigns" className="text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+        <Link href="/campaigns" className="text-sm font-medium text-foreground link">
           View all
         </Link>
       </div>
@@ -283,7 +283,7 @@ export function QuickActions() {
         <Link key={a.href} href={a.href} className="card p-6 sm:p-7 card-hover group">
           <span
             aria-hidden
-            className="bg-surface-2 text-foreground flex h-11 w-11 items-center justify-center rounded-lg text-brand-contrast shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
+            className="bg-surface-2 text-foreground flex h-11 w-11 items-center justify-center rounded-lg text-brand-contrast shadow-md transition-transform duration-(--dur-base) ease-(--ease-out) group-hover:scale-105"
           >
             <Icon name={a.icon} size={22} />
           </span>
@@ -300,7 +300,7 @@ export function RecentCampaigns({ campaigns }: { campaigns: Campaign[] }) {
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-medium">Recent campaigns</h2>
-        <Link href="/campaigns" className="text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+        <Link href="/campaigns" className="text-sm font-medium text-foreground link">
           View all
         </Link>
       </div>

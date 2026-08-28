@@ -839,6 +839,23 @@ a.card-hover:focus-visible {
   line-height: 1.2;
 }
 
+/* The inline link, which forty-one call sites were spelling out by hand.
+   Underline, a hairline decoration so the rule does not shout, and the
+   decoration darkening rather than the text colour changing on hover.
+
+   Colour is deliberately not set here. Most of those call sites pair this with
+   text-foreground and a few sit inside muted prose or on a dark panel where
+   inheriting is correct, so a colour on this class would quietly repaint the
+   exceptions. The repetition worth removing is the decoration recipe, which is
+   the half that four call sites had already got wrong by dropping the hover. */
+.link {
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--dur-base) var(--ease-out);
+}
+.link:hover { text-decoration-color: currentColor; }
+
 /* ── Form controls ───────────────────────────────────────── */
 /* Consistent feel across every input without touching each component. */
 input, select, textarea {

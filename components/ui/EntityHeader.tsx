@@ -68,7 +68,7 @@ export function EntityHeader({
         >
           <span
             aria-hidden
-            className="transition-transform duration-[--dur-base] group-hover:-translate-x-0.5"
+            className="transition-transform duration-(--dur-base) group-hover:-translate-x-0.5"
           >
             <Icon name="arrowLeft" size={15} />
           </span>

@@ -128,7 +128,7 @@ export function CsvUpload({ listId }: { listId?: string }) {
               Columns matched automatically.{" "}
               <button
                 onClick={() => setShowMapping((s) => !s)}
-                className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                className="font-medium text-foreground link"
               >
                 {showMapping ? "Hide column matching" : "Check column matching"}
               </button>

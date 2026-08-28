@@ -463,7 +463,7 @@ export function CampaignLeaderboard({
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/campaigns/${campaign.campaignId}`}
-                        className="text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                        className="text-xs font-medium text-foreground link"
                       >
                         View
                       </Link>

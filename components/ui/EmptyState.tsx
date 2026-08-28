@@ -41,7 +41,7 @@ export function EmptyState({
         <p className="text-sm font-medium">{title}</p>
         {description && <p className="max-w-sm text-sm leading-6 text-muted">{description}</p>}
         {action && (
-          <Link href={action.href} className="mt-1 text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+          <Link href={action.href} className="mt-1 text-sm font-medium text-foreground link">
             {action.label}
           </Link>
         )}

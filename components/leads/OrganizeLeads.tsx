@@ -129,7 +129,7 @@ export function OrganizeLeads() {
               return (
                 <li key={group.name}>
                   <label
-                    className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors duration-[--dur-fast] ${
+                    className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors duration-(--dur-fast) ${
                       on ? "border-info bg-info-soft" : "border-border hover:bg-surface-2"
                     }`}
                   >

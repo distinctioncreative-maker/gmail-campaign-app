@@ -81,7 +81,7 @@ export async function ComplianceCard() {
               Add it under{" "}
               <Link
                 href="/settings#sender-profile"
-                className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                className="font-medium text-foreground link"
               >
                 Sender profile
               </Link>
@@ -101,7 +101,7 @@ export async function ComplianceCard() {
               Add it under{" "}
               <Link
                 href="/settings#sender-profile"
-                className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                className="font-medium text-foreground link"
               >
                 Sender profile
               </Link>

@@ -506,7 +506,7 @@ export function CampaignWizard() {
             <h2 className="text-xl font-semibold">Choose your leads</h2>
             <p className="mt-1 text-sm text-muted">
               Need more leads?{" "}
-              <Link href="/leads" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+              <Link href="/leads" className="text-foreground link">
                 Import them first
               </Link>
               , then come back.
@@ -730,7 +730,7 @@ export function CampaignWizard() {
                 No templates yet: {" "}
                 <button
                   onClick={() => setEditing({ templateId: null, initial: null })}
-                  className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                  className="font-medium text-foreground link"
                 >
                   create one right here
                 </button>
@@ -959,7 +959,7 @@ export function CampaignWizard() {
               </label>
               <p className="mt-1 text-xs text-muted">
                 Follow-ups stop automatically when someone replies.{" "}
-                <a href="/sequences/new" target="_blank" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+                <a href="/sequences/new" target="_blank" className="text-foreground link">
                   Build a sequence
                 </a>
               </p>

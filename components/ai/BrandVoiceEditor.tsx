@@ -155,7 +155,7 @@ export function BrandVoiceEditor({
               key={p.id}
               type="button"
               onClick={() => onSelect(p.id)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-[--dur-fast] ${
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-(--dur-fast) ${
                 p.id === selectedId
                   ? "bg-info-soft text-info"
                   : "text-muted hover:bg-surface-2"
@@ -268,7 +268,7 @@ export function BrandVoiceEditor({
                   disabled={!canEdit}
                   onClick={() => toggleTone(tone)}
                   aria-pressed={on}
-                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors duration-[--dur-fast] disabled:opacity-60 ${
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors duration-(--dur-fast) disabled:opacity-60 ${
                     on
                       ? "border-info bg-info-soft text-info"
                       : "border-border text-muted hover:bg-surface-2"
@@ -304,7 +304,7 @@ export function BrandVoiceEditor({
             <button
               type="button"
               onClick={() => setShowNotes(true)}
-              className="text-xs text-muted underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-foreground"
+              className="text-xs text-muted link hover:text-foreground hover:decoration-foreground"
             >
               Add anything else
             </button>

@@ -386,7 +386,7 @@ export default async function RepliesPage() {
                             href={`https://mail.google.com/mail/u/0/#all/${r.gmailThreadId}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="whitespace-nowrap text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                            className="whitespace-nowrap text-xs font-medium text-foreground link"
                           >
                             Open in Gmail →
                           </a>

@@ -37,7 +37,7 @@ export default async function FeaturesPage() {
       />
 
       <p className="mt-4 text-sm text-muted">
-        <Link href="/admin" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+        <Link href="/admin" className="text-foreground link">
           ← Back to Administration
         </Link>
       </p>

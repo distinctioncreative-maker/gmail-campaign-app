@@ -65,7 +65,7 @@ export default function CompliancePage() {
             href="https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business"
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+            className="font-medium text-foreground link"
           >
             FTC CAN-SPAM compliance guide
           </a>{" "}
@@ -74,14 +74,14 @@ export default function CompliancePage() {
             href="https://support.google.com/mail/answer/81126"
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+            className="font-medium text-foreground link"
           >
             Google&apos;s email sender guidelines
           </a>
           . Customers should obtain advice for their audiences, locations, and use cases.
         </p>
         <p>
-          See the <Link href="/acceptable-use" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">Acceptable Use and Anti-Spam Policy</Link> for prohibited activity.
+          See the <Link href="/acceptable-use" className="font-medium text-foreground link">Acceptable Use and Anti-Spam Policy</Link> for prohibited activity.
         </p>
       </LegalSection>
     </LegalPage>

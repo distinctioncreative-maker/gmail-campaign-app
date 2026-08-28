@@ -23,7 +23,7 @@ export default async function SourcingPage() {
       <p className="mt-4 text-sm text-muted">
         <Link
           href="/leads"
-          className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+          className="text-foreground link"
         >
           ← Back to Leads
         </Link>

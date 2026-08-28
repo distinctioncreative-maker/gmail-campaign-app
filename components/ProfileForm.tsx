@@ -200,7 +200,7 @@ export function ProfileForm({
         <HelpTip text="US commercial-email rules require a valid current postal address. This may be a street address, a registered PO box, or a properly registered private mailbox." />
         <span className="block text-xs font-normal text-muted">
           Shown in the footer of commercial emails. Review the{" "}
-          <Link href="/compliance" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+          <Link href="/compliance" className="font-medium text-foreground link">
             compliance guide
           </Link>
           .

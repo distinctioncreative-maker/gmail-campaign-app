@@ -61,7 +61,7 @@ export function LaunchCelebration({
           type="button"
           onClick={() => setVisible(false)}
           aria-label="Dismiss"
-          className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-muted transition-colors duration-[--dur-fast] hover:bg-surface hover:text-foreground"
+          className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-muted transition-colors duration-(--dur-fast) hover:bg-surface hover:text-foreground"
         >
           <Icon name="x" size={16} />
         </button>

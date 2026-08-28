@@ -225,7 +225,7 @@ export function LeadPreviewTable({
                   type="button"
                   onClick={() => setFilter(verdict)}
                   aria-pressed={active}
-                  className={`badge transition-colors duration-[--dur-fast] ${className} ${
+                  className={`badge transition-colors duration-(--dur-fast) ${className} ${
                     active ? "ring-2 ring-ring" : "hover:brightness-95"
                   }`}
                 >
@@ -237,7 +237,7 @@ export function LeadPreviewTable({
             <button
               type="button"
               onClick={() => setFilter(null)}
-              className="text-muted underline decoration-border underline-offset-4 hover:text-foreground"
+              className="text-muted link hover:text-foreground"
             >
               Clear filter
             </button>

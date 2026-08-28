@@ -70,7 +70,7 @@ export default async function OwnerPage() {
       <OwnerConsole canWrite={fresh} />
 
       <p className="mt-8 text-xs text-muted">
-        <Link href="/home" className="underline decoration-border underline-offset-4">
+        <Link href="/home" className="link">
           Back to the app
         </Link>
       </p>

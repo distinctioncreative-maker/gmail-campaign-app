@@ -87,7 +87,7 @@ export function Meter({
         : { "aria-hidden": true })}
     >
       <div
-        className={`h-full rounded-full transition-[width] duration-[--dur-slow] ease-[--ease-out] ${animate ? "grow-bar" : ""}`}
+        className={`h-full rounded-full transition-[width] duration-(--dur-slow) ease-(--ease-out) ${animate ? "grow-bar" : ""}`}
         style={{ width: `${pct}%`, background: fill }}
       />
     </div>

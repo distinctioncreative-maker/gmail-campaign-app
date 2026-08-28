@@ -63,7 +63,7 @@ export function ConsentPicker({
           return (
             <label
               key={basis}
-              className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors duration-[--dur-fast] ${
+              className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors duration-(--dur-fast) ${
                 checked ? "border-info bg-info-soft" : "border-border hover:bg-surface-2"
               }`}
             >
@@ -104,7 +104,7 @@ export function ConsentPicker({
         <button
           type="button"
           onClick={() => setShowNote(true)}
-          className="mt-3 text-xs text-muted underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-foreground"
+          className="mt-3 text-xs text-muted link hover:text-foreground hover:decoration-foreground"
         >
           Add a note about this list
         </button>

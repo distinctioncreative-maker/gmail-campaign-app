@@ -320,7 +320,7 @@ export function HelpGuides({ query = "" }: { query?: string }) {
                     {g.cta && (
                       <Link
                         href={g.cta.href}
-                        className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                        className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground link"
                       >
                         {g.cta.label}
                         <Icon name="chevronRight" size={14} />

@@ -194,7 +194,7 @@ export default async function DeliverabilityPage() {
                     href="https://postmaster.google.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                    className="text-foreground link"
                   >
                     postmaster.google.com
                   </a>{" "}

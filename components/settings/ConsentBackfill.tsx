@@ -70,7 +70,7 @@ export function ConsentBackfill({ unrecorded }: { unrecorded: number }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-2 text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+        className="mt-2 text-xs font-medium text-foreground link"
       >
         Record it for all {unrecorded.toLocaleString()}
       </button>

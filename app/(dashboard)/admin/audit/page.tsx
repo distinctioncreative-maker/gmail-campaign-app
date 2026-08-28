@@ -27,7 +27,7 @@ export default async function AuditPage() {
       <p className="mt-4 text-sm text-muted">
         <Link
           href="/admin"
-          className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+          className="text-foreground link"
         >
           ← Back to Administration
         </Link>

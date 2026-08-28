@@ -41,7 +41,7 @@ export default function SupportPage() {
       <LegalSection title="If you can sign in">
         <p>
           Use the contact form in the app:{" "}
-          <Link href="/help/contact" className="underline decoration-border underline-offset-4 hover:decoration-foreground">
+          <Link href="/help/contact" className="link">
             Help, then Contact support
           </Link>
           .
@@ -57,7 +57,7 @@ export default function SupportPage() {
             Email{" "}
             <a
               href={supportMailto(address, { subject: "Cannot sign in to Cadence" })}
-              className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+              className="font-medium text-foreground link"
             >
               {address}
             </a>{" "}
@@ -86,7 +86,7 @@ export default function SupportPage() {
         <p>
           Requests about your data are handled through the same path and are not treated as
           ordinary tickets. See the{" "}
-          <Link href="/privacy" className="underline decoration-border underline-offset-4 hover:decoration-foreground">
+          <Link href="/privacy" className="link">
             privacy notice
           </Link>{" "}
           for what Cadence stores and why.
@@ -97,7 +97,7 @@ export default function SupportPage() {
         <p>
           <a
             href="/api/health"
-            className="underline decoration-border underline-offset-4 hover:decoration-foreground"
+            className="link"
           >
             /api/health
           </a>{" "}

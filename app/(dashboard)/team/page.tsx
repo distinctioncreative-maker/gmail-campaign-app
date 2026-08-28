@@ -136,7 +136,7 @@ function Leaderboard({
 
             {/* Actions */}
             <div className="flex shrink-0 flex-col items-end gap-2">
-              <Link href={`/team/${m.userId}`} className="text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+              <Link href={`/team/${m.userId}`} className="text-xs font-medium text-foreground link">
                 View →
               </Link>
               {canManage && teamId && (
