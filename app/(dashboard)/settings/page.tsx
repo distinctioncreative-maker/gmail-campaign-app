@@ -37,31 +37,31 @@ export default async function SettingsPage({
   const { gmail } = await searchParams;
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader title="Settings" description="Your Gmail connection, sender profile, signature, and default pacing." />
 
       {gmail === "connected" && (
-        <p className="mt-4 rounded-lg bg-success-soft p-3 text-sm text-success">
+        <p className="rounded-lg bg-success-soft p-3 text-sm text-success">
           Gmail connected successfully.
         </p>
       )}
       {gmail === "denied" && (
-        <p className="mt-4 rounded-lg bg-warning-soft p-3 text-sm text-warning">
+        <p className="rounded-lg bg-warning-soft p-3 text-sm text-warning">
           Gmail connection was cancelled. You can try again whenever you&apos;re ready.
         </p>
       )}
       {(gmail === "error" || gmail === "no_refresh_token") && (
-        <p className="mt-4 rounded-lg bg-danger-soft p-3 text-sm text-danger">
+        <p className="rounded-lg bg-danger-soft p-3 text-sm text-danger">
           Something went wrong connecting Gmail. Please try again.
         </p>
       )}
       {gmail === "account_mismatch" && (
-        <p className="alert-danger mt-4 rounded-lg border p-3 text-sm text-danger">
+        <p className="alert-danger rounded-lg border p-3 text-sm text-danger">
           Connect the same Google account you use to sign in to Cadence. No mailbox was saved.
         </p>
       )}
 
-      <div className="mt-6 max-w-2xl space-y-6">
+      <div className="max-w-2xl space-y-6">
         {ctx.role === "ADMIN" && (
           <div className="animate-rise">
             <BillingCard />

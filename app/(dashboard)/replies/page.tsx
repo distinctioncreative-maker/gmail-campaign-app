@@ -171,7 +171,7 @@ export default async function RepliesPage() {
   ];
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Replies"
         description="Everyone who has replied to your campaigns, ranked so the interested ones come first."
@@ -183,7 +183,7 @@ export default async function RepliesPage() {
           when something is genuinely waiting, so an inbox that is fully actioned
           shows no panel rather than a finished conversation dressed as work. */}
       {focus && (
-        <div className="mb-6">
+        <div>
           <ReplyFocus
             name={focus.fullName}
             email={focus.email}
@@ -247,7 +247,7 @@ export default async function RepliesPage() {
         ))}
       </StatGrid>
 
-      <div className="mt-6">
+      <div>
         {rows.length === 0 ? (
           <EmptyState
             icon="reply"

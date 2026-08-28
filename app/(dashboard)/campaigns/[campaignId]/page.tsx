@@ -141,7 +141,7 @@ export default async function CampaignDetailPage({
   ];
 
   return (
-    <div className="animate-rise">
+    <div className="page-sections animate-rise">
       {launched === "1" && campaign.deletedAt === null && (
         <LaunchCelebration
           recipientCount={campaign.eligibleRecipients}
@@ -238,7 +238,7 @@ export default async function CampaignDetailPage({
 
       <CampaignSectionNav showControls={campaign.deletedAt === null} />
 
-      <div id="overview" className="mt-5 grid scroll-mt-24 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <div id="overview" className="grid scroll-mt-24 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="card p-6 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -303,7 +303,7 @@ export default async function CampaignDetailPage({
         </section>
       </div>
 
-      <div className="mt-4">
+      <div>
         <StatGrid columns={6}>
           {stats.map((s) => (
             <StatTile
@@ -320,7 +320,7 @@ export default async function CampaignDetailPage({
       </div>
 
       {tracksAnything(campaign) ? (
-        <div className="mt-4 rounded-lg border border-border bg-surface-2 p-4 text-sm">
+        <div className="rounded-lg border border-border bg-surface-2 p-4 text-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <p>
               <span className="font-semibold text-info">{openedCount}</span>{" "}
@@ -343,7 +343,7 @@ export default async function CampaignDetailPage({
 
       {campaign.deletedAt === null ? (
         <>
-          <div id="controls" className="mt-6 scroll-mt-24">
+          <div id="controls" className="scroll-mt-24">
             <CampaignControls
               campaignId={campaign.campaignId}
               status={campaign.status}
@@ -362,14 +362,14 @@ export default async function CampaignDetailPage({
             />
           </div>
 
-          <div className="mt-4">
+          <div>
             <CampaignDiagnostics campaignId={campaign.campaignId} />
           </div>
         </>
       ) : null}
 
       {abRows.length > 0 && (
-        <div className="mt-4 card p-6 sm:p-7">
+        <div className="card p-6 sm:p-7">
           <h2 className="font-medium">Template performance (A/B)</h2>
           <DataTable
             className="mt-3"
@@ -412,7 +412,7 @@ export default async function CampaignDetailPage({
         </div>
       )}
 
-      <div className="mt-8 grid gap-6 xl:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
         <div id="recipients" className="scroll-mt-24">
           <h2 className="mb-3 font-medium">Recipients</h2>
           <RecipientTable

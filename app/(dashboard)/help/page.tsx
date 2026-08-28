@@ -46,7 +46,7 @@ export default function HelpPage() {
   const [query, setQuery] = useState("");
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Help & Test Center"
         description="Task-based guidance, safe system checks, and plain-language troubleshooting for every part of Cadence."
@@ -99,7 +99,7 @@ export default function HelpPage() {
       </div>
 
       {/* Guided how-tos */}
-      <div id="guides" className="mt-8 scroll-mt-24">
+      <div id="guides" className="scroll-mt-24">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <h2 className="font-semibold">How-to guides</h2>
@@ -119,7 +119,7 @@ export default function HelpPage() {
       {/* Test Center: not searched, always fully visible: it's a short,
           fixed checklist rather than a lookup surface. */}
       {!query && (
-        <div id="test-center" className="mt-10 scroll-mt-24">
+        <div id="test-center" className="scroll-mt-24">
           <h2 className="mb-1 font-medium">Test Center</h2>
           <p className="mb-3 text-sm text-muted">
             Run these any time to confirm core workflows. Test emails go only to your configured test
@@ -130,7 +130,7 @@ export default function HelpPage() {
       )}
 
       {/* FAQ */}
-      <div id="questions" className="mt-10 scroll-mt-24">
+      <div id="questions" className="scroll-mt-24">
         <h2 className="font-semibold">Common questions &amp; troubleshooting</h2>
         <p className="mb-3 mt-1 text-xs text-muted">
           Clear explanations for sending, safety, deliverability, and access.
@@ -139,7 +139,7 @@ export default function HelpPage() {
       </div>
 
       {!query ? (
-        <div className="mt-10 card p-6 sm:p-7">
+        <div className="card p-6 sm:p-7">
           <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Trust and responsible use
           </p>
@@ -191,7 +191,7 @@ export default function HelpPage() {
 
       {/* Feature suggestions */}
       {!query && (
-        <div className="mt-10">
+        <div>
           <h2 className="mb-1 font-medium">Suggest a feature</h2>
           <p className="mb-3 text-sm text-muted">
             Tell us what would make Cadence better. Ideas are shared with your team.

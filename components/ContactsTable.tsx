@@ -242,7 +242,7 @@ export function ContactsTable({
         onApply={applyView}
         onReset={resetView}
       />
-      <div className="card grid gap-3 p-3 xl:grid-cols-[minmax(16rem,1fr)_auto] xl:items-end">
+      <div className="card grid gap-3 p-4 xl:grid-cols-[minmax(16rem,1fr)_auto] xl:items-end">
         <div className="relative w-full">
           <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted">
             <Icon name="search" size={16} />
@@ -367,7 +367,7 @@ export function ContactsTable({
             return (
               <li
                 key={c.contactId}
-                className={`card flex items-start gap-3 p-3 ${selected.has(c.contactId) ? "ring-1 ring-border" : ""}`}
+                className={`card flex items-start gap-3 p-4 ${selected.has(c.contactId) ? "ring-1 ring-border" : ""}`}
               >
                 <input
                   type="checkbox"

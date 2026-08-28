@@ -13,7 +13,7 @@ export default async function TemplatesPage() {
   const archived = templates.filter((t) => !t.active);
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Templates"
         description="Reusable emails with placeholders that fill in each lead's details."
@@ -32,7 +32,7 @@ export default async function TemplatesPage() {
           action={{ href: "/templates/new", label: "Create your first template" }}
         />
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {active.map((t, i) => (
             <div
               key={t.templateId}
@@ -56,7 +56,7 @@ export default async function TemplatesPage() {
       )}
 
       {archived.length > 0 && (
-        <details className="mt-8">
+        <details>
           <summary className="cursor-pointer text-sm text-muted">
             Archived templates ({archived.length})
           </summary>

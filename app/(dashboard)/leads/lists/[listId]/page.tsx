@@ -58,7 +58,7 @@ export default async function LeadListDetailPage({
   }));
 
   return (
-    <div>
+    <div className="page-sections">
       {/* Found by the archetype guard rather than by me: this is a fifth detail
           route and it was still using the index header. The count is now a
           real fact in the header instead of a sentence describing it. */}
@@ -77,7 +77,7 @@ export default async function LeadListDetailPage({
       />
 
       {/* Add leads to this list: duplicates already in the list are skipped */}
-      <div className="mt-6">
+      <div>
         <h2 className="mb-1 font-medium">Add leads to this list</h2>
         <p className="mb-3 text-sm text-muted">
           Paste or upload leads: anyone already in “{list.name}” is skipped, so you can keep topping
@@ -86,8 +86,8 @@ export default async function LeadListDetailPage({
         <ImportChooser listId={list.listId} />
       </div>
 
-      <div className="mt-10">
-        <h2 className="mb-3 font-medium">Leads in this list ({totalContacts.toLocaleString()})</h2>
+      <div>
+        <h2 className="section-head font-medium">Leads in this list ({totalContacts.toLocaleString()})</h2>
         {totalContacts === 0 ? (
           <EmptyState
             variant="inline"

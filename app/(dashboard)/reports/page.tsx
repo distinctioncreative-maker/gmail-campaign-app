@@ -64,7 +64,7 @@ export default async function ReportsPage({
   ]);
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Reports"
         description="Campaign-level performance, reliable reply outcomes, and timing signals in one decision-ready view. Recently deleted campaigns stay recoverable but are excluded from these totals."
@@ -126,12 +126,12 @@ export default async function ReportsPage({
           Initial sends and replies from the selected cohort over the last {rangeDays} days.
           Replies use their own scale so a strong day still stands out against send volume.
         </p>
-        <div className="mt-5">
+        <div>
           <TrendChart rows={report.trend} />
         </div>
       </section>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
         <CampaignFunnel steps={report.funnel} />
 
         <section className="card p-6 sm:p-7">
@@ -154,7 +154,7 @@ export default async function ReportsPage({
         <TimeToReplyPanel ttr={report.ttr} />
       </div>
 
-      <div className="mt-6">
+      <div>
         <InboxBreakdownPanel inboxes={report.inboxes} />
         <TrackedEngagementPanel
           trackedCampaignCount={report.trackedCampaignCount}

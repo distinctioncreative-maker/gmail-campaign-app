@@ -476,7 +476,7 @@ export function CampaignWizard() {
         ))}
       </ol>
 
-      <div className="mt-5 card animate-rise p-8">
+      <div className="mt-5 card animate-rise p-6 sm:p-7">
         {error && <p className="alert-danger mb-4 rounded-lg border p-3 text-sm text-danger">{error}</p>}
 
         {step === 0 && (

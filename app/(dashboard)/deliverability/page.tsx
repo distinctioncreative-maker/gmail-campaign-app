@@ -56,7 +56,7 @@ export default async function DeliverabilityPage() {
   const surfacedDimensions = (benchmarks?.dimensions ?? []).filter((d) => d.buckets.length > 0);
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Deliverability"
         description={`Is ${domain} set up to land in inboxes? Domain authentication is checked live; reputation comes from Google Postmaster Tools.`}
@@ -65,12 +65,13 @@ export default async function DeliverabilityPage() {
       {/* Directly under the header, above the DNS checks. It is the one thing
           on this page a customer can fix that nothing else on the page covers,
           and the shared-domain exposure applies to every account by default. */}
-      <div className="mb-8">
+      <div>
         <TrackingDomainCard isAdmin={ctx.role === "ADMIN"} />
       </div>
 
       {/* DNS auth: zero setup, always available */}
-      <h2 className="mb-3 font-medium">Domain authentication</h2>
+      <section>
+      <h2 className="section-head font-medium">Domain authentication</h2>
       <div className="card divide-y divide-border overflow-hidden">
         {dnsChecks.map((c) => (
           <div key={c.id} className="flex flex-wrap items-start gap-3 p-4">
@@ -87,9 +88,11 @@ export default async function DeliverabilityPage() {
         These three records tell inbox providers your email is genuinely from {domain}. All-green
         here removes the most common structural cause of spam foldering.
       </p>
+      </section>
 
       {/* Postmaster */}
-      <h2 className="mt-10 mb-3 font-medium">Google Postmaster Tools</h2>
+      <section>
+      <h2 className="section-head font-medium">Google Postmaster Tools</h2>
       {postmaster.state === "OK" ? (
         <>
           <div className="mb-4">
@@ -217,9 +220,11 @@ export default async function DeliverabilityPage() {
           )}
         </div>
       )}
+      </section>
 
       {/* Deliverability Insights: anonymized, cross-user benchmarks */}
-      <h2 className="mt-10 mb-3 font-medium">Deliverability insights</h2>
+      <section>
+      <h2 className="section-head font-medium">Deliverability insights</h2>
       {surfacedDimensions.length === 0 ? (
         <div className="card p-6 sm:p-7 text-sm text-muted">
           <p className="font-medium text-foreground">Still gathering data</p>
@@ -247,8 +252,9 @@ export default async function DeliverabilityPage() {
           </div>
         </>
       )}
+      </section>
 
-      <div className="card p-6 sm:p-7 mt-8">
+      <div className="card p-6 sm:p-7">
         <h3 className="font-medium">If replies are low, work this list in order</h3>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
           <li>Fix anything red or amber above: authentication is the foundation.</li>

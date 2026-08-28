@@ -211,6 +211,11 @@
   --radius-2xl: 28px; /* dialogs, popovers, page-level hero surfaces */
   --radius-full: 999px;
 
+  /* Rhythm. Two values, because two is how many relationships a page actually
+     has between blocks: peers, and a heading with its own content. */
+  --space-section: 1.75rem;
+  --space-block: 0.75rem;
+
   /* Elevation ladder.
      The previous ladder was three `none`s and one value, on the theory that a
      soft shadow reads cheap. The instinct is right and the conclusion was
@@ -528,6 +533,28 @@ h2 { letter-spacing: -0.026em; }
   background-clip: content-box;
 }
 *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--muted) 55%, var(--border)); }
+
+/* ── Page rhythm ──────────────────────────────────────────── */
+/* One gap between the top-level sections of a page.
+   Every page was choosing per section instead, and the result is visible: the
+   leads page alone put mb-6, mb-8, nothing, mt-6 and mt-10 between five
+   consecutive siblings, so the eye reads four different relationships between
+   blocks that are all peers. A tally across the dashboard found mt-6 thirty-one
+   times, mt-4 twenty-seven, mt-3 thirteen, mt-10 nine, mt-8 six and mt-5 five,
+   which is not a rhythm, it is whatever each section was feeling.
+
+   Owning it on the container rather than on each child is the point. A child
+   cannot get it wrong, a new section inherits it, and the first and last
+   children do not need a special case. */
+.page-sections > * + * {
+  margin-top: var(--space-section);
+}
+
+/* A heading and the thing it introduces. Closer than two sections, because
+   proximity is what says they belong together. */
+.section-head {
+  margin-bottom: var(--space-block);
+}
 
 /* ── Surfaces ─────────────────────────────────────────────── */
 /* A ruled panel, not a floating object. Definition comes from the hairline

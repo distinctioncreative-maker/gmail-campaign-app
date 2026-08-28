@@ -14,13 +14,13 @@ export default async function SourcingPage() {
   const credits = provider ? await getCreditState(ctx.organizationId) : null;
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Find leads"
         description="Search a data provider for people who match, then add the ones worth emailing."
       />
 
-      <p className="mt-4 text-sm text-muted">
+      <p className="text-sm text-muted">
         <Link
           href="/leads"
           className="text-foreground link"
@@ -29,7 +29,7 @@ export default async function SourcingPage() {
         </Link>
       </p>
 
-      <div className="mt-6 max-w-4xl">
+      <div className="max-w-4xl">
         <SourcingPanel
           configured={provider !== null}
           providerName={provider?.name ?? ""}

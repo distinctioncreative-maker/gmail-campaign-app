@@ -30,19 +30,19 @@ export default async function FeaturesPage() {
   const counts = countByStatus();
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Feature checklist"
         description="What Cadence can do today, and what's still on the roadmap. Generated from the same registry as docs/features.md in the repo."
       />
 
-      <p className="mt-4 text-sm text-muted">
+      <p className="text-sm text-muted">
         <Link href="/admin" className="text-foreground link">
           ← Back to Administration
         </Link>
       </p>
 
-      <div className="mt-4">
+      <div>
         <StatGrid columns={3}>
           <StatTile label="Shipped" value={counts.shipped} icon="check" tone="success" size="sm" />
           <StatTile label="Beta" value={counts.beta} icon="sparkles" tone="warning" size="sm" />
@@ -50,7 +50,7 @@ export default async function FeaturesPage() {
         </StatGrid>
       </div>
 
-      <div className="mt-6 flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         {FEATURE_CATEGORIES.map((category) => (
           <div key={category.id} className="card p-6 sm:p-7">
             <h2 className="font-medium text-foreground">{category.name}</h2>

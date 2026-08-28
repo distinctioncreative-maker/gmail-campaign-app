@@ -30,7 +30,7 @@ export default async function WaitlistPage() {
   ]);
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Sales enquiries"
         description="Everyone who asked to talk to sales from the public landing page."
@@ -45,13 +45,13 @@ export default async function WaitlistPage() {
         }
       />
 
-      <p className="mt-4 text-sm text-muted">
+      <p className="text-sm text-muted">
         <Link href="/admin" className="text-foreground link">
           ← Back to Administration
         </Link>
       </p>
 
-      <div className="mt-4 max-w-xs">
+      <div className="max-w-xs">
         <StatTile
           label="Total requests"
           value={entries.length.toLocaleString()}
@@ -61,7 +61,7 @@ export default async function WaitlistPage() {
       </div>
 
       {entries.length === 0 ? (
-        <div className="mt-6">
+        <div>
           <EmptyState
             variant="inline"
             icon="users"
@@ -70,7 +70,7 @@ export default async function WaitlistPage() {
           />
         </div>
       ) : (
-        <DataTable className="mt-6  card"
+        <DataTable className="card"
         head={<>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Source</th>

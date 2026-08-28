@@ -66,7 +66,7 @@ export default async function LeadsPage({
   }));
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Leads"
         description="Build reusable audiences, understand engagement, and keep every campaign list clean."
@@ -78,7 +78,7 @@ export default async function LeadsPage({
       />
 
       {contacts.length > 0 ? (
-        <div className="mb-6">
+        <div>
           <StatGrid columns={4}>
             {(
               [
@@ -126,7 +126,7 @@ export default async function LeadsPage({
         </div>
       ) : null}
 
-      <div className="mb-8">
+      <div>
         <LeadListsBar lists={lists.map((l) => ({ listId: l.listId, name: l.name, count: l.count }))} />
       </div>
 
@@ -137,13 +137,13 @@ export default async function LeadsPage({
           where someone is looking when they scroll past importing more. Hidden
           below the threshold where grouping means anything. */}
       {totalContacts >= 4 && (
-        <div className="mt-6">
+        <div>
           <OrganizeLeads />
         </div>
       )}
 
-      <div className="mt-10">
-        <div className="mb-3">
+      <div>
+        <div className="section-head">
           <h2 className="font-semibold">Contact directory</h2>
           <p className="mt-1 text-xs text-muted">
             {totalContacts.toLocaleString()} total leads. Search, filter, and organize this page of {rows.length.toLocaleString()}.

@@ -761,3 +761,66 @@ describe("syntax that compiles to nothing", () => {
     expect((markup.match(/\blink\b/g) ?? []).length).toBeGreaterThan(30);
   });
 });
+
+/**
+ * Page rhythm.
+ *
+ * Every page was choosing its own gap between its own sections. A tally across
+ * the dashboard found mt-6 thirty-one times, mt-4 twenty-seven, mt-3 thirteen,
+ * mt-10 nine, mt-8 six and mt-5 five, and the leads page alone put mb-6, mb-8,
+ * nothing, mt-6 and mt-10 between five consecutive siblings. Blocks that are
+ * peers read as four different relationships, which is a large part of why the
+ * app felt assembled rather than designed.
+ *
+ * Owning it on the container is what makes it stick: a child cannot get it
+ * wrong, and a section added next year inherits it without being told.
+ */
+describe("page rhythm", () => {
+  const css = read("app/globals.css");
+
+  function dashboardPages(): string[] {
+    const out: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (entry.name === "page.tsx") out.push(path);
+      }
+    };
+    walk("app/(dashboard)");
+    return out;
+  }
+
+  it("declares the rhythm once, from tokens", () => {
+    expect(css).toMatch(/--space-section:\s*[\d.]+rem;/);
+    expect(css).toMatch(/--space-block:\s*[\d.]+rem;/);
+    expect(css).toMatch(
+      /\.page-sections > \* \+ \* \{\s*margin-top: var\(--space-section\);/
+    );
+    expect(css).toMatch(/\.section-head \{\s*margin-bottom: var\(--space-block\);/);
+  });
+
+  it("is adopted by the pages that had the worst spread", () => {
+    const pages = dashboardPages();
+    expect(pages.length).toBeGreaterThan(20);
+    const adopted = pages.filter((page) => read(page).includes("page-sections"));
+    expect(adopted.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it("leaves no page setting three different gaps between its own sections", () => {
+    // Only the values that read as a section gap. mt-1 through mt-3 are
+    // within-block spacing and are not what this is about.
+    const offenders = dashboardPages()
+      .map((page) => {
+        const gaps = new Set(
+          (read(page).match(/\bm[tb]-(?:4|5|6|8|10|12)\b/g) ?? []).map((gap) =>
+            gap.replace(/^m[tb]/, "")
+          )
+        );
+        return [page, [...gaps]] as const;
+      })
+      .filter(([, gaps]) => gaps.length >= 3)
+      .map(([page, gaps]) => `${page}: ${gaps.join(" ")}`);
+    expect(offenders).toEqual([]);
+  });
+});

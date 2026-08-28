@@ -64,7 +64,7 @@ export default async function RepDetailPage({
   ];
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title={repName}
         description={[
@@ -79,7 +79,7 @@ export default async function RepDetailPage({
         backLabel="Team"
       />
 
-      <div className="mt-6">
+      <div>
         <StatGrid columns={5}>
           {tiles.map(([label, value]) => (
             <StatTile
@@ -93,7 +93,7 @@ export default async function RepDetailPage({
         </StatGrid>
       </div>
 
-      <h2 className="mt-8 mb-3 font-medium">Campaigns</h2>
+      <h2 className="section-head font-medium">Campaigns</h2>
       {campaigns.length === 0 ? (
         <EmptyState
           variant="inline"

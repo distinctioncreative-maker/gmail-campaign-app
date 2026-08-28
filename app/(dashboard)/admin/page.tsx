@@ -28,30 +28,30 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Administration"
         description="Roles, access, sending mode, and organization policies. Teams are managed on the Team page."
       />
-      <div className="mt-6">
+      <div>
         <WorkspaceNameCard initial={org?.name ?? ""} />
       </div>
-      <div className="mt-6">
+      <div>
         <SendingModeCard />
       </div>
-      <div className="mt-6">
+      <div>
         <AiWritingCard />
       </div>
-      <div className="mt-6">
+      <div>
         <BillingCard />
       </div>
-      <div className="mt-6">
+      <div>
         <InviteTeamCard />
       </div>
-      <div className="mt-6">
+      <div>
         <CustomRolesCard roles={settings.customRoles} />
       </div>
-      <div className="mt-6">
+      <div>
         <Link
           href="/admin/audit"
           className="card p-6 sm:p-7 card-hover flex items-center justify-between no-underline"
@@ -66,7 +66,7 @@ export default async function AdminPage() {
           <span aria-hidden className="text-muted">→</span>
         </Link>
       </div>
-      <div className="mt-6">
+      <div>
         <Link
           href="/admin/waitlist"
           className="card p-6 sm:p-7 card-hover flex items-center justify-between no-underline"
@@ -80,7 +80,7 @@ export default async function AdminPage() {
           <span aria-hidden className="text-muted">→</span>
         </Link>
       </div>
-      <div className="mt-6">
+      <div>
         <Link
           href="/admin/features"
           className="card p-6 sm:p-7 card-hover flex items-center justify-between no-underline"
@@ -94,7 +94,7 @@ export default async function AdminPage() {
           <span aria-hidden className="text-muted">→</span>
         </Link>
       </div>
-      <div className="mt-6">
+      <div>
         <AdminPanel
           currentUserId={ctx.userId}
           members={members.map((m) => ({

@@ -94,7 +94,7 @@ export default function SignInPage() {
             <Logo size={26} />
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
+          <div className="rounded-2xl border border-border bg-surface p-6 shadow-lg sm:p-7">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Welcome back</h1>
             <p className="mt-2 text-sm text-muted">Sign in with your work Google account to continue.</p>
 
