@@ -49,9 +49,17 @@
   --landing-green-soft: var(--marketing-success-soft);
   --landing-green-border: color-mix(in srgb, var(--landing-green) 32%, var(--landing-line));
   --landing-green-on-ink: color-mix(in srgb, var(--landing-on-ink) 56%, var(--landing-green));
-  /* Historical internal name. Money reads as the outcome green, not as a
-     third hue: see the accent rule in docs/brand.md. */
+  /* Brass, and the name is finally literal. It used to alias the outcome green
+     under a historical name that said gold and meant green; with the green and
+     bone palette there is a real brass and money reads as it.
+
+     Two tokens because brass cannot do both jobs. --landing-gold is the dark,
+     text-safe value (5.01:1 on paper) for anything carrying words on the light
+     bands. --landing-gold-on-ink is the light one, and it is the only one that
+     resolves on the dark fold: putting the dark brass on the ink ground would
+     reproduce the invisible-glow bug this whole hero pass exists to fix. */
   --landing-gold: var(--marketing-revenue);
+  --landing-gold-on-ink: var(--marketing-brass-on-ink);
   --landing-gold-strong: color-mix(in srgb, var(--landing-gold) 68%, var(--landing-copy));
   --landing-gold-soft: var(--marketing-revenue-soft);
   --landing-danger-strong: color-mix(in srgb, var(--marketing-danger) 72%, var(--landing-copy));
@@ -65,6 +73,7 @@
   --landing-r-md: var(--radius-md);
   --landing-r-lg: var(--radius-lg);
   --landing-r-xl: var(--radius-xl);
+  --landing-r-2xl: var(--radius-2xl);
   --landing-ease: var(--ease-out);
   --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --landing-stage-duration: 2300ms;
@@ -246,34 +255,85 @@
   outline-offset: 4px;
 }
 
-/* Flat navy. The hero used to stack two tinted radial washes over a
-   three-stop vertical gradient, which is what gave it a mottled, backlit
-   look. One quiet gradient is enough to keep the fold from reading as a
-   flat rectangle. */
+/* The fold.
+   The previous version moved 12 luminance points from top to bottom, which is
+   close enough to flat that the eye reads it as one painted rectangle. This
+   travels further and off-axis, so the corner the headline sits in is lighter
+   than the corner it ends in and the surface has a direction. */
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--landing-ink), var(--landing-ink-soft));
+  background:
+    radial-gradient(
+      120% 90% at 18% 0%,
+      color-mix(in srgb, var(--landing-gold-on-ink) 9%, transparent) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      168deg,
+      color-mix(in srgb, var(--landing-ink-soft) 92%, var(--landing-on-ink)) 0%,
+      var(--landing-ink-soft) 34%,
+      var(--landing-ink) 100%
+    );
   color: var(--landing-on-ink);
 }
 
-/* A static engineering grid, fading out toward the product mock. It used to
-   drift back and forth on a permanent 18 second loop, which is motion in
-   peripheral vision that carries no information. */
+/*
+ * What replaced the grid.
+ *
+ * The 72px graph paper here was drawn at 3% white on a near-black ground,
+ * which is a delta of about six values out of 255. It was below the threshold
+ * most panels can resolve, so the "weak hero" complaint was literally correct:
+ * there was almost nothing rendering. It was also the single most recognisable
+ * AI-landing-page tell of the last two years, so making it *visible* would have
+ * been the wrong repair.
+ *
+ * This is two soft brass pools instead, large and off-centre, at opacities that
+ * actually resolve. They give the fold a light source and a direction without
+ * drawing a pattern, which is what the section needed: depth, not decoration.
+ * Masked away before the product mock so nothing competes with it.
+ */
 .heroGlow {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 3%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 3%) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(to bottom, black, transparent 72%);
+  background:
+    radial-gradient(
+      42% 46% at 12% 14%,
+      color-mix(in srgb, var(--landing-gold-on-ink) 16%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      38% 40% at 88% 4%,
+      color-mix(in srgb, var(--landing-green) 13%, transparent) 0%,
+      transparent 72%
+    );
+  mask-image: linear-gradient(to bottom, black 0%, black 34%, transparent 78%);
   pointer-events: none;
 }
 
-/* The orbiting blurred halo and the drifting glow dot that used to sit on
-   top of the grid are gone. They were the visual language of a gaming
-   peripheral, not of enterprise software. */
+/*
+ * One hairline where the fold ends.
+ *
+ * The band used to stop with nothing marking the edge, so the dark section and
+ * the paper below it met at a hard seam. A single brass rule at low opacity
+ * reads as a considered edge rather than as two blocks abutting, and it is the
+ * only place on the page brass is used as a line.
+ */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--landing-gold-on-ink) 38%, transparent) 22%,
+    color-mix(in srgb, var(--landing-gold-on-ink) 38%, transparent) 78%,
+    transparent
+  );
+  pointer-events: none;
+}
 
 .hero .shell {
   position: relative;
@@ -593,12 +653,35 @@
   animation: liveDot 1.8s ease-out infinite;
 }
 
-.introSection,
+/*
+ * Section rhythm, weighted rather than uniform.
+ *
+ * Every band used to be `padding-block: 96px`, which sounds like consistency
+ * and reads as flatness: the index row that exists to be skimmed got exactly
+ * the same air as the pricing table people stop and study, so nothing on the
+ * page claimed to be more important than anything else. Scrolling it felt long
+ * because there was no rhythm to move through, only a constant.
+ *
+ * Three weights now. The index is a transition and gets least; the sections
+ * someone actually reads get the middle; pricing and the closing bands get the
+ * most because that is where a visitor is deciding.
+ */
+.introSection {
+  position: relative;
+  padding-block: 64px;
+  background: var(--landing-paper);
+}
+
 .featuresSection,
-.pricingSection,
 .faqSection {
   position: relative;
   padding-block: 96px;
+  background: var(--landing-paper);
+}
+
+.pricingSection {
+  position: relative;
+  padding-block: 128px;
   background: var(--landing-paper);
 }
 
@@ -612,6 +695,51 @@
 .sectionHeading {
   position: relative;
   max-width: 760px;
+}
+
+/* Three opening treatments, not one.
+ *
+ * Every band on this page used to start with the identical eyebrow, headline,
+ * paragraph stack, left aligned, five times in a row. Each one was fine on its
+ * own and the repetition was the problem: a reader scrolling past five
+ * identical openings stops registering them as new sections and starts reading
+ * the page as one undifferentiated column, which is most of what "the grid
+ * feels weak" describes.
+ *
+ * So the stacked default stays for the bands that introduce a list, the split
+ * puts the supporting sentence beside the headline for the bands that follow a
+ * heavier section and need to feel like a fresh start, and centring is spent
+ * once, on pricing, because that is the only place on the page a visitor is
+ * being asked to decide something.
+ */
+.sectionHeadingSplit {
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  column-gap: 72px;
+  padding-top: 30px;
+  border-top: 1px solid var(--landing-line-strong);
+}
+
+.sectionHeadingSplit > span {
+  grid-area: 1 / 1;
+}
+
+.sectionHeadingSplit > h2 {
+  grid-area: 2 / 1;
+}
+
+.sectionHeadingSplit > p {
+  grid-area: 2 / 2;
+  align-self: end;
+  max-width: 46ch;
+  margin: 0 0 10px;
+}
+
+.sectionHeadingCentered {
+  max-width: 720px;
+  margin-inline: auto;
+  text-align: center;
 }
 
 .eyebrow {
@@ -767,11 +895,35 @@
   font-weight: 680;
 }
 
+/*
+ * The feature grid, with the first card given weight.
+ *
+ * Six grids on this page were all equal-fraction, nothing spanned, and nothing
+ * was featured by size. That is the layout equivalent of reading a list in a
+ * monotone: every card asserted the same importance, so the eye had no entry
+ * point and the section became something to scroll past rather than read.
+ *
+ * The first card now spans two columns on wide viewports. It is the one that
+ * says the product writes in your voice, which is the claim the rest of the
+ * grid supports, so it earns the space rather than being enlarged for rhythm.
+ */
 .featureGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-top: 56px;
+}
+
+@media (min-width: 981px) {
+  .featureGrid article:first-child {
+    grid-column: span 2;
+  }
+
+  /* A spanning card is wider, not taller, so its copy needs a measure or the
+     line length runs past comfortable reading. */
+  .featureGrid article:first-child p {
+    max-width: 52ch;
+  }
 }
 
 .featureGrid article {
@@ -996,8 +1148,8 @@
   text-align: center;
 }
 
-.faqSection .sectionHeading {
-  max-width: 580px;
+.faqSection .sectionHeadingSplit > h2 {
+  max-width: 15ch;
 }
 
 .faq {
@@ -1861,19 +2013,46 @@
   position: relative;
   overflow: hidden;
   padding-block: 96px;
-  background: var(--landing-ink);
-  color: var(--landing-on-ink);
+  background: var(--landing-paper);
   --chart-1: var(--marketing-chart-on-ink-1);
   --chart-2: var(--marketing-chart-on-ink-2);
   --chart-grid: color-mix(in srgb, var(--landing-on-ink) 12%, transparent);
   --surface: var(--landing-ink);
 }
+
+/* The metrics are an inset panel now rather than a full bleed band, and that
+   is a fix rather than a preference. The trust section directly above is also
+   ink, so two full width dark sections met edge to edge and the page carried
+   one uninterrupted 400px stretch of dark with a seam in the middle where the
+   headline sizes happened to change. Nothing said "new section" at that seam.
+   Insetting this one puts paper on all four sides of it, so the two separate
+   without either of them having to stop being dark, and the numbers start
+   reading as an object worth stopping on rather than as more background.
+
+   The brass wash sits in the top right corner, which is the one region of this
+   panel that carries no text: the stats block is opaque ink and paints over
+   it, and the left column is far enough away that the falloff has reached
+   nothing by the time it gets there. That placement is deliberate. Washing the
+   left column instead would lift its ground and push --landing-on-ink-subtle,
+   which sets the 12px note under the button, from 4.85:1 to about 4.0:1. */
 .outcomeLayout {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: 64px;
   align-items: center;
+  padding: 60px 56px;
+  border: 1px solid color-mix(in srgb, var(--landing-gold-on-ink) 22%, transparent);
+  border-radius: var(--landing-r-2xl);
+  background:
+    radial-gradient(
+      90% 110% at 100% 0%,
+      color-mix(in srgb, var(--landing-gold-on-ink) 13%, transparent) 0%,
+      transparent 60%
+    ),
+    var(--landing-ink);
+  color: var(--landing-on-ink);
+  box-shadow: var(--landing-shadow-premium);
 }
 .outcomeCopy h2 {
   margin: 0;
@@ -1937,8 +2116,18 @@
 }
 
 @media (max-width: 900px) {
-  .outcomeLayout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .outcomeLayout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+    padding: 36px 24px;
+  }
   .outcomeStat { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .sectionHeadingSplit {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+  .sectionHeadingSplit > h2 { grid-area: auto; }
+  .sectionHeadingSplit > p { grid-area: auto; margin: 19px 0 0; }
 }
 
 /* Link out to the real playground, in place of four demos that used to live

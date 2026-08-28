@@ -505,6 +505,86 @@ describe("landing-page experience", () => {
     ).toBeGreaterThanOrEqual(4.5);
   });
 
+  it("does not open every section with the same three elements", () => {
+    /**
+     * Five bands opened with the identical eyebrow, headline, paragraph stack,
+     * left aligned, one after another. Each one was fine alone. The repetition
+     * was the defect: past the third identical opening a reader stops
+     * registering a new section starting and reads the page as one column,
+     * which is a large part of what "the grid feels weak" was describing.
+     *
+     * The rule is about variety rather than any particular treatment, so it
+     * counts how many openings fall back to the default stack rather than
+     * naming which section should use which. Both named variants are also
+     * checked to exist in the stylesheet, because a renamed class would
+     * otherwise satisfy this by applying nothing at all.
+     */
+    const openings = landingSource.match(/styles\.sectionHeading\b/g) ?? [];
+    expect(openings.length).toBeGreaterThanOrEqual(5);
+
+    for (const variant of ["sectionHeadingSplit", "sectionHeadingCentered"]) {
+      expect(landingSource).toContain(`styles.${variant}`);
+      expect(landingDeclarations).toContain(`.${variant} {`);
+    }
+
+    const varied =
+      (landingSource.match(/styles\.sectionHeadingSplit\b/g) ?? []).length +
+      (landingSource.match(/styles\.sectionHeadingCentered\b/g) ?? []).length;
+    const plain = openings.length - varied;
+    expect(varied).toBeGreaterThanOrEqual(2);
+    expect(plain).toBeLessThanOrEqual(Math.floor(openings.length / 2));
+
+    // Centring is the one that stops working if it is spent twice.
+    expect(
+      (landingSource.match(/styles\.sectionHeadingCentered\b/g) ?? []).length
+    ).toBe(1);
+  });
+
+  it("never runs two dark bands into each other", () => {
+    /**
+     * The trust band and the metrics band were both full-bleed ink and sat
+     * next to each other in the markup, so the page carried one uninterrupted
+     * dark stretch with a seam in the middle where the headline sizes changed.
+     * Nothing at that seam said a new section had started.
+     *
+     * This reads the section order out of the markup and the ground out of the
+     * stylesheet rather than pinning the two class names, so it still holds if
+     * a third dark band is added later.
+     */
+    const sections = [
+      ...landingSource.matchAll(
+        /<section\s+className=\{styles\.(\w+)\}/g
+      ),
+    ].map((match) => match[1]);
+    expect(sections.length).toBeGreaterThanOrEqual(6);
+
+    const groundOf = (className: string): string => {
+      let ground = "";
+      for (const [, selector, body] of landingDeclarations.matchAll(
+        /([^{}]*)\{([^{}]*)\}/g
+      )) {
+        if (!new RegExp(`\\.${className}\\b`).test(selector)) continue;
+        const declared = body.match(/(?:^|;)\s*background:\s*([^;]+)/)?.[1];
+        if (declared) ground = declared.trim();
+      }
+      return ground;
+    };
+
+    const isDark = (ground: string) =>
+      ground.includes("--landing-ink") && !ground.includes("--landing-paper");
+
+    const grounds = sections.map(groundOf);
+    expect(grounds.filter(isDark).length).toBeGreaterThanOrEqual(1);
+
+    for (let index = 1; index < sections.length; index += 1) {
+      if (isDark(grounds[index]) && isDark(grounds[index - 1])) {
+        throw new Error(
+          `${sections[index - 1]} and ${sections[index]} are both dark bands and sit next to each other`
+        );
+      }
+    }
+  });
+
   it("keeps one radius ladder and no tinted washes", () => {
     // Seventeen ad-hoc radii are what made the site read softer and cheaper than
     // the product it advertises.

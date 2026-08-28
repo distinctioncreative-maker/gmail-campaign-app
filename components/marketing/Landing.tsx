@@ -524,7 +524,10 @@ export function Landing() {
 
         <section className={styles.workflowSection} id="workflow">
           <div className={styles.shell}>
-            <div className={styles.sectionHeading} data-reveal>
+            <div
+              className={`${styles.sectionHeading} ${styles.sectionHeadingSplit}`}
+              data-reveal
+            >
               <span className={styles.eyebrow}>How it works</span>
               <h2>From cold list to booked call.</h2>
               <p>
@@ -716,7 +719,10 @@ export function Landing() {
 
         <section className={styles.pricingSection} id="pricing">
           <div className={styles.shell}>
-            <div className={styles.sectionHeading} data-reveal>
+            <div
+              className={`${styles.sectionHeading} ${styles.sectionHeadingCentered}`}
+              data-reveal
+            >
               <span className={styles.eyebrow}>Pricing</span>
               <h2>Priced for real use, not for a demo.</h2>
               <p>
@@ -784,9 +790,16 @@ export function Landing() {
 
         <section className={styles.faqSection}>
           <div className={styles.shell}>
-            <div className={styles.sectionHeading} data-reveal>
+            <div
+              className={`${styles.sectionHeading} ${styles.sectionHeadingSplit}`}
+              data-reveal
+            >
               <span className={styles.eyebrow}>Straight answers</span>
               <h2>Know exactly what Cadence does and does not promise.</h2>
+              <p>
+                The answers below describe what ships today. Where something is
+                still being built, it says so.
+              </p>
             </div>
             <div className={styles.faq} data-reveal>
               {FAQ.map(([question, answer]) => (
