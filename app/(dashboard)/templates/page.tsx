@@ -62,7 +62,7 @@ export default async function TemplatesPage() {
           </summary>
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {archived.map((t) => (
-              <div key={t.templateId} className="rounded-2xl bg-surface p-5 opacity-70 shadow-sm">
+              <div key={t.templateId} className="rounded-lg bg-surface p-5 opacity-70 shadow-sm">
                 <p className="font-medium">{t.name}</p>
                 <p className="mt-1 line-clamp-2 text-sm text-muted">{t.subjectTemplate}</p>
                 <div className="mt-3">

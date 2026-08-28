@@ -102,7 +102,7 @@ export function AuditLogList() {
           value={action}
           onChange={(e) => changeAction(e.target.value)}
           aria-label="Filter by action"
-          className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         >
           <option value="">Every action</option>
           {allAuditActions().map((a) => (
@@ -116,7 +116,7 @@ export function AuditLogList() {
             <button
               onClick={() => setCategory("ALL")}
               aria-pressed={category === "ALL"}
-              className={`min-h-11 rounded-xl px-3 py-2 text-sm ${category === "ALL" ? "bg-surface-2 font-medium" : "text-muted"}`}
+              className={`min-h-11 rounded-md px-3 py-2 text-sm ${category === "ALL" ? "bg-surface-2 font-medium" : "text-muted"}`}
             >
               All
             </button>
@@ -125,7 +125,7 @@ export function AuditLogList() {
                 key={c}
                 onClick={() => setCategory(c)}
                 aria-pressed={category === c}
-                className={`min-h-11 rounded-xl px-3 py-2 text-sm ${category === c ? "bg-surface-2 font-medium" : "text-muted"}`}
+                className={`min-h-11 rounded-md px-3 py-2 text-sm ${category === c ? "bg-surface-2 font-medium" : "text-muted"}`}
               >
                 {CATEGORY_LABELS[c]}
               </button>

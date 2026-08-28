@@ -203,7 +203,7 @@ export default async function CampaignDetailPage({
       />
 
       {campaign.deletedAt !== null ? (
-        <div className="alert-warning mt-5 rounded-xl border p-4 text-sm leading-relaxed">
+        <div className="alert-warning mt-5 rounded-lg border p-4 text-sm leading-relaxed">
           <p className="font-semibold">This campaign is in Recently Deleted.</p>
           <p className="mt-1">
             Deleted <LocalTime value={campaign.deletedAt} options={{ dateStyle: "long", timeStyle: "short" }} />.
@@ -211,7 +211,7 @@ export default async function CampaignDetailPage({
           </p>
         </div>
       ) : campaign.archivedAt !== null ? (
-        <div className="mt-5 rounded-xl border border-border bg-surface-2 p-4 text-sm text-muted">
+        <div className="mt-5 rounded-lg border border-border bg-surface-2 p-4 text-sm text-muted">
           Archived <LocalTime value={campaign.archivedAt} options={{ dateStyle: "long" }} />.
           This campaign remains included in reporting.
         </div>
@@ -222,7 +222,7 @@ export default async function CampaignDetailPage({
           panel: a throttled campaign otherwise reads as a stuck one. */}
       {engagement.message !== null ? (
         <div
-          className={`mt-5 rounded-xl border p-4 text-sm leading-relaxed ${
+          className={`mt-5 rounded-lg border p-4 text-sm leading-relaxed ${
             engagement.verdict === "STRONG" ? "alert-success" : "alert-warning"
           }`}
         >
@@ -319,7 +319,7 @@ export default async function CampaignDetailPage({
       </div>
 
       {tracksAnything(campaign) ? (
-        <div className="mt-4 rounded-xl border border-border bg-surface-2 p-4 text-sm">
+        <div className="mt-4 rounded-lg border border-border bg-surface-2 p-4 text-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <p>
               <span className="font-semibold text-info">{openedCount}</span>{" "}

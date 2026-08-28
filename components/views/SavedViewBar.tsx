@@ -139,7 +139,7 @@ export function SavedViewBar({
           <button
             onClick={onReset}
             aria-pressed={active === null && nothingToSave}
-            className={`min-h-11 rounded-xl px-3 py-2 text-sm ${
+            className={`min-h-11 rounded-md px-3 py-2 text-sm ${
               active === null && nothingToSave ? "bg-surface-2 font-medium" : "text-muted"
             }`}
           >
@@ -148,7 +148,7 @@ export function SavedViewBar({
           {views.map((view) => (
             <span
               key={view.viewId}
-              className={`inline-flex items-center rounded-xl ${
+              className={`inline-flex items-center rounded-md ${
                 active === view.viewId ? "bg-surface-2" : ""
               }`}
             >
@@ -192,7 +192,7 @@ export function SavedViewBar({
             autoFocus
             placeholder="Name this view"
             maxLength={40}
-            className="min-h-11 w-40 rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="min-h-11 w-40 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
           <button
             onClick={() => void save()}

@@ -130,7 +130,7 @@ export function BrandVoiceEditor({
 
   if (!selected) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-4 text-center">
+      <div className="rounded-lg border border-dashed border-border p-4 text-center">
         <p className="text-sm text-muted">
           {canEdit
             ? "Teach the AI what your business sounds like, so every draft comes back on-brand."
@@ -146,7 +146,7 @@ export function BrandVoiceEditor({
   }
 
   return (
-    <div className="rounded-xl border border-border p-4">
+    <div className="rounded-lg border border-border p-4">
       {/* Profile switcher, shown only when there is a choice to make. */}
       {(profiles.length > 1 || canEdit) && (
         <div className="mb-4 flex flex-wrap items-center gap-1.5">

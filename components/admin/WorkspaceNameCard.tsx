@@ -43,7 +43,7 @@ export function WorkspaceNameCard({ initial }: { initial: string }) {
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
           placeholder="Company name"
-          className="w-72 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="w-72 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
         <button
           onClick={() => void save()}

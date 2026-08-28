@@ -61,7 +61,7 @@ export function FeatureSuggestions() {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void submit()}
           placeholder="e.g. Add a LinkedIn message step to sequences"
-          className="flex-1 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="flex-1 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
         <button
           onClick={() => void submit()}
@@ -79,7 +79,7 @@ export function FeatureSuggestions() {
       ) : (
         <ul className="mt-4 space-y-2">
           {items.map((s) => (
-            <li key={s.id} className="rounded-xl border border-border p-3">
+            <li key={s.id} className="rounded-lg border border-border p-3">
               <p className="text-sm">{s.text}</p>
               <p className="mt-1 text-xs text-muted">
                 {s.authorName} · <LocalTime value={s.createdAt} options={{ dateStyle: "medium" }} />

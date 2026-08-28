@@ -35,7 +35,7 @@ export function EmptyState({
   if (variant === "inline") {
     return (
       <div className={`card flex flex-col items-center gap-2 px-6 py-8 text-center ${className}`}>
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2 text-muted">
+        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-2 text-muted">
           <Icon name={icon} size={17} />
         </span>
         <p className="text-sm font-medium">{title}</p>
@@ -58,7 +58,7 @@ export function EmptyState({
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-0 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface-2 blur-3xl"
       />
-      <span className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 text-foreground ring-1 ring-border">
+      <span className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-surface-2 text-foreground ring-1 ring-border">
         <Icon name={icon} size={24} />
       </span>
       <p className="relative mt-5 display-title text-lg">{title}</p>

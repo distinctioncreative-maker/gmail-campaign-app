@@ -97,7 +97,7 @@ export function CsvUpload({ listId }: { listId?: string }) {
               const file = e.dataTransfer.files[0];
               if (file) void handleFile(file);
             }}
-            className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition ${
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 text-center transition ${
               dragOver ? "border-info bg-info-soft" : "border-border"
             }`}
           >

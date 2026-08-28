@@ -113,7 +113,7 @@ export function SendingModeCard() {
               Switch to real sending…
             </button>
           ) : (
-            <div className="alert-danger mt-5 rounded-xl border p-4">
+            <div className="alert-danger mt-5 rounded-lg border p-4">
               <p className="text-sm font-medium text-danger">
                 This turns on real emails for everyone on the team.
               </p>
@@ -126,12 +126,12 @@ export function SendingModeCard() {
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="GO LIVE"
-                  className="w-40 rounded-xl border border-danger px-3 py-2 text-sm"
+                  className="w-40 rounded-md border border-danger px-3 py-2 text-sm"
                 />
                 <button
                   onClick={() => flip("LIVE")}
                   disabled={busy || confirmText !== "GO LIVE"}
-                  className="rounded-xl bg-danger px-5 py-2.5 text-sm font-semibold text-danger-contrast hover:brightness-95 disabled:opacity-50"
+                  className="rounded-md bg-danger px-5 py-2.5 text-sm font-semibold text-danger-contrast hover:brightness-95 disabled:opacity-50"
                 >
                   {busy ? "Switching…" : "Turn on real sending"}
                 </button>
@@ -140,7 +140,7 @@ export function SendingModeCard() {
                     setConfirmOpen(false);
                     setConfirmText("");
                   }}
-                  className="rounded-xl px-4 py-2 text-sm text-muted hover:bg-surface"
+                  className="rounded-md px-4 py-2 text-sm text-muted hover:bg-surface"
                 >
                   Cancel
                 </button>

@@ -197,12 +197,18 @@
      at 10px, which meant 180 `rounded-xl` and 99 `rounded-lg` call sites all
      rendered as near-rectangles. 8px is the Bootstrap 3 default and the app
      read like it.
-     Nested radii follow inner = outer - padding, or the corners fight. */
-  --radius-sm: 6px;   /* badges, chips */
-  --radius-md: 10px;  /* buttons, inputs, segmented controls */
-  --radius-lg: 14px;  /* cards, panels */
-  --radius-xl: 20px;  /* dialogs, feature tiles */
-  --radius-2xl: 28px; /* hero surfaces, image frames */
+     Nested radii follow inner = outer - padding, or the corners fight.
+
+     The rung is decided by what the element IS, not by what looks right on the
+     screen being built. That distinction is the whole point, and skipping it is
+     how 182 call sites ended up on the same 20px: a 236px card and a 44px
+     button shared a radius, so neither said anything about its own weight.
+     Pick from the element class below and nothing else. */
+  --radius-sm: 6px;   /* inline marks: code, kbd, badges, chips */
+  --radius-md: 10px;  /* controls: buttons, inputs, selects, icon tiles */
+  --radius-lg: 14px;  /* cards, panels, list rows, large icon tiles */
+  --radius-xl: 20px;  /* held in reserve; nothing should reach for it */
+  --radius-2xl: 28px; /* dialogs, popovers, page-level hero surfaces */
   --radius-full: 999px;
 
   /* Elevation ladder.
@@ -1067,6 +1073,29 @@ a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.1
   .draw-bar, .grow-bar, .draw-line { animation: none; }
   .draw-line { stroke-dasharray: none; }
   .drift-field { animation: none; }
+}
+
+/* Rich-text toolbar buttons.
+   Twelve of these sat at roughly 29px tall against a 44px touch norm, each
+   repeating the same hand-rolled class string, and each at the 4px bare
+   `rounded` that is not on the ladder at all. A formatting toolbar is the one
+   place where the full 44px is genuinely too much on a desktop pointer, since
+   twelve of them wrap into a second row, so it takes 36 there and the full 44
+   on a touch viewport where the estimate of a fingertip is what matters. */
+.editor-tool {
+  display: inline-flex;
+  min-height: 36px;
+  min-width: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.625rem;
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+.editor-tool:hover { background: var(--border); }
+@media (max-width: 640px) {
+  .editor-tool { min-height: 44px; min-width: 44px; }
 }
 
 /* ── Mobile touch polish ─────────────────────────────────────────── */

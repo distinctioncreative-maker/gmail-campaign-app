@@ -59,7 +59,7 @@ export default function SignInPage() {
         />
 
         <Link href="/" className="relative flex items-center gap-3 transition-opacity hover:opacity-80">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface/10 text-on-ink backdrop-blur">
+          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface/10 text-on-ink backdrop-blur">
             <LogoMark size={26} className="[--brand-from:#fff] [--brand-to:#fff]" />
           </span>
           <Wordmark size="lg" />
@@ -77,7 +77,7 @@ export default function SignInPage() {
               ["reply", "Follow-ups stop automatically when someone replies"],
             ] as Array<[IconName, string]>).map(([icon, label]) => (
               <li key={label} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface/10 text-brass-on-ink">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-surface/10 text-brass-on-ink">
                   <Icon name={icon} size={18} />
                 </span>
                 {label}
@@ -113,7 +113,7 @@ export default function SignInPage() {
               )}
             </button>
             {error && (
-              <p role="alert" className="mt-4 rounded-xl bg-danger-soft p-3 text-sm text-danger">
+              <p role="alert" className="mt-4 rounded-lg bg-danger-soft p-3 text-sm text-danger">
                 {error}
               </p>
             )}

@@ -67,7 +67,7 @@ export function PasteLeads({ listId }: { listId?: string }) {
             placeholder={
               "Paste from Salesforce here.\n\nWorks with the column list view:\nFirst Name  Last Name  Email  Phone …\n1  Jason  Main  jason@example.com …\n\nor the row layout:\nSelect Item 1\nJason Main\nMainmastics Llc\n…"
             }
-            className="mt-2 w-full rounded-xl border border-border p-3 font-mono text-sm focus:border-primary focus:outline-none"
+            className="mt-2 w-full rounded-md border border-border p-3 font-mono text-sm focus:border-primary focus:outline-none"
           />
           <button
             onClick={preview}

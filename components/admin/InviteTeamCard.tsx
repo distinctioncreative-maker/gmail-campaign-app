@@ -90,12 +90,12 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="teammate@company.com"
-          className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+          className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm"
         />
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+          className="rounded-md border border-border bg-surface px-3 py-2 text-sm"
         >
           <option value="SALES_REP">Sales Rep</option>
           <option value="MANAGER">Team Lead</option>

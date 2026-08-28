@@ -123,12 +123,12 @@ export function ApiKeysCard() {
       <h2 className="font-medium">API keys</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         For your own code and integrations. Send a key as{" "}
-        <code className="rounded bg-surface-2 px-1 py-0.5 text-xs">Authorization: Bearer</code> to{" "}
-        <code className="rounded bg-surface-2 px-1 py-0.5 text-xs">/api/v1/leads</code>.
+        <code className="rounded-sm bg-surface-2 px-1 py-0.5 text-xs">Authorization: Bearer</code> to{" "}
+        <code className="rounded-sm bg-surface-2 px-1 py-0.5 text-xs">/api/v1/leads</code>.
       </p>
 
       {revealed ? (
-        <div className="alert-success mt-4 rounded-xl border p-4">
+        <div className="alert-success mt-4 rounded-lg border p-4">
           <p className="text-sm font-medium text-foreground">Copy your key now</p>
           <p className="mt-1 text-xs text-muted">
             Cadence stores only a hash of it, so this is the only time it can be shown. If you lose
@@ -195,12 +195,12 @@ export function ApiKeysCard() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="What is it for? e.g. Zapier"
-            className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           />
           <select
             value={environment}
             onChange={(e) => setEnvironment(e.target.value as "live" | "test")}
-            className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           >
             <option value="live">Live</option>
             <option value="test">Test</option>

@@ -38,7 +38,7 @@ export function ReportFilters({
           value={selectedCampaignId}
           onChange={(event) => navigate(event.target.value, rangeDays)}
           disabled={pending}
-          className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-primary disabled:opacity-60"
+          className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-primary disabled:opacity-60"
         >
           <option value="">All campaigns</option>
           {campaigns.map((campaign) => (
@@ -57,7 +57,7 @@ export function ReportFilters({
             navigate(selectedCampaignId, Number(event.target.value))
           }
           disabled={pending}
-          className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-primary disabled:opacity-60"
+          className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-primary disabled:opacity-60"
         >
           <option value={30}>Last 30 days</option>
           <option value={90}>Last 90 days</option>

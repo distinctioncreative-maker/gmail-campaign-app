@@ -76,7 +76,7 @@ export default async function CampaignsPage({
             key={item.key}
             href={item.href}
             aria-current={view === item.key ? "page" : undefined}
-            className={`min-h-11 rounded-xl border px-4 py-2.5 text-sm font-medium transition ${
+            className={`min-h-11 rounded-md border px-4 py-2.5 text-sm font-medium transition ${
               view === item.key
                 ? "border-primary bg-surface-2 text-foreground"
                 : "border-border bg-surface text-muted hover:text-foreground"
@@ -88,7 +88,7 @@ export default async function CampaignsPage({
       </nav>
 
       {view === "deleted" && campaigns.length > 0 ? (
-        <div className="alert-warning mb-5 rounded-xl border p-4 text-sm leading-relaxed">
+        <div className="alert-warning mb-5 rounded-lg border p-4 text-sm leading-relaxed">
           Deleted campaigns no longer contribute to workspace or report totals. Their recipient
           history and KPIs stay available here until you choose Delete forever.
         </div>

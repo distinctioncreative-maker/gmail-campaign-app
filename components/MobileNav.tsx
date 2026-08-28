@@ -179,7 +179,7 @@ export function MobileNav({
                     key={item.href}
                     href={item.href}
                     onClick={() => setMoreOpen(false)}
-                    className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center text-xs font-medium transition ${
+                    className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-lg border p-3 text-center text-xs font-medium transition ${
                       active
                         ? "border-border bg-surface-2 text-foreground"
                         : "border-border text-muted hover:bg-surface-2"
@@ -192,7 +192,7 @@ export function MobileNav({
               })}
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-xl border border-border p-2 pl-4">
+            <div className="mt-4 flex items-center justify-between rounded-lg border border-border p-2 pl-4">
               <span className="text-sm text-muted">Appearance</span>
               <ThemeToggle />
             </div>

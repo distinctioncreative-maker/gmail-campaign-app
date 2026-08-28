@@ -39,8 +39,8 @@ export function BulkLeadOrganizer({
   }
 
   return (
-    <details className="group mt-3 rounded-xl border border-border bg-surface-2/70">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border">
+    <details className="group mt-3 rounded-lg border border-border bg-surface-2/70">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border">
         <span className="flex items-center gap-2">
           <Icon name="tag" size={17} className="text-foreground" />
           Tag or move {selectedCount} selected lead{selectedCount === 1 ? "" : "s"}
@@ -49,7 +49,7 @@ export function BulkLeadOrganizer({
       </summary>
 
       <div className="grid gap-4 border-t border-border p-3 lg:grid-cols-2">
-        <fieldset className="min-w-0 rounded-xl bg-surface p-3">
+        <fieldset className="min-w-0 rounded-lg bg-surface p-3">
           <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">Tags</legend>
           <label className="mt-1 block text-xs font-medium text-foreground" htmlFor="bulk-new-tag">
             Add a tag
@@ -68,7 +68,7 @@ export function BulkLeadOrganizer({
               }}
               maxLength={32}
               placeholder="Example: Decision maker"
-              className="min-h-11 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
+              className="min-h-11 min-w-0 flex-1 rounded-md border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
             />
             <datalist id="lead-tag-suggestions">
               {availableTags.map((item) => <option key={item} value={item} />)}
@@ -91,7 +91,7 @@ export function BulkLeadOrganizer({
                   id="bulk-existing-tag"
                   value={selectedExistingTag}
                   onChange={(event) => setExistingTag(event.target.value)}
-                  className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
+                  className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 >
                   {availableTags.map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
@@ -110,7 +110,7 @@ export function BulkLeadOrganizer({
           )}
         </fieldset>
 
-        <fieldset className="min-w-0 rounded-xl bg-surface p-3">
+        <fieldset className="min-w-0 rounded-lg bg-surface p-3">
           <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">Lead lists</legend>
           {leadLists.length > 0 ? (
             <>
@@ -121,7 +121,7 @@ export function BulkLeadOrganizer({
                 id="bulk-lead-list"
                 value={selectedListId}
                 onChange={(event) => setListId(event.target.value)}
-                className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
+                className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               >
                 {leadLists.map((list) => <option key={list.listId} value={list.listId}>{list.name}</option>)}
               </select>

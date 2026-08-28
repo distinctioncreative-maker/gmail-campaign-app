@@ -169,14 +169,14 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
     return (
       <button
         onClick={() => setOpen(true)}
-        className="hidden items-center gap-2 rounded-xl border border-border bg-surface-2 px-3 py-2 text-xs text-muted hover:text-foreground sm:flex"
+        className="hidden items-center gap-2 rounded-md border border-border bg-surface-2 px-3 py-2 text-xs text-muted hover:text-foreground sm:flex"
         aria-label="Search and commands"
       >
         <Icon name="search" size={15} aria-hidden />
         <span>Search</span>
         {/* The shortcut is printed on the affordance, because a keyboard
             feature nobody knows about is a keyboard feature nobody uses. */}
-        <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 font-sans text-3xs font-medium">
+        <kbd className="rounded-sm border border-border bg-surface px-1.5 py-0.5 font-sans text-3xs font-medium">
           ⌘K
         </kbd>
       </button>
@@ -216,7 +216,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
             autoComplete="off"
             spellCheck={false}
           />
-          <kbd className="hidden shrink-0 rounded border border-border px-1.5 py-0.5 font-sans text-3xs text-muted sm:block">
+          <kbd className="hidden shrink-0 rounded-sm border border-border px-1.5 py-0.5 font-sans text-3xs text-muted sm:block">
             esc
           </kbd>
         </div>
@@ -257,7 +257,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
                       // highlight back under the cursor.
                       onPointerMove={() => setActive(index)}
                       onClick={() => go(item)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left ${
+                      className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left ${
                         isActive ? "bg-surface-2" : ""
                       }`}
                     >

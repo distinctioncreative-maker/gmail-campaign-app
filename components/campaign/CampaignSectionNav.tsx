@@ -24,7 +24,7 @@ export function CampaignSectionNav({ showControls = true }: { showControls?: boo
     <>
       <nav
         aria-label="Campaign sections"
-        className="mt-5 rounded-xl border border-border bg-surface p-1"
+        className="mt-5 rounded-lg border border-border bg-surface p-1"
       >
         <div className="hidden gap-1 sm:flex">
           {sections.map((section) => (
@@ -75,7 +75,7 @@ export function CampaignSectionNav({ showControls = true }: { showControls?: boo
           <button
             type="button"
             onClick={close}
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-muted hover:bg-surface-2 hover:text-foreground"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-foreground"
             aria-label="Close campaign sections"
           >
             <Icon name="x" size={18} />
@@ -87,7 +87,7 @@ export function CampaignSectionNav({ showControls = true }: { showControls?: boo
               key={section.href}
               href={section.href}
               onClick={close}
-              className="flex min-h-12 items-center justify-between rounded-xl px-3 text-sm font-medium hover:bg-surface-2"
+              className="flex min-h-12 items-center justify-between rounded-md px-3 text-sm font-medium hover:bg-surface-2"
             >
               {section.label}
               <Icon name="chevronRight" size={17} />

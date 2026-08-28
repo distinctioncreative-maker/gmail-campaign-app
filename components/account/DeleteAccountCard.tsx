@@ -188,7 +188,7 @@ export function DeleteAccountCard({
           ) : null}
 
           <p
-            className={`rounded-xl border p-3 text-sm ${
+            className={`rounded-lg border p-3 text-sm ${
               state.allowed ? "alert-warning text-foreground" : "alert-danger text-danger"
             }`}
           >
@@ -203,7 +203,7 @@ export function DeleteAccountCard({
                   value={confirmation}
                   onChange={(e) => setConfirmation(e.target.value)}
                   autoComplete="off"
-                  className="mt-1.5 w-full max-w-xs rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  className="mt-1.5 w-full max-w-xs rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
                 />
               </label>
               <div className="flex flex-wrap gap-2">

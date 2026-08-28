@@ -216,7 +216,7 @@ export function OutcomesPanel({
 
 export function BestCampaignCallout({ best }: { best: LeaderboardRow }) {
   return (
-    <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border bg-surface-2 p-4 text-sm text-foreground">
+    <div className="mt-4 flex items-start gap-3 rounded-lg border border-border bg-surface-2 p-4 text-sm text-foreground">
       <span className="mt-0.5 rounded-lg bg-surface p-1.5">
         <Icon name="chart" size={17} />
       </span>
@@ -319,7 +319,7 @@ export function TrackedEngagementPanel({
     <section className="card p-6 sm:p-7">
       <h2 className="font-semibold">Tracked engagement</h2>
       {trackedCampaignCount === 0 ? (
-        <div className="mt-4 rounded-xl bg-surface-2 p-4">
+        <div className="mt-4 rounded-lg bg-surface-2 p-4">
           <p className="text-sm font-medium">Tracking is off in this view</p>
           <p className="mt-1 text-sm leading-relaxed text-muted">
             Open and click tracking is optional and disabled by default because pixels and
@@ -334,7 +334,7 @@ export function TrackedEngagementPanel({
             {tracking.sent.toLocaleString()} sends in this cohort.
           </p>
           <div className="mt-5 grid grid-cols-2 gap-4">
-            <div className="rounded-xl bg-surface-2 p-4">
+            <div className="rounded-lg bg-surface-2 p-4">
               <p className="text-sm font-medium leading-tight text-muted">Open detected</p>
               <p className="mt-2.5 display-figure text-2xl leading-none text-foreground">
                 {tracking.sent > 0 ? (
@@ -347,7 +347,7 @@ export function TrackedEngagementPanel({
                 {tracking.opened.toLocaleString()} pixel loads
               </p>
             </div>
-            <div className="rounded-xl bg-surface-2 p-4">
+            <div className="rounded-lg bg-surface-2 p-4">
               <p className="text-sm font-medium leading-tight text-muted">Click rate</p>
               <p className="mt-2.5 display-figure text-2xl leading-none text-revenue">
                 {tracking.sent > 0 ? (

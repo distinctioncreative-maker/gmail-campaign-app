@@ -64,7 +64,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && void create()}
             placeholder="e.g. Alpine offers: all time"
-            className="w-72 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="w-72 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
           <button onClick={() => void create()} disabled={busy || !name.trim()} className="btn-primary px-4 py-2 text-sm">
             Create
@@ -94,7 +94,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
                 <p className="truncate font-medium group-hover:text-foreground">{l.name}</p>
                 <p className="text-xs text-muted">{l.count.toLocaleString()} lead{l.count === 1 ? "" : "s"}</p>
               </div>
-              <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2 text-foreground">
+              <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-2 text-foreground">
                 <Icon name="users" size={16} />
               </span>
             </Link>

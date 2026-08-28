@@ -38,7 +38,7 @@ export function LeadDirectoryPagination({
 
   return (
     <nav
-      className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3"
+      className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-3"
       aria-label="Lead directory pages"
     >
       <p className="text-xs text-muted">

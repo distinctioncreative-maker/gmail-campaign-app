@@ -64,7 +64,7 @@ export function AdminPanel({
     setNotice(res.ok ? "Settings saved." : "Could not save settings.");
   }
 
-  const input = "rounded-xl border border-border px-3 py-2 text-sm";
+  const input = "rounded-md border border-border px-3 py-2 text-sm";
 
   return (
     <div className="space-y-6">

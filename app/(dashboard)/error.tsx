@@ -32,7 +32,7 @@ export default function DashboardError({
 
   return (
     <div className="mx-auto max-w-lg py-16 text-center">
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-soft text-danger">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-danger-soft text-danger">
         <Icon name="alert" size={22} aria-hidden />
       </span>
       <h1 className="mt-4 text-2xl font-semibold">This page could not load</h1>

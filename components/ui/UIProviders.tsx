@@ -62,7 +62,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
             <div
               key={t.id}
               role="status"
-              className={`pointer-events-auto animate-rise rounded-xl border px-4 py-3 text-sm shadow-lg ${
+              className={`pointer-events-auto animate-rise rounded-lg border px-4 py-3 text-sm shadow-lg ${
                 t.variant === "success"
                   ? "alert-success text-success"
                   : t.variant === "error"
@@ -95,7 +95,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
                   autoFocus
                   className={
                     confirmState.danger
-                      ? "rounded-xl bg-danger px-4 py-2 text-sm font-semibold text-danger-contrast hover:brightness-95"
+                      ? "rounded-md bg-danger px-4 py-2 text-sm font-semibold text-danger-contrast hover:brightness-95"
                       : "btn-primary px-4 py-2 text-sm"
                   }
                 >

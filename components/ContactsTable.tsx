@@ -253,7 +253,7 @@ export function ContactsTable({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, business, or email"
             aria-label="Search leads"
-            className="min-h-11 w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+            className="min-h-11 w-full rounded-md border border-border bg-surface py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
           />
         </div>
         <div className="overflow-x-auto pb-1 xl:justify-self-end">
@@ -281,7 +281,7 @@ export function ContactsTable({
               id="lead-tag-filter"
               value={tagFilter}
               onChange={(event) => setTagFilter(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none"
             >
               <option value="">All tags</option>
               {availableTags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}
@@ -293,7 +293,7 @@ export function ContactsTable({
               id="lead-list-filter"
               value={listFilter}
               onChange={(event) => setListFilter(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none"
             >
               <option value="">All lead lists</option>
               {leadLists.map((list) => <option key={list.listId} value={list.listId}>{list.name}</option>)}
@@ -320,7 +320,7 @@ export function ContactsTable({
       </div>
 
       {selected.size > 0 && (
-        <div className="glass mt-3 rounded-xl border border-border p-3 shadow-sm">
+        <div className="glass mt-3 rounded-lg border border-border p-3 shadow-sm">
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-auto px-1 text-sm font-medium" aria-live="polite">
               {selected.size} selected
@@ -353,7 +353,7 @@ export function ContactsTable({
       )}
 
       {visible.length === 0 ? (
-        <p className="mt-3 rounded-2xl bg-surface p-6 text-sm text-muted shadow-sm">
+        <p className="mt-3 rounded-lg bg-surface p-6 text-sm text-muted shadow-sm">
           {contacts.length === 0
             ? "No contacts yet. Import your first lead list above to get started."
             : "No leads match the current search and filters."}

@@ -12,7 +12,7 @@ import { Icon } from "@/components/ui/Icon";
 export default function DashboardNotFound() {
   return (
     <div className="mx-auto max-w-lg py-16 text-center">
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-2 text-muted">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-surface-2 text-muted">
         <Icon name="search" size={22} aria-hidden />
       </span>
       <h1 className="mt-4 text-2xl font-semibold">Not found</h1>

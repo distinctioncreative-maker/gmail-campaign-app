@@ -234,7 +234,7 @@ export function CampaignControls({
       </div>
 
       {showPace && (status === "ACTIVE" || status === "PAUSED") && (
-        <div className="mt-4 rounded-xl border border-border bg-surface-2/60 p-4">
+        <div className="mt-4 rounded-lg border border-border bg-surface-2/60 p-4">
           <p className="text-sm font-semibold text-foreground">Sending pace for this campaign</p>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {paceFields.map((f) => (

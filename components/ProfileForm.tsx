@@ -125,7 +125,7 @@ export function ProfileForm({
   }
 
   const input =
-    "mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
   return (
     <div>
@@ -225,13 +225,13 @@ export function ProfileForm({
         Your email signature
         <span className="block text-xs font-normal text-muted">
           Paste your own signature (plain text or HTML from Gmail). Drop{" "}
-          <code className="rounded bg-surface-2 px-1">{"{{signature}}"}</code> into any template
+          <code className="rounded-sm bg-surface-2 px-1">{"{{signature}}"}</code> into any template
           where you want it to appear: then you don&apos;t need to fill in the name/title/phone
           fields above unless a template uses those placeholders directly.{" "}
           <strong>Leave this blank to turn the signature off</strong>: handy when your email
           already includes a signature (for example, a Gmail draft you imported). A blank
           signature just removes{" "}
-          <code className="rounded bg-surface-2 px-1">{"{{signature}}"}</code> instead of
+          <code className="rounded-sm bg-surface-2 px-1">{"{{signature}}"}</code> instead of
           printing it.
         </span>
         <textarea

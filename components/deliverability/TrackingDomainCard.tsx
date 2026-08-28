@@ -170,7 +170,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
                 placeholder="track.yourcompany.com"
                 autoComplete="off"
                 spellCheck={false}
-                className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
               />
               <button
                 onClick={() => void save()}
@@ -185,7 +185,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
             </span>
           </label>
 
-          <div className="mt-4 rounded-xl border border-border bg-surface-2 p-3">
+          <div className="mt-4 rounded-lg border border-border bg-surface-2 p-3">
             <p className="text-xs font-medium text-foreground">
               Add this record at your DNS provider
             </p>

@@ -63,7 +63,7 @@ export function SenderPicker({
   }
 
   return (
-    <div className="mt-3 rounded-xl border border-border p-3">
+    <div className="mt-3 rounded-lg border border-border p-3">
       <p className="text-sm font-medium text-foreground">Send from</p>
       <p className="mt-0.5 text-xs text-muted">
         {capacity

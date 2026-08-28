@@ -14,7 +14,7 @@ export interface MemberOption {
 }
 
 const field =
-  "rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
+  "rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
 /** Admin panel: create teams, rename, pick leads, delete. */
 export function TeamManager({
@@ -111,7 +111,7 @@ export function TeamManager({
       {teams.length > 0 && (
         <div className="mt-4 space-y-2">
           {orderTeamsByHierarchy(teams).map(({ team: t, depth }) => (
-            <div key={t.teamId} className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-2 p-2.5">
+            <div key={t.teamId} className="flex flex-wrap items-center gap-2 rounded-lg bg-surface-2 p-2.5">
               <span className="min-w-40 flex-1 text-sm font-medium" style={{ paddingLeft: `${depth * 18}px` }}>
                 {depth > 0 && <span aria-hidden className="mr-2 text-muted">↳</span>}
                 {t.name}

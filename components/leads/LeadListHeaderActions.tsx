@@ -64,7 +64,7 @@ export function LeadListHeaderActions({ listId, name }: { listId: string; name: 
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void rename()}
-          className="w-64 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          className="w-64 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
         <button onClick={() => void rename()} disabled={busy} className="btn-primary px-3 py-2 text-sm">Save</button>
         <button onClick={() => { setEditing(false); setValue(name); }} className="btn-ghost px-3 py-2 text-sm">Cancel</button>

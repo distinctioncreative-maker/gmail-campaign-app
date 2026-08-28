@@ -70,7 +70,7 @@ function SetupPreview() {
       {stages.map((stage, index) => (
         <div key={stage.label} className="relative z-10 flex flex-1 flex-col items-center gap-2 text-center">
           <span
-            className="onboarding-node flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground shadow-sm"
+            className="onboarding-node flex h-11 w-11 items-center justify-center rounded-md border border-border bg-surface text-foreground shadow-sm"
             style={{ animationDelay: `${index * 180}ms` }}
             aria-hidden
           >
@@ -232,12 +232,12 @@ export function OnboardingWizard({
 
       <div className="mt-5 card overflow-hidden">
         <div className="p-6 sm:p-9">
-          {error && <p role="alert" className="alert-danger mb-5 rounded-xl border p-3 text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="alert-danger mb-5 rounded-lg border p-3 text-sm text-danger">{error}</p>}
 
           {step === 0 && (
             <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2 text-foreground" aria-hidden>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-surface-2 text-foreground" aria-hidden>
                   <Icon name="sparkles" size={21} />
                 </span>
                 <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -251,7 +251,7 @@ export function OnboardingWizard({
                   Personalize my setup
                 </button>
               </div>
-              <div className="rounded-2xl border border-border bg-surface-2 p-5 sm:p-6">
+              <div className="rounded-lg border border-border bg-surface-2 p-5 sm:p-6">
                 <p className="text-xs font-semibold uppercase tracking-caps text-info">Your first workflow</p>
                 <SetupPreview />
                 <div className="mt-6 grid gap-2 text-sm text-muted">
@@ -282,7 +282,7 @@ export function OnboardingWizard({
                         value={workspaceName}
                         onChange={(event) => setWorkspaceName(event.target.value)}
                         maxLength={80}
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       />
                     </label>
                     <label className="text-sm font-medium text-foreground">
@@ -292,7 +292,7 @@ export function OnboardingWizard({
                         onChange={(event) => setIndustry(event.target.value)}
                         maxLength={80}
                         placeholder="Financial services, software, recruiting..."
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       />
                     </label>
                     <label className="text-sm font-medium text-foreground">
@@ -300,7 +300,7 @@ export function OnboardingWizard({
                       <select
                         value={teamSize}
                         onChange={(event) => setTeamSize(event.target.value as WorkspaceProfile["teamSize"])}
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       >
                         <option value="JUST_ME">Just me</option>
                         <option value="2_5">2 to 5 people</option>
@@ -314,7 +314,7 @@ export function OnboardingWizard({
                       <select
                         value={monthlyEmailGoal}
                         onChange={(event) => setMonthlyEmailGoal(event.target.value as WorkspaceProfile["monthlyEmailGoal"])}
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
+                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border"
                       >
                         <option value="UNDER_500">Fewer than 500 emails</option>
                         <option value="500_2000">500 to 2,000 emails</option>
@@ -333,7 +333,7 @@ export function OnboardingWizard({
                         return (
                           <label
                             key={useCase.value}
-                            className={`flex min-h-20 cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                            className={`flex min-h-20 cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
                               selected
                                 ? "border-border bg-surface-2"
                                 : "border-border bg-surface hover:border-border"
@@ -359,7 +359,7 @@ export function OnboardingWizard({
                   </fieldset>
                 </div>
               ) : (
-                <div className="mt-6 rounded-xl border border-border bg-surface-2 p-5">
+                <div className="mt-6 rounded-lg border border-border bg-surface-2 p-5">
                   <p className="font-medium text-foreground">{initialWorkspaceName}</p>
                   <p className="mt-1 text-sm text-muted">Your account remains private to this workspace and its assigned team structure.</p>
                 </div>
@@ -384,7 +384,7 @@ export function OnboardingWizard({
               </p>
               {gmailConnected ? (
                 <>
-                  <p className="alert-success mt-5 rounded-xl border p-4 text-sm text-success">
+                  <p className="alert-success mt-5 rounded-lg border p-4 text-sm text-success">
                     Connected as <strong>{connectedEmail}</strong>
                   </p>
                   <button onClick={() => setStep(3)} className="btn-primary mt-5 min-h-11 px-5 py-2.5">Continue</button>
@@ -418,7 +418,7 @@ export function OnboardingWizard({
           {step === 4 && (
             <div className="grid items-center gap-8 lg:grid-cols-[1fr_0.9fr]">
               <div>
-                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-success-soft text-success" aria-hidden>
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-md bg-success-soft text-success" aria-hidden>
                   <Icon name="check" size={24} />
                 </span>
                 <h1 className="mt-5 text-3xl font-semibold tracking-tight">Your workspace is ready.</h1>
@@ -440,7 +440,7 @@ export function OnboardingWizard({
                     {busy ? "Sending..." : "Send yourself a test email now"}
                   </button>
                 ) : (
-                  <p className="alert-success mt-5 rounded-xl border p-3 text-sm text-success">
+                  <p className="alert-success mt-5 rounded-lg border p-3 text-sm text-success">
                     Test sent. Check your inbox, links, signature, and footer.
                   </p>
                 )}
@@ -450,7 +450,7 @@ export function OnboardingWizard({
                   <Link href="/leads" className="btn-ghost min-h-11 px-4 py-2.5">Import leads</Link>
                 </div>
               </div>
-              <div className="rounded-2xl border border-border bg-surface-2 p-6">
+              <div className="rounded-lg border border-border bg-surface-2 p-6">
                 <p className="text-xs font-semibold uppercase tracking-caps text-info">First success milestone</p>
                 <ol className="mt-4 space-y-4 text-sm">
                   {[

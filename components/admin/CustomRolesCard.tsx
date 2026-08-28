@@ -14,7 +14,7 @@ const ACCESS_LABELS: Record<Role, string> = {
 };
 
 const field =
-  "min-h-11 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border";
+  "min-h-11 rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-border";
 
 export function CustomRolesCard({ roles }: { roles: CustomRoleDefinition[] }) {
   const router = useRouter();
@@ -81,7 +81,7 @@ export function CustomRolesCard({ roles }: { roles: CustomRoleDefinition[] }) {
       {roles.length > 0 && (
         <ul className="mt-4 grid gap-3 lg:grid-cols-2">
           {roles.map((role) => (
-            <li key={role.id} className="rounded-xl border border-border bg-surface-2 p-4">
+            <li key={role.id} className="rounded-lg border border-border bg-surface-2 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-medium text-foreground">{role.name}</p>

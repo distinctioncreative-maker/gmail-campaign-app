@@ -77,7 +77,7 @@ export function HomeHero({
         </div>
 
         <div
-          className="rounded-2xl border border-border p-4 backdrop-blur"
+          className="rounded-lg border border-border p-4 backdrop-blur"
           style={{ background: "color-mix(in srgb, var(--surface) 65%, transparent)" }}
         >
           <div className="mb-2 flex items-center justify-between">
@@ -164,7 +164,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
           return (
             <li
               key={s.label}
-              className={`flex items-center gap-3 rounded-xl border p-3 transition ${
+              className={`flex items-center gap-3 rounded-lg border p-3 transition ${
                 s.done
                   ? "border-transparent bg-surface-2"
                   : isNext
@@ -283,7 +283,7 @@ export function QuickActions() {
         <Link key={a.href} href={a.href} className="card p-6 sm:p-7 card-hover group">
           <span
             aria-hidden
-            className="bg-surface-2 text-foreground flex h-11 w-11 items-center justify-center rounded-2xl text-brand-contrast shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
+            className="bg-surface-2 text-foreground flex h-11 w-11 items-center justify-center rounded-lg text-brand-contrast shadow-md transition-transform duration-[--dur-base] ease-[--ease-out] group-hover:scale-105"
           >
             <Icon name={a.icon} size={22} />
           </span>

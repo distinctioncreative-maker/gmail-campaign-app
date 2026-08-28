@@ -81,7 +81,7 @@ export function AiWritingCard() {
         <div className="mt-4 flex items-start gap-2 rounded-lg bg-warning-soft p-3 text-sm text-warning">
           <Icon name="alert" size={16} className="mt-0.5 shrink-0" aria-hidden />
           <p>No AI key is configured on the server yet, so turning this on won&apos;t enable AI
-          until a <code className="rounded bg-surface px-1">GEMINI_API_KEY</code> is set on the
+          until a <code className="rounded-sm bg-surface px-1">GEMINI_API_KEY</code> is set on the
           deployment.</p>
         </div>
       )}

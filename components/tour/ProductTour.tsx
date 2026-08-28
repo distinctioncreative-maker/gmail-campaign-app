@@ -211,7 +211,7 @@ export function ProductTour({ autoStart = true }: { autoStart?: boolean }) {
       {/* Dimmed backdrop with an optional spotlight cutout. */}
       {spotlight ? (
         <div
-          className="tour-spotlight pointer-events-none absolute rounded-xl transition-all duration-300"
+          className="tour-spotlight pointer-events-none absolute rounded-lg transition-all duration-300"
           style={{
             top: spotlight.top,
             left: spotlight.left,

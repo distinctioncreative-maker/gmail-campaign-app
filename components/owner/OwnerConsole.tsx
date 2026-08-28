@@ -227,7 +227,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
               onClick={() => void chooseSignupMode(mode)}
               disabled={disabled}
               aria-pressed={state.settings.signupMode === mode}
-              className={`min-h-11 rounded-xl px-3 py-2 text-sm disabled:opacity-50 ${
+              className={`min-h-11 rounded-md px-3 py-2 text-sm disabled:opacity-50 ${
                 state.settings.signupMode === mode ? "bg-surface-2 font-medium" : "text-muted"
               }`}
             >
@@ -323,7 +323,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
                 onChange={(e) => setNotice(e.target.value)}
                 maxLength={280}
                 placeholder="Sending is paused while we investigate a delivery issue."
-                className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
               />
               <button
                 onClick={() =>
@@ -365,7 +365,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
           <div className="mt-4">
             <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {Object.entries(checkup.counts).map(([key, value]) => (
-                <div key={key} className="rounded-xl border border-border p-3">
+                <div key={key} className="rounded-lg border border-border p-3">
                   <dt className="text-xs text-muted">{key}</dt>
                   <dd className="mt-0.5 text-lg font-semibold tabular-nums">
                     {value.toLocaleString()}
@@ -436,12 +436,12 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
             value={suspendOrg}
             onChange={(e) => setSuspendOrg(e.target.value)}
             placeholder="organization id"
-            className="rounded-xl border border-border bg-surface px-3 py-2.5 font-mono text-sm focus:border-primary focus:outline-none"
+            className="rounded-md border border-border bg-surface px-3 py-2.5 font-mono text-sm focus:border-primary focus:outline-none"
           />
           <select
             value={suspendReason}
             onChange={(e) => setSuspendReason(e.target.value)}
-            className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           >
             {SUSPENSION_REASONS.map((reason) => (
               <option key={reason} value={reason}>
@@ -455,7 +455,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
           onChange={(e) => setSuspendMessage(e.target.value)}
           placeholder="What the customer is told (optional)"
           maxLength={400}
-          className="mt-2 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         />
         <button
           onClick={async () => {
@@ -532,7 +532,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
             onChange={(e) => setBanEmail(e.target.value)}
             inputMode="email"
             placeholder="person@example.com"
-            className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           />
           <button
             onClick={async () => {
@@ -600,12 +600,12 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
             value={overrideOrg}
             onChange={(e) => setOverrideOrg(e.target.value)}
             placeholder="organization id"
-            className="rounded-xl border border-border bg-surface px-3 py-2.5 font-mono text-sm focus:border-primary focus:outline-none"
+            className="rounded-md border border-border bg-surface px-3 py-2.5 font-mono text-sm focus:border-primary focus:outline-none"
           />
           <select
             value={overridePlan}
             onChange={(e) => setOverridePlan(e.target.value)}
-            className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           >
             {state.plans.map((plan) => (
               <option key={plan} value={plan}>
@@ -617,7 +617,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
             value={overrideNote}
             onChange={(e) => setOverrideNote(e.target.value)}
             placeholder="Why (required)"
-            className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           />
         </div>
         <button

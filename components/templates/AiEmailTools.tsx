@@ -107,7 +107,7 @@ export function AiEmailTools({
   const disabled = busy !== null || html.trim().length < 12;
 
   return (
-    <div className="mt-3 rounded-xl border border-border bg-surface-2 p-3">
+    <div className="mt-3 rounded-lg border border-border bg-surface-2 p-3">
       <p className="flex items-center gap-1.5 text-xs font-medium text-muted"><Icon name="sparkles" size={14} aria-hidden /> AI tools: improve what you&apos;ve written</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {IMPROVE_ACTIONS.map((a) => (

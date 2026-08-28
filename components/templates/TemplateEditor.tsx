@@ -370,7 +370,7 @@ export function TemplateEditor({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. First outreach: funding intro"
-            className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
         </label>
 
@@ -400,7 +400,7 @@ export function TemplateEditor({
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Quick question for {{business_name}}"
-            className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
           <p className="mt-1 text-xs text-muted">
             Placeholders work in the subject too: personalize it the same way as the body.
@@ -417,7 +417,7 @@ export function TemplateEditor({
           onHtml={(nextHtml) => setHtml(sanitizeEmailHtml(nextHtml))}
         />
 
-        <div className="mt-5 rounded-xl border border-border bg-surface-2 p-4">
+        <div className="mt-5 rounded-lg border border-border bg-surface-2 p-4">
           <label className="flex items-start gap-3">
             <input
               type="checkbox"
@@ -468,11 +468,11 @@ export function TemplateEditor({
         {mode === "visual" && (
           <>
             <div className="mt-3 flex flex-wrap items-center gap-1 rounded-lg bg-surface-2 p-1.5 text-sm">
-              <button onClick={() => exec("bold")} className="rounded px-2 py-1 font-bold hover:bg-border" aria-label="Bold">B</button>
-              <button onClick={() => exec("italic")} className="rounded px-2 py-1 italic hover:bg-border" aria-label="Italic">I</button>
-              <button onClick={() => exec("underline")} className="rounded px-2 py-1 underline hover:bg-border" aria-label="Underline">U</button>
-              <button onClick={() => exec("formatBlock", "<h2>")} className="rounded px-2 py-1 hover:bg-border">Heading</button>
-              <button onClick={() => exec("insertUnorderedList")} className="rounded px-2 py-1 hover:bg-border">• List</button>
+              <button onClick={() => exec("bold")} className="editor-tool font-bold" aria-label="Bold">B</button>
+              <button onClick={() => exec("italic")} className="editor-tool italic" aria-label="Italic">I</button>
+              <button onClick={() => exec("underline")} className="editor-tool underline" aria-label="Underline">U</button>
+              <button onClick={() => exec("formatBlock", "<h2>")} className="editor-tool">Heading</button>
+              <button onClick={() => exec("insertUnorderedList")} className="editor-tool">• List</button>
               <button
                 onClick={() => {
                   const url = prompt("Link address (https://…):");
@@ -480,7 +480,7 @@ export function TemplateEditor({
                   if (safeUrl) exec("createLink", safeUrl);
                   else if (url) setError("Links must start with http:// or https://.");
                 }}
-                className="rounded px-2 py-1 text-foreground hover:bg-border"
+                className="editor-tool"
               >
                 Link
               </button>
@@ -492,11 +492,11 @@ export function TemplateEditor({
                     `<a href="https://example.com" style="display:inline-block;background:#2354c7;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600">Book a call</a>`
                   )
                 }
-                className="rounded px-2 py-1 hover:bg-border"
+                className="editor-tool"
               >
                 Button
               </button>
-              <button onClick={() => insertHtmlAtCursor("<hr>")} className="rounded px-2 py-1 hover:bg-border">Divider</button>
+              <button onClick={() => insertHtmlAtCursor("<hr>")} className="editor-tool">Divider</button>
               <button
                 onClick={() => {
                   const url = prompt("Image address (https://…):");
@@ -512,7 +512,7 @@ export function TemplateEditor({
                     setError("Images must use an http:// or https:// address.");
                   }
                 }}
-                className="rounded px-2 py-1 hover:bg-border"
+                className="editor-tool"
               >
                 Image
               </button>
@@ -553,7 +553,7 @@ export function TemplateEditor({
               role="textbox"
               aria-multiline="true"
               aria-label="Email body"
-              className="prose-sm mt-2 min-h-[32rem] w-full overflow-auto rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
+              className="prose-sm mt-2 min-h-[32rem] w-full overflow-auto rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
             />
           </>
         )}
@@ -569,7 +569,7 @@ export function TemplateEditor({
                   if (!name) setName(layout.name);
                   setMode("visual");
                 }}
-                className="rounded-xl border border-border p-4 text-left hover:border-primary"
+                className="rounded-lg border border-border p-4 text-left hover:border-primary"
               >
                 <p className="font-medium">{layout.name}</p>
                 <p className="mt-1 text-sm text-muted">{layout.description}</p>
@@ -585,7 +585,7 @@ export function TemplateEditor({
             rows={28}
             spellCheck={false}
             aria-label="Email HTML"
-            className="mt-3 min-h-[32rem] w-full resize-y rounded-xl border border-border bg-surface p-4 font-mono text-xs leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
+            className="mt-3 min-h-[32rem] w-full resize-y rounded-md border border-border bg-surface p-4 font-mono text-xs leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
           />
         )}
 
@@ -597,17 +597,17 @@ export function TemplateEditor({
                 value={draftSearch}
                 onChange={(e) => setDraftSearch(e.target.value)}
                 placeholder="Search drafts by subject"
-                className="flex-1 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="flex-1 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
               />
               <button
                 onClick={() => void loadDrafts(draftSearch)}
                 disabled={busy}
-                className="rounded-xl border border-border px-4 py-2 text-sm hover:bg-surface-2 disabled:opacity-50"
+                className="rounded-md border border-border px-4 py-2 text-sm hover:bg-surface-2 disabled:opacity-50"
               >
                 Search
               </button>
             </div>
-            <div className="mt-3 max-h-72 divide-y divide-border overflow-y-auto rounded-xl border border-border">
+            <div className="mt-3 max-h-72 divide-y divide-border overflow-y-auto rounded-lg border border-border">
               {drafts === null ? (
                 <p className="p-4 text-sm text-muted">Loading your Gmail drafts…</p>
               ) : drafts.length === 0 ? (
@@ -718,7 +718,7 @@ export function TemplateEditor({
                 profile in Settings, or they&apos;ll show as-is in sent emails.
               </p>
             )}
-            <div className="mt-4 rounded-xl border border-border bg-surface-2 p-3">
+            <div className="mt-4 rounded-lg border border-border bg-surface-2 p-3">
               <p className="text-2xs font-medium uppercase tracking-wide text-muted">Subject preview</p>
               <p className="mt-1 break-words text-sm font-medium">{preview.subject}</p>
             </div>
@@ -742,15 +742,15 @@ export function TemplateEditor({
                     /* cross-origin guard: ignore */
                   }
                 }}
-                className="w-full rounded-xl border border-border bg-surface"
+                className="w-full rounded-lg border border-border bg-surface"
                 style={{ height: "32rem" }}
                 srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
               />
             </div>
           </>
         ) : (
-          <div className="mt-4 rounded-xl border border-dashed border-border bg-surface-2 p-8 text-center">
-            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-foreground">
+          <div className="mt-4 rounded-lg border border-dashed border-border bg-surface-2 p-8 text-center">
+            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-md bg-surface-2 text-foreground">
               <Icon name="mail" size={19} />
             </span>
             <p className="mt-3 text-sm font-medium text-foreground">Preview example lead data</p>

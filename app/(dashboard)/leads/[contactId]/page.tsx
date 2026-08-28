@@ -155,7 +155,7 @@ export default async function ContactDetailPage({
             <dd>{fmt(contact.lastSeenAt)}</dd>
           </dl>
           {contact.notes && (
-            <div className="mt-4 rounded-xl bg-surface-2 p-3">
+            <div className="mt-4 rounded-lg bg-surface-2 p-3">
               <p className="text-xs font-medium uppercase text-muted">Notes</p>
               <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{contact.notes}</p>
             </div>

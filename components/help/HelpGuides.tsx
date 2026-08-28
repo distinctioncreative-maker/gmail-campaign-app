@@ -295,7 +295,7 @@ export function HelpGuides({ query = "" }: { query?: string }) {
                   className="flex w-full items-start gap-3 p-5 text-left hover:bg-surface-2"
                   aria-expanded={open === g.id}
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-foreground">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-surface-2 text-foreground">
                     <Icon name={g.icon} size={19} />
                   </span>
                   <span className="min-w-0 flex-1">

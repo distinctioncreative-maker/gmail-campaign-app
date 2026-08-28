@@ -174,7 +174,7 @@ export function AiEmailWriter({
   if (status?.enabled !== true) return null;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-xl border border-info/20 bg-info-soft/55">
+    <div className="mb-4 overflow-hidden rounded-lg border border-info/20 bg-info-soft/55">
       {!open ? (
         <button
           onClick={() => {
@@ -242,7 +242,7 @@ export function AiEmailWriter({
             rows={2}
             autoFocus
             placeholder="e.g. Warm first-touch offering fast working capital to a busy auto-repair shop owner"
-            className="mt-2 w-full rounded-xl border border-info/20 bg-surface p-2.5 text-sm focus:border-info focus:outline-none"
+            className="mt-2 w-full rounded-md border border-info/20 bg-surface p-2.5 text-sm focus:border-info focus:outline-none"
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
             {PRESETS.map((p) => (

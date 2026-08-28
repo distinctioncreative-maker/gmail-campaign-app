@@ -41,7 +41,7 @@ export function LegalPage({
         <p className="mt-5 max-w-3xl text-base leading-8 text-muted sm:text-lg">
           {summary}
         </p>
-        <div className="alert-warning mt-8 rounded-xl border p-4 text-sm leading-6 text-foreground">
+        <div className="alert-warning mt-8 rounded-lg border p-4 text-sm leading-6 text-foreground">
           Cadence is currently in early access. The signed order form
           identifies the operating entity, legal contact, governing law, commercial terms, and
           any negotiated data terms. If an order form conflicts with these public terms,

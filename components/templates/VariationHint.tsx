@@ -34,7 +34,7 @@ export function VariationHint({ subject, html }: { subject: string; html: string
         {!varied && !broken ? (
           <span className="mt-0.5 block text-muted">
             Write{" "}
-            <code className="rounded bg-surface-2 px-1 py-0.5">
+            <code className="rounded-sm bg-surface-2 px-1 py-0.5">
               {"{Hi|Hello|Hey}"}
             </code>{" "}
             to have each recipient get slightly different wording. Providers cluster on message

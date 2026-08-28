@@ -40,7 +40,7 @@ export function LaunchCelebration({
         className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-surface-2 blur-3xl"
       />
       <div className="relative flex items-start gap-4">
-        <span className="bg-surface-2 text-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-brand-contrast shadow-md">
+        <span className="bg-surface-2 text-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-brand-contrast shadow-md">
           <Icon name="rocket" size={20} />
         </span>
         <div className="min-w-0 flex-1">

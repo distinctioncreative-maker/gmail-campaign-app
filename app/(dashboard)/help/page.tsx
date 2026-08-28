@@ -68,7 +68,7 @@ export default function HelpPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search campaigns, leads, Gmail, tracking, reports..."
-              className="w-full rounded-xl border border-border bg-surface py-3 pl-10 pr-4 text-sm outline-none focus:border-primary"
+              className="w-full rounded-md border border-border bg-surface py-3 pl-10 pr-4 text-sm outline-none focus:border-primary"
             />
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function HelpPage() {
                 href={item.href}
                 className="group flex items-start gap-3 bg-surface p-5 hover:bg-surface-2"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-foreground">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-foreground">
                   <Icon name={item.icon} size={18} />
                 </span>
                 <span>

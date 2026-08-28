@@ -180,7 +180,7 @@ export function CampaignsTable({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by campaign or status"
-              className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-md border border-border bg-surface py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none"
             />
           </div>
           <div className="overflow-x-auto pb-1">
@@ -252,7 +252,7 @@ export function CampaignsTable({
               <Link
                 href={`/campaigns/${c.campaignId}`}
                 aria-label={`Open ${c.name}`}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border text-muted hover:bg-surface-2 hover:text-foreground"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border text-muted hover:bg-surface-2 hover:text-foreground"
               >
                 <Icon name="chevronRight" size={18} />
               </Link>
@@ -274,7 +274,7 @@ export function CampaignsTable({
               </p>
             </div>
 
-            <dl className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-surface-2 p-3">
+            <dl className="mt-4 grid grid-cols-3 gap-2 rounded-lg bg-surface-2 p-3">
               <div>
                 <dt className="text-3xs uppercase tracking-wide text-muted">
                   Sent
@@ -314,7 +314,7 @@ export function CampaignsTable({
                   <button
                     onClick={() => void restoreDeleted(c)}
                     disabled={busyId === c.campaignId}
-                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
+                    className="min-h-11 rounded-md px-3 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
                   >
                     Restore
                   </button>
@@ -322,7 +322,7 @@ export function CampaignsTable({
                   <button
                     onClick={() => void setArchived(c, false)}
                     disabled={busyId === c.campaignId}
-                    className="min-h-11 rounded-xl px-3 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
+                    className="min-h-11 rounded-md px-3 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
                   >
                     Restore
                   </button>
@@ -331,7 +331,7 @@ export function CampaignsTable({
                     <button
                       onClick={() => void setArchived(c, true)}
                       disabled={busyId === c.campaignId}
-                      className="min-h-11 rounded-xl px-3 text-xs font-medium text-muted hover:bg-surface-2 disabled:opacity-40"
+                      className="min-h-11 rounded-md px-3 text-xs font-medium text-muted hover:bg-surface-2 disabled:opacity-40"
                     >
                       Archive
                     </button>
@@ -341,7 +341,7 @@ export function CampaignsTable({
                   <button
                     onClick={() => void removeCampaign(c)}
                     disabled={busyId === c.campaignId}
-                    className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-40"
+                    className="flex min-h-11 items-center gap-2 rounded-md px-3 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-40"
                   >
                     <Icon name="trash" size={16} />
                     {c.deletedAt !== null ? "Delete forever" : "Delete"}

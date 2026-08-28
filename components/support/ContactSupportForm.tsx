@@ -72,7 +72,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
     return (
       <div className="card p-6 sm:p-7">
         <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-success-soft text-success">
             <Icon name="check" size={18} />
           </span>
           <div>
@@ -102,7 +102,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as SupportCategory)}
-            className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           >
             {supportCategoryOptions().map((option) => (
               <option key={option.value} value={option.value}>
@@ -120,7 +120,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
             value={replyTo}
             onChange={(e) => setReplyTo(e.target.value)}
             placeholder={signedInEmail}
-            className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           />
           <span className="mt-1.5 block text-xs text-muted">
             Leave blank and we reply to {signedInEmail}.
@@ -134,7 +134,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder="e.g. Campaign stopped sending halfway through"
-          className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         />
       </label>
 
@@ -145,7 +145,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
           onChange={(e) => setMessage(e.target.value)}
           rows={6}
           placeholder="What you did, what happened, and what you expected instead."
-          className="mt-1.5 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="mt-1.5 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
         />
       </label>
 

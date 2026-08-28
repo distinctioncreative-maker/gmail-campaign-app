@@ -487,7 +487,7 @@ export function CampaignWizard() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. July new leads: Central region"
-                className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
               />
             </label>
             <label className="mt-4 block text-sm font-medium text-foreground">
@@ -495,7 +495,7 @@ export function CampaignWizard() {
               <input
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
               />
             </label>
           </>
@@ -522,14 +522,14 @@ export function CampaignWizard() {
             ) : (
               <>
                 {leadLists.length > 0 && (
-                  <div className="mt-4 rounded-xl border border-border bg-surface-2/60 p-3">
+                  <div className="mt-4 rounded-lg border border-border bg-surface-2/60 p-3">
                     <label className="block text-sm font-medium text-foreground">
                       Start from a lead list
                       <HelpTip text="Pick one of your saved lists to use it as the source for this campaign. Everyone in the list who is safe to email gets selected automatically. Choose “All leads” to browse everything." />
                       <select
                         value={listFilter}
                         onChange={(e) => chooseList(e.target.value)}
-                        className="mt-1 min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:max-w-md"
+                        className="mt-1 min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:max-w-md"
                       >
                         <option value="">All leads ({contacts.length})</option>
                         {leadLists.map((l) => (
@@ -548,13 +548,13 @@ export function CampaignWizard() {
                     onChange={(e) => setLeadSearch(e.target.value)}
                     placeholder="Search name, business, or email"
                     aria-label="Search leads"
-                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:col-span-2 lg:col-span-1"
+                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none sm:col-span-2 lg:col-span-1"
                   />
                   <select
                     value={leadFilter}
                     onChange={(e) => setLeadFilter(e.target.value as typeof leadFilter)}
                     aria-label="Filter leads"
-                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
                   >
                     <option value="all">All</option>
                     <option value="ready">Ready</option>
@@ -565,7 +565,7 @@ export function CampaignWizard() {
                     value={tagFilter}
                     onChange={(event) => setTagFilter(event.target.value)}
                     aria-label="Filter leads by tag"
-                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
                   >
                     <option value="">Any tag</option>
                     {availableTags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}
@@ -574,7 +574,7 @@ export function CampaignWizard() {
                     value={leadSort}
                     onChange={(e) => setLeadSort(e.target.value as typeof leadSort)}
                     aria-label="Sort leads"
-                    className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+                    className="min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
                   >
                     <option value="name">Sort: Name</option>
                     <option value="business">Sort: Business</option>
@@ -605,7 +605,7 @@ export function CampaignWizard() {
                   Showing {visibleContacts.length} of {contacts.length} · {selected.size} selected
                 </p>
 
-                <div className="mt-2 max-h-96 overflow-auto rounded-xl border border-border">
+                <div className="mt-2 max-h-96 overflow-auto rounded-lg border border-border">
                   <table className="w-full min-w-[48rem] text-left text-sm">
                     <tbody>
                       {visibleContacts.map((c) => {
@@ -651,7 +651,7 @@ export function CampaignWizard() {
                 ["Used before", counts.usedBefore, "text-info"],
                 ["Excluded for safety", counts.excluded, "text-warning"],
               ].map(([label, value, color]) => (
-                <div key={label as string} className="rounded-xl border border-border p-4 text-center">
+                <div key={label as string} className="rounded-lg border border-border p-4 text-center">
                   <p className={`text-2xl font-semibold ${color}`}>{value}</p>
                   <p className="mt-1 text-xs text-muted">{label}</p>
                 </div>
@@ -663,7 +663,7 @@ export function CampaignWizard() {
               <select
                 value={priorPolicy}
                 onChange={(e) => setPriorPolicy(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
               >
                 <option value="ONLY_NEW">Skip them: only email new people (recommended)</option>
                 <option value="EXCLUDE_RECENT">Skip anyone contacted in the last 30 days</option>
@@ -748,7 +748,7 @@ export function CampaignWizard() {
                         toggleTemplate(t.templateId);
                         if (!selected) void loadPreview(t.templateId);
                       }}
-                      className={`relative rounded-xl border p-4 text-left transition ${
+                      className={`relative rounded-lg border p-4 text-left transition ${
                         selected ? "border-primary bg-surface-2" : "border-border hover:border-primary"
                       }`}
                     >
@@ -789,7 +789,7 @@ export function CampaignWizard() {
               </p>
             )}
             {preview && (
-              <div className="mt-5 rounded-xl border border-border p-4">
+              <div className="mt-5 rounded-lg border border-border p-4">
                 <p className="text-sm">
                   <span className="text-muted">Preview subject:</span>{" "}
                   <span className="font-medium">{preview.subject}</span>
@@ -814,7 +814,7 @@ export function CampaignWizard() {
                   <button
                     key={key}
                     onClick={() => setPreset(key)}
-                    className={`rounded-xl border p-4 text-left transition ${
+                    className={`rounded-lg border p-4 text-left transition ${
                       preset === key ? "border-primary bg-surface-2" : "border-border hover:border-primary"
                     }`}
                   >
@@ -825,7 +825,7 @@ export function CampaignWizard() {
               )}
               <button
                 onClick={() => setPreset("custom")}
-                className={`rounded-xl border p-4 text-left transition ${
+                className={`rounded-lg border p-4 text-left transition ${
                   preset === "custom" ? "border-primary bg-surface-2" : "border-border hover:border-primary"
                 }`}
               >
@@ -835,7 +835,7 @@ export function CampaignWizard() {
             </div>
 
             {preset === "custom" && (
-              <div className="mt-4 rounded-xl border border-border bg-surface-2/60 p-4">
+              <div className="mt-4 rounded-lg border border-border bg-surface-2/60 p-4">
                 <p className="text-sm font-semibold text-foreground">Your sending rules</p>
 
                 {/* Pacing shape first, because it decides which of the fields
@@ -923,7 +923,7 @@ export function CampaignWizard() {
             )}
 
             {paceRisk.risky && (
-              <div className="alert-warning mt-4 rounded-xl border p-4">
+              <div className="alert-warning mt-4 rounded-lg border p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-warning"><Icon name="alert" size={16} aria-hidden /> This pace risks your deliverability</p>
                 <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-warning">
                   {paceRisk.reasons.map((r) => (
@@ -947,7 +947,7 @@ export function CampaignWizard() {
                 <select
                   value={sequenceId ?? ""}
                   onChange={(e) => setSequenceId(e.target.value || null)}
-                  className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
                 >
                   <option value="">No follow-ups</option>
                   {sequences.map((s) => (
@@ -982,7 +982,7 @@ export function CampaignWizard() {
             {/* Two separate trades, so two separate choices. Both off by
                 default: the pixel costs more than it returns, and rewritten
                 links currently point at a shared hostname. */}
-            <div className="mt-3 rounded-xl border border-border p-3">
+            <div className="mt-3 rounded-lg border border-border p-3">
               <p className="text-sm font-medium text-foreground">Tracking</p>
               <p className="mt-0.5 text-xs text-muted">
                 Both are off by default. Replies are the signal that matters, and they are
@@ -1025,7 +1025,7 @@ export function CampaignWizard() {
             </div>
 
             {aiEnabled && (
-              <div className="mt-3 rounded-xl border border-info/20 bg-info-soft/55 p-3">
+              <div className="mt-3 rounded-lg border border-info/20 bg-info-soft/55 p-3">
                 <label className="flex items-start gap-2 text-sm text-foreground">
                   <input
                     type="checkbox"
@@ -1038,7 +1038,7 @@ export function CampaignWizard() {
                     <span className="mt-0.5 block text-xs text-muted">
                       Writes one tailored sentence per lead based on their business, added to the top
                       of the first email. Best for focused lists: capped at the first 150 recipients
-                      to keep it fast. Add <code className="rounded bg-surface px-1">{"{{ai_opener}}"}</code>{" "}
+                      to keep it fast. Add <code className="rounded-sm bg-surface px-1">{"{{ai_opener}}"}</code>{" "}
                       in your template to place it yourself; otherwise it goes up top.
                     </span>
                   </span>
@@ -1088,7 +1088,7 @@ export function CampaignWizard() {
               </li>
             </ul>
 
-            <div className="mt-4 rounded-xl bg-surface-2 p-4 text-sm text-muted">
+            <div className="mt-4 rounded-lg bg-surface-2 p-4 text-sm text-muted">
               <p className="font-medium text-foreground">How replies are handled automatically</p>
               <ul className="mt-1.5 list-disc space-y-1 pl-5">
                 <li>Any reply stops follow-ups for that person: you take the conversation over in Gmail.</li>
@@ -1102,7 +1102,7 @@ export function CampaignWizard() {
             </div>
 
             {preview && (
-              <div className="mt-5 rounded-xl border border-border p-4">
+              <div className="mt-5 rounded-lg border border-border p-4">
                 <SpamCheck subject={preview.subject} html={preview.html} />
               </div>
             )}
@@ -1112,7 +1112,7 @@ export function CampaignWizard() {
                 <input
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
-                  className="mt-1 w-40 rounded-xl border border-border px-3 py-2 text-sm"
+                  className="mt-1 w-40 rounded-md border border-border px-3 py-2 text-sm"
                 />
               </label>
             )}
@@ -1144,7 +1144,7 @@ export function CampaignWizard() {
               <button
                 onClick={() => router.push("/campaigns")}
                 disabled={busy}
-                className="rounded-xl border border-border px-5 py-2.5 font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+                className="rounded-md border border-border px-5 py-2.5 font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
               >
                 Save for later
               </button>
@@ -1157,7 +1157,7 @@ export function CampaignWizard() {
             <button
               onClick={() => setStep((s) => Math.max(0, s - 1))}
               disabled={step === 0}
-              className="rounded-xl px-4 py-2 text-sm text-muted hover:bg-surface-2 disabled:opacity-0"
+              className="rounded-md px-4 py-2 text-sm text-muted hover:bg-surface-2 disabled:opacity-0"
             >
               ← Back
             </button>

@@ -539,3 +539,96 @@ describe("type scale", () => {
     expect(weights.length).toBeGreaterThan(200);
   });
 });
+
+/**
+ * The radius ladder, and specifically whether anything uses it.
+ *
+ * The ladder itself was fine. Adoption was not: 182 call sites sat on
+ * `rounded-xl` against 109 on `rounded-lg` and 7 on `rounded-md`, which is not
+ * a ladder, it is one value with two exceptions. A 236px panel and a 44px
+ * button shared a corner, so neither one said anything about its own weight,
+ * and twenty-four more elements were on a bare `rounded` that is 4px and not on
+ * the ladder at all.
+ *
+ * The fix was to decide the rung from what the element is rather than from how
+ * it looked on the screen being built, because the second one gets re-decided
+ * every time and drifts. These rules hold that.
+ */
+describe("radius by element class", () => {
+  function tsxSources(): string[] {
+    const out: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (entry.name.endsWith(".tsx")) out.push(path);
+      }
+    };
+    walk("app");
+    walk("components");
+    return out;
+  }
+
+  const files = tsxSources();
+  /**
+   * Comments stripped, because these rules are about what the markup renders.
+   * The bare-`rounded` check below matched the word "rounded" inside a comment
+   * describing a rounded container, which is the third time in this codebase a
+   * guard has been broken by the prose explaining the thing it guards. A rule
+   * has to survive being written about.
+   */
+  const withoutComments = (source: string) =>
+    source.replace(/\/\*[\s\S]*?\*\//g, "");
+  const markup = files.map((file) => withoutComments(read(file))).join("\n");
+
+  it("spreads across the ladder instead of piling onto one rung", () => {
+    const used = ["sm", "md", "lg", "2xl", "full"].map(
+      (rung) => (markup.match(new RegExp(`\\brounded-${rung}\\b`, "g")) ?? []).length
+    );
+    for (const count of used) expect(count).toBeGreaterThan(0);
+    // No single rung may carry more than half of everything, which is the
+    // shape the old distribution had and the reason it read as one radius.
+    const total = used.reduce((sum, count) => sum + count, 0);
+    expect(total).toBeGreaterThan(300);
+    expect(Math.max(...used)).toBeLessThan(total / 2);
+  });
+
+  it("holds the 20px rung in reserve, since it is the one everything reached for", () => {
+    expect(markup.match(/\brounded-xl\b/g) ?? []).toEqual([]);
+  });
+
+  it("never sets a corner off the ladder", () => {
+    // Bare `rounded` is Tailwind's 4px and is not a rung.
+    const bare = markup.match(/\brounded(?![-\w[])/g) ?? [];
+    expect(bare).toEqual([]);
+
+    // One exemption, and it is a mark rather than an object: a 12px heatmap
+    // cell, where the smallest rung would round half the square away.
+    const arbitrary = files.flatMap((file) => {
+      if (file.endsWith("components/analytics/Charts.tsx")) return [];
+      return withoutComments(read(file)).match(/\brounded-\[[^\]]+\]/g) ?? [];
+    });
+    expect(arbitrary).toEqual([]);
+  });
+
+  it("keeps 28px for things that sit above the page, not for panels on it", () => {
+    // A dialog, a popover or a full-page hero surface. Anything else at this
+    // radius is a panel that drifted up a rung.
+    const large = files.filter((file) =>
+      /\brounded-2xl\b/.test(withoutComments(read(file)))
+    );
+    expect(large.length).toBeGreaterThan(0);
+    expect(large.length).toBeLessThanOrEqual(8);
+  });
+
+  it("gives the formatting toolbar a real target instead of nine copies of one string", () => {
+    const css = read("app/globals.css");
+    expect(css).toContain(".editor-tool");
+    expect(css).toMatch(/\.editor-tool \{[\s\S]*?min-height: 36px;/);
+    expect(css).toMatch(
+      /@media \(max-width: 640px\) \{\s*\.editor-tool \{ min-height: 44px;/
+    );
+    const editor = read("components/templates/TemplateEditor.tsx");
+    expect((editor.match(/editor-tool/g) ?? []).length).toBeGreaterThanOrEqual(9);
+  });
+});

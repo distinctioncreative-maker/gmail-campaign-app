@@ -47,7 +47,7 @@ export function ConsentPicker({
   const [showNote, setShowNote] = useState(false);
 
   return (
-    <fieldset className="mt-5 rounded-xl border border-border p-4">
+    <fieldset className="mt-5 rounded-lg border border-border p-4">
       <legend className="px-1 text-sm font-medium text-foreground">
         Where did these leads come from?
       </legend>

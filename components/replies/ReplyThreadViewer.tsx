@@ -97,7 +97,7 @@ export function ReplyThreadViewer({
               ) : messages && messages.length > 0 ? (
                 <div className="space-y-4">
                   {messages.map((m, i) => (
-                    <div key={i} className="rounded-xl border border-border bg-surface-2 p-4">
+                    <div key={i} className="rounded-lg border border-border bg-surface-2 p-4">
                       <p className="text-xs font-medium text-muted">{m.from}</p>
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                         {m.bodyText || m.snippet}

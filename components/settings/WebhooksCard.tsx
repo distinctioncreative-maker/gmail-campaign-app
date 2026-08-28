@@ -195,15 +195,15 @@ export function WebhooksCard() {
       </p>
 
       {secret ? (
-        <div className="alert-success mt-4 rounded-xl border p-4">
+        <div className="alert-success mt-4 rounded-lg border p-4">
           <p className="text-sm font-medium text-foreground">Install this signing secret</p>
           <p className="mt-1 text-xs text-muted">
             Every delivery carries a{" "}
-            <code className="rounded bg-surface-2 px-1 py-0.5">cadence-signature</code> header: an
+            <code className="rounded-sm bg-surface-2 px-1 py-0.5">cadence-signature</code> header: an
             HMAC-SHA256 of{" "}
-            <code className="rounded bg-surface-2 px-1 py-0.5">timestamp.body</code> using this
+            <code className="rounded-sm bg-surface-2 px-1 py-0.5">timestamp.body</code> using this
             secret, with the timestamp in{" "}
-            <code className="rounded bg-surface-2 px-1 py-0.5">cadence-timestamp</code>. Reject
+            <code className="rounded-sm bg-surface-2 px-1 py-0.5">cadence-timestamp</code>. Reject
             anything that does not match, and anything older than five minutes. Your URL is not a
             secret, so a receiver that skips this check will accept forged events.
           </p>
@@ -299,13 +299,13 @@ export function WebhooksCard() {
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://hooks.yourcompany.com/cadence"
             inputMode="url"
-            className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           />
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What receives it? e.g. HubSpot sync"
-            className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            className="w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           />
         </div>
 

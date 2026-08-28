@@ -61,7 +61,7 @@ export function VariationPanel() {
             .replace(/\{\{first_name\}\}/g, first)
             .replace(/\{\{company\}\}/g, recipient.company);
           return (
-            <li key={recipient.name} className="rounded-xl border border-border p-4">
+            <li key={recipient.name} className="rounded-lg border border-border p-4">
               <p className="text-sm font-medium">{recipient.name}</p>
               <p className="text-xs text-muted">{recipient.company}</p>
               <p className="mt-2 text-sm leading-relaxed">{body}</p>

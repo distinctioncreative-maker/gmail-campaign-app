@@ -126,7 +126,7 @@ export function SequenceBuilder({
   }
 
   const input =
-    "mt-1 rounded-xl border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
+    "mt-1 rounded-md border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none";
 
   return (
     <div className="max-w-2xl">
@@ -163,7 +163,7 @@ export function SequenceBuilder({
           Initial email is sent first. Then:
         </div>
         {steps.map((step, i) => (
-          <div key={i} className="mb-4 rounded-xl border border-border p-4">
+          <div key={i} className="mb-4 rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <p className="font-medium">Follow-up {i + 1}</p>
               <div className="flex items-center gap-3">
@@ -302,7 +302,7 @@ export function SequenceBuilder({
         {steps.length < 10 && (
           <button
             onClick={() => setSteps((prev) => [...prev, emptyStep()])}
-            className="rounded-xl border border-dashed border-border px-4 py-2 text-sm text-muted hover:border-primary"
+            className="rounded-md border border-dashed border-border px-4 py-2 text-sm text-muted hover:border-primary"
           >
             + Add a follow-up
           </button>

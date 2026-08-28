@@ -51,7 +51,7 @@ export default async function OwnerPage() {
       </header>
 
       {!fresh ? (
-        <div className="alert-warning mt-6 rounded-xl border p-4 text-sm">
+        <div className="alert-warning mt-6 rounded-lg border p-4 text-sm">
           <p className="font-semibold">Sign in again to make changes</p>
           <p className="mt-1">
             Reading is fine, but changing anything needs a sign-in from the last{" "}
