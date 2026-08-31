@@ -23,6 +23,39 @@ function luminance(hex: string): number {
   return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
 }
 
+/**
+ * LCH, because contrast alone cannot see the failure that produced this
+ * palette. Every pair in the previous system passed WCAG, and the system was
+ * still wrong: the neutrals were yellow, the accent was yellow, and the
+ * warning state was the same yellow as the accent. Contrast measures one pair
+ * at a time. Chroma and hue measure whether the palette is a system.
+ */
+function lch(hex: string): { l: number; c: number; h: number } {
+  const [r, g, b] = hex
+    .slice(1)
+    .match(/../g)!
+    .map((value) => Number.parseInt(value, 16) / 255)
+    .map((value) => (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
+  const x = 0.4124 * r + 0.3576 * g + 0.1805 * b;
+  const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  const z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
+  const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const [fx, fy, fz] = [f(x / 0.95047), f(y), f(z / 1.08883)];
+  const a = 500 * (fx - fy);
+  const bb = 200 * (fy - fz);
+  return {
+    l: 116 * fy - 16,
+    c: Math.hypot(a, bb),
+    h: ((Math.atan2(bb, a) * 180) / Math.PI + 360) % 360,
+  };
+}
+
+/** Shortest angular distance between two hues, in degrees. */
+function hueGap(one: string, two: string): number {
+  const gap = Math.abs(lch(one).h - lch(two).h);
+  return Math.min(gap, 360 - gap);
+}
+
 function contrast(foreground: string, background: string): number {
   const high = Math.max(luminance(foreground), luminance(background));
   const low = Math.min(luminance(foreground), luminance(background));
@@ -37,7 +70,7 @@ function sourceFiles(root: string): string[] {
   });
 }
 
-describe("warm monochrome brand palette", () => {
+describe("neutral brand palette with one accent", () => {
   it("records the selected semantic roles and identity gradient", () => {
     /**
      * Rewritten from pinned hexes to properties when the palette moved from
@@ -78,13 +111,27 @@ describe("warm monochrome brand palette", () => {
   });
 
   it("keeps one action colour across two grounds, achromatic in both", () => {
-    // Asserted as a property for the same reason the dark ground is, below.
-    // The light ground is bone: warm, so red exceeds blue. The previous ramp
-    // was cool grey and would fail this.
+    /**
+     * The light ground must be NEUTRAL, and this assertion is the reverse of
+     * what it said one palette ago.
+     *
+     * It used to require a warm ground, red above blue, on the theory that
+     * bone is friendlier than grey. Measured in LCH the result was a ramp at
+     * chroma 2.1 to 7.1 sitting at hue 90, which is yellow: the page, the
+     * rules and the body text were all faintly gold, underneath a gold accent
+     * and beside a gold warning state. A warm accent cannot read as an accent
+     * on a warm field, because nothing separates it from the field.
+     *
+     * So the requirement is now the thing that was actually load-bearing all
+     * along, and the ground being warm was never it.
+     */
     const lightGround = token(lightBlock, "background");
     {
-      const [r, , b] = [1, 3, 5].map((i) => parseInt(lightGround.slice(i, i + 2), 16));
-      expect(r, "light ground is warm bone, not cool grey").toBeGreaterThan(b);
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(lightGround.slice(i, i + 2), 16));
+      expect(
+        Math.max(r, g, b) - Math.min(r, g, b),
+        "light ground is neutral, not tinted"
+      ).toBeLessThanOrEqual(4);
     }
     // The dark ground is asserted by its properties rather than by its exact
     // hex. It used to be pinned to #0b0f17, which made this test fail the first
@@ -351,5 +398,96 @@ describe("warm monochrome brand palette", () => {
     expect(
       [...landing.matchAll(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/g)].length
     ).toBeGreaterThanOrEqual(4);
+  });
+});
+
+/**
+ * The three rules that would have caught the palette this one replaced.
+ *
+ * Every pair in that system passed WCAG AA. It still looked, in the owner's
+ * words, thrown together, and the measurements said exactly why:
+ *
+ *   the neutral ramp sat at chroma 2.1 to 7.1, all at hue 90, which is yellow
+ *   --brass-ink and --warning were 4 degrees apart on the wheel
+ *   --brass-soft and --warning-soft were identical in chroma and hue
+ *
+ * So a gold accent, a gold warning and a gold page, none of which a contrast
+ * test can object to. These three rules are about whether the palette is a
+ * system rather than whether any given pair is legible.
+ */
+describe("the palette is a system, not a pile of legible pairs", () => {
+  it("keeps the neutral ramp neutral", () => {
+    /**
+     * The load-bearing rule. A warm accent only reads as an accent against a
+     * neutral field; on a warm field it is just more of the field. Chroma is
+     * far less perceptible at low lightness, which is why the dark ramp gets a
+     * slightly looser bound rather than a free pass: that is exactly how a
+     * dark theme drifts coloured without anyone noticing.
+     */
+    const ramp = ["background", "surface", "surface-2", "border", "foreground", "primary", "ink"];
+    for (const [block, limit, label] of [
+      [lightBlock, 3.5, "light"],
+      [darkBlock, 4.0, "dark"],
+    ] as const) {
+      for (const name of ramp) {
+        const { c } = lch(token(block, name));
+        expect(c, `${label} --${name} chroma ${c.toFixed(1)}`).toBeLessThanOrEqual(limit);
+      }
+    }
+  });
+
+  it("keeps colours that mean different things looking different", () => {
+    /**
+     * Twenty degrees is not a lot; four is what shipped. The warm side of the
+     * wheel genuinely cannot hold brass, amber and red all far apart, so this
+     * is set at the achievable maximum rather than at a wish, and the third
+     * separation is carried by role instead: brass never appears in the form a
+     * status appears in, which the next rule checks.
+     */
+    for (const [block, label] of [
+      [lightBlock, "light"],
+      [darkBlock, "dark"],
+    ] as const) {
+      const meanings = ["brass", "success", "warning", "danger"] as const;
+      for (let i = 0; i < meanings.length; i += 1) {
+        for (let j = i + 1; j < meanings.length; j += 1) {
+          const one = token(block, meanings[i]);
+          const two = token(block, meanings[j]);
+          const gap = hueGap(one, two);
+          const lightnessGap = Math.abs(lch(one).l - lch(two).l);
+          expect(
+            gap >= 20 || lightnessGap >= 25,
+            `${label} --${meanings[i]} and --${meanings[j]} are ${gap.toFixed(1)} deg and ${lightnessGap.toFixed(1)} L apart`
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("spends the accent sparingly enough to still be an accent", () => {
+    /**
+     * The other half of why the last palette read as one colour: --info was
+     * the brass, and --info is on 58 call sites across the AI surfaces. An
+     * accent on 58 elements is the background.
+     *
+     * So the accent may not be the value of a token that carries whole
+     * surfaces, and the count is bounded directly.
+     */
+    for (const block of [lightBlock, darkBlock]) {
+      const brass = token(block, "brass");
+      for (const name of ["info", "primary", "foreground", "background", "surface"]) {
+        expect(token(block, name), `--${name} must not be the accent`).not.toBe(brass);
+      }
+    }
+    const sources = sourceFiles("app")
+      .concat(sourceFiles("components"))
+      .filter((path) => path.endsWith(".tsx"))
+      .map((path) => readFileSync(path, "utf8"))
+      .join("\n");
+    const brassUses = sources.match(/\b(?:bg|text|border|ring|from|to)-brass\b/g) ?? [];
+    expect(
+      brassUses.length,
+      "brass is an accent, not a surface colour"
+    ).toBeLessThanOrEqual(12);
   });
 });
