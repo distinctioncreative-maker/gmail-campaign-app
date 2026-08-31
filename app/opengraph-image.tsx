@@ -11,10 +11,13 @@ export default function OpenGraphImage() {
       style={{
         alignItems: "center",
         /* Hex rather than tokens: satori renders this off-DOM, so CSS custom
-           properties are not available. Values mirror --ink, --on-ink,
-           --primary, and --on-ink-muted from app/globals.css. */
-        background: "linear-gradient(135deg, #0b0f17 0%, #131a26 55%, #1b2331 100%)",
-        color: "#e8edf5",
+           properties are not available. Values mirror --ink, --ink-soft,
+           --on-ink, --brass-on-ink and --on-ink-muted from app/globals.css,
+           and they have to be updated by hand whenever those move. This card
+           spent two palettes rendering the wrong one, which is what every
+           shared link looked like. */
+        background: "linear-gradient(135deg, #0a0a0a 0%, #16140f 55%, #1c1a17 100%)",
+        color: "#f2f0eb",
         display: "flex",
         height: "100%",
         justifyContent: "center",
@@ -25,7 +28,7 @@ export default function OpenGraphImage() {
       <div style={{ display: "flex", flexDirection: "column", maxWidth: 980 }}>
         <div
           style={{
-            color: "#8fb3ff",
+            color: "#d4b478",
             display: "flex",
             fontSize: 30,
             fontWeight: 650,
@@ -48,7 +51,7 @@ export default function OpenGraphImage() {
         </div>
         <div
           style={{
-            color: "#a3afc2",
+            color: "#a3a099",
             display: "flex",
             fontSize: 30,
             lineHeight: 1.35,

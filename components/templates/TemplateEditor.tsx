@@ -489,7 +489,7 @@ export function TemplateEditor({
                   insertHtmlAtCursor(
                     // Inlined hex, not a token: this markup is sent inside an
                     // email, where custom properties do not resolve.
-                    `<a href="https://example.com" style="display:inline-block;background:#2354c7;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600">Book a call</a>`
+                    `<a href="https://example.com" style="display:inline-block;background:#1a1815;color:#ffffff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600">Book a call</a>`
                   )
                 }
                 className="editor-tool"

@@ -37,7 +37,7 @@ function sourceFiles(root: string): string[] {
   });
 }
 
-describe("cool neutral brand palette", () => {
+describe("warm monochrome brand palette", () => {
   it("records the selected semantic roles and identity gradient", () => {
     /**
      * Rewritten from pinned hexes to properties when the palette moved from
@@ -46,21 +46,26 @@ describe("cool neutral brand palette", () => {
      * against a few lines below: a value that must be edited every time the
      * palette is tuned only relocates the choice into a diff.
      *
-     * The roles are what matter, and one of them inverted deliberately. Money
-     * used to share the green with success, on the theory that a third hue
-     * dilutes the signal. With green promoted to the brand colour that stopped
-     * working: a revenue figure rendered in the brand green reads as chrome
-     * rather than as an outcome. Replies are the thing a customer pays for, so
-     * they now get the brass, and brass appears nowhere else in the product.
+     * The roles are what matter, and they have now inverted twice. Money first
+     * shared the green with success, then took the brass when green became the
+     * brand colour. It is the copy colour now, because the palette went
+     * monochrome and there is no longer a brand hue for a figure to be confused
+     * with: a total set in plain black reads as a number rather than as a
+     * branded element, which is how every financial interface worth copying
+     * sets one.
+     *
+     * The rule underneath all three revisions is the same. Every role that
+     * means something different must LOOK different from the roles next to it,
+     * and that is what is asserted rather than any particular colour.
      */
     for (const block of [lightBlock, darkBlock]) {
-      // Money is its own signal now, not an alias of "ok".
+      // Money is its own signal, not an alias of "ok".
       expect(token(block, "revenue")).not.toBe(token(block, "success"));
-      // Status green must not be the brand green, or a success pill reads as a
+      // Status must not be the action colour, or a success pill reads as a
       // brand element.
       expect(token(block, "success")).not.toBe(token(block, "primary"));
-      // `info` is a neutral in the family, not a second brand colour: it stays
-      // close to muted in hue and never equals the accent.
+      // The accent lane and the action lane are different things: `info` marks
+      // the product speaking, `primary` marks something you can click.
       expect(token(block, "info")).not.toBe(token(block, "primary"));
     }
     // Both ends of the identity gradient must carry the same contrast token, so
@@ -72,7 +77,7 @@ describe("cool neutral brand palette", () => {
     }
   });
 
-  it("keeps one accent across two grounds: near-white in light, navy in dark", () => {
+  it("keeps one action colour across two grounds, achromatic in both", () => {
     // Asserted as a property for the same reason the dark ground is, below.
     // The light ground is bone: warm, so red exceeds blue. The previous ramp
     // was cool grey and would fail this.
@@ -87,21 +92,33 @@ describe("cool neutral brand palette", () => {
     // and a literal that has to be edited every time the palette is tuned is
     // not protecting anything: it just relocates the decision into a diff.
     //
-    // What actually matters is what the name promises. It has to be dark enough
-    // to be a dark theme, and green rather than neutral or navy, because the
-    // whole palette is built on a green family and an off-key dark ground would
-    // put the accents out of tune with it. Current value: #050806.
+    // It has to be dark enough to be a dark theme, and now also achromatic:
+    // the previous version of this assertion required the ground to be GREEN,
+    // which is exactly the kind of rule that has to be rewritten rather than
+    // satisfied when the palette changes underneath it. What survives is the
+    // part that was always the real requirement.
     const darkGround = token(darkBlock, "background");
     expect(darkGround).toMatch(/^#[0-9a-f]{6}$/);
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(darkGround.slice(i, i + 2), 16));
     expect(Math.max(r, g, b), "dark ground stays genuinely dark").toBeLessThan(0x22);
-    expect(g, "dark ground is green, not neutral or navy").toBeGreaterThanOrEqual(
-      Math.max(r, b)
-    );
+    expect(
+      Math.max(r, g, b) - Math.min(r, g, b),
+      "dark ground is achromatic, not a tinted brand ground"
+    ).toBeLessThanOrEqual(6);
+
+    // The action colour is achromatic in both themes. This is the load-bearing
+    // property of the whole palette: a coloured primary is what put the last
+    // accent on every button, link, ring and chart in the product, which is
+    // what made it read as one colour rather than as a design.
     for (const block of [lightBlock, darkBlock]) {
-      // The accent must stay clearly separable from body and muted text, which
-      // is the failure that made an earlier plum accent invisible as an action.
       const primary = token(block, "primary");
+      const [pr, pg, pb] = [1, 3, 5].map((i) => parseInt(primary.slice(i, i + 2), 16));
+      expect(
+        Math.max(pr, pg, pb) - Math.min(pr, pg, pb),
+        "the action colour carries no hue"
+      ).toBeLessThanOrEqual(10);
+      // It must stay clearly separable from body and muted text, which is the
+      // failure that made an earlier plum accent invisible as an action.
       expect(primary).not.toBe(token(block, "muted"));
       expect(contrast(primary, token(block, "background"))).toBeGreaterThanOrEqual(4.5);
       expect(contrast(primary, token(block, "surface"))).toBeGreaterThanOrEqual(4.5);
@@ -118,7 +135,7 @@ describe("cool neutral brand palette", () => {
     }
   });
 
-  it("keeps navy bands readable and in the cool family", () => {
+  it("keeps the dark bands readable", () => {
     for (const block of [lightBlock, darkBlock]) {
       const ink = token(block, "ink");
       expect(contrast(token(block, "on-ink"), ink)).toBeGreaterThanOrEqual(4.5);
@@ -278,7 +295,7 @@ describe("cool neutral brand palette", () => {
     expect(sources).not.toMatch(/brand-gradient[^"\n]*text-white/);
   });
 
-  it("keeps AI on the neutral slate lane while blue owns actions", () => {
+  it("keeps AI on the accent lane while black owns actions", () => {
     const aiSources = [
       "components/templates/AiEmailWriter.tsx",
       "components/templates/AiEmailTools.tsx",
@@ -302,16 +319,37 @@ describe("cool neutral brand palette", () => {
     expect(aiSources).toContain("text-info");
     expect(aiSources).toContain("btn-primary");
     expect(landing).toContain("--landing-info: var(--marketing-info)");
-    expect(landing).toContain("--landing-blue: var(--marketing-primary)");
-    expect(landing).toContain("var(--landing-blue)");
+    expect(landing).toContain("--landing-action: var(--marketing-primary)");
+    expect(landing).toContain("var(--landing-action)");
     expect(landing).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
-    // A hex ban alone let ~50 cold-blue and green rgb() literals survive the
-    // last migration, hidden inside shadows, glows, and gradients. Any
-    // non-neutral rgb() is a colour the palette does not control. Neutral
-    // scrims (equal channels) and the one canonical shadow are allowed.
-    const colouredRgb = [...landing.matchAll(/rgb\(\s*(\d+)\s+(\d+)\s+(\d+)/g)].filter(
-      ([, r, g, b]) => !(r === g && g === b) && !(r === "15" && g === "23" && b === "41")
+
+    /**
+     * Every rgb() in a declaration must be a neutral scrim, meaning equal
+     * channels. Anything else is a colour the palette does not control.
+     *
+     * This assertion previously carried an exemption:
+     *
+     *     && !(r === "15" && g === "23" && b === "41")
+     *
+     * which is `rgb(15 23 41)`, the ink of a palette two generations back,
+     * hardcoded on the sticky nav. So the one literal hue in the entire file
+     * was the one thing this rule was written to permit, and the nav went on
+     * rendering the old blue through a green repalette and out to production,
+     * where the owner saw it before any test did.
+     *
+     * The lesson is not about that hex. An exemption added to make a rule pass
+     * is a note saying "this rule does not cover the case it was written for",
+     * and it will still be there long after everyone has forgotten which case.
+     * If a literal genuinely has to exist, it belongs in a token.
+     */
+    const colouredRgb = [...landing.matchAll(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/g)].filter(
+      ([, r, g, b]) => !(r === g && g === b)
     );
-    expect(colouredRgb).toHaveLength(0);
+    expect(colouredRgb.map((m) => m[0])).toEqual([]);
+    // Floor: neutral scrims do still exist here, so the filter above is
+    // actually filtering rather than matching nothing at all.
+    expect(
+      [...landing.matchAll(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/g)].length
+    ).toBeGreaterThanOrEqual(4);
   });
 });

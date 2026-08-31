@@ -862,3 +862,123 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
     }
   });
 });
+
+/**
+ * Tokens used on the wrong ground.
+ *
+ * This failure has now happened three times on this page, each time in a way
+ * that compiled, passed every test, and was invisible until someone looked at
+ * the rendered site:
+ *
+ *   1. The hero glow drew white at 3% on a near-black ground, a delta of about
+ *      six values per channel, which is at or below what an eye can resolve.
+ *   2. The sticky nav hardcoded the ink of a palette two generations back, so
+ *      it rendered blue above a green page all the way to production.
+ *   3. The palette went monochrome, --landing-action became black, and the
+ *      hero's primary button became a black button on a near-black hero. The
+ *      "Built for Gmail" pill and the trust-band icon tiles went with it.
+ *
+ * All three are the same mistake: a value that is right on paper used on ink.
+ * Contrast tests do not catch it, because they check token pairs rather than
+ * which pairs a rule actually puts together.
+ *
+ * So this reads the rules that live on a dark ground and requires them to draw
+ * only from the ink vocabulary. The list of dark selectors is maintained by
+ * hand, which is a real cost, so it is checked for staleness too: every
+ * selector named here must still exist and must still be dark.
+ */
+describe("the dark bands draw from the ink vocabulary", () => {
+  /** Rules that render on ink, and therefore may not reach for a paper token. */
+  const ON_INK = [
+    "nav",
+    "hero",
+    "heroGlow",
+    "heroPrimary",
+    "heroSecondary",
+    "heroNote",
+    "pill",
+    "trustSection",
+    "trustGrid",
+    "trustCopy",
+    "outcomeLayout",
+    "outcomeStat",
+    "outcomeNote",
+    "finalPanel",
+    "footer",
+  ];
+
+  /**
+   * Tokens whose value is chosen to sit on paper. On ink they are somewhere
+   * between low-contrast and invisible, and --landing-action is now literally
+   * the same colour as the band.
+   */
+  const PAPER_ONLY = [
+    "--landing-action",
+    "--landing-action-deep",
+    "--landing-action-soft",
+    "--landing-copy",
+    "--landing-copy-soft",
+    "--landing-muted",
+    "--landing-gold",
+    "--landing-info",
+    "--landing-line",
+    "--landing-paper",
+  ];
+
+  /** Every top-level rule in the file, as [selector, body]. */
+  function rules(): Array<[string, string]> {
+    return [...landingDeclarations.matchAll(/([^{}]*)\{([^{}]*)\}/g)].map(
+      (match) => [match[1].trim(), match[2]]
+    );
+  }
+
+  it("names only selectors that exist and are actually dark", () => {
+    // A stale entry is worse than no entry: it makes the rule below look like
+    // it covers ground it does not.
+    for (const name of ON_INK) {
+      expect(
+        new RegExp(`\\.${name}\\b`).test(landingDeclarations),
+        `.${name} is in the dark-ground list but not in the stylesheet`
+      ).toBe(true);
+    }
+    // The bands themselves must still be painted with the ink token. If one of
+    // them goes light, it belongs out of this list, not silently inside it.
+    for (const band of ["nav", "hero", "trustSection", "finalPanel", "footer"]) {
+      const own = rules().filter(([selector]) =>
+        new RegExp(`(^|,\\s*)\\.${band}\\s*$`).test(selector)
+      );
+      expect(own.length, `.${band} has no rule of its own`).toBeGreaterThan(0);
+      expect(
+        own.some(([, body]) => /background:[^;]*--landing-ink/.test(body)),
+        `.${band} is in the dark-ground list but is not painted with the ink token`
+      ).toBe(true);
+    }
+  });
+
+  it("never puts a paper token on an ink ground", () => {
+    const offenders: string[] = [];
+    for (const [selector, body] of rules()) {
+      const onInk = ON_INK.some((name) =>
+        new RegExp(`\\.${name}\\b`).test(selector)
+      );
+      if (!onInk) continue;
+      for (const token of PAPER_ONLY) {
+        // `var(--landing-action-on-ink)` is the ink-safe sibling and must not
+        // trip its own prefix, so the boundary matters.
+        if (new RegExp(`${token}[),\\s]`).test(body)) {
+          offenders.push(`${selector} uses ${token}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("still has dark bands to check", () => {
+    // Floor. If the page stops having ink sections, the rule above passes by
+    // describing nothing.
+    const inkRules = rules().filter(([, body]) =>
+      /background:[^;]*var\(--landing-ink\)/.test(body)
+    );
+    expect(inkRules.length).toBeGreaterThanOrEqual(4);
+  });
+});

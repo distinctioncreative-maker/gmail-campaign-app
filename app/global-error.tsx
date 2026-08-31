@@ -27,19 +27,19 @@ export default function GlobalError({
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
-          background: "#f1f4f8",
-          color: "#0f1729",
+          background: "#f5f3ef",
+          color: "#14120e",
           font: "16px/1.55 system-ui, sans-serif",
         }}
       >
         <main style={{ maxWidth: 460, padding: 32, textAlign: "center" }}>
           <h1 style={{ margin: 0, fontSize: 26 }}>Cadence could not start</h1>
-          <p style={{ color: "#5a6478" }}>
+          <p style={{ color: "#5c574c" }}>
             Something failed before the app could load. Reloading usually clears it. If it does not,
             the problem is on our side and we are the ones who need to fix it.
           </p>
           {error.digest ? (
-            <p style={{ color: "#5a6478", fontFamily: "monospace", fontSize: 12 }}>
+            <p style={{ color: "#5c574c", fontFamily: "monospace", fontSize: 12 }}>
               Reference {error.digest}
             </p>
           ) : null}
@@ -51,7 +51,7 @@ export default function GlobalError({
               padding: "0 20px",
               border: 0,
               borderRadius: 8,
-              background: "#2354c7",
+              background: "#1a1815",
               color: "#fff",
               font: "inherit",
               fontWeight: 650,

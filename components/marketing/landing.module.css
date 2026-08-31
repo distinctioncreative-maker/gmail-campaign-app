@@ -22,13 +22,17 @@
   --landing-on-ink: var(--marketing-on-ink);
   --landing-on-ink-muted: var(--marketing-on-ink-muted);
   --landing-on-ink-subtle: var(--marketing-on-ink-subtle);
-  /* The action lane. The internal name is finally accurate again. */
-  --landing-blue: var(--marketing-primary);
-  --landing-blue-deep: var(--marketing-primary-hover);
-  --landing-blue-soft: var(--marketing-primary-soft);
-  --landing-blue-contrast: var(--marketing-primary-contrast);
-  --landing-blue-border: color-mix(in srgb, var(--landing-blue) 34%, var(--landing-line));
-  --landing-blue-on-ink: color-mix(in srgb, var(--landing-on-ink) 64%, var(--landing-blue));
+  --landing-on-ink-bright: var(--marketing-on-ink-bright);
+  /* The action lane, and the name is now about the job rather than the hue.
+     It has been wrong twice: it said blue while holding green, and it would
+     have said blue while holding black. A token named for a colour is a token
+     that goes stale the first time the palette moves. */
+  --landing-action: var(--marketing-primary);
+  --landing-action-deep: var(--marketing-primary-hover);
+  --landing-action-soft: var(--marketing-primary-soft);
+  --landing-action-contrast: var(--marketing-primary-contrast);
+  --landing-action-border: color-mix(in srgb, var(--landing-action) 34%, var(--landing-line));
+  --landing-action-on-ink: color-mix(in srgb, var(--landing-on-ink) 64%, var(--landing-action));
   --landing-info: var(--marketing-info);
   --landing-info-soft: var(--marketing-info-soft);
   --landing-info-border: color-mix(in srgb, var(--landing-info) 34%, var(--landing-line));
@@ -58,7 +62,7 @@
      bands. --landing-gold-on-ink is the light one, and it is the only one that
      resolves on the dark fold: putting the dark brass on the ink ground would
      reproduce the invisible-glow bug this whole hero pass exists to fix. */
-  --landing-gold: var(--marketing-revenue);
+  --landing-gold: var(--marketing-brass-ink);
   --landing-gold-on-ink: var(--marketing-brass-on-ink);
   --landing-gold-strong: color-mix(in srgb, var(--landing-gold) 68%, var(--landing-copy));
   --landing-gold-soft: var(--marketing-revenue-soft);
@@ -74,6 +78,9 @@
   --landing-r-lg: var(--radius-lg);
   --landing-r-xl: var(--radius-xl);
   --landing-r-2xl: var(--radius-2xl);
+  /* Was only ever reached through a `999px` fallback, so the ladder did not
+     actually own the one radius the page uses most. */
+  --landing-r-full: var(--radius-full);
   --landing-ease: var(--ease-out);
   --landing-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --landing-stage-duration: 2300ms;
@@ -141,14 +148,21 @@
   margin-inline: auto;
 }
 
+/* The one rule in this file that ever carried a literal hue, and it cost a
+   deploy: `rgb(15 23 41 / 86%)` is #0f1729, the ink of a palette two
+   generations back. Every other colour here routes through a token, so the
+   repalette moved everything except this, and the nav went on rendering the
+   old blue above a completely different page. Nothing caught it because the
+   rule against literals was a sentence in a comment rather than a test. It is
+   a test now. */
 .nav {
   position: sticky;
   top: 0;
   z-index: 50;
   border-bottom: 1px solid rgb(255 255 255 / 8%);
-  background: rgb(15 23 41 / 86%);
+  background: color-mix(in srgb, var(--landing-ink) 86%, transparent);
   color: var(--landing-on-ink);
-  backdrop-filter: saturate(1.2) blur(20px);
+  backdrop-filter: saturate(1.05) blur(20px);
 }
 
 .navInner {
@@ -251,7 +265,7 @@
 .heroFoot a:focus-visible,
 .trustCopy > a:focus-visible,
 .pricingGrid article > a:focus-visible {
-  outline: 3px solid var(--landing-blue-on-ink);
+  outline: 3px solid var(--landing-action-on-ink);
   outline-offset: 4px;
 }
 
@@ -304,7 +318,7 @@
     ),
     radial-gradient(
       38% 40% at 88% 4%,
-      color-mix(in srgb, var(--landing-green) 13%, transparent) 0%,
+      color-mix(in srgb, var(--landing-on-ink) 9%, transparent) 0%,
       transparent 72%
     );
   mask-image: linear-gradient(to bottom, black 0%, black 34%, transparent 78%);
@@ -350,10 +364,14 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  border: 1px solid color-mix(in srgb, var(--landing-blue) 28%, transparent);
-  border-radius: var(--landing-r-lg);
-  background: color-mix(in srgb, var(--landing-blue) 12%, transparent);
-  padding: 8px 11px;
+  /* Brass and a white wash, not the action colour: this pill only ever sits
+     on the ink hero, and a 12% black fill on a near-black ground is nothing
+     at all. That is the same failure as the invisible hero glow, arriving
+     from the other direction. */
+  border: 1px solid color-mix(in srgb, var(--landing-gold-on-ink) 34%, transparent);
+  border-radius: var(--landing-r-full);
+  background: color-mix(in srgb, var(--landing-on-ink) 7%, transparent);
+  padding: 8px 14px;
   color: var(--landing-on-ink);
   font-size: 11px;
   font-weight: 700;
@@ -415,38 +433,45 @@
   animation: heroReveal 780ms 220ms ease-out both;
 }
 
+/* The primary call to action, and it INVERTS on the dark bands.
+   --landing-action is black, which is correct everywhere on paper and is a
+   black button on a near-black ground here. Both places this class is used,
+   the hero and the outcome band, are ink. So on ink the action colour is the
+   paper: a white button on black, which is both the only legible option and
+   the strongest object the page can put in front of someone. */
 .root .heroPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
-  min-height: 50px;
-  border: 1px solid var(--landing-blue);
-  border-radius: var(--landing-r-xl);
-  background: var(--landing-blue);
-  padding: 0 26px;
-  color: var(--landing-blue-contrast);
+  min-height: 52px;
+  border: 1px solid var(--landing-on-ink);
+  border-radius: var(--landing-r-full);
+  background: var(--landing-on-ink);
+  padding: 0 28px;
+  color: var(--landing-ink);
   font-size: 15px;
   font-weight: 650;
   transition:
     background 180ms var(--landing-ease),
-    border-color 180ms var(--landing-ease);
+    border-color 180ms var(--landing-ease),
+    transform 180ms var(--landing-ease);
 }
 
 .root .heroPrimary:hover {
-  border-color: var(--landing-blue-deep);
-  background: var(--landing-blue-deep);
-  color: var(--landing-blue-contrast);
+  border-color: var(--landing-on-ink-bright);
+  background: var(--landing-on-ink-bright);
+  color: var(--landing-ink);
 }
 
 .root .heroSecondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 50px;
+  min-height: 52px;
   border: 1px solid var(--landing-on-ink-subtle);
-  border-radius: var(--landing-r-xl);
-  padding: 0 24px;
+  border-radius: var(--landing-r-full);
+  padding: 0 26px;
   color: var(--landing-on-ink);
   font-size: 15px;
   font-weight: 600;
@@ -472,7 +497,7 @@
 
 .heroPrimary:focus-visible,
 .heroSecondary:focus-visible {
-  outline: 3px solid var(--landing-blue-on-ink);
+  outline: 3px solid var(--landing-action-on-ink);
   outline-offset: 4px;
 }
 
@@ -515,7 +540,7 @@
 
 .waitForm input:focus-visible {
   border-radius: var(--landing-r-md);
-  box-shadow: inset 0 0 0 2px var(--landing-blue);
+  box-shadow: inset 0 0 0 2px var(--landing-action);
 }
 
 .waitForm button {
@@ -526,16 +551,16 @@
   gap: 8px;
   border: 0;
   border-radius: var(--landing-r-lg);
-  background: var(--landing-blue);
+  background: var(--landing-action);
   padding: 0 19px;
-  color: var(--landing-blue-contrast);
+  color: var(--landing-action-contrast);
   font-weight: 650;
   cursor: pointer;
   transition: background 180ms var(--landing-ease);
 }
 
 .waitForm button:hover {
-  background: var(--landing-blue-deep);
+  background: var(--landing-action-deep);
 }
 
 .waitForm button:disabled {
@@ -631,9 +656,9 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: var(--landing-blue-soft);
+  background: var(--landing-action-soft);
   padding: 5px 9px;
-  color: var(--landing-blue-deep);
+  color: var(--landing-action-deep);
   font-size: 11px;
   font-weight: 720;
   letter-spacing: 0.02em;
@@ -744,18 +769,24 @@
 
 .eyebrow {
   display: inline-flex;
-  color: var(--landing-blue-deep);
+  color: var(--landing-action-deep);
   font-size: 11px;
   font-weight: 780;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
+/* Shape is shared, colour is not.
+   These grouped rules used to paint the paper colour for everyone and let the
+   two dark members repaint themselves a few hundred lines later. That worked,
+   and it is also precisely how a black button ended up on a black hero: the
+   dark side of the page was always one deleted override away from being
+   wrong, and nothing would have failed. Colour now comes from the ground the
+   element actually sits on, once. */
 .sectionHeading h2,
 .trustCopy h2,
 .finalPanel h2 {
   margin: 16px 0 0;
-  color: var(--landing-copy);
   font-size: clamp(36px, 5vw, 56px);
   font-weight: 660;
   letter-spacing: -0.05em;
@@ -763,13 +794,20 @@
   text-wrap: balance;
 }
 
+.sectionHeading h2 {
+  color: var(--landing-copy);
+}
+
 .sectionHeading p,
 .trustCopy > p,
 .finalPanel > p {
   margin: 19px 0 0;
-  color: var(--landing-muted);
   font-size: 17px;
   line-height: 1.72;
+}
+
+.sectionHeading p {
+  color: var(--landing-muted);
 }
 
 .outcomeGrid {
@@ -781,9 +819,8 @@
 
 .featureGrid article,
 .trustGrid article {
-  border: 1px solid var(--landing-line);
+  border: 1px solid transparent;
   border-radius: var(--landing-r-xl);
-  background: var(--landing-surface);
   padding: 26px;
   box-shadow: var(--landing-shadow-sm);
   transition:
@@ -803,22 +840,35 @@
   font-weight: 730;
 }
 
+.featureGrid article {
+  border-color: var(--landing-line);
+  background: var(--landing-surface);
+}
+
 .outcomeGrid h3,
 .featureGrid h3,
 .trustGrid h3 {
   margin: 30px 0 0;
-  color: var(--landing-copy);
   font-size: 19px;
   letter-spacing: -0.025em;
+}
+
+.outcomeGrid h3,
+.featureGrid h3 {
+  color: var(--landing-copy);
 }
 
 .outcomeGrid p,
 .featureGrid p,
 .trustGrid p {
   margin: 10px 0 0;
-  color: var(--landing-muted);
   font-size: 14px;
   line-height: 1.65;
+}
+
+.outcomeGrid p,
+.featureGrid p {
+  color: var(--landing-muted);
 }
 
 .workflow {
@@ -842,7 +892,7 @@
 }
 
 .workflowSteps article > span {
-  color: var(--landing-blue);
+  color: var(--landing-action);
   font-size: 12px;
   font-weight: 730;
 }
@@ -882,7 +932,7 @@
   left: -34%;
   width: 28%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--landing-blue), transparent);
+  background: linear-gradient(90deg, transparent, var(--landing-action), transparent);
   content: "";
   opacity: 0.8;
   animation: composeSignal 5.2s 600ms var(--landing-ease-soft) infinite;
@@ -932,7 +982,7 @@
 
 .featureGrid article > span,
 .planEyebrow {
-  color: var(--landing-blue-deep);
+  color: var(--landing-action-deep);
   font-size: 11px;
   font-weight: 740;
   letter-spacing: 0.08em;
@@ -986,8 +1036,8 @@
   height: 34px;
   place-items: center;
   border-radius: var(--landing-r-lg);
-  background: color-mix(in srgb, var(--landing-blue) 15%, transparent);
-  color: var(--landing-blue-on-ink);
+  background: color-mix(in srgb, var(--landing-gold-on-ink) 16%, transparent);
+  color: var(--landing-gold-on-ink);
 }
 
 .trustGrid h3 {
@@ -1026,7 +1076,7 @@
 }
 
 .pricingGrid .featuredPrice {
-  border-color: var(--landing-blue-border);
+  border-color: var(--landing-action-border);
   box-shadow: var(--landing-shadow-lg);
 }
 
@@ -1134,9 +1184,9 @@
 }
 
 .featuredPrice > a {
-  border-color: var(--landing-blue) !important;
-  background: var(--landing-blue);
-  color: var(--landing-blue-contrast) !important;
+  border-color: var(--landing-action) !important;
+  background: var(--landing-action);
+  color: var(--landing-action-contrast) !important;
 }
 
 .pricingNote {
@@ -1189,7 +1239,7 @@
 
 .faq summary::after {
   content: "+";
-  color: var(--landing-blue);
+  color: var(--landing-action);
   font-size: 21px;
   font-weight: 450;
 }
@@ -1283,7 +1333,7 @@
   }
 
   .trustGrid article:hover {
-    border-color: color-mix(in srgb, var(--landing-blue) 28%, transparent);
+    border-color: color-mix(in srgb, var(--landing-gold-on-ink) 30%, transparent);
     background: rgb(255 255 255 / 5.5%);
     transform: translateY(-3px);
   }
@@ -1301,7 +1351,7 @@
   }
 
   .pricingGrid article > a:hover {
-    border-color: var(--landing-blue-border);
+    border-color: var(--landing-action-border);
     box-shadow: var(--landing-shadow-sm);
     transform: translateY(-1px);
   }
@@ -1616,12 +1666,12 @@
   cursor: pointer;
 }
 .variationToggle[aria-checked="true"] {
-  border-color: var(--landing-blue-border);
-  background: var(--landing-blue);
-  color: var(--landing-blue-contrast);
+  border-color: var(--landing-action-border);
+  background: var(--landing-action);
+  color: var(--landing-action-contrast);
 }
 .variationToggle:focus-visible {
-  outline: 3px solid var(--landing-blue);
+  outline: 3px solid var(--landing-action);
   outline-offset: 2px;
 }
 .variationSource {
@@ -1650,12 +1700,12 @@
   display: inline-block;
   margin: 0 2px;
   padding: 1px 8px;
-  border: 1px dashed var(--landing-blue-border);
+  border: 1px dashed var(--landing-action-border);
   border-radius: 999px;
-  background: var(--landing-blue-soft);
+  background: var(--landing-action-soft);
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--landing-blue-deep);
+  color: var(--landing-action-deep);
 }
 .variationGrid {
   display: grid;
@@ -1769,8 +1819,8 @@
   font-weight: 550;
 }
 .mailRail > span[data-current] {
-  background: var(--landing-blue-soft);
-  color: var(--landing-blue-deep);
+  background: var(--landing-action-soft);
+  color: var(--landing-action-deep);
   font-weight: 680;
 }
 .mailRail > span[data-quiet] b { color: var(--landing-muted); }
@@ -1950,7 +2000,7 @@
    third colour introduced purely for one headline is exactly how that starts. */
 .hero h1 em {
   font-style: normal;
-  color: var(--landing-blue-on-ink);
+  color: var(--landing-action-on-ink);
 }
 
 /* .controlsWalkthrough is gone: HeroDemo now lives inside DemoTabs, which owns
@@ -1977,10 +2027,10 @@
   height: 38px;
   width: 38px;
   place-items: center;
-  border: 1px solid var(--landing-blue-border);
+  border: 1px solid var(--landing-action-border);
   border-radius: var(--landing-r-md);
-  background: var(--landing-blue-soft);
-  color: var(--landing-blue-deep);
+  background: var(--landing-action-soft);
+  color: var(--landing-action-deep);
 }
 .featureRow h3 {
   margin: 0;
@@ -2140,7 +2190,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--landing-blue-deep);
+  color: var(--landing-action-deep);
   font-weight: 600;
 }
 .workflowFoot a svg { transition: transform 220ms var(--landing-ease); }
@@ -2179,11 +2229,11 @@
   top: 0;
   width: 2px;
   height: 22%;
-  border-radius: var(--landing-r-full, 999px);
+  border-radius: var(--landing-r-full);
   background: linear-gradient(
     180deg,
     transparent,
-    var(--landing-blue) 45%,
+    var(--landing-gold) 45%,
     var(--landing-green) 70%,
     transparent
   );
@@ -2239,9 +2289,9 @@
 @media (hover: hover) and (pointer: fine) {
   .featureRow article:hover .featureRowIcon {
     transform: translateY(-2px) scale(1.06);
-    background: var(--landing-blue);
-    border-color: var(--landing-blue);
-    color: var(--landing-blue-contrast);
+    background: var(--landing-action);
+    border-color: var(--landing-action);
+    color: var(--landing-action-contrast);
   }
 }
 
@@ -2254,7 +2304,7 @@
 }
 @media (hover: hover) and (pointer: fine) {
   .workflowSteps article:hover > span {
-    color: var(--landing-blue);
+    color: var(--landing-action);
     transform: scale(1.08);
   }
 }
