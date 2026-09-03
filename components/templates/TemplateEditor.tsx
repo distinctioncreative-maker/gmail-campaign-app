@@ -11,6 +11,7 @@ import { AiEmailWriter } from "./AiEmailWriter";
 import { AiEmailTools } from "./AiEmailTools";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { usePrompt } from "@/components/ui/UIProviders";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 import {
   appendMissingCommercialFooter,
@@ -70,6 +71,7 @@ export function TemplateEditor({
   onSaved?: (template: SavedTemplate) => void;
 }) {
   const router = useRouter();
+  const promptFor = usePrompt();
   const editorRef = useRef<HTMLDivElement>(null);
   const lastVisualInputRef = useRef<string | null>(null);
   const subjectInputRef = useRef<HTMLInputElement>(null);
@@ -474,11 +476,19 @@ export function TemplateEditor({
               <button onClick={() => exec("formatBlock", "<h2>")} className="editor-tool">Heading</button>
               <button onClick={() => exec("insertUnorderedList")} className="editor-tool">• List</button>
               <button
-                onClick={() => {
-                  const url = prompt("Link address (https://…):");
+                onClick={async () => {
+                  const url = await promptFor({
+                    title: "Add a link",
+                    confirmLabel: "Add link",
+                    prompt: {
+                      label: "Link address",
+                      placeholder: "https://example.com",
+                      validate: (value: string) =>
+                        safeWebUrl(value) ? null : "Links must start with http:// or https://.",
+                    },
+                  });
                   const safeUrl = url ? safeWebUrl(url) : null;
                   if (safeUrl) exec("createLink", safeUrl);
-                  else if (url) setError("Links must start with http:// or https://.");
                 }}
                 className="editor-tool"
               >
@@ -498,8 +508,17 @@ export function TemplateEditor({
               </button>
               <button onClick={() => insertHtmlAtCursor("<hr>")} className="editor-tool">Divider</button>
               <button
-                onClick={() => {
-                  const url = prompt("Image address (https://…):");
+                onClick={async () => {
+                  const url = await promptFor({
+                    title: "Add an image",
+                    confirmLabel: "Add image",
+                    prompt: {
+                      label: "Image address",
+                      placeholder: "https://example.com/photo.jpg",
+                      validate: (value: string) =>
+                        safeWebUrl(value) ? null : "Images must use an http:// or https:// address.",
+                    },
+                  });
                   const safeUrl = url ? safeWebUrl(url) : null;
                   if (safeUrl) {
                     const escapedUrl = safeUrl
@@ -508,8 +527,6 @@ export function TemplateEditor({
                     insertHtmlAtCursor(
                       `<img src="${escapedUrl}" alt="" style="max-width:100%">`
                     );
-                  } else if (url) {
-                    setError("Images must use an http:// or https:// address.");
                   }
                 }}
                 className="editor-tool"

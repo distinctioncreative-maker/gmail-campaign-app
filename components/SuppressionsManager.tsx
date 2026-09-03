@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LocalTime } from "@/components/LocalTime";
 import { DataTable, TableRow } from "@/components/ui/DataTable";
+import { usePrompt } from "@/components/ui/UIProviders";
 
 export interface SuppressionRow {
   suppressionId: string;
@@ -34,6 +35,7 @@ export function SuppressionsManager({
   isAdmin: boolean;
 }) {
   const router = useRouter();
+  const promptFor = usePrompt();
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [addText, setAddText] = useState("");
@@ -78,10 +80,21 @@ export function SuppressionsManager({
   }
 
   async function remove(row: SuppressionRow) {
-    const reason = prompt(
-      `Remove ${row.email} from the do-not-email list?\n\nThis person could be emailed again. Type a short reason to confirm:`
-    );
-    if (!reason || reason.trim().length < 3) return;
+    const reason = await promptFor({
+      title: `Remove ${row.email} from the do-not-email list?`,
+      body: "This person could be emailed again. The reason is kept with the change.",
+      danger: true,
+      confirmLabel: "Remove",
+      prompt: {
+        label: "Why is this coming off the list?",
+        placeholder: "Bounced once on a typo, address is valid",
+        // Validated in the dialog rather than by silently doing nothing, which
+        // is what the native prompt did to anyone who typed two characters.
+        validate: (value: string) =>
+          value.trim().length < 3 ? "Give a short reason before removing this." : null,
+      },
+    });
+    if (reason === null) return;
     setBusy(true);
     try {
       const res = await fetch("/api/suppressions", {
