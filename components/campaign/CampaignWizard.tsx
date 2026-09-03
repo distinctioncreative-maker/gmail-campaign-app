@@ -796,8 +796,10 @@ export function CampaignWizard() {
                 <iframe
                   title="Campaign email preview"
                   sandbox=""
-                  className="mt-3 h-64 w-full rounded-lg border-0 bg-surface-2"
-                  srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:12px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
+                  /* See TemplateEditor: the frame is themed, the content is not. */
+                  className="mt-3 h-64 w-full rounded-lg border-0"
+                  style={{ background: "#ffffff" }}
+                  srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:12px;background:#fff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
                 />
               </div>
             )}

@@ -89,8 +89,17 @@ describe("the public palette cannot be moved by the app's theme", () => {
    * places. This is written against the rule instead, so a sixth token added
    * next year fails the same way.
    */
+  /**
+   * The theme-dependent block. This is now the LIGHT one, because :root became
+   * the dark theme when the app went dark-first. The rule is unchanged and so
+   * is its point: these are the tokens that MOVE when the visitor's app theme
+   * moves, and the public page must never resolve through any of them. Only the
+   * selector moved, and it is worth noting that this test caught the flip
+   * rather than silently passing against an empty set, which is what the
+   * non-vacuity floor below is for.
+   */
   const darkBlock = (() => {
-    const start = globalStyles.indexOf(':root[data-theme="dark"] {');
+    const start = globalStyles.indexOf(':root[data-theme="light"] {');
     return globalStyles.slice(start, globalStyles.indexOf("\n}", start));
   })();
 
@@ -446,11 +455,20 @@ describe("landing-page experience", () => {
       ).toBeGreaterThanOrEqual(4.5);
     }
 
+    /**
+     * These mirror the color-mix() expressions in the landing stylesheet, and
+     * they must read the --marketing-* ramp rather than the app tokens of the
+     * same name. They used to read the app tokens and agreed by coincidence,
+     * because :root happened to be the light theme. :root is the dark theme
+     * now, so `success` here resolved to the luminous mint and this failed at
+     * 3.09:1 -- which is the test noticing the coincidence had ended, exactly
+     * the failure mode the whole marketing ramp exists to prevent.
+     */
     const semanticTextPairs = [
-      [mixHex(tokenHex("success"), tokenHex("marketing-copy"), 0.7), tokenHex("marketing-paper")],
-      [mixHex(tokenHex("revenue"), tokenHex("marketing-copy"), 0.68), tokenHex("marketing-paper")],
-      [mixHex(tokenHex("danger"), tokenHex("marketing-copy"), 0.72), tokenHex("marketing-paper")],
-      [mixHex(tokenHex("marketing-on-ink"), tokenHex("danger"), 0.54), tokenHex("marketing-ink")],
+      [mixHex(tokenHex("marketing-success"), tokenHex("marketing-copy"), 0.7), tokenHex("marketing-paper")],
+      [mixHex(tokenHex("marketing-revenue"), tokenHex("marketing-copy"), 0.68), tokenHex("marketing-paper")],
+      [mixHex(tokenHex("marketing-danger"), tokenHex("marketing-copy"), 0.72), tokenHex("marketing-paper")],
+      [mixHex(tokenHex("marketing-on-ink"), tokenHex("marketing-danger"), 0.54), tokenHex("marketing-ink")],
     ] as const;
 
     for (const [foreground, background] of semanticTextPairs) {

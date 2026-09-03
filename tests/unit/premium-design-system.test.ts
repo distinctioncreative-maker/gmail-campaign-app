@@ -67,12 +67,13 @@ describe("token ladders", () => {
   });
 
   it("gives dark mode a top highlight, since shadow cannot separate on a dark field", () => {
-    // Black on near-black is invisible. A 1px inset highlight along the top edge
-    // is how a real edge catches light and is the strongest depth cue dark mode
-    // has. Light mode defines it transparent rather than `none`, because `none`
-    // in a shadow list invalidates the declaration.
-    expect(token("--edge-highlight")).toMatch(/rgba\(255,\s*255,\s*255,\s*0\)/);
-    expect(token("--edge-highlight", ':root[data-theme="dark"] {')).toContain("inset");
+    // Dark is :root now, so the highlight lives there and the LIGHT override is
+    // the one that zeroes it. The rule is unchanged: a darker shadow on a dark
+    // field is invisible, so separation comes from a top highlight instead.
+    expect(token("--edge-highlight")).toMatch(/inset 0 1px 0 rgba\(255, 255, 255, 0\.0[1-9]/);
+    expect(token("--edge-highlight", ':root[data-theme="light"] {')).toMatch(
+      /rgba\(255, 255, 255, 0\)/
+    );
   });
 
   it("routes every primitive through the ladder instead of a literal", () => {
@@ -237,20 +238,24 @@ describe("token ladders", () => {
     expect(reel).toContain('type="button"');
   });
 
-  it("defaults to light without consulting the operating system", () => {
+  it("defaults to dark, without consulting the operating system", () => {
     /**
-     * Flipped with the green-and-bone palette. The old argument was that money
-     * tools are dark; the specific counter-argument is stronger here. The thing
-     * being edited is an email, the place it lands is Gmail, and Gmail is light
-     * for nearly everyone, so a dark composer makes every preview a guess.
+     * This has flipped twice and the reasoning is worth keeping, because the
+     * argument that set it to LIGHT is the reason it could flip back safely.
      *
-     * What this actually protects is unchanged: the default is decided by us
-     * and set before paint, an explicit choice still wins in both directions,
-     * and the OS setting never silently overrides a deliberate one.
+     * That argument was: the thing being edited is an email, it lands in Gmail,
+     * and Gmail is light. Still true, still honoured, and now enforced where it
+     * belongs. [data-surface="email"] keeps the composer and both preview panes
+     * light in either theme, so the application is free to be dark without
+     * making any judgement about a finished message a guess.
+     *
+     * prefers-color-scheme is deliberately not consulted: the choice is the
+     * product's, and an explicit user choice still wins in both directions.
      */
     const layout = read("app/layout.tsx");
-    expect(layout).toContain("t==='dark'?'dark':'light'");
-    expect(layout).not.toContain("prefers-color-scheme");
+    expect(layout).toContain("t==='light'?'light':'dark'");
+    expect(layout).toContain("setAttribute('data-theme','dark')");
+    expect(read("app/globals.css")).not.toContain("prefers-color-scheme");
   });
 });
 

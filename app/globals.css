@@ -4,122 +4,86 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* ── Palette: neutral + one accent ───────────────────────────
+  /* ── Palette: indigo + mint on near-neutral dark ──────────────
      Every value is measured, not estimated, and the ratios sit beside them so
      a future edit cannot quietly regress one.
 
-     This is the third palette, and the second one failed for a reason that
-     only a measurement makes obvious. It was called "warm monochrome", and in
-     LCH the neutral ramp read:
+     Two accents, two meanings, and nothing else decorative:
+       indigo = the action, and Cadence itself. Buttons, links, focus, the
+                Cadence Line, mail we sent.
+       mint   = the result. Replies, healthy sending, anything that worked.
+     Status keeps amber and red, and those are the only other colours a screen
+     is allowed to contain.
 
-       background C=2.1 hue 91    border  C=4.9 hue 92
-       surface-2  C=3.3 hue 91    muted   C=7.1 hue 91
+     DARK IS THE DEFAULT and this block is the dark one. That is the reverse of
+     what this file did an hour ago, and the reason is that the app is a control
+     system for something that is running. The exception is anything showing the
+     recipient's actual email, which stays light: see [data-surface="email"].
 
-     Hue 90 is yellow. So the page, the rules, and the body text were all
-     faintly gold, sitting under a gold accent, next to a gold warning state.
-     Measured on the wheel, --brass-ink and --warning were FOUR DEGREES apart:
-     the colour for "premium emphasis" and the colour for "something is wrong"
-     were the same colour. Their pale tints were closer still, identical in
-     chroma and hue and one point apart in lightness. The screen was not black
-     and white with an accent, it was a single yellow family pretending to be
-     three things, which is exactly what "the colours look thrown together"
-     describes.
+     WHY THE NEUTRALS ARE NEARLY NEUTRAL. The palette this replaces failed
+     because its greys sat at hue 90 under a gold accent, so the accent had
+     nothing to separate from. The obvious next mistake is a blue-grey ground
+     under a blue accent, and it measures: indigo reads 4.79:1 on a chroma-10
+     blue ground and 5.01:1 on this one. Same shape of error, smaller, avoided.
 
-     A warm accent only reads as an accent against a neutral field. So the
-     greys are now genuinely neutral (chroma at or below 3.3, a whisper cool),
-     and brass at chroma 38 is the only warm thing on the page. Same accent,
-     completely different result, because the ground stopped competing with it.
+     WHY THE BUTTON LABEL IS NEAR-BLACK. White on #6D7CFF is 3.51:1 and fails.
+     Near-black on it is 5.67:1, and the same indigo is 5.67:1 as text on the
+     page, so one token covers the fill and the text. Two values would have had
+     to be maintained in lockstep forever, which is a cost this avoids. */
 
-     The rules:
-       black  = the action. Every primary button, every link.
-       brass  = emphasis, rationed. The focus ring, marketing rules and
-                eyebrows, one chart series. It is never a filled chip and
-                never a status, which is what keeps it clear of --warning.
-       status = the only other colour, and never decorative.
-     Status hues are spread as far apart as the warm side of the wheel allows:
-     success 157 deg, warning 59, danger 36. Warning and brass sit 22.6 deg
-     apart, which is the geometric maximum once warning must also clear danger
-     and hold 4.5:1. Three warm hues cannot all be distinct, so the third one
-     is separated by role instead: brass never appears in the form a status
-     appears in.
+  --background: #08090b; /* L 2.4, chroma 0.9 */
+  --surface: #17191e;    /* 1.13:1 over the page */
+  --surface-2: #1f222c;  /* 1.11:1 over the card. Insets, table headers */
+  --foreground: #f5f7fa; /* 18.56:1 page, 16.38:1 card, 14.79:1 inset */
+  --muted: #a0a9b8;      /* 8.41 / 7.42 / 6.70 */
+  --muted-2: #8a93a4;    /* 6.44 / 5.69 / 5.13. Metadata, the quietest text */
+  --border: #34373e;     /* 1.48:1 on the card */
+  --border-firm: #434652; /* 1.87:1, for emphasis edges */
 
-     Token NAMES are unchanged, which is what makes a change this large safe:
-     683 `text-muted`, 296 `bg-surface` and 282 `border-border` call sites keep
-     working untouched. */
+  /* The action colour. One value, both jobs. */
+  --primary: #6d7cff;         /* 5.67:1 as text on the page */
+  --primary-hover: #8793ff;   /* also the text colour on any indigo-tinted chip */
+  --primary-soft: #23273e;    /* 14% indigo over the card, flattened */
+  --primary-contrast: #08090b; /* 5.67:1 on the fill */
+  --brand-from: #6d7cff;
+  --brand-to: #8793ff;
+  --brand-contrast: #08090b;
+  --accent: #6d7cff;
 
-  --background: #f6f6f7; /* L 96.9, chroma 0.5. Card separates at 1.08:1 */
-  --surface: #ffffff;
-  --surface-2: #ececee; /* 1.18:1 under the card. Insets, table headers */
-  --foreground: #0d0d10; /* 17.97:1 on page, 19.41:1 on card */
-  --muted: #5a5a62; /* 6.33:1 on page, 6.83:1 on card, 5.79:1 on inset */
-  --border: #d7d7dc; /* 1.33:1 on page, 1.43:1 on card */
-  --border-firm: #c5c5cb; /* 1.72:1 on card, for emphasis edges */
+  /* AI and system guidance. A neutral, not a third hue: it is on 58 call sites
+     across the AI surfaces, and an accent on 58 elements is the background. */
+  --info: #a0a9b8;
+  --info-hover: #c2c9d4;
+  --info-soft: #1f222c;
+  --info-contrast: #08090b;
 
-  /* The action colour. Black rather than a hue, because a coloured primary is
-     what put the previous two accents on every surface in the product. Hover
-     goes to true black: darker under the pointer is the only direction that
-     reads as pressure. */
-  --primary: #111114; /* white on this fill: 18.85:1 */
-  --primary-hover: #000000;
-  --primary-soft: #ececee;
-  --primary-contrast: #ffffff;
-  --brand-from: #111114;
-  --brand-to: #000000;
-  --brand-contrast: #ffffff;
-  --accent: #b08d4f;
+  /* Money is the foreground value. In a two-accent system the figure carries
+     itself, and colouring the most common number on the page spends an accent
+     on it. */
+  --revenue: #f5f7fa;
+  --revenue-soft: #1f222c;
 
-  /* Brass, and this is the whole budget for decorative colour.
-     Two tokens because one cannot do both jobs: the lighter value is for
-     rules, marks and chart series where contrast does not apply, the darker
-     for anything carrying text. */
-  --brass: #b08d4f; /* chroma 38.2 against a chroma 0.5 ground */
-  --brass-ink: #7a5d23; /* 5.69:1 page, 6.14:1 card, 5.21:1 inset */
+  /* Full-bleed dark bands, deeper than the page so a band still reads as one. */
+  --ink: #000000;
+  --ink-soft: #101216;
+  --on-ink: #f5f7fa;
+  --on-ink-muted: #a0a9b8;
 
-  /* AI and system guidance is a NEUTRAL, and this is the single biggest
-     correction in this pass. It used to be the brass, which put the accent on
-     58 call sites across the AI surfaces and made the app read as gold rather
-     than as black and white with gold in it. An accent on 58 elements is not
-     an accent. The assistant now speaks in a quiet grey and the content
-     carries the interest. */
-  --info: #4a4a52; /* 8.13:1 on page, 7.71:1 on its own soft */
-  --info-hover: #35353c;
-  --info-soft: #f0f0f2;
-  --info-contrast: #ffffff;
-
-  /* Money is the copy colour. In a monochrome system the figure carries
-     itself, and colouring the most common number on the page is precisely how
-     an accent gets spent. */
-  --revenue: #0d0d10;
-  --revenue-soft: #ececee;
-
-  /* Dark bands. Near-black, so a dark section reads as an absence of colour
-     rather than as a second brand. */
-  --ink: #08080a;
-  --ink-soft: #161619; /* lift for panels inside a dark band */
-  --on-ink: #f2f2f4; /* 17.90:1 on ink */
-  --on-ink-muted: #a0a0a8; /* 7.71:1 on ink */
-  --brass-on-ink: #d9bd85; /* 11.02:1 on ink */
-
-  /* Status. Raised in chroma so it reads as signal against a neutral field,
-     and spread on hue so no two states look alike. On the old warm ground
-     these had to stay muted or they clashed with it; against chroma 0.5 they
-     can finally be the brightest thing on screen, which is what a status
-     colour is for. */
-  --success: #0f7a4d; /* hue 157. 4.97:1 page, 5.37:1 card, 4.67:1 on soft */
-  --success-soft: #e6f2ec;
-  --warning: #a85000; /* hue 59, chroma 62.9. 5.10:1 page, 4.83:1 on soft */
-  --warning-soft: #fbeee0;
-  --danger: #b3261e; /* hue 36. 6.05:1 page, 5.58:1 on soft */
-  --danger-soft: #fbe9e7;
-  --danger-contrast: #ffffff;
-  --success-contrast: #ffffff;
-  --warning-contrast: #ffffff;
-  --overlay: rgba(8, 8, 10, 0.62);
-  /* Focus is brass, and this is the argument for keeping an accent at all:
-     the one moment the interface must interrupt is the one moment it is
-     allowed to use colour. It cannot collide with the action colour, because
-     the action colour is black. */
-  --ring: rgba(176, 141, 79, 0.55);
+  /* Status. Mint is the product working; amber and red are the only other
+     colours a screen may contain. Hue separation is 57.9 degrees at the
+     tightest pair, against the 22.6 the previous palette was forced into. */
+  --success: #43d6a4; /* 10.81 page, 9.54 card. 7.26 on its own soft */
+  --success-soft: #1d3331;
+  --warning: #f1b955; /* 11.20 page */
+  --warning-soft: #2e2718;
+  --danger: #ff7079;  /* 7.44 page */
+  --danger-soft: #33191d;
+  --danger-contrast: #08090b;
+  --success-contrast: #08090b;
+  --warning-contrast: #08090b;
+  --overlay: rgba(0, 0, 0, 0.72);
+  /* Focus is the action colour. Nothing else needs to interrupt. */
+  --ring: rgba(109, 124, 255, 0.55);
 
   /* ── Type scale ───────────────────────────────────────────────
      New, and the largest systematic fix in this pass. There were previously no
@@ -160,36 +124,36 @@
      The authenticated app can switch themes; the public landing page always
      renders the light palette. Keeping this ramp here prevents the marketing
      stylesheet from drifting back into one-off literal colours. */
-  --marketing-paper: #f6f6f7;
+  --marketing-paper: #f1f3f7;
   --marketing-surface: #ffffff;
-  --marketing-surface-2: #ececee;
-  --marketing-copy: #0d0d10;
-  --marketing-muted: #5a5a62;
-  --marketing-border: #d7d7dc;
-  --marketing-ink: #08080a;
-  --marketing-ink-soft: #161619;
-  --marketing-on-ink: #f2f2f4;
+  --marketing-surface-2: #e8ebf1;
+  --marketing-copy: #0d1017;
+  --marketing-muted: #5a6273;
+  --marketing-border: #d3d8e1;
+  --marketing-ink: #08090b;
+  --marketing-ink-soft: #17191e;
+  --marketing-on-ink: #f5f7fa;
   /* The hover state of a white button on ink needs somewhere brighter to go,
      and --marketing-on-ink is already the resting value. Pure white is that
      somewhere. It exists as a token rather than as a literal at the call site
      because the public stylesheet bans literals outright, and an exemption is
      how the last one hid a whole palette's worth of stale blue. */
   --marketing-on-ink-bright: #ffffff;
-  --marketing-on-ink-muted: #a0a0a8;
-  --marketing-on-ink-subtle: #85858e; /* 5.47:1 on ink */
-  --marketing-primary: #111114;
-  --marketing-primary-hover: #000000;
-  --marketing-primary-soft: #ececee;
+  --marketing-on-ink-muted: #a0a9b8;
+  --marketing-on-ink-subtle: #8a93a4; /* 6.44:1 on ink */
+  --marketing-primary: #4a55ce;
+  --marketing-primary-hover: #3f4aba;
+  --marketing-primary-soft: #e6e7f8;
   --marketing-primary-contrast: #ffffff;
-  --marketing-brass: #b08d4f;
-  --marketing-brass-ink: #7a5d23;
-  --marketing-brass-on-ink: #d9bd85;
+  /* The accent ON the dark bands. Indigo darkens for light paper and has to
+     come back up on ink, exactly as it does in the app's two themes. */
+  --marketing-primary-on-ink: #6d7cff;
   /* Matching --info, which is the brass. The public stylesheet references
      these in several `color-mix()` calls; dropping them silently invalidates
      the whole shorthand those calls sit in, which is how the hero once lost
      its background entirely and rendered light text on light paper. */
-  --marketing-info: #4a4a52;
-  --marketing-info-soft: #f0f0f2;
+  --marketing-info: #5a6273;
+  --marketing-info-soft: #e8ebf1;
   /* Status colours for the public site, and these are not decoration.
      The landing stylesheet was reading --success, --success-soft, --revenue,
      --revenue-soft and --danger directly, all five of which this file remaps
@@ -201,13 +165,13 @@
      text on a live marketing page.
      Duplicated as literals rather than aliased to the app tokens, because the
      entire point of this ramp is that it does not move when the theme does. */
-  --marketing-success: #0f7a4d;
-  --marketing-success-soft: #e6f2ec;
+  --marketing-success: #0b6e50;
+  --marketing-success-soft: #ddebe6;
   /* Money is the copy colour, matching --revenue. Anything on the public page
      that wants the accent should reach for --marketing-brass-ink by name. */
-  --marketing-revenue: #0d0d10;
-  --marketing-revenue-soft: #ececee;
-  --marketing-danger: #b3261e;
+  --marketing-revenue: #0d1017;
+  --marketing-revenue-soft: #e8ebf1;
+  --marketing-danger: #c03024;
 
   /* Elevation for the public page, and invariant for the same reason as the
      colours above: --shadow-* is remapped for dark mode, where it becomes an
@@ -227,8 +191,8 @@
      deltaE 36.0 normal, 38.2 deutan, 35.8 protan, and 16.35:1 / 11.02:1 on
      #08080a. The green this replaces measured 20.3 deutan, so the pair is
      close to twice as separable for the readers who need it most. */
-  --marketing-chart-on-ink-1: #e8e8ea;
-  --marketing-chart-on-ink-2: #d9bd85;
+  --marketing-chart-on-ink-1: #6d7cff;
+  --marketing-chart-on-ink-2: #43d6a4;
 
   /* Radius scale.
      These are re-exported into Tailwind through @theme inline below, so
@@ -257,49 +221,34 @@
   --space-block: 0.75rem;
 
   /* Elevation ladder.
-     The previous ladder was three `none`s and one value, on the theory that a
-     soft shadow reads cheap. The instinct is right and the conclusion was
-     wrong: what reads cheap is a *visible* shadow. A shadow built from large
-     blur, large negative spread and low opacity is never perceived as a shadow
-     at all, only as separation, and that is what every interface we are
-     measuring ourselves against uses.
-     Two layers each: a 1px contact shadow that seats the element, and a wide
-     ambient one that lifts it. Hairline border still does the defining work. */
-  --shadow-sm: 0 1px 2px rgba(13, 13, 16, 0.05);
-  --shadow-md: 0 1px 2px rgba(13, 13, 16, 0.05), 0 8px 24px -12px rgba(13, 13, 16, 0.12);
-  --shadow-lg: 0 1px 3px rgba(13, 13, 16, 0.06), 0 18px 48px -24px rgba(13, 13, 16, 0.18);
-  --shadow-xl: 0 2px 4px rgba(13, 13, 16, 0.07), 0 32px 80px -32px rgba(13, 13, 16, 0.24);
-  --shadow-brand: 0 1px 2px rgba(13, 13, 16, 0.14), 0 10px 30px -14px rgba(13, 13, 16, 0.32);
-  /* Dark mode cannot use shadow for separation: a darker shadow on a dark field
-     is invisible. It gets a top highlight instead, and this token is the seam
-     so components do not need to know which theme they are in.
-     Fully transparent rather than `none`, because `none` inside a comma-separated
-     box-shadow list invalidates the entire declaration. That is not theoretical:
-     one rule in this file already carried `var(--shadow-sm), 0 1px 3px ...` while
-     --shadow-sm was `none`, so the whole shadow silently did nothing. */
-  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0);
+     Dark cannot use shadow for separation the way light does: a darker shadow
+     on a dark field is invisible. The geometry is kept so components do not
+     branch on theme, and the separating work is done by the surface step, the
+     hairline, and the top highlight below. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.44), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.48), 0 18px 48px -24px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 2px 4px rgba(0, 0, 0, 0.52), 0 32px 80px -32px rgba(0, 0, 0, 0.76);
+  --shadow-brand: 0 1px 2px rgba(109, 124, 255, 0.2), 0 10px 30px -14px rgba(109, 124, 255, 0.4);
+  /* Fully transparent rather than `none`: `none` inside a comma-separated
+     box-shadow list invalidates the whole declaration, which is how one rule
+     in this file once silently drew no shadow at all. */
+  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
   /* Chart series.
-     Separate tokens from --primary and --revenue on purpose. A chart mark and
-     a piece of text are different jobs with different constraints: text needs
-     WCAG contrast against its surface, a mark needs to sit inside a perceptual
-     lightness band and stay separable under colour-vision deficiency.
+     Indigo is mail we sent, mint is a reply that came back, which is the same
+     meaning the two accents carry everywhere else in the product.
 
-     Re-measured for the monochrome palette, and this is the change that
-     improved most. The pair now separates on LIGHTNESS rather than on hue,
-     which is the axis colour-vision deficiency does not touch:
-       light  #0d0d10/#b08d4f: deltaE 69.3 normal, 71.4 deutan, 66.8 protan
-       dark   #f2f2f4/#d9bd85: deltaE 37.5 normal, 39.5 deutan, 37.5 protan
-     The green and brass pair it replaces measured 30.2 protan light and 17.9
-     protan dark, so a protanope could barely tell two series apart on the dark
-     theme. Doubling the worst case was not the goal of going monochrome; it is
-     just what happens when you stop asking hue to carry the distinction.
-     Marks clear 3:1 against their ground, which is the non-text threshold.
-     Meaning follows the palette rule: black is mail we sent, brass is a reply
-     we got back, because a reply is the moment worth the accent. */
-  --chart-1: #0d0d10;
-  --chart-2: #b08d4f;
-  --chart-grid: #e6e6e9;
+     Separate tokens from --primary and --success on purpose: text needs WCAG
+     contrast against a surface, a mark needs to stay separable under
+     colour-vision deficiency, and those constraints diverge. Measured:
+       #6d7cff/#43d6a4  deltaE 116.9 normal, 88.6 deutan, 99.0 protan
+     The pair this replaces measured 37.5 / 39.5 / 37.5, so the worst case for a
+     deuteranope roughly doubles. Indigo and mint sit 130 degrees apart, which
+     is room the previous two accents never had. */
+  --chart-1: #6d7cff;
+  --chart-2: #43d6a4;
+  --chart-grid: #1f222c;
 
   /* Motion tokens, so every transition shares one curve and tempo. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -313,86 +262,102 @@
    Retrofit dark mode: remap the design tokens, then override the
    handful of literal Tailwind color utilities the app uses so every
    surface adapts without editing each component. */
-:root[data-theme="dark"] {
-  /* The same system inverted, not re-hued. Light is black on white, so dark is
-     white on black, and because the action colour is achromatic there is no
-     accent to re-tune for a dark field and no way for the two themes to read
-     as two products.
+:root[data-theme="light"] {
+  /* The same system inverted, for anyone who chooses it.
+     Not a second design: the two accents keep their meanings and only their
+     lightness moves, so a screenshot from either theme is recognisably the same
+     product. Every value measured on this ground, not carried over.
 
-     The neutrals are held to chroma 3.5 or below here as well. Chroma is much
-     less perceptible at low lightness, which is exactly why a dark theme drifts
-     coloured without anyone noticing until it is next to the light one. */
-  --background: #08080a;
-  --surface: #202024; /* 1.23:1 against the page */
-  --surface-2: #2b2b30; /* 1.15:1 against the card */
-  --foreground: #f2f2f4; /* 17.90:1 on page, 14.52:1 on card */
-  --muted: #a0a0a6; /* 7.69:1 on page, 6.24:1 on card, 5.42:1 on inset */
-  --border: #3d3d43; /* 1.51:1 on card */
-  --border-firm: #505055; /* 2.03:1 on card */
+     Indigo darkens here because the light version has the opposite constraint:
+     it must carry white on a fill (6.03:1) rather than near-black. The luminous
+     #6d7cff would be 3.51:1 with white and 1.9:1 as text on white paper, so a
+     separate value is genuinely required rather than merely tidy. */
+  --background: #f1f3f7;
+  --surface: #ffffff;    /* 1.11:1 over the page */
+  --surface-2: #e8ebf1;  /* 1.14:1 under the card */
+  --foreground: #0d1017; /* 17.13:1 page, 19.03:1 card */
+  --muted: #5a6273;      /* 5.51 / 6.12 / 5.37 */
+  --muted-2: #626a7c;    /* 4.88 / 5.42 / 4.75 */
+  --border: #d3d8e1;     /* 1.40:1 on the card */
+  --border-firm: #bac1ce; /* 1.75:1 */
 
-  /* Paper on black. Deliberately a step below --foreground so a filled button
-     is not the same value as the text beside it. */
-  --primary: #f2f2f4; /* near-black on this fill: 17.90:1 */
-  --primary-hover: #ffffff;
-  --primary-soft: #202024;
-  --primary-contrast: #08080a;
-  --brand-from: #f2f2f4;
-  /* Both ends of the gradient must carry --brand-contrast, so the far end
-     stays light enough for near-black text. */
-  --brand-to: #c8c8ce;
-  --brand-contrast: #08080a;
-  --accent: #d9bd85;
+  --primary: #4a55ce;         /* 5.43:1 as text; white on the fill 6.03:1 */
+  --primary-hover: #3f4aba;
+  --primary-soft: #e6e7f8;
+  --primary-contrast: #ffffff;
+  --brand-from: #4a55ce;
+  --brand-to: #3f4aba;
+  --brand-contrast: #ffffff;
+  --accent: #4a55ce;
 
-  --brass: #d9bd85;
-  --brass-ink: #d9bd85; /* on dark the light brass IS the text-safe one, 8.94:1 on card */
+  --info: #5a6273;
+  --info-hover: #3f4653;
+  --info-soft: #e8ebf1;
+  --info-contrast: #ffffff;
 
-  /* Neutral here too, for the same reason it is neutral in light: the AI
-     surfaces are too numerous to carry the accent. */
-  --info: #a8a8ae; /* 6.86:1 on card, 7.02:1 on its own soft */
-  --info-hover: #c4c4c9;
-  --info-soft: #1e1e22;
-  --info-contrast: #08080a;
+  --revenue: #0d1017;
+  --revenue-soft: #e8ebf1;
 
-  /* Money is the foreground value in both themes: black on white, white on
-     black. The figure carries itself. */
-  --revenue: #f2f2f4;
-  --revenue-soft: #202024;
+  --ink: #08090b;
+  --ink-soft: #17191e;
+  --on-ink: #f5f7fa;
+  --on-ink-muted: #a0a9b8;
 
-  --ink: #000000;
-  --ink-soft: #111113;
-  --on-ink: #f2f2f4;
-  --on-ink-muted: #a0a0a8;
-  --brass-on-ink: #d9bd85;
+  /* Mint darkens to #0b6e50 for the same reason indigo does. At #43d6a4 it
+     measures 1.7:1 on white, which is a decorative mint rather than a status
+     colour, and 4.29:1 on its own soft tint. */
+  --success: #0b6e50; /* 5.63 page; 5.09 on its own soft */
+  --success-soft: #ddebe6;
+  --warning: #8a5a00; /* 5.34 page */
+  --warning-soft: #f7efdf;
+  --danger: #c03024;  /* 5.12 page */
+  --danger-soft: #fae9e7;
+  --danger-contrast: #ffffff;
+  --success-contrast: #ffffff;
+  --warning-contrast: #ffffff;
+  --overlay: rgba(13, 16, 23, 0.6);
+  --ring: rgba(74, 85, 206, 0.5);
 
-  /* Status is the only colour in this theme, which is the point. Hues are
-     spread the same way as in light: success 157, warning 59, danger 36, with
-     warning 26.7 deg clear of both brass and danger. */
-  --success: #3ecf8e; /* 8.13:1 on card */
-  --success-soft: #0d2119;
-  --warning: #f08430; /* 6.22:1 on card */
-  --warning-soft: #25180c;
-  --danger: #f2685c; /* 5.34:1 on card */
-  --danger-soft: #26120f;
-  --danger-contrast: #26120f;
-  --success-contrast: #0d2119;
-  --warning-contrast: #25180c;
-  --overlay: rgba(0, 0, 0, 0.78);
-  --ring: rgba(217, 189, 133, 0.5);
+  /* Light can use real ambient shadow, where dark cannot. Two layers: a 1px
+     contact shadow that seats the element, and a wide ambient one that lifts
+     it. The hairline still does the defining work. */
+  --shadow-sm: 0 1px 2px rgba(13, 16, 23, 0.05);
+  --shadow-md: 0 1px 2px rgba(13, 16, 23, 0.05), 0 8px 24px -12px rgba(13, 16, 23, 0.12);
+  --shadow-lg: 0 1px 3px rgba(13, 16, 23, 0.06), 0 18px 48px -24px rgba(13, 16, 23, 0.18);
+  --shadow-xl: 0 2px 4px rgba(13, 16, 23, 0.07), 0 32px 80px -32px rgba(13, 16, 23, 0.24);
+  --shadow-brand: 0 1px 2px rgba(74, 85, 206, 0.14), 0 10px 30px -14px rgba(74, 85, 206, 0.3);
+  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0);
 
-  /* Dark elevation works differently and copying the light values produces
-     nothing at all: black on near-black is invisible. The ladder keeps its
-     geometry so components do not branch, and the separation work is done by
-     the top highlight below plus the ground/surface step above. */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.36);
-  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 1px 3px rgba(0, 0, 0, 0.44), 0 18px 48px -24px rgba(0, 0, 0, 0.65);
-  --shadow-xl: 0 2px 4px rgba(0, 0, 0, 0.48), 0 32px 80px -32px rgba(0, 0, 0, 0.72);
-  --shadow-brand: 0 1px 2px rgba(242, 242, 244, 0.12), 0 10px 30px -14px rgba(242, 242, 244, 0.22);
-  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --chart-1: #4a55ce;
+  --chart-2: #0b6e50;
+  --chart-grid: #e8ebf1;
+}
 
-  --chart-1: #f2f2f4;
-  --chart-2: #d9bd85;
-  --chart-grid: #2b2b30;
+/* ── Email surfaces stay light, in either theme ───────────────
+   The one place the theme does not reach, and the reason is not aesthetic.
+   What is being edited here is an email. It will be read in Gmail, on white,
+   by someone who has never heard of this product's theme setting. A composer
+   that does not resemble the client it sends into makes every preview a guess.
+
+   This is a SCOPE rather than a theme, so it is declared after both theme
+   blocks and wins over either. It is deliberately small: the two preview panes
+   are already `<iframe sandbox="">` with their own srcDoc styles and inherit
+   nothing from this stylesheet, so the only surface that needs it is the
+   contentEditable composer in the app DOM. The reply thread viewer is NOT in
+   scope: it renders plain text, and it is a conversation reader rather than a
+   rendering of an email, so it follows the theme like the rest of the chrome. */
+[data-surface="email"] {
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1f3f7;
+  --foreground: #1d1d1f;
+  --muted: #5a6273;
+  --muted-2: #6b7385;
+  --border: #d3d8e1;
+  --border-firm: #bac1ce;
+  color-scheme: light;
+  background: var(--surface);
+  color: var(--foreground);
 }
 
 

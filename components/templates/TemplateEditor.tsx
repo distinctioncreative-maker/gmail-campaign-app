@@ -553,7 +553,11 @@ export function TemplateEditor({
               role="textbox"
               aria-multiline="true"
               aria-label="Email body"
-              className="prose-sm mt-2 min-h-[32rem] w-full overflow-auto rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
+              /* Light whatever the theme is. What is being written here is an
+                 email, and it will be read in Gmail on white. A dark composer
+                 makes every judgement about the finished message a guess. */
+              data-surface="email"
+              className="prose-sm mt-2 min-h-[32rem] w-full overflow-auto rounded-lg border border-border bg-surface p-5 leading-relaxed focus:border-primary focus:outline-none sm:min-h-[38rem]"
             />
           </>
         )}
@@ -742,9 +746,13 @@ export function TemplateEditor({
                     /* cross-origin guard: ignore */
                   }
                 }}
-                className="w-full rounded-lg border border-border bg-surface"
-                style={{ height: "32rem" }}
-                srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
+                /* The frame, not the content. The srcDoc below is isolated by
+                   `sandbox` and inherits nothing from the app stylesheet, but
+                   the iframe ELEMENT was themed, so its background showed
+                   through wherever the email HTML paints none. */
+                className="w-full rounded-lg border border-border"
+                style={{ height: "32rem", background: "#ffffff" }}
+                srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><style>body{margin:0;padding:16px;background:#fff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.5;word-break:break-word}img{max-width:100%}</style></head><body>${preview.html}</body></html>`}
               />
             </div>
           </>

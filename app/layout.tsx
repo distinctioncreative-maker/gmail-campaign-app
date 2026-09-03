@@ -84,27 +84,31 @@ export default function RootLayout({
     >
       <head>
         {/*
-          Light first, set before paint so there is no flash of the wrong theme.
+          Dark first, set before paint so there is no flash of the wrong theme.
 
-          This flipped with the green-and-bone palette, and the reasoning that
-          set it to dark did not survive the change. That argument was that
-          money tools are dark; the counter-argument is stronger for this
-          product specifically. The thing being edited here is an email, the
-          place it lands is Gmail, and Gmail is light for the overwhelming
-          majority of people. A composer that does not resemble the client it
-          sends into makes every preview a guess. Screenshots and shared links
-          also read better light, and this is a product people demo.
+          This has now flipped twice, and the argument that set it to light is
+          the reason it could flip back safely. That argument was: the thing
+          being edited is an email, the place it lands is Gmail, and Gmail is
+          light, so a composer that does not resemble the client it sends into
+          makes every preview a guess.
 
-          The rule is "light unless the person chose dark". An explicit choice
-          still wins in both directions, which is the part that matters: pick
-          dark and it stays dark on every future visit.
+          That is still true, and it is still honoured. It was an argument about
+          EMAIL SURFACES rather than about the application, and it now lives
+          where it belongs: [data-surface="email"] in globals.css keeps the
+          composer and both preview panes light in either theme. The rest of the
+          product is a control system for something that is running, and that is
+          the half that reads better dark.
+
+          The rule is "dark unless the person chose light". An explicit choice
+          still wins in both directions, which is the part that matters.
 
           try/catch because localStorage throws outright in some privacy modes,
-          and the fallback still sets dark rather than leaving the attribute off.
+          and the fallback still sets a theme rather than leaving the attribute
+          off, which would leave every token undefined.
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('massleader.theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}`,
+            __html: `try{var t=localStorage.getItem('massleader.theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}`,
           }}
         />
       </head>

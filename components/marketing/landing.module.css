@@ -53,19 +53,15 @@
   --landing-green-soft: var(--marketing-success-soft);
   --landing-green-border: color-mix(in srgb, var(--landing-green) 32%, var(--landing-line));
   --landing-green-on-ink: color-mix(in srgb, var(--landing-on-ink) 56%, var(--landing-green));
-  /* Brass, and the name is finally literal. It used to alias the outcome green
-     under a historical name that said gold and meant green; with the green and
-     bone palette there is a real brass and money reads as it.
-
-     Two tokens because brass cannot do both jobs. --landing-gold is the dark,
-     text-safe value (5.01:1 on paper) for anything carrying words on the light
-     bands. --landing-gold-on-ink is the light one, and it is the only one that
-     resolves on the dark fold: putting the dark brass on the ink ground would
-     reproduce the invisible-glow bug this whole hero pass exists to fix. */
-  --landing-gold: var(--marketing-brass-ink);
-  --landing-gold-on-ink: var(--marketing-brass-on-ink);
-  --landing-gold-strong: color-mix(in srgb, var(--landing-gold) 68%, var(--landing-copy));
-  --landing-gold-soft: var(--marketing-revenue-soft);
+  /* The accent on the dark bands.
+     This token has been renamed twice and held four different colours, which is
+     the argument for naming it after its JOB. It is --landing-accent-on-ink
+     now: whatever the accent is, this is the value of it that survives on the
+     ink ground. Indigo darkens for light paper and has to come back up on dark,
+     exactly as it does in the app's two themes, and putting the paper value on
+     ink is the invisible-glow bug this hero pass exists to have fixed. */
+  --landing-accent-on-ink: var(--marketing-primary-on-ink);
+  --landing-accent-strong: color-mix(in srgb, var(--landing-action) 68%, var(--landing-copy));
   --landing-danger-strong: color-mix(in srgb, var(--marketing-danger) 72%, var(--landing-copy));
   --landing-danger-on-ink: color-mix(in srgb, var(--landing-on-ink) 54%, var(--marketing-danger));
   /* Radius ladder, bridged to the app's own scale. The public page carried
@@ -280,7 +276,7 @@
   background:
     radial-gradient(
       120% 90% at 18% 0%,
-      color-mix(in srgb, var(--landing-gold-on-ink) 9%, transparent) 0%,
+      color-mix(in srgb, var(--landing-accent-on-ink) 9%, transparent) 0%,
       transparent 55%
     ),
     linear-gradient(
@@ -313,7 +309,7 @@
   background:
     radial-gradient(
       42% 46% at 12% 14%,
-      color-mix(in srgb, var(--landing-gold-on-ink) 16%, transparent) 0%,
+      color-mix(in srgb, var(--landing-accent-on-ink) 16%, transparent) 0%,
       transparent 70%
     ),
     radial-gradient(
@@ -342,8 +338,8 @@
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--landing-gold-on-ink) 38%, transparent) 22%,
-    color-mix(in srgb, var(--landing-gold-on-ink) 38%, transparent) 78%,
+    color-mix(in srgb, var(--landing-accent-on-ink) 38%, transparent) 22%,
+    color-mix(in srgb, var(--landing-accent-on-ink) 38%, transparent) 78%,
     transparent
   );
   pointer-events: none;
@@ -368,7 +364,7 @@
      on the ink hero, and a 12% black fill on a near-black ground is nothing
      at all. That is the same failure as the invisible hero glow, arriving
      from the other direction. */
-  border: 1px solid color-mix(in srgb, var(--landing-gold-on-ink) 34%, transparent);
+  border: 1px solid color-mix(in srgb, var(--landing-accent-on-ink) 34%, transparent);
   border-radius: var(--landing-r-full);
   background: color-mix(in srgb, var(--landing-on-ink) 7%, transparent);
   padding: 8px 14px;
@@ -1036,8 +1032,8 @@
   height: 34px;
   place-items: center;
   border-radius: var(--landing-r-lg);
-  background: color-mix(in srgb, var(--landing-gold-on-ink) 16%, transparent);
-  color: var(--landing-gold-on-ink);
+  background: color-mix(in srgb, var(--landing-accent-on-ink) 16%, transparent);
+  color: var(--landing-accent-on-ink);
 }
 
 .trustGrid h3 {
@@ -1333,7 +1329,7 @@
   }
 
   .trustGrid article:hover {
-    border-color: color-mix(in srgb, var(--landing-gold-on-ink) 30%, transparent);
+    border-color: color-mix(in srgb, var(--landing-accent-on-ink) 30%, transparent);
     background: rgb(255 255 255 / 5.5%);
     transform: translateY(-3px);
   }
@@ -2092,12 +2088,12 @@
   gap: 64px;
   align-items: center;
   padding: 60px 56px;
-  border: 1px solid color-mix(in srgb, var(--landing-gold-on-ink) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--landing-accent-on-ink) 22%, transparent);
   border-radius: var(--landing-r-2xl);
   background:
     radial-gradient(
       90% 110% at 100% 0%,
-      color-mix(in srgb, var(--landing-gold-on-ink) 13%, transparent) 0%,
+      color-mix(in srgb, var(--landing-accent-on-ink) 13%, transparent) 0%,
       transparent 60%
     ),
     var(--landing-ink);
@@ -2233,7 +2229,7 @@
   background: linear-gradient(
     180deg,
     transparent,
-    var(--landing-gold) 45%,
+    var(--landing-action) 45%,
     var(--landing-green) 70%,
     transparent
   );
