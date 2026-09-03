@@ -8,7 +8,17 @@ import { purgeDueRequests } from "@/lib/account/deletion";
 
 /**
  * Cloud Scheduler entry point for periodic system sweeps (spec §16/§17/§25).
- * OIDC-verified. ?job=reply|bounce|repair|metrics|benchmarks|deletions.
+ * OIDC-verified. ?job=reply|bounce|repair|benchmarks|deletions.
+ *
+ * There was a `metrics` job here and it computed nothing. It looped every owner
+ * in the workspace and wrote `system/metrics.lastRun = Date.now()` on each pass,
+ * which is the same value written N times, and the outer block below already
+ * records `metricsLastRun` regardless. So it was a timestamp with a loop around
+ * it, running daily, and the system-health screen reported it as a job that had
+ * run successfully. A scheduled task that reports success for work it does not
+ * do is worse than no task: it answers a question nobody can then re-ask.
+ * Removed here and from scripts/setup-cloud.sh. If per-owner metrics are wanted
+ * later they get a job that computes something.
  *
  * Sweeps enumerate users with active campaigns and process them; the
  * per-user monitoring functions themselves skip users without work.
@@ -66,12 +76,6 @@ export async function POST(req: NextRequest) {
         summary.reset = (summary.reset ?? 0) + r.reset;
         summary.requeued = (summary.requeued ?? 0) + r.requeued;
         summary.ambiguous = (summary.ambiguous ?? 0) + r.ambiguous;
-      } else if (job === "metrics") {
-        // Recalculate lightweight metrics timestamp marker.
-        await firestore()
-          .collection("system")
-          .doc("metrics")
-          .set({ lastRun: Date.now() }, { merge: true });
       }
     } catch (err) {
       console.error("[sweep] owner failed", { job, userId: owner.userId, err: String(err) });

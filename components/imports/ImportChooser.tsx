@@ -29,7 +29,13 @@ export function ImportChooser({ listId }: { listId?: string }) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    /* Two more cards used to sit here, dimmed, promising a Salesforce Lightning
+       sync and a Google Sheets import. Neither existed. The Sheets one was at
+       least on the roadmap; the Salesforce one had no registry entry and no code
+       anywhere in the repo. Advertising vapour on a screen a paying customer
+       uses weekly is the fastest way to make everything else on it look like a
+       claim too. They come back when they work. */
+    <div className="grid gap-4 sm:grid-cols-2">
       <button
         onClick={() => setMode("csv")}
         className="card p-6 sm:p-7 card-hover text-left"
@@ -50,18 +56,6 @@ export function ImportChooser({ listId }: { listId?: string }) {
           Copy rows straight from a Salesforce list view: we match leads by email automatically
         </p>
       </button>
-      <div className="card p-6 sm:p-7 opacity-60">
-        <ImportIcon name="external" />
-        <p className="mt-2 font-medium">Salesforce Lightning sync</p>
-        <p className="mt-1 text-sm text-muted">
-          One-click connect to pull leads directly: <span className="font-medium text-foreground">coming soon</span>
-        </p>
-      </div>
-      <div className="card p-6 sm:p-7 opacity-60">
-        <ImportIcon name="chart" />
-        <p className="mt-2 font-medium">Import Google Sheet</p>
-        <p className="mt-1 text-sm text-muted">Coming soon</p>
-      </div>
     </div>
   );
 }

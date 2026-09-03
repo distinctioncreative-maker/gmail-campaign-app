@@ -249,15 +249,48 @@ export const RecipientSchema = z.object({
 });
 export type Recipient = z.infer<typeof RecipientSchema>;
 
+/**
+ * What a queue record is for.
+ *
+ * Only four of these are reachable, and the distinction matters enough to
+ * write down rather than leave for the next person to grep out:
+ *
+ *   CREATE_INITIAL_DRAFT   produced by launch.ts when draftStrategy is
+ *                          DRAFT_ONLY
+ *   SEND_INITIAL           produced by launch.ts otherwise
+ *   SEND_FOLLOWUP          produced by followups.ts
+ *   CREATE_FOLLOWUP_DRAFT  HANDLED by the send worker, and produced by
+ *                          nothing. See the note in lib/campaigns/followups.ts.
+ *
+ * CHECK_REPLY, CHECK_BOUNCE and SYNC_AUDIT_SHEET are produced by nothing and
+ * handled by nothing. Reply and bounce detection run from cron/sweep, not from
+ * the queue, and there has never been an audit sheet.
+ *
+ * They are NOT deleted, and that is deliberate. This enum parses documents read
+ * back out of Firestore, so removing a value would turn any stale queue record
+ * carrying it into a parse error at read time rather than a tidy-up. Whether
+ * such records exist cannot be established from the source, so the safe half of
+ * the cleanup is done here in the read schema and the useful half is done by a
+ * guard on the write side: no code may enqueue a dead type.
+ */
 export const QueueItemTypeSchema = z.enum([
   "CREATE_INITIAL_DRAFT",
   "SEND_INITIAL",
   "CREATE_FOLLOWUP_DRAFT",
   "SEND_FOLLOWUP",
+  // Legacy, read-only. Never enqueue these.
   "CHECK_REPLY",
   "CHECK_BOUNCE",
   "SYNC_AUDIT_SHEET",
 ]);
+
+/** The types anything is allowed to write. Enforced by tests/unit/queue-types.test.ts. */
+export const ENQUEUEABLE_QUEUE_TYPES = [
+  "CREATE_INITIAL_DRAFT",
+  "SEND_INITIAL",
+  "CREATE_FOLLOWUP_DRAFT",
+  "SEND_FOLLOWUP",
+] as const;
 export type QueueItemType = z.infer<typeof QueueItemTypeSchema>;
 
 export const QueueItemStatusSchema = z.enum([

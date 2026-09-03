@@ -86,7 +86,6 @@ create_job() {
 create_job outreach-reply-sweep  "*/10 * * * *" reply
 create_job outreach-bounce-sweep "*/30 * * * *" bounce
 create_job outreach-repair       "0 * * * *"    repair
-create_job outreach-metrics      "0 6 * * *"    metrics
 create_job outreach-benchmarks   "30 6 * * *"   benchmarks
 # Daily is the right cadence for a thirty-day clock, and it bounds the blast
 # radius: a fault in the purge can reach at most one day of due requests
