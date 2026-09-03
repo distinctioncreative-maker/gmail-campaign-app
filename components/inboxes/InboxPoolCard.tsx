@@ -131,8 +131,8 @@ export function InboxPoolCard() {
   if (!data) {
     return (
       <div className="card p-6 sm:p-7">
-        <h2 className="font-medium">Sending inboxes</h2>
-        <p className="mt-2 text-sm text-muted">Loading…</p>
+        <h2>Sending inboxes</h2>
+        <p className="mt-2 text-muted">Loading…</p>
       </div>
     );
   }
@@ -143,8 +143,8 @@ export function InboxPoolCard() {
     <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-medium">Sending inboxes</h2>
-          <p className="mt-1 text-sm text-muted">
+          <h2>Sending inboxes</h2>
+          <p className="mt-1 text-muted">
             {inboxes.length === 0
               ? "Connect a Gmail account to start sending."
               : capacity.usableInboxes === 0
@@ -158,7 +158,7 @@ export function InboxPoolCard() {
       </div>
 
       {inboxes.length > 1 ? (
-        <p className="mt-3 text-xs text-muted">
+        <p className="mt-3 text-sm text-muted">
           Sends rotate across your ready inboxes, always picking the one that has sent least today.
           Adding an inbox does not change how much a campaign sends: it lets you raise a campaign&apos;s
           daily limit without any single address sending more than is safe.
@@ -184,10 +184,10 @@ export function InboxPoolCard() {
                   )}
                 </p>
                 {row.label ? (
-                  <p className="mt-0.5 truncate text-xs text-muted">{row.connectedEmail}</p>
+                  <p className="mt-0.5 truncate text-sm text-muted">{row.connectedEmail}</p>
                 ) : null}
-                <p className="mt-1 text-xs text-muted">{row.detail}</p>
-                <p className="mt-0.5 text-xs text-muted">
+                <p className="mt-1 text-sm text-muted">{row.detail}</p>
+                <p className="mt-0.5 text-sm text-muted">
                   {row.lifetimeSends.toLocaleString()} sent all time
                   {row.sentCount > 0
                     ? `, ${((row.bounceCount / row.sentCount) * 100).toFixed(1)}% bounced`
@@ -278,7 +278,7 @@ export function InboxPoolCard() {
       </ul>
 
       {inboxes.length > 0 ? (
-        <p className="mt-4 text-xs text-muted">
+        <p className="mt-4 text-sm text-muted">
           A per-inbox limit only ever lowers the ceiling. Warmup and your plan still apply, and a new
           inbox ramps up over its first four weeks however high you set this.
         </p>

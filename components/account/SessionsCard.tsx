@@ -53,8 +53,8 @@ export function SessionsCard({
 
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">Signed-in devices</h2>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
+      <h2>Signed-in devices</h2>
+      <p className="mt-1 max-w-2xl text-muted">
         A sign-in lasts five days on each browser. If you signed in somewhere you no longer control,
         or someone has a copy of your laptop, end every session at once.
       </p>
@@ -72,7 +72,7 @@ export function SessionsCard({
           </dd>
         </div>
       </dl>
-      <p className="mt-4 text-xs text-muted">
+      <p className="mt-4 text-sm text-muted">
         Cadence cannot list the individual devices, so this is all or nothing. Signing out everywhere
         also signs out this browser.
       </p>

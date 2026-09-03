@@ -131,7 +131,7 @@ export function BrandVoiceEditor({
   if (!selected) {
     return (
       <div className="rounded-lg border border-dashed border-border p-4 text-center">
-        <p className="text-sm text-muted">
+        <p className="text-muted">
           {canEdit
             ? "Teach the AI what your business sounds like, so every draft comes back on-brand."
             : "No brand voice has been set up yet. Only an admin can add one."}
@@ -192,7 +192,7 @@ export function BrandVoiceEditor({
           <label className="block text-xs font-medium text-foreground">
             {started ? "Read your website again" : "Start with your website"}
           </label>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="mt-0.5 text-sm text-muted">
             {started
               ? "Fills anything still blank. Nothing you have written gets overwritten."
               : "Paste your address and the answers below get filled in for you. You can edit anything after."}
@@ -219,14 +219,14 @@ export function BrandVoiceEditor({
               {reading ? "Reading…" : "Read site"}
             </button>
           </div>
-          {readError && <p className="mt-2 text-xs text-danger">{readError}</p>}
+          {readError && <p className="mt-2 text-sm text-danger">{readError}</p>}
           {readFrom && !readError && (
-            <p className="mt-2 text-xs text-success">
+            <p className="mt-2 text-sm text-success">
               Read {readFrom}. Check it over before saving.
             </p>
           )}
           {unfilled.length > 0 && (
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-sm text-muted">
               The page did not say enough to answer everything, so some fields are still
               blank rather than guessed.
             </p>

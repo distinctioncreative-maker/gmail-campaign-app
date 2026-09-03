@@ -132,7 +132,7 @@ export function LeadEditor({
 
   return (
     <div className="card p-6 sm:p-7 mt-4">
-      <h2 className="font-medium">Edit lead</h2>
+      <h2>Edit lead</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1 block text-muted">Full name</span>
@@ -189,7 +189,7 @@ export function LeadEditor({
           placeholder="Call notes, context, next steps…"
         />
       </label>
-      <p className="mt-2 text-xs text-muted">
+      <p className="mt-2 text-sm text-muted">
         The email address can&apos;t be changed: it identifies this lead across imports and campaigns.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">

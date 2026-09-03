@@ -69,7 +69,7 @@ export function ReplyFocus({
             Next up
           </p>
           {waiting > 1 && (
-            <p className="text-xs text-muted">
+            <p className="text-sm text-muted">
               <span className="font-semibold tabular-nums text-foreground">{waiting - 1}</span> more
               waiting below
             </p>

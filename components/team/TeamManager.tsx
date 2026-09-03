@@ -99,7 +99,7 @@ export function TeamManager({
 
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">Teams</h2>
+      <h2>Teams</h2>
       <p className="mt-1 text-xs text-muted">
         Build your organization chart, choose each team&apos;s manager, and place members below.
         Managers inherit visibility and roster control for descendant teams.

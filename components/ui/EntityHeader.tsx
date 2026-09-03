@@ -89,7 +89,7 @@ export function EntityHeader({
             {status && <span className={`badge ${status.className}`}>{status.label}</span>}
           </div>
           {description && (
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{description}</p>
+            <p className="mt-2 max-w-2xl leading-relaxed text-muted">{description}</p>
           )}
         </div>
 
@@ -103,7 +103,7 @@ export function EntityHeader({
               <dt className="text-2xs font-medium uppercase leading-none tracking-label text-muted">
                 {item.label}
               </dt>
-              <dd className="mt-1.5 text-sm text-foreground">{item.value}</dd>
+              <dd className="mt-1.5 text-foreground">{item.value}</dd>
             </div>
           ))}
         </dl>

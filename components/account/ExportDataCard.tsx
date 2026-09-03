@@ -18,8 +18,8 @@ import { Icon } from "@/components/ui/Icon";
 export function ExportDataCard({ counts }: { counts: Record<string, number> }) {
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">Export your data</h2>
-      <p className="mt-1 text-sm text-muted">
+      <h2>Export your data</h2>
+      <p className="mt-1 text-muted">
         Everything you put in, in CSV, ready for a spreadsheet or another tool. Downloads start
         immediately and nothing is stored anywhere new.
       </p>
@@ -42,7 +42,7 @@ export function ExportDataCard({ counts }: { counts: Record<string, number> }) {
                     </span>
                   ) : null}
                 </p>
-                <p className="mt-0.5 text-xs text-muted">{info.description}</p>
+                <p className="mt-0.5 text-sm text-muted">{info.description}</p>
               </div>
               {empty ? (
                 <span className="text-xs text-muted">Nothing to export yet</span>
@@ -62,7 +62,7 @@ export function ExportDataCard({ counts }: { counts: Record<string, number> }) {
         <li className="flex flex-wrap items-center justify-between gap-3 py-3">
           <div className="min-w-0">
             <p className="text-sm font-medium">Settings</p>
-            <p className="mt-0.5 text-xs text-muted">
+            <p className="mt-0.5 text-sm text-muted">
               Campaign pacing, send windows, and tracking choices, as JSON.
             </p>
           </div>
@@ -77,7 +77,7 @@ export function ExportDataCard({ counts }: { counts: Record<string, number> }) {
         </li>
       </ul>
 
-      <p className="mt-4 text-xs text-muted">
+      <p className="mt-4 text-sm text-muted">
         A large workspace can take a minute or two to finish downloading. Leave the tab open until
         the file lands.
       </p>

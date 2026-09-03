@@ -69,7 +69,7 @@ export function CampaignSectionNav({ showControls = true }: { showControls?: boo
         onCancel={close}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <h2 id="campaign-sections-title" className="text-sm font-semibold">
+          <h2 id="campaign-sections-title" className="text-sm">
             Campaign sections
           </h2>
           <button

@@ -55,7 +55,7 @@ export function CollapsibleCard({
         className="flex w-full items-center justify-between gap-3 p-6 text-left transition hover:bg-surface-2"
       >
         <div className="min-w-0">
-          <h2 className="font-medium">{title}</h2>
+          <h2>{title}</h2>
           {description && <p className="mt-1 text-sm text-muted">{description}</p>}
         </div>
         <span

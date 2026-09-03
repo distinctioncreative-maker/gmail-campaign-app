@@ -194,7 +194,7 @@ export function LeadPreviewTable({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="font-medium">
+        <h2>
           {leads.length} lead{leads.length === 1 ? "" : "s"} found: {selected.size} selected
         </h2>
         <button onClick={onStartOver} className="text-sm text-muted hover:underline">

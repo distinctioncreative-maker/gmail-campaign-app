@@ -44,7 +44,7 @@ export default async function SequencesPage() {
               style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
             >
               <p className="font-medium">{s.name}</p>
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 text-muted">
                 {s.steps.length} follow-up{s.steps.length === 1 ? "" : "s"}
               </p>
               <ul className="mt-3 space-y-1 text-xs text-muted">

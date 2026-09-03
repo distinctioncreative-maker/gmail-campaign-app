@@ -150,7 +150,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
   return (
     <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-medium">
+        <h2>
           Get set up: {done} of {steps.length} done
         </h2>
         <span className="text-xs font-medium text-muted">
@@ -211,7 +211,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-medium">Live campaigns</h2>
+        <h2>Live campaigns</h2>
         <Link href="/campaigns" className="text-sm font-medium text-foreground link">
           View all
         </Link>
@@ -299,7 +299,7 @@ export function RecentCampaigns({ campaigns }: { campaigns: Campaign[] }) {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-medium">Recent campaigns</h2>
+        <h2>Recent campaigns</h2>
         <Link href="/campaigns" className="text-sm font-medium text-foreground link">
           View all
         </Link>

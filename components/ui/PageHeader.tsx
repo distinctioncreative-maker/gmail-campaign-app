@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/ui/Icon";
 
 /**
  * The single page header for every dashboard screen: optional back link,
@@ -25,17 +26,17 @@ export function PageHeader({
   backLabel?: string;
 }) {
   return (
-    <div className="mb-10 border-b border-border pb-6">
+    <div className="mb-10 border-b border-border pb-7">
       {backHref && (
         <Link
           href={backHref}
-          className="group mb-2.5 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
+          className="group mb-3 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
         >
           <span
             aria-hidden
             className="transition-transform duration-200 group-hover:-translate-x-0.5"
           >
-            ←
+            <Icon name="arrowLeft" size={15} />
           </span>
           {backLabel ?? "Back"}
         </Link>
@@ -46,7 +47,7 @@ export function PageHeader({
             {title}
           </h1>
           {description && (
-            <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted">{description}</p>
+            <p className="mt-2 max-w-2xl leading-relaxed text-muted">{description}</p>
           )}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

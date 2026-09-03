@@ -67,7 +67,7 @@ export function SourcingPanel({
   if (!configured) {
     return (
       <div className="card p-6 sm:p-7">
-        <h2 className="font-medium">Find leads</h2>
+        <h2>Find leads</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted">
           Sourcing is not set up on this deployment yet. It needs a data provider account, and until
           one is configured this page cannot search. Importing a list you already have works as
@@ -155,7 +155,7 @@ export function SourcingPanel({
 
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">Find leads</h2>
+      <h2>Find leads</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Search {providerName} for people who match, preview them with the same address checks as an
         import, then add the ones you want. {credits}

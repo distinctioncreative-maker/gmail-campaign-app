@@ -72,7 +72,7 @@ export function ReplyThreadViewer({
             <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <div className="min-w-0">
                 <p className="truncate font-semibold text-foreground">{fullName || email}</p>
-                {fullName && <p className="truncate text-xs text-muted">{email}</p>}
+                {fullName && <p className="truncate text-sm text-muted">{email}</p>}
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -98,7 +98,7 @@ export function ReplyThreadViewer({
                 <div className="space-y-4">
                   {messages.map((m, i) => (
                     <div key={i} className="rounded-lg border border-border bg-surface-2 p-4">
-                      <p className="text-xs font-medium text-muted">{m.from}</p>
+                      <p className="text-sm font-medium text-muted">{m.from}</p>
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                         {m.bodyText || m.snippet}
                       </p>

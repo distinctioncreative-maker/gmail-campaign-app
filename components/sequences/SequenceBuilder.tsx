@@ -310,7 +310,7 @@ export function SequenceBuilder({
       </div>
 
       <div className="mt-4 card p-6 sm:p-7">
-        <h3 className="font-medium">Stop rules</h3>
+        <h3>Stop rules</h3>
         <p className="mt-1 text-sm text-muted">
           Follow-ups always stop when someone replies, unsubscribes, or bounces. These can&apos;t
           be turned off: they keep you safe.

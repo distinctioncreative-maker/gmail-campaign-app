@@ -44,7 +44,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="font-medium">Lead lists</h2>
+        <h2>Lead lists</h2>
         {!creating && (
           <button onClick={() => setCreating(true)} className="btn-secondary px-3 py-1.5 text-xs">
             + New list
@@ -92,7 +92,7 @@ export function LeadListsBar({ lists }: { lists: LeadListChip[] }) {
             >
               <div className="min-w-0">
                 <p className="truncate font-medium group-hover:text-foreground">{l.name}</p>
-                <p className="text-xs text-muted">{l.count.toLocaleString()} lead{l.count === 1 ? "" : "s"}</p>
+                <p className="text-sm text-muted">{l.count.toLocaleString()} lead{l.count === 1 ? "" : "s"}</p>
               </div>
               <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-2 text-foreground">
                 <Icon name="users" size={16} />

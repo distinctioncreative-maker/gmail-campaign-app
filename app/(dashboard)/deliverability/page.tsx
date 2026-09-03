@@ -71,20 +71,20 @@ export default async function DeliverabilityPage() {
 
       {/* DNS auth: zero setup, always available */}
       <section>
-      <h2 className="section-head font-medium">Domain authentication</h2>
+      <h2 className="section-head">Domain authentication</h2>
       <div className="card divide-y divide-border overflow-hidden">
         {dnsChecks.map((c) => (
           <div key={c.id} className="flex flex-wrap items-start gap-3 p-4">
             <span className={`badge mt-0.5 ${STATUS_PILL[c.status]}`}>{STATUS_WORD[c.status]}</span>
             <div className="min-w-0 flex-1">
               <p className="font-medium">{c.label}</p>
-              <p className="mt-0.5 text-sm text-muted">{c.detail}</p>
-              {c.fix && <p className="mt-1.5 rounded-lg bg-surface-2 p-2 text-xs text-muted">How to fix: {c.fix}</p>}
+              <p className="mt-0.5 text-muted">{c.detail}</p>
+              {c.fix && <p className="mt-1.5 rounded-lg bg-surface-2 p-2 text-sm text-muted">How to fix: {c.fix}</p>}
             </div>
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs text-muted">
+      <p className="mt-2 text-sm text-muted">
         These three records tell inbox providers your email is genuinely from {domain}. All-green
         here removes the most common structural cause of spam foldering.
       </p>
@@ -92,7 +92,7 @@ export default async function DeliverabilityPage() {
 
       {/* Postmaster */}
       <section>
-      <h2 className="section-head font-medium">Google Postmaster Tools</h2>
+      <h2 className="section-head">Google Postmaster Tools</h2>
       {postmaster.state === "OK" ? (
         <>
           <div className="mb-4">
@@ -164,7 +164,7 @@ export default async function DeliverabilityPage() {
                   </TableRow>
                 ))}
               </DataTable>
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-sm text-muted">
             Google only publishes daily stats when enough of your mail reached Gmail inboxes that
             day: gaps are normal for lower volumes.
           </p>
@@ -172,7 +172,7 @@ export default async function DeliverabilityPage() {
       ) : (
         <div className="card p-6 sm:p-7">
           {postmaster.state === "NOT_CONNECTED" && (
-            <p className="text-sm text-muted">
+            <p className="text-muted">
               Connect Gmail in <span className="font-medium">Settings</span> first: Postmaster data
               is read with your Google sign-in.
             </p>
@@ -180,7 +180,7 @@ export default async function DeliverabilityPage() {
           {postmaster.state === "NEEDS_RECONNECT" && (
             <>
               <p className="font-medium">One-time step: reconnect Gmail</p>
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 text-muted">
                 Your Gmail was connected before Postmaster access was added. Go to{" "}
                 <span className="font-medium">Settings → Reconnect Gmail</span> and approve the
                 Google screen once: then this page fills in automatically.
@@ -211,7 +211,7 @@ export default async function DeliverabilityPage() {
           {postmaster.state === "NO_DATA" && (
             <>
               <p className="font-medium">{domain} is registered: no published data yet</p>
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 text-muted">
                 Google only publishes stats for days with meaningful Gmail volume. Keep sending at a
                 steady daily pace and data will appear here. Meanwhile the domain-authentication
                 checks above are the best signal.
@@ -224,7 +224,7 @@ export default async function DeliverabilityPage() {
 
       {/* Deliverability Insights: anonymized, cross-user benchmarks */}
       <section>
-      <h2 className="section-head font-medium">Deliverability insights</h2>
+      <h2 className="section-head">Deliverability insights</h2>
       {surfacedDimensions.length === 0 ? (
         <div className="card p-6 sm:p-7 text-sm text-muted">
           <p className="font-medium text-foreground">Still gathering data</p>
@@ -236,7 +236,7 @@ export default async function DeliverabilityPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4 text-xs text-muted">
+          <p className="mb-4 text-sm text-muted">
             From {benchmarks?.totalCampaignsConsidered ?? 0} anonymized campaigns across every Cadence
             user: nothing here is traceable to one account, and a setting only appears once enough
             campaigns share it.
@@ -255,7 +255,7 @@ export default async function DeliverabilityPage() {
       </section>
 
       <div className="card p-6 sm:p-7">
-        <h3 className="font-medium">If replies are low, work this list in order</h3>
+        <h3>If replies are low, work this list in order</h3>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
           <li>Fix anything red or amber above: authentication is the foundation.</li>
           <li>{dailyLimitTip(surfacedDimensions)}</li>
@@ -289,9 +289,9 @@ function DimensionCard({
   const best = dimension.buckets[0];
   return (
     <div className="card p-6 sm:p-7">
-      <p className="text-sm text-muted">{dimension.label}</p>
+      <p className="text-muted">{dimension.label}</p>
       <p className="mt-1 text-lg font-semibold">{best.bucket}</p>
-      <p className="mt-1 text-xs text-muted">
+      <p className="mt-1 text-sm text-muted">
         {formatPercent(best.avgReplyRate)} reply rate · {formatPercent(best.avgBounceRate)} bounce rate
         {best.avgOpenRate !== null && ` · ${formatPercent(best.avgOpenRate)} open rate`}
       </p>

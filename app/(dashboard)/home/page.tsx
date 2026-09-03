@@ -221,7 +221,7 @@ export default async function HomePage({
       {!home.gmailConnected && <GmailNudge />}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
+        <h2 className="text-sm uppercase tracking-wider text-muted">
           Your numbers
         </h2>
         <RangeTabs active={range} />

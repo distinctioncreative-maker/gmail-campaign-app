@@ -118,12 +118,12 @@ export function DeleteAccountCard({
             <Icon name="alert" size={20} />
           </span>
           <div className="min-w-0">
-            <h2 className="font-medium text-foreground">
+            <h2 className="text-foreground">
               {state.request.scope === "WORKSPACE"
                 ? "This workspace is scheduled for deletion"
                 : "Your account is scheduled for deletion"}
             </h2>
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-muted">
               <DeletionCountdown purgeAfter={state.request.purgeAfter} /> Everything keeps working
               until then, and nothing has been removed yet. After it runs, campaigns, leads,
               templates, and sending history are gone and the Gmail connection is revoked with
@@ -144,8 +144,8 @@ export function DeleteAccountCard({
 
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">Delete {soloWorkspace ? "your workspace" : "your account"}</h2>
-      <p className="mt-1 text-sm text-muted">
+      <h2>Delete {soloWorkspace ? "your workspace" : "your account"}</h2>
+      <p className="mt-1 text-muted">
         Scheduled with a {state.gracePeriodDays} day grace period, so a change of mind costs
         nothing. After that it is permanent.
       </p>

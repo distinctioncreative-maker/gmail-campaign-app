@@ -188,7 +188,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
   if (!state) {
     return loadFailed ? (
       <section className="card p-6 sm:p-7 mt-6">
-        <h2 className="font-medium">Platform state did not load</h2>
+        <h2>Platform state did not load</h2>
         <p className="mt-1 text-sm text-muted">
           The controls are hidden rather than shown against stale or missing values, because acting
           on a state you cannot see is how the wrong workspace gets suspended.
@@ -212,7 +212,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
     <div className="mt-8 space-y-8">
       {/* ---------------------------------------------------------- doors */}
       <section className="card p-6 sm:p-7">
-        <h2 className="font-medium">Who can sign up</h2>
+        <h2>Who can sign up</h2>
         <p className="mt-1 text-sm text-muted">
           In force now: <strong>{state.signupMode}</strong>
           {state.settings.signupMode === null
@@ -252,7 +252,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
 
       {/* ------------------------------------------------------ incidents */}
       <section className="card p-6 sm:p-7">
-        <h2 className="font-medium">Incident controls</h2>
+        <h2>Incident controls</h2>
         <div className="mt-3 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -346,7 +346,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
       <section className="card p-6 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-medium">Security and abuse checkup</h2>
+            <h2>Security and abuse checkup</h2>
             <p className="mt-1 text-sm text-muted">
               Reads across every workspace, so it runs when you ask rather than on load. Viewing it
               is recorded.
@@ -426,7 +426,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
 
       {/* ---------------------------------------------------- suspensions */}
       <section className="card p-6 sm:p-7">
-        <h2 className="font-medium">Suspend a workspace</h2>
+        <h2>Suspend a workspace</h2>
         <p className="mt-1 text-sm text-muted">
           Locks everyone in it out, signs their live sessions out, and stops queued mail. Their own
           admins cannot lift it.
@@ -520,7 +520,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
 
       {/* ----------------------------------------------------------- bans */}
       <section className="card p-6 sm:p-7">
-        <h2 className="font-medium">Ban a person</h2>
+        <h2>Ban a person</h2>
         <p className="mt-1 text-sm text-muted">
           By email, so signing up again with a fresh account does not get around it. Use this when
           suspending the workspace is not enough.
@@ -588,7 +588,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
 
       {/* ------------------------------------------------------- overrides */}
       <section className="card p-6 sm:p-7">
-        <h2 className="font-medium">Plan override</h2>
+        <h2>Plan override</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted">
           For a comped, grandfathered, or negotiated workspace. The plan catalog itself stays in
           code, because plan limits gate send caps and seat counts: those are not numbers to edit in
@@ -670,7 +670,7 @@ export function OwnerConsole({ canWrite }: { canWrite: boolean }) {
 
       {/* ----------------------------------------------------------- audit */}
       <section className="card p-6 sm:p-7">
-        <h2 className="font-medium">What operators have done</h2>
+        <h2>What operators have done</h2>
         <p className="mt-1 text-sm text-muted">
           Append-only, outside every workspace, so it survives a workspace an operator deleted.
         </p>

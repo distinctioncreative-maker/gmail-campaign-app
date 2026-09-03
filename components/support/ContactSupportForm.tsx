@@ -77,7 +77,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
           </span>
           <div>
             <p className="font-semibold">Your message is with us</p>
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-muted">
               Reference <span className="font-mono font-medium text-foreground">{sent.reference}</span>.
               We reply to {sent.replyTo} within {SUPPORT_RESPONSE_TARGET}. Keep the reference if you
               need to follow up.
@@ -150,7 +150,7 @@ export function ContactSupportForm({ signedInEmail }: { signedInEmail: string })
       </label>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-muted">
+        <p className="text-sm text-muted">
           Your workspace, plan, sending mode, and Gmail status are attached automatically. No lead
           data and no message content from your mailbox is included.
         </p>

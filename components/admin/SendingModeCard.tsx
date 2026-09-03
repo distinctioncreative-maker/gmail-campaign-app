@@ -68,8 +68,8 @@ export function SendingModeCard() {
     <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-medium">Sending mode</h2>
-          <p className="mt-1 text-sm text-muted">
+          <h2>Sending mode</h2>
+          <p className="mt-1 text-muted">
             Controls whether the whole team sends real email or safe test email.
           </p>
         </div>
@@ -117,7 +117,7 @@ export function SendingModeCard() {
               <p className="text-sm font-medium text-danger">
                 This turns on real emails for everyone on the team.
               </p>
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 text-muted">
                 From this moment, campaigns send to actual recipients: not your test address.
                 Type <strong>GO LIVE</strong> to confirm.
               </p>

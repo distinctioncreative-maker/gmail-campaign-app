@@ -132,7 +132,7 @@ export function ProfileForm({
       {notice && <p className="mb-3 rounded-lg bg-success-soft p-3 text-sm text-success">{notice}</p>}
       {error && <p className="mb-3 rounded-lg bg-danger-soft p-3 text-sm text-danger">{error}</p>}
 
-      <h3 className="mb-3 text-sm font-semibold text-muted">Your identity</h3>
+      <h3 className="mb-3 text-sm text-muted">Your identity</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="text-sm font-medium text-foreground">
           Your name
@@ -192,7 +192,7 @@ export function ProfileForm({
       {readError && <p className="mt-2 text-xs text-danger">{readError}</p>}
       {readNote && !readError && <p className="mt-2 text-xs text-success">{readNote}</p>}
 
-      <h3 className="mb-1 mt-6 border-t border-border pt-5 text-sm font-semibold text-muted">
+      <h3 className="mb-1 mt-6 border-t border-border pt-5 text-sm text-muted">
         Legal footer &amp; signature
       </h3>
       <label className="mt-2 block text-sm font-medium text-foreground">
@@ -254,7 +254,7 @@ export function ProfileForm({
 
       {!compact && (
         <>
-          <h3 className="mt-6 border-t border-border pt-4 font-medium">Sending defaults</h3>
+          <h3 className="mt-6 border-t border-border pt-4">Sending defaults</h3>
           <p className="text-xs text-muted">
             Used as the starting point for new campaigns: you can adjust each campaign
             individually.

@@ -144,8 +144,8 @@ export default async function LeadsPage({
 
       <div>
         <div className="section-head">
-          <h2 className="font-semibold">Contact directory</h2>
-          <p className="mt-1 text-xs text-muted">
+          <h2>Contact directory</h2>
+          <p className="mt-1 text-sm text-muted">
             {totalContacts.toLocaleString()} total leads. Search, filter, and organize this page of {rows.length.toLocaleString()}.
           </p>
         </div>

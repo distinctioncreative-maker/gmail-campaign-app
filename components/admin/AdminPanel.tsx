@@ -69,7 +69,7 @@ export function AdminPanel({
       {notice && <p className="rounded-lg bg-info-soft p-3 text-sm text-info">{notice}</p>}
 
       <div className="card p-6 sm:p-7">
-        <h2 className="font-medium">Team members</h2>
+        <h2>Team members</h2>
         <DataTable className="mt-4"
         head={<>
                 <th className="px-3 py-2">Email</th>
@@ -121,7 +121,7 @@ export function AdminPanel({
       </div>
 
       <div className="card p-6 sm:p-7">
-        <h2 className="font-medium">Organization policies</h2>
+        <h2>Organization policies</h2>
 
         <label className="mt-4 block text-sm font-medium text-foreground">
           Prevent two reps emailing the same merchant

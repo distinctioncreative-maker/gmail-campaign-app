@@ -36,7 +36,7 @@ export default function DashboardError({
         <Icon name="alert" size={22} aria-hidden />
       </span>
       <h1 className="mt-4 text-2xl font-semibold">This page could not load</h1>
-      <p className="mt-2 text-sm text-muted">
+      <p className="mt-2 text-muted">
         Something went wrong on our side. Nothing you were working on was lost, and no campaign was
         changed by this.
       </p>

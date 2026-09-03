@@ -254,7 +254,7 @@ export function CampaignControls({
           </div>
           {assessPaceRisk(draft).risky && (
             <div className="alert-warning mt-3 rounded-lg border p-3">
-              <p className="flex items-center gap-1.5 text-xs font-semibold text-warning"><Icon name="alert" size={14} aria-hidden /> This pace risks your deliverability</p>
+              <p className="flex items-center gap-1.5 text-sm font-semibold text-warning"><Icon name="alert" size={14} aria-hidden /> This pace risks your deliverability</p>
               <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-warning">
                 {assessPaceRisk(draft).reasons.map((r) => (
                   <li key={r}>{r}</li>
@@ -287,7 +287,7 @@ export function CampaignControls({
               Reset
             </button>
           </div>
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-sm text-muted">
             Saving re-spaces every remaining email with these settings. Higher numbers send faster but
             can hurt deliverability: Gmail limits how much you can send per day.
           </p>

@@ -58,7 +58,7 @@ export default function HelpPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Knowledge center
           </p>
-          <h2 className="mt-1 text-xl font-semibold">What can we help you accomplish?</h2>
+          <h2 className="mt-1 text-xl">What can we help you accomplish?</h2>
           <div className="relative mt-4 max-w-2xl">
             <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-muted">
               <Icon name="search" size={18} />
@@ -102,8 +102,8 @@ export default function HelpPage() {
       <div id="guides" className="scroll-mt-24">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
-            <h2 className="font-semibold">How-to guides</h2>
-            <p className="mt-1 text-xs text-muted">
+            <h2>How-to guides</h2>
+            <p className="mt-1 text-sm text-muted">
               Follow a short, practical path through common Cadence tasks.
             </p>
           </div>
@@ -120,8 +120,8 @@ export default function HelpPage() {
           fixed checklist rather than a lookup surface. */}
       {!query && (
         <div id="test-center" className="scroll-mt-24">
-          <h2 className="mb-1 font-medium">Test Center</h2>
-          <p className="mb-3 text-sm text-muted">
+          <h2 className="mb-1">Test Center</h2>
+          <p className="mb-3 text-muted">
             Run these any time to confirm core workflows. Test emails go only to your configured test
             address.
           </p>
@@ -131,8 +131,8 @@ export default function HelpPage() {
 
       {/* FAQ */}
       <div id="questions" className="scroll-mt-24">
-        <h2 className="font-semibold">Common questions &amp; troubleshooting</h2>
-        <p className="mb-3 mt-1 text-xs text-muted">
+        <h2>Common questions &amp; troubleshooting</h2>
+        <p className="mb-3 mt-1 text-sm text-muted">
           Clear explanations for sending, safety, deliverability, and access.
         </p>
         <Faq query={query} />
@@ -143,8 +143,8 @@ export default function HelpPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Trust and responsible use
           </p>
-          <h2 className="mt-1 font-semibold">Compliance and policies</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+          <h2 className="mt-1">Compliance and policies</h2>
+          <p className="mt-2 max-w-2xl leading-relaxed text-muted">
             Review how Cadence handles commercial email footers, opt-outs, tracking,
             privacy, and acceptable use before launching a campaign.
           </p>
@@ -172,8 +172,8 @@ export default function HelpPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-foreground">
             Still stuck
           </p>
-          <h2 className="mt-1 font-semibold">Talk to a human</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+          <h2 className="mt-1">Talk to a human</h2>
+          <p className="mt-2 max-w-2xl leading-relaxed text-muted">
             Send us what is going wrong and we reply within one business day. Your workspace, plan,
             sending mode, and Gmail status come along automatically, so you can skip describing
             your setup. Nothing from your mailbox and no lead data is attached.
@@ -192,8 +192,8 @@ export default function HelpPage() {
       {/* Feature suggestions */}
       {!query && (
         <div>
-          <h2 className="mb-1 font-medium">Suggest a feature</h2>
-          <p className="mb-3 text-sm text-muted">
+          <h2 className="mb-1">Suggest a feature</h2>
+          <p className="mb-3 text-muted">
             Tell us what would make Cadence better. Ideas are shared with your team.
           </p>
           <FeatureSuggestions />

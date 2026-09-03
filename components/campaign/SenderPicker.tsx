@@ -65,7 +65,7 @@ export function SenderPicker({
   return (
     <div className="mt-3 rounded-lg border border-border p-3">
       <p className="text-sm font-medium text-foreground">Send from</p>
-      <p className="mt-0.5 text-xs text-muted">
+      <p className="mt-0.5 text-sm text-muted">
         {capacity
           ? `${capacity.usableInboxes} ready ${capacity.usableInboxes === 1 ? "inbox" : "inboxes"}, up to ${capacity.dailyCeiling.toLocaleString()} sends a day between them.`
           : "Sends rotate across the inboxes you pick, using the one that has sent least today."}
@@ -120,7 +120,7 @@ export function SenderPicker({
             </label>
           ))}
           {value.length === 0 ? (
-            <p className="text-xs text-warning">
+            <p className="text-sm text-warning">
               Pick at least one inbox, or choose all ready inboxes above.
             </p>
           ) : null}

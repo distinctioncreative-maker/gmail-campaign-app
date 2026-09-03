@@ -274,7 +274,7 @@ export function HelpGuides({ query = "" }: { query?: string }) {
   );
 
   if (q && sections.length === 0) {
-    return <p className="text-sm text-muted">No guides match &ldquo;{query}&rdquo;.</p>;
+    return <p className="text-muted">No guides match &ldquo;{query}&rdquo;.</p>;
   }
 
   return (
@@ -286,7 +286,7 @@ export function HelpGuides({ query = "" }: { query?: string }) {
       ) : null}
       {sections.map((section) => (
         <div key={section.heading}>
-          <h3 className="mb-2 text-sm font-semibold text-muted">{section.heading}</h3>
+          <h3 className="mb-2 text-sm text-muted">{section.heading}</h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {section.guides.map((g) => (
               <div key={g.id} className="card overflow-hidden">

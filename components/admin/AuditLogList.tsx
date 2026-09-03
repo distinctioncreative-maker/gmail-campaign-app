@@ -89,7 +89,7 @@ export function AuditLogList() {
   }
 
   if (entries === null) {
-    return <p className="mt-6 text-sm text-muted">Loading…</p>;
+    return <p className="mt-6 text-muted">Loading…</p>;
   }
 
   const visible =
@@ -162,7 +162,7 @@ export function AuditLogList() {
               />
               <div className="min-w-0">
                 <p className="text-sm">{entry.summary}</p>
-                <p className="mt-0.5 text-xs text-muted">
+                <p className="mt-0.5 text-sm text-muted">
                   {auditLabel(entry.action)} · {entry.actorEmail} ·{" "}
                   <LocalTime value={entry.at} />
                 </p>

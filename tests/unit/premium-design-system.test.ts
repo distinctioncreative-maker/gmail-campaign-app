@@ -824,3 +824,102 @@ describe("page rhythm", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+/**
+ * Whether the type scale is actually being used, rather than merely existing.
+ *
+ * The scale was added, guarded against arbitrary values, and then almost
+ * nothing adopted it. A census found the shape of the problem exactly:
+ *
+ *   1,005 of 1,063 sizing utilities at 13px or smaller
+ *   460 paragraphs, ZERO at body size, 214 at 13px and 168 at 12px
+ *   392 font-medium against 16 font-normal
+ *
+ * The cause was underneath all of it: `body` set no font-size, so the default
+ * was the browser's 16px, so every element in the product set its own smaller
+ * one to compensate. Nothing was designed small. It drifted small one call site
+ * at a time because there was no size to inherit.
+ *
+ * These rules are about the RATIO rather than any particular value, because the
+ * failure was never one bad number. It was a distribution.
+ */
+describe("the type scale is adopted, not just declared", () => {
+  const css = read("app/globals.css");
+
+  function tsx(): string[] {
+    const out: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (entry.name.endsWith(".tsx")) out.push(path);
+      }
+    };
+    walk("app");
+    walk("components");
+    return out;
+  }
+  const markup = tsx().map(read).join("\n");
+
+  it("states a body size instead of inheriting one", () => {
+    // The hole under everything. Without this, every call site is compensating
+    // for a default nobody chose.
+    const body = css.slice(css.indexOf("\nbody {"), css.indexOf("\n}", css.indexOf("\nbody {")));
+    expect(body).toContain("font-size: var(--text-base)");
+    expect(body).toContain("line-height: var(--lh-base)");
+  });
+
+  it("gives headings a size, so a heading is not the size of its own body copy", () => {
+    /**
+     * Tailwind's preflight resets every heading to `inherit`, and this file
+     * never put the size back. So `<h2 className="font-semibold">` rendered at
+     * body size: a section heading and the sentence beneath it were the same
+     * size and differed only in weight, on every screen in the product. That is
+     * most of what "no hierarchy" meant.
+     */
+    const base = css.slice(css.indexOf("@layer base {", css.indexOf("Headings get a SIZE")));
+    const block = base.slice(0, base.indexOf("\n}"));
+    for (const rule of ["h1 { font-size: var(--text-2xl)", "h2 { font-size: var(--text-lg)", "h3 { font-size: var(--text-md)"]) {
+      expect(block).toContain(rule);
+    }
+    // In base so a call site can still choose its own, which several do.
+    expect(block.indexOf("h1")).toBeGreaterThan(-1);
+  });
+
+  it("does not restate a heading's weight, because the restatement is dead", () => {
+    /**
+     * `h1, h2, h3, h4 { font-weight: 600 }` in this file is UNLAYERED, and
+     * unlayered CSS beats anything in @layer utilities. So 64 headings carrying
+     * `font-medium` or `font-semibold` were rendering at 600 either way: the
+     * utility did nothing at all, while looking to a reader like the thing that
+     * set the weight. Dead code that lies about intent is worse than none.
+     */
+    const offenders = tsx().filter((file) =>
+      /<h[234][^>]{0,300}?\bfont-(?:medium|semibold)\b/.test(read(file))
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it("keeps prose out of the caption sizes", () => {
+    /**
+     * Floors and a ceiling rather than fixed values. 12px is a real size with a
+     * real job -- a micro-label, a mono identifier -- and the defect was never
+     * that it existed. It was that it was carrying sentences.
+     */
+    const paragraphs = markup.match(/<p className="[^"]*"/g) ?? [];
+    expect(paragraphs.length).toBeGreaterThan(300);
+
+    const tiny = paragraphs.filter((tag) => /text-(?:3xs|2xs|xs)\b/.test(tag));
+    expect(
+      tiny.length / paragraphs.length,
+      "share of paragraphs at 12px or below"
+    ).toBeLessThan(0.25);
+
+    // And a floor: paragraphs that take the body size rather than overriding it
+    // downward. This started at zero.
+    const inheriting = paragraphs.filter(
+      (tag) => !/text-(?:3xs|2xs|xs|sm)\b/.test(tag)
+    );
+    expect(inheriting.length, "paragraphs at body size").toBeGreaterThan(100);
+  });
+});

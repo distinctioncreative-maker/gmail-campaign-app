@@ -37,7 +37,7 @@ export function ReportScopeBar({
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Reporting scope</p>
-        <h2 className="mt-0.5 text-lg font-semibold text-foreground">{scopeName}</h2>
+        <h2 className="mt-0.5 text-lg text-foreground">{scopeName}</h2>
       </div>
       <div className="flex flex-wrap gap-2 text-xs text-muted">
         <span className="rounded-full border border-border bg-surface px-3 py-1.5">
@@ -157,7 +157,7 @@ export function OutcomesPanel({
 
   return (
     <section className="mt-6">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted">
+      <h2 className="mb-3 text-sm uppercase tracking-wider text-muted">
         What it produced
       </h2>
       <StatGrid columns={4}>
@@ -248,7 +248,7 @@ export function CampaignFunnel({ steps }: { steps: FunnelStep[] }) {
   const max = Math.max(1, ...values);
   return (
     <section className="card p-6 sm:p-7">
-      <h2 className="font-semibold">Campaign funnel</h2>
+      <h2>Campaign funnel</h2>
       <p className="mt-1 text-xs text-muted">
         Initial-send progress and reply outcomes. Follow-ups stay in the total sends KPI above.
       </p>
@@ -284,7 +284,7 @@ export function TimeToReplyPanel({ ttr }: { ttr: ReportData["ttr"] }) {
   ];
   return (
     <section className="card p-6 sm:p-7">
-      <h2 className="font-semibold">Time to reply</h2>
+      <h2>Time to reply</h2>
       <p className="mb-4 mt-1 text-xs text-muted">
         {ttr.count > 0
           ? `Based on ${ttr.count} lead${ttr.count === 1 ? "" : "s"} first sent in this period.`
@@ -318,7 +318,7 @@ export function TrackedEngagementPanel({
   const unavailable = <span className="text-xl text-muted">Not available</span>;
   return (
     <section className="card p-6 sm:p-7">
-      <h2 className="font-semibold">Tracked engagement</h2>
+      <h2>Tracked engagement</h2>
       {trackedCampaignCount === 0 ? (
         <div className="mt-4 rounded-lg bg-surface-2 p-4">
           <p className="text-sm font-medium">Tracking is off in this view</p>
@@ -387,7 +387,7 @@ export function CampaignLeaderboard({
     <section className="mt-8">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="font-semibold">
+          <h2>
             {isScopedToOne ? "Campaign performance" : "Compare campaigns"}
           </h2>
           <p className="mt-1 text-xs text-muted">
@@ -493,7 +493,7 @@ export function InboxBreakdownPanel({ inboxes }: { inboxes: ReportData["inboxes"
 
   return (
     <section className="card p-6 sm:p-7">
-      <h2 className="font-semibold">Sending inboxes</h2>
+      <h2>Sending inboxes</h2>
       <p className="mt-1 text-xs text-muted">
         Volume and bounce rate per address. A pooled rate hides which inbox is producing it.
       </p>

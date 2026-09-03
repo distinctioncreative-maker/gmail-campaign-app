@@ -42,8 +42,8 @@ export default async function TemplatesPage() {
               <Link href={`/templates/${t.templateId}`} className="font-medium hover:underline">
                 {t.name}
               </Link>
-              <p className="mt-1 line-clamp-2 text-sm text-muted">{t.subjectTemplate}</p>
-              <p className="mt-2 text-xs text-muted">
+              <p className="mt-1 line-clamp-2 text-muted">{t.subjectTemplate}</p>
+              <p className="mt-2 text-sm text-muted">
                 v{t.version} · updated{" "}
                 <LocalTime value={t.updatedAt} options={{ dateStyle: "medium" }} />
               </p>
@@ -64,7 +64,7 @@ export default async function TemplatesPage() {
             {archived.map((t) => (
               <div key={t.templateId} className="rounded-lg bg-surface p-5 opacity-70 shadow-sm">
                 <p className="font-medium">{t.name}</p>
-                <p className="mt-1 line-clamp-2 text-sm text-muted">{t.subjectTemplate}</p>
+                <p className="mt-1 line-clamp-2 text-muted">{t.subjectTemplate}</p>
                 <div className="mt-3">
                   <TemplateListActions templateId={t.templateId} archived={true} />
                 </div>

@@ -42,7 +42,7 @@ export function VariationPanel() {
     <section className="card p-6 sm:p-7 mt-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-medium">What each recipient actually receives</h2>
+          <h2>What each recipient actually receives</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">
             One message, written once, with the phrases that could go either way marked as choices.
             Cadence picks per recipient, so nobody gets the email their neighbour got. Identical text

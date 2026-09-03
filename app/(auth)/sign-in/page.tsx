@@ -66,7 +66,7 @@ export default function SignInPage() {
         </Link>
 
         <div className="relative mt-auto">
-          <h2 className="text-2xl font-semibold leading-tight tracking-tight">
+          <h2 className="text-2xl leading-tight tracking-tight">
             Personal email campaigns,
             <br /> sent from your own Gmail.
           </h2>

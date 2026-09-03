@@ -60,8 +60,8 @@ export function AiWritingCard() {
     <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-medium">AI email writing</h2>
-          <p className="mt-1 text-sm text-muted">
+          <h2>AI email writing</h2>
+          <p className="mt-1 text-muted">
             The AI writer, improve tools, subject ideas, reply drafts, and sequence drafting.
             When off, none of these appear for anyone on the team.
           </p>

@@ -495,6 +495,15 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans-base), system-ui, -apple-system, "SF Pro Text", sans-serif;
+  /* Stated, rather than inherited from the browser's 16px.
+     This was the hole under everything: nothing set a body size, so the
+     default was 16px, so every element in the product set its own smaller one
+     to compensate. A census found 1,005 of 1,063 sizing utilities at 13px or
+     below, and of 460 paragraphs, none at body size. The app was not designed
+     small, it drifted small one call site at a time because there was no size
+     to inherit. There is one now. */
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
   transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -513,6 +522,20 @@ h1, h2, h3, h4 {
 /* Larger sizes need proportionally tighter tracking to hold together. */
 h1 { letter-spacing: -0.032em; font-weight: 620; }
 h2 { letter-spacing: -0.026em; }
+
+/* Headings get a SIZE, which they did not have.
+   Tailwind's preflight resets every heading to inherit, and this file never
+   put the size back, so an <h2 className="font-semibold"> rendered at body
+   size. That is why the app had no hierarchy: a section heading and the
+   sentence under it were the same size, differing only in weight, on every
+   screen. Set in base so any call site can still override, which is what
+   the pages with their own display sizes already do. */
+@layer base {
+  h1 { font-size: var(--text-2xl); line-height: var(--lh-snug); }
+  h2 { font-size: var(--text-lg); line-height: var(--lh-snug); }
+  h3 { font-size: var(--text-md); line-height: var(--lh-snug); }
+  h4 { font-size: var(--text-base); }
+}
 
 /* The figure a customer screenshots for their boss, and the short display
    titles beside it. One class owns the headline numeral treatment so the

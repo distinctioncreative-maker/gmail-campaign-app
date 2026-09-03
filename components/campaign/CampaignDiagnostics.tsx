@@ -51,7 +51,7 @@ export function CampaignDiagnostics({ campaignId }: { campaignId: string }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold text-foreground">Diagnose this campaign</p>
-          <p className="text-xs text-muted">
+          <p className="text-sm text-muted">
             Plain-language checks for “why aren’t my emails sending?”
           </p>
         </div>
@@ -97,7 +97,7 @@ export function CampaignDiagnostics({ campaignId }: { campaignId: string }) {
 
           {data.errorSamples.length > 0 && (
             <div className="mt-4 rounded-lg border border-border bg-surface-2 p-3">
-              <p className="text-xs font-semibold text-muted">Recent error messages</p>
+              <p className="text-sm font-semibold text-muted">Recent error messages</p>
               <ul className="mt-1 space-y-1">
                 {data.errorSamples.map((e, i) => (
                   <li key={i} className="font-mono text-xs text-muted">{e}</li>

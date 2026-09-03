@@ -24,7 +24,7 @@ export default async function AuditPage() {
         description="Every administrative change to this workspace, in the order it happened."
       />
 
-      <p className="mt-4 text-sm text-muted">
+      <p className="mt-4 text-muted">
         <Link
           href="/admin"
           className="text-foreground link"
@@ -33,7 +33,7 @@ export default async function AuditPage() {
         </Link>
       </p>
 
-      <p className="mt-4 max-w-2xl text-sm text-muted">
+      <p className="mt-4 max-w-2xl text-muted">
         Entries are added, never edited or removed, and nothing here can be changed from the app.
         Deleting the workspace deletes this log with it, because a record of a workspace we promised
         to destroy is still a record.

@@ -135,14 +135,14 @@ export function Faq({ query = "" }: { query?: string }) {
   })).filter((section) => section.items.length > 0);
 
   if (q && sections.length === 0) {
-    return <p className="text-sm text-muted">No answers match &ldquo;{query}&rdquo;.</p>;
+    return <p className="text-muted">No answers match &ldquo;{query}&rdquo;.</p>;
   }
 
   return (
     <div className="space-y-6">
       {sections.map((section) => (
         <div key={section.heading}>
-          <h3 className="mb-2 text-sm font-semibold text-muted">{section.heading}</h3>
+          <h3 className="mb-2 text-sm text-muted">{section.heading}</h3>
           <div className="card divide-y divide-border">
             {section.items.map((item) => (
               <details key={item.q} className="group p-4" open={q ? true : undefined}>
@@ -150,7 +150,7 @@ export function Faq({ query = "" }: { query?: string }) {
                   <span className="mt-0.5 text-muted transition group-open:rotate-45">＋</span>
                   <span>{item.q}</span>
                 </summary>
-                <p className="mt-2 pl-6 text-sm leading-relaxed text-muted">{item.a}</p>
+                <p className="mt-2 pl-6 leading-relaxed text-muted">{item.a}</p>
               </details>
             ))}
           </div>

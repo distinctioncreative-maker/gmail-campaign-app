@@ -85,7 +85,7 @@ export function RepliesKeyboardNav() {
   }, [index]);
 
   return (
-    <p className="mt-2 hidden text-xs text-muted sm:block" aria-live="polite">
+    <p className="mt-2 hidden text-sm text-muted sm:block" aria-live="polite">
       {index >= 0 ? `Row ${index + 1} selected. ${HINT}.` : HINT}
     </p>
   );

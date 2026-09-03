@@ -20,7 +20,7 @@ export default async function SourcingPage() {
         description="Search a data provider for people who match, then add the ones worth emailing."
       />
 
-      <p className="text-sm text-muted">
+      <p className="text-muted">
         <Link
           href="/leads"
           className="text-foreground link"

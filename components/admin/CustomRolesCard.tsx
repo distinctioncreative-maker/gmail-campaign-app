@@ -72,8 +72,8 @@ export function CustomRolesCard({ roles }: { roles: CustomRoleDefinition[] }) {
 
   return (
     <section className="card p-6 sm:p-7" aria-labelledby="custom-roles-heading">
-      <h2 id="custom-roles-heading" className="font-medium">Custom roles</h2>
-      <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
+      <h2 id="custom-roles-heading" >Custom roles</h2>
+      <p className="mt-1 max-w-3xl leading-relaxed text-muted">
         Create role names that match your organization. Each role maps to a tested access level,
         so a title can be customized without quietly granting new permissions.
       </p>
@@ -98,7 +98,7 @@ export function CustomRolesCard({ roles }: { roles: CustomRoleDefinition[] }) {
                   Delete
                 </button>
               </div>
-              {role.description && <p className="mt-2 text-sm text-muted">{role.description}</p>}
+              {role.description && <p className="mt-2 text-muted">{role.description}</p>}
             </li>
           ))}
         </ul>

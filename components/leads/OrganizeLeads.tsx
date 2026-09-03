@@ -98,7 +98,7 @@ export function OrganizeLeads() {
     <div className="card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-1.5 font-medium">
+          <h2 className="flex items-center gap-1.5">
             <Icon name="sparkles" size={16} aria-hidden />
             Group these leads
           </h2>

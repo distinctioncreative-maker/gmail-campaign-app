@@ -103,7 +103,7 @@ export default async function SystemHealthPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="overflow-hidden card">
-          <h2 className="border-b border-border px-4 py-3 font-medium">Platform checks</h2>
+          <h2 className="border-b border-border px-4 py-3">Platform checks</h2>
           <DataTable>
               {checks.map(([label, value, ok]) => (
                 <TableRow key={label} interactive={false}>
@@ -120,7 +120,7 @@ export default async function SystemHealthPage() {
         </div>
 
         <div className="overflow-hidden card">
-          <h2 className="border-b border-border px-4 py-3 font-medium">Background sweeps</h2>
+          <h2 className="border-b border-border px-4 py-3">Background sweeps</h2>
           <DataTable>
               {sweeps.map(([label, at]) => (
                 <TableRow key={label} interactive={false}>
@@ -142,14 +142,14 @@ export default async function SystemHealthPage() {
                 </TableRow>
               ))}
           </DataTable>
-          <p className="px-4 py-3 text-xs text-muted">
+          <p className="px-4 py-3 text-sm text-muted">
             Sweeps run on a schedule. A warning here usually means Cloud Scheduler isn&apos;t set up
             or hasn&apos;t fired yet: see scripts/setup-cloud.sh.
           </p>
         </div>
       </div>
 
-      <h2 className="mt-8 mb-3 font-medium">People</h2>
+      <h2 className="mt-8 mb-3">People</h2>
       <DataTable className="card"
         head={<>
               <th className="px-4 py-3">Person</th>
@@ -166,7 +166,7 @@ export default async function SystemHealthPage() {
                   <td className="px-4 py-3">
                     <span className="font-medium">{r.displayName || m.email}</span>
                     {!m.active && <span className="ml-2 badge bg-border text-muted">disabled</span>}
-                    {r.displayName && <p className="text-xs text-muted">{m.email}</p>}
+                    {r.displayName && <p className="text-sm text-muted">{m.email}</p>}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -197,7 +197,7 @@ export default async function SystemHealthPage() {
               );
             })}
           </DataTable>
-      <p className="mt-3 text-xs text-muted">
+      <p className="mt-3 text-sm text-muted">
         “Needs reconnect” means that person must open Settings and reconnect Gmail before their
         campaigns can send or scan replies.
       </p>

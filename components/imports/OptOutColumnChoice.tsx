@@ -54,7 +54,7 @@ export function OptOutColumnChoice({
       aria-labelledby={`${groupId}-title`}
       className="mb-4 rounded-lg border border-border bg-surface-2 p-4"
     >
-      <h3 id={`${groupId}-title`} className="font-medium text-foreground">
+      <h3 id={`${groupId}-title`} className="text-foreground">
         This file marks {markedCount} {markedCount === 1 ? "person" : "people"} as opted out
       </h3>
       <p className="mt-1.5 text-sm text-muted">

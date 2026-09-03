@@ -265,18 +265,18 @@ export default async function RepliesPage() {
                 <div className="flex items-start justify-between gap-2">
                   <Link href={`/leads/${r.contactId}`} className="min-w-0">
                     <p className="truncate font-medium">{r.fullName || r.email}</p>
-                    {r.fullName && <p className="truncate text-xs text-muted">{r.email}</p>}
+                    {r.fullName && <p className="truncate text-sm text-muted">{r.email}</p>}
                   </Link>
                   <span className={`badge shrink-0 ${INTENT_META[r.intent].className}`}>
                     {INTENT_META[r.intent].label}
                   </span>
                 </div>
                 {r.snippet && (
-                  <p className="mt-1.5 line-clamp-2 rounded-lg bg-surface-2 p-2 text-xs italic text-muted">
+                  <p className="mt-1.5 line-clamp-2 rounded-lg bg-surface-2 p-2 text-sm italic text-muted">
                     “{r.snippet}”
                   </p>
                 )}
-                <p className="mt-1.5 truncate text-xs text-muted">{r.campaignName}</p>
+                <p className="mt-1.5 truncate text-sm text-muted">{r.campaignName}</p>
                 <div className="mt-2.5 border-t border-border pt-2.5">
                   <OutcomeControl
                     campaignId={r.campaignId}
@@ -345,9 +345,9 @@ export default async function RepliesPage() {
                       <Link href={`/leads/${r.contactId}`} className="font-medium hover:underline">
                         {r.fullName || r.email}
                       </Link>
-                      {r.fullName && <p className="text-xs text-muted">{r.email}</p>}
+                      {r.fullName && <p className="text-sm text-muted">{r.email}</p>}
                       {r.snippet && (
-                        <p className="mt-1 max-w-md truncate text-xs italic text-muted">“{r.snippet}”</p>
+                        <p className="mt-1 max-w-md truncate text-sm italic text-muted">“{r.snippet}”</p>
                       )}
                     </td>
                     <td className="px-4 py-3">

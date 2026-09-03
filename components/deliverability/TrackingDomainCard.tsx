@@ -111,8 +111,8 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
   if (!state) {
     return (
       <div className="card p-6 sm:p-7">
-        <h2 className="font-semibold">Tracking domain</h2>
-        <p className="mt-2 text-sm text-muted">Loading…</p>
+        <h2>Tracking domain</h2>
+        <p className="mt-2 text-muted">Loading…</p>
       </div>
     );
   }
@@ -125,8 +125,8 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
     <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Tracking domain</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{state.summary}</p>
+          <h2>Tracking domain</h2>
+          <p className="mt-1 max-w-2xl text-muted">{state.summary}</p>
         </div>
         <span
           className={`badge border text-xs ${
@@ -150,7 +150,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
       </div>
 
       {!verified ? (
-        <p className="mt-3 max-w-2xl text-xs text-muted">
+        <p className="mt-3 max-w-2xl text-sm text-muted">
           Without your own domain, every tracked link in your email uses one hostname shared by every
           Cadence customer. If another sender gets that hostname flagged, your mail contains a
           flagged domain too. A single CNAME record moves your links onto your own reputation.
@@ -158,7 +158,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
       ) : null}
 
       {!isAdmin ? (
-        <p className="mt-4 text-sm text-muted">Only an admin can change this.</p>
+        <p className="mt-4 text-muted">Only an admin can change this.</p>
       ) : (
         <>
           <label className="mt-4 block text-sm">
@@ -186,7 +186,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
           </label>
 
           <div className="mt-4 rounded-lg border border-border bg-surface-2 p-3">
-            <p className="text-xs font-medium text-foreground">
+            <p className="text-sm font-medium text-foreground">
               Add this record at your DNS provider
             </p>
             <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-4">
@@ -205,7 +205,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
               ))}
             </dl>
             {!dns ? (
-              <p className="mt-2 text-xs text-muted">
+              <p className="mt-2 text-sm text-muted">
                 This is an example. Add your subdomain above and the exact record appears here.
               </p>
             ) : null}
@@ -232,7 +232,7 @@ export function TrackingDomainCard({ isAdmin }: { isAdmin: boolean }) {
           ) : null}
 
           {verified ? (
-            <p className="mt-4 text-xs text-muted">
+            <p className="mt-4 text-sm text-muted">
               Your unsubscribe links deliberately stay on Cadence&apos;s domain. They are legally
               required to keep working, and removing your CNAME later would break every one already
               delivered.

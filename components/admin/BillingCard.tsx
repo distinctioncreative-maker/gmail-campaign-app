@@ -69,8 +69,8 @@ export function BillingCard() {
     <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-medium">Plan &amp; billing</h2>
-          <p className="mt-1 text-sm text-muted">
+          <h2>Plan &amp; billing</h2>
+          <p className="mt-1 text-muted">
             Current plan: <strong>{state.planName}</strong>
             {state.status !== "none" && (
               <span className="text-muted"> · {STATUS_LABEL[state.status] ?? state.status}</span>
@@ -85,7 +85,7 @@ export function BillingCard() {
       </div>
 
       {!state.configured ? (
-        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
+        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-muted">
           Paid plans open when billing is configured. You&apos;re currently on{" "}
           <strong>{state.planName}</strong>.
         </p>
@@ -108,7 +108,7 @@ export function BillingCard() {
           />
         </div>
       ) : (
-        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-sm text-muted">
+        <p className="mt-4 rounded-lg bg-surface-2 p-3 text-muted">
           Use Manage billing to change your plan, seats, payment method, or cancellation.
         </p>
       )}
@@ -127,7 +127,7 @@ function PlanTile({
         <span className="font-medium">{name}</span>
         <span className="text-sm text-muted">{price}</span>
       </div>
-      <p className="mt-1 text-xs text-muted">{blurb}</p>
+      <p className="mt-1 text-sm text-muted">{blurb}</p>
       <button onClick={onPick} disabled={busy} className="btn-primary mt-3 w-full px-4 py-2 text-sm disabled:opacity-50">
         {busy ? "Starting…" : `Choose ${name}`}
       </button>

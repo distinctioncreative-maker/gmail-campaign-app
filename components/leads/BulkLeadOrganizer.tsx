@@ -106,7 +106,7 @@ export function BulkLeadOrganizer({
               </button>
             </div>
           ) : (
-            <p className="mt-3 text-xs text-muted">Create the first tag above. Tags become reusable filters automatically.</p>
+            <p className="mt-3 text-sm text-muted">Create the first tag above. Tags become reusable filters automatically.</p>
           )}
         </fieldset>
 
@@ -143,7 +143,7 @@ export function BulkLeadOrganizer({
                   Remove from list
                 </button>
               </div>
-              <p className="mt-3 text-xs text-muted">A lead can belong to several lists. Repeated assignments are safely ignored.</p>
+              <p className="mt-3 text-sm text-muted">A lead can belong to several lists. Repeated assignments are safely ignored.</p>
             </>
           ) : (
             <p className="mt-1 text-sm text-muted">Create a lead list above, then select leads here to organize them into it.</p>

@@ -36,7 +36,7 @@ export default function DemoReportsPage() {
       {report.best ? <BestCampaignCallout best={report.best} /> : null}
 
       <section className="card p-6 sm:p-7 mt-6">
-        <h2 className="font-semibold">Outreach trend</h2>
+        <h2>Outreach trend</h2>
         <p className="mt-1 text-xs text-muted">
           Initial sends and replies over the last {report.rangeDays} days. Replies use their own
           scale so a strong day still stands out against send volume.
@@ -50,7 +50,7 @@ export default function DemoReportsPage() {
         <CampaignFunnel steps={report.funnel} />
 
         <section className="card p-6 sm:p-7">
-          <h2 className="font-semibold">When replies arrive</h2>
+          <h2>When replies arrive</h2>
           <p className="mb-4 mt-1 text-xs text-muted">
             Darker cells mean more replies in America/New_York.
           </p>
@@ -58,7 +58,7 @@ export default function DemoReportsPage() {
         </section>
 
         <section className="card p-6 sm:p-7">
-          <h2 className="font-semibold">Best send hours</h2>
+          <h2>Best send hours</h2>
           <p className="mb-4 mt-1 text-xs text-muted">
             Reply rate by the local hour the initial email was sent.
           </p>

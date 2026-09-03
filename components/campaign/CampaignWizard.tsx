@@ -481,7 +481,7 @@ export function CampaignWizard() {
 
         {step === 0 && (
           <>
-            <h2 className="text-xl font-semibold">Name your campaign</h2>
+            <h2 className="text-xl">Name your campaign</h2>
             <label className="mt-4 block text-sm font-medium text-foreground">
               Campaign name
               <input
@@ -504,7 +504,7 @@ export function CampaignWizard() {
 
         {step === 1 && (
           <>
-            <h2 className="text-xl font-semibold">Choose your leads</h2>
+            <h2 className="text-xl">Choose your leads</h2>
             <p className="mt-1 text-sm text-muted">
               Need more leads?{" "}
               <Link href="/leads" className="text-foreground link">
@@ -602,7 +602,7 @@ export function CampaignWizard() {
                   </div>
                 </div>
 
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-sm text-muted">
                   Showing {visibleContacts.length} of {contacts.length} · {selected.size} selected
                 </p>
 
@@ -642,7 +642,7 @@ export function CampaignWizard() {
 
         {step === 2 && (
           <>
-            <h2 className="text-xl font-semibold">Review your list</h2>
+            <h2 className="text-xl">Review your list</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-4">
               {[
                 ["Selected", counts.selected, "text-foreground"],
@@ -652,7 +652,7 @@ export function CampaignWizard() {
               ].map(([label, value, color]) => (
                 <div key={label as string} className="rounded-lg border border-border p-4 text-center">
                   <p className={`text-2xl font-semibold ${color}`}>{value}</p>
-                  <p className="mt-1 text-xs text-muted">{label}</p>
+                  <p className="mt-1 text-sm text-muted">{label}</p>
                 </div>
               ))}
             </div>
@@ -669,7 +669,7 @@ export function CampaignWizard() {
                 <option value="INCLUDE_AFTER_WARNING">Include the ones I ticked, I understand</option>
               </select>
             </label>
-            <p className="mt-3 text-xs text-muted">
+            <p className="mt-3 text-sm text-muted">
               Opted-out, unsubscribed, and bounced people are always excluded: that can&apos;t be
               overridden.
             </p>
@@ -679,7 +679,7 @@ export function CampaignWizard() {
         {step === 3 && editing && (
           <>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-xl">
                 {editing.templateId ? "Edit template" : "New template"}
               </h2>
               <button
@@ -707,7 +707,7 @@ export function CampaignWizard() {
           <>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold">Choose the email</h2>
+                <h2 className="text-xl">Choose the email</h2>
                 <p className="mt-1 text-sm text-muted">
                   Pick one template: or select two or more to <strong>A/B test</strong>. When you pick
                   several, the app rotates them across your recipients and shows which gets more replies.
@@ -783,7 +783,7 @@ export function CampaignWizard() {
               </div>
             )}
             {templateIds.length > 1 && (
-              <p className="mt-3 rounded-lg bg-surface-2 p-2 text-xs font-medium text-foreground">
+              <p className="mt-3 rounded-lg bg-surface-2 p-2 text-sm font-medium text-foreground">
                 A/B test: {templateIds.length} templates will be rotated evenly across recipients.
               </p>
             )}
@@ -806,7 +806,7 @@ export function CampaignWizard() {
 
         {step === 4 && (
           <>
-            <h2 className="text-xl font-semibold">Pace and schedule</h2>
+            <h2 className="text-xl">Pace and schedule</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {(Object.entries(PRESETS) as Array<[keyof typeof PRESETS, (typeof PRESETS)[keyof typeof PRESETS]]>).map(
                 ([key, p]) => (
@@ -818,7 +818,7 @@ export function CampaignWizard() {
                     }`}
                   >
                     <p className="font-medium">{p.label}</p>
-                    <p className="mt-1 text-xs text-muted">{p.detail}</p>
+                    <p className="mt-1 text-sm text-muted">{p.detail}</p>
                   </button>
                 )
               )}
@@ -829,7 +829,7 @@ export function CampaignWizard() {
                 }`}
               >
                 <p className="font-medium">Custom</p>
-                <p className="mt-1 text-xs text-muted">Set the numbers yourself</p>
+                <p className="mt-1 text-sm text-muted">Set the numbers yourself</p>
               </button>
             </div>
 
@@ -908,7 +908,7 @@ export function CampaignWizard() {
                     )
                   )}
                 </div>
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-sm text-muted">
                   Spread pacing divides the window by your daily limit, so the batch fields above
                   only apply in burst mode. This works out to about{" "}
                   <strong className="text-foreground">
@@ -930,13 +930,13 @@ export function CampaignWizard() {
                   ))}
                   {benchmarkTip && <li>{benchmarkTip}</li>}
                 </ul>
-                <p className="mt-1.5 text-xs text-warning">
+                <p className="mt-1.5 text-sm text-warning">
                   You&apos;ll be asked to confirm this again before launch.
                 </p>
               </div>
             )}
 
-            <p className="mt-3 text-xs text-muted">
+            <p className="mt-3 text-sm text-muted">
               Sending happens 9:00 AM to 8:00 PM on weekdays in your timezone (change defaults in
               Settings). Unsent emails automatically roll to the next allowed time.
             </p>
@@ -956,7 +956,7 @@ export function CampaignWizard() {
                   ))}
                 </select>
               </label>
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-sm text-muted">
                 Follow-ups stop automatically when someone replies.{" "}
                 <a href="/sequences/new" target="_blank" className="text-foreground link">
                   Build a sequence
@@ -983,7 +983,7 @@ export function CampaignWizard() {
                 links currently point at a shared hostname. */}
             <div className="mt-3 rounded-lg border border-border p-3">
               <p className="text-sm font-medium text-foreground">Tracking</p>
-              <p className="mt-0.5 text-xs text-muted">
+              <p className="mt-0.5 text-sm text-muted">
                 Both are off by default. Replies are the signal that matters, and they are
                 counted either way.
               </p>
@@ -1049,7 +1049,7 @@ export function CampaignWizard() {
 
         {step === 5 && (
           <>
-            <h2 className="text-xl font-semibold">Check and launch</h2>
+            <h2 className="text-xl">Check and launch</h2>
             <ul className="mt-4 space-y-2 text-sm text-foreground">
               <li className="flex items-start gap-2"><Icon name="check" size={17} className="mt-0.5 shrink-0 text-success" aria-hidden /><span>{counts.selected} will receive this email</span></li>
               {counts.excluded > 0 && (
@@ -1115,7 +1115,7 @@ export function CampaignWizard() {
                 />
               </label>
             )}
-            <h2 className="mt-8 border-t border-border pt-6 text-xl font-semibold">Ready to go</h2>
+            <h2 className="mt-8 border-t border-border pt-6 text-xl">Ready to go</h2>
             <p className="mt-2 text-sm text-muted">
               {counts.selected} emails will be {draftStrategy === "SEND" ? "sent" : "drafted"}{" "}
               at the pace you chose.

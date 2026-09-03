@@ -93,7 +93,7 @@ export default async function RepDetailPage({
         </StatGrid>
       </div>
 
-      <h2 className="section-head font-medium">Campaigns</h2>
+      <h2 className="section-head">Campaigns</h2>
       {campaigns.length === 0 ? (
         <EmptyState
           variant="inline"

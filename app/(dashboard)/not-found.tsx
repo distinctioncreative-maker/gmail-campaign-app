@@ -16,7 +16,7 @@ export default function DashboardNotFound() {
         <Icon name="search" size={22} aria-hidden />
       </span>
       <h1 className="mt-4 text-2xl font-semibold">Not found</h1>
-      <p className="mt-2 text-sm text-muted">
+      <p className="mt-2 text-muted">
         This page does not exist, or what it pointed at was deleted. Deleted campaigns keep their
         history for a while, so check Recently Deleted before assuming it is gone.
       </p>

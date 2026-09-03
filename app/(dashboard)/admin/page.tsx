@@ -57,8 +57,8 @@ export default async function AdminPage() {
           className="card p-6 sm:p-7 card-hover flex items-center justify-between no-underline"
         >
           <div>
-            <h2 className="font-medium">Activity log</h2>
-            <p className="mt-1 text-sm text-muted">
+            <h2>Activity log</h2>
+            <p className="mt-1 text-muted">
               Who changed the sending mode, roles, mailboxes, keys, and webhooks, and who exported
               or deleted data.
             </p>
@@ -72,8 +72,8 @@ export default async function AdminPage() {
           className="card p-6 sm:p-7 card-hover flex items-center justify-between no-underline"
         >
           <div>
-            <h2 className="font-medium">Early-access waitlist</h2>
-            <p className="mt-1 text-sm text-muted">
+            <h2>Early-access waitlist</h2>
+            <p className="mt-1 text-muted">
               View and export everyone who signed up from the public landing page.
             </p>
           </div>
@@ -86,8 +86,8 @@ export default async function AdminPage() {
           className="card p-6 sm:p-7 card-hover flex items-center justify-between no-underline"
         >
           <div>
-            <h2 className="font-medium">Feature checklist</h2>
-            <p className="mt-1 text-sm text-muted">
+            <h2>Feature checklist</h2>
+            <p className="mt-1 text-muted">
               What&apos;s shipped, in beta, or on the roadmap, kept accurate automatically.
             </p>
           </div>

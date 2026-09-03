@@ -52,7 +52,7 @@ export function FeatureSuggestions() {
 
   return (
     <div className="card p-6 sm:p-7">
-      <p className="text-sm text-muted">
+      <p className="text-muted">
         Have an idea to make the app better? Suggest it: the team can see every idea here.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -73,15 +73,15 @@ export function FeatureSuggestions() {
       </div>
 
       {items === null ? (
-        <p className="mt-4 text-sm text-muted">Loading ideas…</p>
+        <p className="mt-4 text-muted">Loading ideas…</p>
       ) : items.length === 0 ? (
-        <p className="mt-4 text-sm text-muted">No suggestions yet: be the first.</p>
+        <p className="mt-4 text-muted">No suggestions yet: be the first.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {items.map((s) => (
             <li key={s.id} className="rounded-lg border border-border p-3">
               <p className="text-sm">{s.text}</p>
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-sm text-muted">
                 {s.authorName} · <LocalTime value={s.createdAt} options={{ dateStyle: "medium" }} />
               </p>
             </li>

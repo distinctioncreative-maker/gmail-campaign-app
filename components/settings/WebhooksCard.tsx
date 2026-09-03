@@ -180,16 +180,16 @@ export function WebhooksCard() {
   if (!endpoints) {
     return (
       <div className="card p-6 sm:p-7">
-        <h2 className="font-medium">Webhooks</h2>
-        <p className="mt-2 text-sm text-muted">Loading…</p>
+        <h2>Webhooks</h2>
+        <p className="mt-2 text-muted">Loading…</p>
       </div>
     );
   }
 
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">Webhooks</h2>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
+      <h2>Webhooks</h2>
+      <p className="mt-1 max-w-2xl text-muted">
         Have Cadence POST to your own service when something happens, so a reply or a bounce reaches
         your CRM without anyone copying it across.
       </p>
@@ -197,7 +197,7 @@ export function WebhooksCard() {
       {secret ? (
         <div className="alert-success mt-4 rounded-lg border p-4">
           <p className="text-sm font-medium text-foreground">Install this signing secret</p>
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-sm text-muted">
             Every delivery carries a{" "}
             <code className="rounded-sm bg-surface-2 px-1 py-0.5">cadence-signature</code> header: an
             HMAC-SHA256 of{" "}
@@ -243,12 +243,12 @@ export function WebhooksCard() {
                     )}
                   </p>
                   {row.description ? (
-                    <p className="mt-0.5 text-xs text-muted">{row.description}</p>
+                    <p className="mt-0.5 text-sm text-muted">{row.description}</p>
                   ) : null}
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 text-sm text-muted">
                     {row.events.map((e) => EVENT_LABELS[e] ?? e).join(", ")}
                   </p>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 text-sm text-muted">
                     {row.lastDeliveryAt === null
                       ? "No deliveries yet"
                       : `Last delivery returned ${row.lastStatus === null ? "no response" : `HTTP ${row.lastStatus}`}`}
@@ -257,7 +257,7 @@ export function WebhooksCard() {
                       : ""}
                   </p>
                   {row.disabledReason ? (
-                    <p className="mt-1 text-xs text-warning">{row.disabledReason}</p>
+                    <p className="mt-1 text-sm text-warning">{row.disabledReason}</p>
                   ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-1">
@@ -288,7 +288,7 @@ export function WebhooksCard() {
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-sm text-muted">No endpoints yet.</p>
+        <p className="mt-4 text-muted">No endpoints yet.</p>
       )}
 
       <div className="mt-5 border-t border-border pt-4">
@@ -327,7 +327,7 @@ export function WebhooksCard() {
               </label>
             ))}
           </div>
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-sm text-muted">
             https only, and a public hostname. Deliveries are retried for about two hours, then given
             up on.
           </p>
@@ -356,7 +356,7 @@ export function WebhooksCard() {
             <ul className="mt-2 space-y-2">
               {deliveries.map((row) => (
                 <li key={row.deliveryId} className="rounded-lg border border-border p-3">
-                  <p className="flex flex-wrap items-center gap-2 text-xs">
+                  <p className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="font-mono">{row.event}</span>
                     <span className={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</span>
                     <span className="text-muted">

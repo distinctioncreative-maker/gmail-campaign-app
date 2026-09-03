@@ -122,7 +122,7 @@ export default async function ContactDetailPage({
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <div className="card p-6 sm:p-7">
-          <h2 className="font-medium">Details</h2>
+          <h2>Details</h2>
           <dl className="mt-3 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
             <dt className="text-muted">Email</dt>
             <dd>{contact.email}</dd>
@@ -163,9 +163,9 @@ export default async function ContactDetailPage({
         </div>
 
         <div className="card p-6 sm:p-7">
-          <h2 className="font-medium">Outreach history</h2>
+          <h2>Outreach history</h2>
           {contact.campaignCount === 0 && contact.emailsSentCount === 0 ? (
-            <p className="mt-3 text-sm text-muted">
+            <p className="mt-3 text-muted">
               This person has not been included in any of your campaigns yet.
             </p>
           ) : (
@@ -192,7 +192,7 @@ export default async function ContactDetailPage({
                 : `On your do-not-email list (${suppression?.reason.replaceAll("_", " ").toLowerCase()}).`}
             </p>
           )}
-          <p className="mt-4 text-xs text-muted">
+          <p className="mt-4 text-sm text-muted">
             Reply counts update on each reply scan. Use “Scan for replies” on the Reports page to
             sync everything now.
           </p>

@@ -116,7 +116,7 @@ function Leaderboard({
                   </span>
                 )}
               </div>
-              <p className="truncate text-xs text-muted">
+              <p className="truncate text-sm text-muted">
                 {s.sent} sent · {s.replies} replies · {s.campaigns} campaign{s.campaigns === 1 ? "" : "s"}
                 {s.lastActivityAt && (
                   <> · <LocalTime value={s.lastActivityAt} /></>
@@ -241,11 +241,11 @@ export default async function TeamPage() {
               <section key={team.teamId} className={depth > 0 ? "border-l border-border pl-3 sm:pl-6" : ""}>
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-semibold">
+                    <h2 className="text-lg">
                       {depth > 0 && <span aria-hidden className="mr-2 text-muted">↳</span>}
                       {team.name}
                     </h2>
-                    <p className="text-xs text-muted">
+                    <p className="text-sm text-muted">
                       Lead: {team.leadUserId ? (emailById.get(team.leadUserId) ?? "Not available") : "none yet"} ·{" "}
                       {roster.length} rep{roster.length === 1 ? "" : "s"}
                     </p>
@@ -262,8 +262,8 @@ export default async function TeamPage() {
 
           {isAdmin && unassigned.length > 0 && (
             <section>
-              <h2 className="mb-1 text-lg font-semibold">Not on a team</h2>
-              <p className="mb-3 text-xs text-muted">
+              <h2 className="mb-1 text-lg">Not on a team</h2>
+              <p className="mb-3 text-sm text-muted">
                 Use “Add a rep…” on a team above to place them.
               </p>
               <Leaderboard rows={rowsFor(unassigned)} teamId={null} canManage={false} />

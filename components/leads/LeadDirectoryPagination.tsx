@@ -41,7 +41,7 @@ export function LeadDirectoryPagination({
       className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-3"
       aria-label="Lead directory pages"
     >
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         Page {page.toLocaleString()} · {shown.toLocaleString()} shown · {total.toLocaleString()} total
       </p>
       <div className="flex gap-2">

@@ -59,7 +59,7 @@ export function ConsentBackfill({ unrecorded }: { unrecorded: number }) {
 
   if (done !== null) {
     return (
-      <p className="mt-2 text-xs text-success">
+      <p className="mt-2 text-sm text-success">
         Recorded for {done.toLocaleString()} lead{done === 1 ? "" : "s"}.
       </p>
     );
@@ -79,7 +79,7 @@ export function ConsentBackfill({ unrecorded }: { unrecorded: number }) {
 
   return (
     <div className="mt-3 rounded-lg border border-border p-3">
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         Applies only to leads with nothing recorded. Anything already answered stays as it is.
       </p>
       <div className="mt-2 grid gap-1.5">
@@ -101,7 +101,7 @@ export function ConsentBackfill({ unrecorded }: { unrecorded: number }) {
           </label>
         ))}
       </div>
-      {error && <p className="mt-2 text-xs text-danger">{error}</p>}
+      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
       <div className="mt-3 flex items-center gap-3">
         <button
           type="button"

@@ -159,7 +159,7 @@ export function MobileNav({
           >
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-border" aria-hidden />
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-muted">Menu</h2>
+              <h2 className="text-sm text-muted">Menu</h2>
               <button
                 ref={closeRef}
                 onClick={() => setMoreOpen(false)}

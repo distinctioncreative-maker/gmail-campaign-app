@@ -112,7 +112,7 @@ export default async function ReportsPage({
       {report.best ? <BestCampaignCallout best={report.best} /> : null}
 
       {report.scanIsCapped ? (
-        <p className="mt-3 text-xs text-muted">
+        <p className="mt-3 text-sm text-muted">
           Timing charts analyze the {MAX_CAMPAIGNS_SCANNED} most recently updated campaigns with
           sends. Headline totals and the comparison table still include every campaign in this
           view.
@@ -121,8 +121,8 @@ export default async function ReportsPage({
 
       {/* Hero chart: effort in, conversations out, on one canvas. */}
       <section className="card p-6 sm:p-7 mt-6">
-        <h2 className="font-semibold">Outreach trend</h2>
-        <p className="mt-1 text-xs text-muted">
+        <h2>Outreach trend</h2>
+        <p className="mt-1 text-sm text-muted">
           Initial sends and replies from the selected cohort over the last {rangeDays} days.
           Replies use their own scale so a strong day still stands out against send volume.
         </p>
@@ -135,16 +135,16 @@ export default async function ReportsPage({
         <CampaignFunnel steps={report.funnel} />
 
         <section className="card p-6 sm:p-7">
-          <h2 className="font-semibold">When replies arrive</h2>
-          <p className="mb-4 mt-1 text-xs text-muted">
+          <h2>When replies arrive</h2>
+          <p className="mb-4 mt-1 text-sm text-muted">
             Darker cells mean more replies in {ctx.user.timezone}.
           </p>
           <ReplyHeatmap grid={report.heatmap} />
         </section>
 
         <section className="card p-6 sm:p-7">
-          <h2 className="font-semibold">Best send hours</h2>
-          <p className="mb-4 mt-1 text-xs text-muted">
+          <h2>Best send hours</h2>
+          <p className="mb-4 mt-1 text-sm text-muted">
             Reply rate by the local hour the initial email was sent. Hours need at least two sends
             to appear.
           </p>

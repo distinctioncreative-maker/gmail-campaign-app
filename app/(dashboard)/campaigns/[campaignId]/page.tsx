@@ -251,11 +251,11 @@ export default async function CampaignDetailPage({
             </div>
             <div className="text-right">
               <p className="text-2xl font-semibold tabular-nums text-foreground">{pct}%</p>
-              <p className="text-xs text-muted">{remaining.toLocaleString()} remaining</p>
+              <p className="text-sm text-muted">{remaining.toLocaleString()} remaining</p>
             </div>
           </div>
           <Meter value={pct} tone="good" height={12} className="mt-4 w-full" />
-          <p className="mt-3 text-xs leading-relaxed text-muted">
+          <p className="mt-3 text-sm leading-relaxed text-muted">
             Follow-up sends are reported separately and do not inflate campaign completion.
           </p>
         </section>
@@ -334,7 +334,7 @@ export default async function CampaignDetailPage({
               unique clicker{clickedCount === 1 ? "" : "s"}
             </p>
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-muted">
+          <p className="mt-2 text-sm leading-relaxed text-muted">
             Open detections can include privacy preloading by email clients. Use replies and clicks
             as stronger intent signals.
           </p>
@@ -370,7 +370,7 @@ export default async function CampaignDetailPage({
 
       {abRows.length > 0 && (
         <div className="card p-6 sm:p-7">
-          <h2 className="font-medium">Template performance (A/B)</h2>
+          <h2>Template performance (A/B)</h2>
           <DataTable
             className="mt-3"
             head={
@@ -414,7 +414,7 @@ export default async function CampaignDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
         <div id="recipients" className="scroll-mt-24">
-          <h2 className="mb-3 font-medium">Recipients</h2>
+          <h2 className="mb-3">Recipients</h2>
           <RecipientTable
             campaignId={campaign.campaignId}
             campaignStatus={campaign.status}
@@ -433,10 +433,10 @@ export default async function CampaignDetailPage({
           />
         </div>
         <div id="activity" className="scroll-mt-24">
-          <h2 className="mb-3 font-medium">Activity</h2>
+          <h2 className="mb-3">Activity</h2>
           <div className="card p-5 sm:p-6">
             {events.length === 0 ? (
-              <p className="text-sm text-muted">Nothing yet.</p>
+              <p className="text-muted">Nothing yet.</p>
             ) : (
               <ul className="space-y-3">
                 {events.map((e) => (

@@ -110,8 +110,8 @@ export function ApiKeysCard() {
   if (!keys) {
     return (
       <div className="card p-6 sm:p-7">
-        <h2 className="font-medium">API keys</h2>
-        <p className="mt-2 text-sm text-muted">Loading…</p>
+        <h2>API keys</h2>
+        <p className="mt-2 text-muted">Loading…</p>
       </div>
     );
   }
@@ -120,8 +120,8 @@ export function ApiKeysCard() {
 
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">API keys</h2>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
+      <h2>API keys</h2>
+      <p className="mt-1 max-w-2xl text-muted">
         For your own code and integrations. Send a key as{" "}
         <code className="rounded-sm bg-surface-2 px-1 py-0.5 text-xs">Authorization: Bearer</code> to{" "}
         <code className="rounded-sm bg-surface-2 px-1 py-0.5 text-xs">/api/v1/leads</code>.
@@ -130,7 +130,7 @@ export function ApiKeysCard() {
       {revealed ? (
         <div className="alert-success mt-4 rounded-lg border p-4">
           <p className="text-sm font-medium text-foreground">Copy your key now</p>
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-sm text-muted">
             Cadence stores only a hash of it, so this is the only time it can be shown. If you lose
             it, revoke it and create another.
           </p>
@@ -169,7 +169,7 @@ export function ApiKeysCard() {
                   ) : null}
                 </p>
                 <p className="mt-0.5 font-mono text-xs text-muted">{row.display}</p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-sm text-muted">
                   {row.scopeSummary}
                   {row.lastUsedAt === null ? ", never used" : ""}
                 </p>
@@ -185,7 +185,7 @@ export function ApiKeysCard() {
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-sm text-muted">No keys yet.</p>
+        <p className="mt-4 text-muted">No keys yet.</p>
       )}
 
       <div className="mt-5 border-t border-border pt-4">
@@ -227,7 +227,7 @@ export function ApiKeysCard() {
             ))}
           </div>
           {/* Read is not implied by write on purpose: see lib/apiKeys/token.ts. */}
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-sm text-muted">
             Write access does not include read access. Tick both if the integration needs both.
           </p>
         </fieldset>

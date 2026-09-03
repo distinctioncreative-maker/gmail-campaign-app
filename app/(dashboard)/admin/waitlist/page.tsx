@@ -45,7 +45,7 @@ export default async function WaitlistPage() {
         }
       />
 
-      <p className="text-sm text-muted">
+      <p className="text-muted">
         <Link href="/admin" className="text-foreground link">
           ← Back to Administration
         </Link>

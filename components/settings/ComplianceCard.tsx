@@ -48,7 +48,7 @@ export async function ComplianceCard() {
   return (
     <div className="card p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-medium">Sending compliance</h2>
+        <h2>Sending compliance</h2>
         <span
           className={`badge ${
             blocking > 0
@@ -65,7 +65,7 @@ export async function ComplianceCard() {
               : "Ready to send, one thing to tidy"}
         </span>
       </div>
-      <p className="mt-1 text-sm text-muted">
+      <p className="mt-1 text-muted">
         What the law and Gmail require of a commercial sender, and where you stand on each.
       </p>
 
@@ -77,7 +77,7 @@ export async function ComplianceCard() {
           why="Required by CAN-SPAM and its equivalents. Campaigns will not launch without it."
         >
           {!hasAddress && (
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-sm text-muted">
               Add it under{" "}
               <Link
                 href="/settings#sender-profile"
@@ -97,7 +97,7 @@ export async function ComplianceCard() {
           why="Every message carries this sentence alongside the one-click unsubscribe. Campaigns will not launch without it."
         >
           {!hasOptOut && (
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-sm text-muted">
               Add it under{" "}
               <Link
                 href="/settings#sender-profile"
@@ -117,7 +117,7 @@ export async function ComplianceCard() {
         >
           {!consentClear && (
             <>
-              <p className="mt-2 text-xs text-muted">
+              <p className="mt-2 text-sm text-muted">
                 {coverage.unrecorded.toLocaleString()} of {coverage.total.toLocaleString()} leads
                 were imported before this was recorded. New imports ask automatically.
               </p>
@@ -183,7 +183,7 @@ function ComplianceRow({
             </span>
           )}
         </p>
-        <p className="mt-0.5 text-xs text-muted">{why}</p>
+        <p className="mt-0.5 text-sm text-muted">{why}</p>
         {children}
       </div>
     </li>

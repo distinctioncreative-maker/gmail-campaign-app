@@ -78,8 +78,8 @@ export default async function LeadListDetailPage({
 
       {/* Add leads to this list: duplicates already in the list are skipped */}
       <div>
-        <h2 className="mb-1 font-medium">Add leads to this list</h2>
-        <p className="mb-3 text-sm text-muted">
+        <h2 className="mb-1">Add leads to this list</h2>
+        <p className="mb-3 text-muted">
           Paste or upload leads: anyone already in “{list.name}” is skipped, so you can keep topping
           it up safely.
         </p>
@@ -87,7 +87,7 @@ export default async function LeadListDetailPage({
       </div>
 
       <div>
-        <h2 className="section-head font-medium">Leads in this list ({totalContacts.toLocaleString()})</h2>
+        <h2 className="section-head">Leads in this list ({totalContacts.toLocaleString()})</h2>
         {totalContacts === 0 ? (
           <EmptyState
             variant="inline"

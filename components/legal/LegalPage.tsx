@@ -78,7 +78,7 @@ export function LegalSection({
 }) {
   return (
     <section>
-      <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+      <h2 className="text-xl text-foreground">{title}</h2>
       <div className="mt-3 space-y-3">{children}</div>
     </section>
   );

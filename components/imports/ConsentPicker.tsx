@@ -51,7 +51,7 @@ export function ConsentPicker({
       <legend className="px-1 text-sm font-medium text-foreground">
         Where did these leads come from?
       </legend>
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         Recorded with the import so you can answer it later if a recipient or a provider ever
         asks. It takes one click and you can change it per list.
       </p>

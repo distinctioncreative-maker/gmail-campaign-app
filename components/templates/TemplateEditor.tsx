@@ -337,7 +337,7 @@ export function TemplateEditor({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-2 px-4 py-3 sm:px-6">
           <div>
             <p className="text-sm font-semibold text-foreground">Email workspace</p>
-            <p className="text-xs text-muted">Compose, personalize, validate, and test from one screen.</p>
+            <p className="text-sm text-muted">Compose, personalize, validate, and test from one screen.</p>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted">
             <span className="rounded-full border border-border bg-surface px-2.5 py-1">
@@ -402,7 +402,7 @@ export function TemplateEditor({
             placeholder="Quick question for {{business_name}}"
             className="mt-1 w-full"
           />
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-sm text-muted">
             Placeholders work in the subject too: personalize it the same way as the body.
           </p>
           {/* Reads the subject and body together, because a writer varying
@@ -621,7 +621,7 @@ export function TemplateEditor({
                     className="block w-full p-3 text-left hover:bg-surface-2 disabled:opacity-50"
                   >
                     <p className="text-sm font-medium">{d.subject}</p>
-                    <p className="truncate text-xs text-muted">{d.snippet}</p>
+                    <p className="truncate text-sm text-muted">{d.snippet}</p>
                   </button>
                 ))
               )}
@@ -712,7 +712,7 @@ export function TemplateEditor({
         ) : preview ? (
           <>
             {preview.unresolved.length > 0 && (
-              <p className="mt-3 rounded-lg bg-warning-soft p-2 text-xs text-warning">
+              <p className="mt-3 rounded-lg bg-warning-soft p-2 text-sm text-warning">
                 Some placeholders have no value yet:{" "}
                 {preview.unresolved.map((u) => `{{${u}}}`).join(", ")}: fill in your sender
                 profile in Settings, or they&apos;ll show as-is in sent emails.

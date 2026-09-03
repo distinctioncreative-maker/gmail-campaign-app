@@ -77,8 +77,8 @@ export function InviteTeamCard({ solo = false }: { solo?: boolean }) {
 
   return (
     <div className="card p-6 sm:p-7">
-      <h2 className="font-medium">{solo ? "Invite a teammate" : "Invite teammates"}</h2>
-      <p className="mt-1 text-sm text-muted">
+      <h2>{solo ? "Invite a teammate" : "Invite teammates"}</h2>
+      <p className="mt-1 text-muted">
         {solo
           ? "Add someone by email to turn your workspace into a shared team. They join automatically when they sign in."
           : "Add teammates by email. They join your workspace automatically the next time they sign in."}
