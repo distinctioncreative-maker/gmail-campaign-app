@@ -1187,6 +1187,89 @@ a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.1
   .editor-tool { min-height: 44px; min-width: 44px; }
 }
 
+/* ── The Cadence Line ─────────────────────────────────────────────
+   Geometry for components/ui/CadenceLine.tsx. The shapes live in the
+   component; the behaviour lives here, once, so a call site cannot animate it
+   differently from every other call site.
+
+   Only `loading` moves. A loading state is a claim that work is happening, so
+   motion there carries information. A separator or a diagram that animated on
+   a loop would be motion in peripheral vision carrying nothing, which is the
+   thing this product deliberately does not do. */
+
+.cadence-separator {
+  width: 100%;
+  color: var(--border);
+  opacity: 0.9;
+}
+
+.cadence-flow {
+  width: 100%;
+}
+
+.cadence-loading {
+  display: inline-block;
+  width: 4.5rem;
+  color: var(--primary);
+}
+.cadence-loading-svg {
+  display: block;
+  width: 100%;
+  height: 0.9rem;
+}
+/* A pulse travelling the length of each lane, staggered, so the four paths
+   read as one system moving rather than four things blinking. The dash is
+   drawn on a very long gap so exactly one segment is ever visible per lane. */
+.cadence-loading-path {
+  stroke-dasharray: 42 260;
+  stroke-dashoffset: 302;
+  animation: cadence-travel 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes cadence-travel {
+  to { stroke-dashoffset: 0; }
+}
+
+/* The progress bar. A track, a fill, and a node at the leading edge, which is
+   what makes it read as something in motion rather than as a measurement. */
+.cadence-progress {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 3px;
+}
+.cadence-progress-track,
+.cadence-progress-fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: var(--radius-full);
+}
+.cadence-progress-track {
+  right: 0;
+  background: var(--surface-2);
+}
+.cadence-progress-fill {
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  transition: width var(--dur-slow) var(--ease-out);
+}
+.cadence-progress-node {
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: var(--radius-full);
+  background: var(--primary-hover);
+  transform: translateY(-50%);
+  transition: left var(--dur-slow) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cadence-loading-path { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; opacity: 0.5; }
+  .cadence-progress-fill,
+  .cadence-progress-node { transition: none; }
+}
+
 /* ── Mobile touch polish ─────────────────────────────────────────── */
 .overflow-x-auto, .overflow-y-auto { -webkit-overflow-scrolling: touch; }
 /* Comfortable tap targets on touch devices. */
