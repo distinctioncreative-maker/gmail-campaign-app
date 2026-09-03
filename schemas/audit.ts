@@ -42,6 +42,11 @@ export const AUDIT_ACTIONS = [
   "session.revoked_everywhere",
   // Identity.
   "workspace.renamed",
+  // Compliance decisions. An import that overrides the opt-out column in an
+  // uploaded file is a judgement someone made on a particular day about what
+  // that column meant, and it is exactly the kind of thing that gets asked
+  // about later. The reason is recorded with it.
+  "leads.opt_out_column_overridden",
 ] as const;
 export const AuditActionSchema = z.enum(AUDIT_ACTIONS);
 export type AuditAction = z.infer<typeof AuditActionSchema>;

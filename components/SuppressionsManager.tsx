@@ -17,7 +17,7 @@ export interface SuppressionRow {
 }
 
 const REASON_LABELS: Record<string, string> = {
-  EMAIL_OPT_OUT: "Salesforce opt-out",
+  EMAIL_OPT_OUT: "Opted out in an imported file",
   UNSUBSCRIBED: "Unsubscribed",
   HARD_BOUNCE: "Bounced",
   MANUAL: "Added manually",

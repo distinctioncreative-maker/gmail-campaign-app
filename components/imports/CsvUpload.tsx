@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { LeadPreviewTable } from "./LeadPreviewTable";
+import { OptOutColumnChoice } from "./OptOutColumnChoice";
 import type { ClassifiedLead } from "./leadBadges";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -28,6 +29,9 @@ interface CsvState {
   fields: string[];
   leads: ClassifiedLead[];
   globalWarnings: string[];
+  /** Whether this file has an opt-out column at all, and how many it marks. */
+  optOutColumn: boolean;
+  fileOptOutCount: number;
 }
 
 export function CsvUpload({ listId }: { listId?: string }) {
@@ -38,15 +42,22 @@ export function CsvUpload({ listId }: { listId?: string }) {
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
+  const [ignoreFileOptOut, setIgnoreFileOptOut] = useState(false);
+  const [optOutReason, setOptOutReason] = useState("");
 
-  async function parse(csvText: string, mapping?: Record<string, string>, saveMapping = false) {
+  async function parse(
+    csvText: string,
+    mapping?: Record<string, string>,
+    saveMapping = false,
+    ignoreOptOut = ignoreFileOptOut
+  ) {
     setBusy(true);
     setError(null);
     try {
       const res = await fetch("/api/leads/parse-csv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ csvText, mapping, saveMapping }),
+        body: JSON.stringify({ csvText, mapping, saveMapping, ignoreFileOptOut: ignoreOptOut }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Could not read that file.");
@@ -58,8 +69,22 @@ export function CsvUpload({ listId }: { listId?: string }) {
     }
   }
 
+  /**
+   * Re-parse rather than filter client-side. The classification that decides
+   * whether a row can even be ticked is computed on the server against this
+   * workspace's suppressions, so the preview has to be rebuilt there or it
+   * would show a different answer from the one the import will apply.
+   */
+  function changeOptOutChoice(next: boolean) {
+    setIgnoreFileOptOut(next);
+    if (!next) setOptOutReason("");
+    if (state) void parse(state.csvText, state.mapping, false, next);
+  }
+
   async function handleFile(file: File) {
     setImportSummary(null);
+    setIgnoreFileOptOut(false);
+    setOptOutReason("");
     if (!/\.(csv|txt)$/i.test(file.name)) {
       setError("Please choose a .csv file.");
       return;
@@ -157,12 +182,25 @@ export function CsvUpload({ listId }: { listId?: string }) {
             </div>
           )}
 
+          {state.optOutColumn && state.fileOptOutCount > 0 && (
+            <OptOutColumnChoice
+              markedCount={state.fileOptOutCount}
+              ignoring={ignoreFileOptOut}
+              reason={optOutReason}
+              onChange={changeOptOutChoice}
+              onReasonChange={setOptOutReason}
+              disabled={busy}
+            />
+          )}
+
           {error && <p className="mb-3 text-sm text-danger">{error}</p>}
 
           <LeadPreviewTable
             leads={state.leads}
             globalWarnings={state.globalWarnings}
             listId={listId}
+            ignoreFileOptOut={ignoreFileOptOut}
+            optOutOverrideReason={optOutReason}
             onDone={(summary) => {
               setImportSummary(summary);
               setState(null);

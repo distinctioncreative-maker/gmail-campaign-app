@@ -70,6 +70,15 @@ const DEFINITIONS: Record<AuditAction, ActionDefinition> = {
     category: "ACCESS",
     weight: "NOTABLE",
   },
+  // NOTABLE rather than CRITICAL: it is a deliberate, reasoned decision about
+  // what a column in someone else's export meant, not a change to what this
+  // workspace promises anyone. A real unsubscribe cannot be overridden at all,
+  // so there is no entry for that and there never should be.
+  "leads.opt_out_column_overridden": {
+    label: "Imported past a file's opt-out column",
+    category: "DATA",
+    weight: "NOTABLE",
+  },
   "workspace.renamed": { label: "Workspace renamed", category: "IDENTITY", weight: "ROUTINE" },
 };
 

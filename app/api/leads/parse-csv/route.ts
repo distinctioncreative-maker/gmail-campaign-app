@@ -12,6 +12,12 @@ const BodySchema = z.object({
   csvText: z.string().min(1).max(5_000_000),
   mapping: z.record(z.string(), z.enum(CSV_FIELDS)).optional(),
   saveMapping: z.boolean().optional(),
+  /**
+   * Treat this file's opt-out column as information rather than as a promise.
+   * See the note on classifyLead: it reaches a column in an uploaded file and
+   * nothing else. A real unsubscribe, bounce or complaint is untouched.
+   */
+  ignoreFileOptOut: z.boolean().optional(),
 });
 
 /**
@@ -22,7 +28,12 @@ const BodySchema = z.object({
 export const POST = handleApiErrors(async (req: NextRequest) => {
   const ctx = await requireUser();
   await enforceUserRateLimit(ctx, RATE_LIMITS.leadParse);
-  const { csvText, mapping, saveMapping: shouldSave } = BodySchema.parse(await req.json());
+  const {
+    csvText,
+    mapping,
+    saveMapping: shouldSave,
+    ignoreFileOptOut = false,
+  } = BodySchema.parse(await req.json());
 
   let effectiveMapping: CsvMapping | undefined = mapping;
   if (!effectiveMapping) {
@@ -49,13 +60,19 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
   const classified = await Promise.all(
     result.leads.map(async (lead) => ({
       ...lead,
-      ...(await classifyLead(ctx, lead)),
+      ...(await classifyLead(ctx, lead, { ignoreFileOptOut })),
     }))
   );
 
   // Verified before anything is written, so a dead domain or a typo is
   // something the customer sees in the preview rather than a bounce later.
   const { verified, counts } = await verifyLeadBatch(classified);
+
+  // Whether the file carries the column at all, and how many rows it marks.
+  // The import screen only offers the choice when there is something to
+  // choose about, which is the difference between a control and clutter.
+  const optOutColumn = Object.values(result.mapping).includes("emailOptOut");
+  const fileOptOutCount = result.leads.filter((lead) => lead.emailOptOut === true).length;
 
   return NextResponse.json({
     headers: result.headers,
@@ -65,5 +82,8 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     totalRecords: verified.length,
     globalWarnings: result.globalWarnings,
     verification: counts,
+    optOutColumn,
+    fileOptOutCount,
+    ignoringFileOptOut: ignoreFileOptOut,
   });
 });

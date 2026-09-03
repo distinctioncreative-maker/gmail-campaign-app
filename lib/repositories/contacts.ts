@@ -456,8 +456,14 @@ export async function upsertFromParsedLead(
   consent: { basis: ConsentBasis; note: string } = {
     basis: "UNKNOWN",
     note: "",
-  }
+  },
+  options: { ignoreFileOptOut?: boolean } = {}
 ): Promise<{ contact: Contact; existed: boolean }> {
+  // The file's opt-out column was judged not to apply to this import, so the
+  // flag it would have set does not get written and, on a re-import, does not
+  // get inherited either. Without the second half the override would work once
+  // and then be silently undone by whatever the first import already stored.
+  const optOutFromFile = options.ignoreFileOptOut === true ? false : lead.emailOptOut;
   if (!lead.email || !lead.emailValid) {
     throw new Error("Cannot import a lead without a valid email");
   }
@@ -483,7 +489,7 @@ export async function upsertFromParsedLead(
       phone: lead.phone ?? existing.phone,
       normalizedPhone: lead.phone ? normalizePhone(lead.phone) : existing.normalizedPhone,
       requestedAmount: lead.requestedAmount ?? existing.requestedAmount,
-      emailOptOut: lead.emailOptOut ?? existing.emailOptOut,
+      emailOptOut: options.ignoreFileOptOut === true ? false : (lead.emailOptOut ?? existing.emailOptOut),
       sourceUpdatedAt: parseSourceTimestamp(lead.sourceUpdatedAt) ?? existing.sourceUpdatedAt,
       ...(adoptsBasis
         ? {
@@ -529,7 +535,7 @@ export async function upsertFromParsedLead(
     sourceCreatedAt: parseSourceTimestamp(lead.sourceCreatedAt),
     sourceUpdatedAt: parseSourceTimestamp(lead.sourceUpdatedAt),
     sourceRecordId: lead.sourceRecordId,
-    emailOptOut: lead.emailOptOut ?? false,
+    emailOptOut: optOutFromFile ?? false,
     neverSwitchedFromNew: lead.neverSwitchedFromNew,
     rawSource: lead.rawText,
     importId,

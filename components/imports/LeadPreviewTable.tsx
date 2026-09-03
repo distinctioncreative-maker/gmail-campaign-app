@@ -29,12 +29,17 @@ export function LeadPreviewTable({
   leads,
   globalWarnings,
   listId,
+  ignoreFileOptOut = false,
+  optOutOverrideReason = "",
   onDone,
   onStartOver,
 }: {
   leads: ClassifiedLead[];
   globalWarnings: string[];
   listId?: string;
+  /** Decided above this component, on the file as a whole. See OptOutColumnChoice. */
+  ignoreFileOptOut?: boolean;
+  optOutOverrideReason?: string;
   onDone: (summary: string) => void;
   onStartOver: () => void;
 }) {
@@ -149,6 +154,11 @@ export function LeadPreviewTable({
             // lands with no recorded basis.
             consentBasis,
             consentNote,
+            // Same reasoning as the consent declaration above: a large file is
+            // several requests, and every one of them has to carry the same
+            // decision or the tail of the list gets the default instead.
+            ignoreFileOptOut,
+            optOutOverrideReason,
           }),
         });
         const body = await res.json();
