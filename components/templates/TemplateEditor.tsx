@@ -650,7 +650,7 @@ export function TemplateEditor({
           </div>
         )}
 
-        <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-6 flex flex-wrap gap-2 border-t border-border bg-surface/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
+        <div className="sticky bottom-0 z-raised -mx-4 -mb-4 mt-6 flex flex-wrap gap-2 border-t border-border bg-surface/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
           <Button
             onClick={save}
             disabled={busy || !canSave}

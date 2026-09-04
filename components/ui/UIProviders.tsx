@@ -191,7 +191,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
         {children}
 
         {/* Toast stack */}
-        <div className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2">
+        <div className="pointer-events-none fixed bottom-4 right-4 z-toast flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2">
           {toasts.map((t) => (
             <div
               key={t.id}
@@ -211,7 +211,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
 
         {/* Confirm and prompt */}
         {confirmState && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-modal flex items-center justify-center p-4">
             <div
               className="absolute inset-0 bg-overlay"
               onClick={() => closeConfirm(null)}

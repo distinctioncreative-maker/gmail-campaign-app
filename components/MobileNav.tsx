@@ -92,7 +92,7 @@ export function MobileNav({
       {/* Bottom tab bar */}
       <nav
         aria-label="Primary"
-        className="glass fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-border sm:hidden"
+        className="glass fixed inset-x-0 bottom-0 z-chrome flex items-stretch border-t border-border sm:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {primary.map((item) => {
@@ -145,7 +145,7 @@ export function MobileNav({
 
       {/* More sheet */}
       {moreOpen && (
-        <div className="fixed inset-0 z-40 sm:hidden" role="dialog" aria-modal="true" aria-label="More menu">
+        <div className="fixed inset-0 z-overlay sm:hidden" role="dialog" aria-modal="true" aria-label="More menu">
           <div
             className="absolute inset-0 bg-foreground/40 backdrop-blur-sm animate-[rise_0.2s_ease]"
             onClick={() => setMoreOpen(false)}

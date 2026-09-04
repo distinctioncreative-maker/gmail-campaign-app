@@ -285,9 +285,16 @@ describe("premium shared design system", () => {
 
     expect(accountMenu).toContain("Switch or sign out");
     expect(accountMenu).toContain("account menu. Switch account or sign out.");
-    expect(accountMenu).toContain('aria-label="Account actions"');
-    expect(accountMenu).toContain("max-h-[calc(100dvh-2rem)]");
-    expect(accountMenu).toContain('event.key === "ArrowDown"');
+    // The panel's name, height cap and arrow-key roving used to be written out
+    // here, because this component wrote them out itself. They now come from
+    // the shared Popover, which is where the rule belongs and where
+    // tests/unit/popover.test.ts holds it. What stays here is that this menu
+    // still gets them, which a copy of the old markup would no longer satisfy.
+    expect(accountMenu).toContain('label="Account actions"');
+    expect(accountMenu).toMatch(/<Popover/);
+    expect(accountMenu).toContain("{...props}");
+    expect(read("app/globals.css")).toContain("max-height: calc(100dvh - 6rem)");
+    expect(read("components/ui/Popover.tsx")).toContain('event.key === "ArrowDown"');
     expect(accountMenu).toContain("text-danger");
     expect(accountMenu).toContain("hover:bg-danger-soft");
     expect(accountMenu).not.toMatch(/text-red-(?:400|600)|hover:bg-red-50/);

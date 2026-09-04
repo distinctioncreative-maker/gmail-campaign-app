@@ -23,7 +23,7 @@ export function HelpTip({ text, label }: { text: string; label?: string }) {
       {open && (
         <span
           role="tooltip"
-          className="absolute bottom-full left-1/2 z-30 mb-1.5 w-56 -translate-x-1/2 rounded-lg bg-foreground px-3 py-2 text-xs font-normal leading-relaxed text-background shadow-lg"
+          className="absolute bottom-full left-1/2 z-popover mb-1.5 w-56 -translate-x-1/2 rounded-lg bg-foreground px-3 py-2 text-xs font-normal leading-relaxed text-background shadow-lg"
         >
           {text}
         </span>

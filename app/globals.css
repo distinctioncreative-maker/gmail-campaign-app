@@ -148,7 +148,7 @@
   /* The accent ON the dark bands. Indigo darkens for light paper and has to
      come back up on ink, exactly as it does in the app's two themes. */
   --marketing-primary-on-ink: #6d7cff;
-  /* Matching --info, which is the brass. The public stylesheet references
+  /* Matching --info, which is now a neutral. The public stylesheet references
      these in several `color-mix()` calls; dropping them silently invalidates
      the whole shorthand those calls sit in, which is how the hero once lost
      its background entirely and rendered light text on light paper. */
@@ -168,7 +168,8 @@
   --marketing-success: #0b6e50;
   --marketing-success-soft: #ddebe6;
   /* Money is the copy colour, matching --revenue. Anything on the public page
-     that wants the accent should reach for --marketing-brass-ink by name. */
+     that wants the accent should reach for --marketing-primary, or
+     --marketing-primary-on-ink inside a dark band. */
   --marketing-revenue: #0d1017;
   --marketing-revenue-soft: #e8ebf1;
   --marketing-danger: #c03024;
@@ -212,8 +213,26 @@
   --radius-md: 10px;  /* controls: buttons, inputs, selects, icon tiles */
   --radius-lg: 14px;  /* cards, panels, list rows, large icon tiles */
   --radius-xl: 20px;  /* held in reserve; nothing should reach for it */
-  --radius-2xl: 28px; /* dialogs, popovers, page-level hero surfaces */
+  --radius-2xl: 28px; /* dialogs and page-level hero surfaces */
   --radius-full: 999px;
+
+  /* Stacking order.
+     Seven z-indexes were in use (10, 30, 40, 50, 60, 70, 100), none named and
+     none written down, so every new overlay picked its number by looking at a
+     neighbour and adding. That is survivable until two things that must not
+     overlap are chosen independently and land on the same rung.
+
+     Note that `.glass` sets backdrop-filter, which creates a stacking context:
+     a panel inside the top bar orders against the bar's other children, never
+     against the page. So a popover's rung is about its siblings, and the bar's
+     rung is what decides whether the whole thing clears the content. */
+  --z-raised: 10;   /* sticky headers inside a scroll area */
+  --z-chrome: 30;   /* persistent chrome: sidebar, top bar, mobile tab bar */
+  --z-popover: 50;  /* panels anchored to a trigger: menus, tips, notifications */
+  --z-overlay: 60;  /* full-screen scrims: mobile sheet, product tour */
+  --z-modal: 70;    /* dialogs and drawers */
+  --z-toast: 80;    /* above a dialog: a toast a dialog covers is unread */
+  --z-skip: 100;    /* the skip link, which must clear everything */
 
   /* Rhythm. Two values, because two is how many relationships a page actually
      has between blocks: peers, and a heading with its own content. */
@@ -398,9 +417,6 @@
   --color-ink-soft: var(--ink-soft);
   --color-on-ink: var(--on-ink);
   --color-on-ink-muted: var(--on-ink-muted);
-  --color-brass-on-ink: var(--brass-on-ink);
-  --color-brass: var(--brass);
-  --color-brass-ink: var(--brass-ink);
   --color-border-firm: var(--border-firm);
   --font-sans: var(--font-sans-base);
   --font-display: var(--font-display);
@@ -413,6 +429,14 @@
   /* Was defined but never exported, so every `rounded-full` in the app compiled
      to Tailwind's default (border-radius: 3.40282e38px) instead of this. */
   --radius-full: var(--radius-full);
+  /* Named rungs, so `z-popover` says why rather than how high. */
+  --z-index-raised: var(--z-raised);
+  --z-index-chrome: var(--z-chrome);
+  --z-index-popover: var(--z-popover);
+  --z-index-overlay: var(--z-overlay);
+  --z-index-modal: var(--z-modal);
+  --z-index-toast: var(--z-toast);
+  --z-index-skip: var(--z-skip);
   /* The elevation ladder was never mapped, so `shadow-md` in a component
      silently meant Tailwind's default while the tokens were only reachable from
      inside this file. Two ladders, one of them unused, is how the app ended up
@@ -616,6 +640,27 @@ h2 { letter-spacing: -0.026em; }
 a.card-hover:focus-visible {
   outline: none;
   box-shadow: var(--shadow-lg), 0 0 0 2px var(--surface), 0 0 0 4px var(--primary);
+}
+
+/* A panel anchored to a trigger: account menu, notifications, filters.
+   Opaque, not frosted. A translucent panel over a chart reads as a toy
+   overlay; a solid card with a hairline reads as a menu. */
+.popover-panel {
+  /* Appearance only. Position is left to the component, because this rule is
+     unlayered and would beat any `top-*` or `relative` utility a call site
+     tried to use, which is how a shared class quietly forces every consumer
+     into `!important`. */
+  z-index: var(--z-popover);
+  max-height: calc(100dvh - 6rem);
+  overflow-y: auto;
+  max-width: calc(100vw - 2rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), var(--edge-highlight);
+  /* `both`, so the panel is not painted at full opacity for one frame before
+     the animation starts, which is the flicker every hand-rolled menu had. */
+  animation: rise var(--dur-base) var(--ease-out) both;
 }
 
 /* Frosted panel (sidebar / top bar). */

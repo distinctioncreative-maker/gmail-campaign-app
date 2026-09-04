@@ -77,7 +77,7 @@ export default function SignInPage() {
               ["reply", "Follow-ups stop automatically when someone replies"],
             ] as Array<[IconName, string]>).map(([icon, label]) => (
               <li key={label} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-surface/10 text-brass-on-ink">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-surface/10 text-primary">
                   <Icon name={icon} size={18} />
                 </span>
                 {label}

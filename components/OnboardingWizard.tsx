@@ -68,7 +68,7 @@ function SetupPreview() {
     <div className="onboarding-preview mt-7" aria-label="Cadence workflow preview">
       <div className="onboarding-signal" aria-hidden />
       {stages.map((stage, index) => (
-        <div key={stage.label} className="relative z-10 flex flex-1 flex-col items-center gap-2 text-center">
+        <div key={stage.label} className="relative z-raised flex flex-1 flex-col items-center gap-2 text-center">
           <span
             className="onboarding-node flex h-11 w-11 items-center justify-center rounded-md border border-border bg-surface text-foreground shadow-sm"
             style={{ animationDelay: `${index * 180}ms` }}

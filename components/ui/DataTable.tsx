@@ -79,7 +79,7 @@ export function DataTable({
             className={`border-b border-border text-xs uppercase text-muted ${
               // The header needs its own background once it floats, or the rows
               // scroll through it.
-              stickyHeader ? "sticky top-0 z-10 bg-surface" : ""
+              stickyHeader ? "sticky top-0 z-raised bg-surface" : ""
             }`}
           >
             <tr>{head}</tr>

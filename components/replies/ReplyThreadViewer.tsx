@@ -62,7 +62,7 @@ export function ReplyThreadViewer({
         Read reply
       </button>
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-modal flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-overlay" onClick={() => setOpen(false)} aria-hidden />
           <div
             role="dialog"

@@ -187,7 +187,7 @@ export function CommandPalette({ actionContext }: { actionContext: ActionContext
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-[10vh] backdrop-blur-sm"
+      className="fixed inset-0 z-overlay flex items-start justify-center bg-black/40 p-4 pt-[10vh] backdrop-blur-sm"
       role="presentation"
       onClick={(event) => {
         if (event.target === event.currentTarget) close();

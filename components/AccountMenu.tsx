@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/UIProviders";
+import { Popover } from "@/components/ui/Popover";
 
 /** Apple-style account chip + popover: shows who's signed in and lets you
  * switch Google accounts or sign out without leaving the app. */
@@ -32,60 +33,16 @@ export function AccountMenu({
 }) {
   const router = useRouter();
   const toast = useToast();
-  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const menuId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-    function onDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    }
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
 
   const initial = displayName.trim().charAt(0).toUpperCase() || "U";
   const roleLabel =
     customRoleLabel ??
     (role === "ADMIN" ? "Administrator" : role === "MANAGER" ? "Manager" : "Member");
   const compact = placement === "bar";
-  const menuPosition =
-    placement === "inline"
-      ? "relative mt-2 w-full origin-top"
-      : placement === "sheet"
-        ? "absolute bottom-[calc(100%+0.5rem)] left-0 w-full origin-bottom"
-        : "absolute right-0 top-[calc(100%+0.5rem)] w-72 max-w-[calc(100vw-2rem)] origin-top-right";
-
-  function handleMenuKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-    const items = [...(menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])]
-      .filter((item) => !item.disabled);
-    if (items.length === 0) return;
-    event.preventDefault();
-    const current = Math.max(0, items.indexOf(document.activeElement as HTMLButtonElement));
-    const target =
-      event.key === "Home"
-        ? items[0]
-        : event.key === "End"
-          ? items.at(-1)
-          : items[(current + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length];
-    target?.focus();
-  }
+  const panelWidth = placement === "bar" ? "w-72" : "w-full";
+  const panelPlacement =
+    placement === "inline" ? "inline" : placement === "sheet" ? "above" : "below";
 
   async function switchAccount() {
     setBusy(true);
@@ -102,7 +59,6 @@ export function AccountMenu({
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(body.error ?? "That account isn't allowed here.");
       }
-      setOpen(false);
       router.push("/home");
       router.refresh();
     } catch (err) {
@@ -128,54 +84,51 @@ export function AccountMenu({
   }
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        ref={triggerRef}
-        onClick={() => setOpen((o) => !o)}
-        className={
-          compact
-            ? "group flex min-h-10 items-center gap-2 rounded-md border border-border bg-surface py-1 pl-1 pr-1.5 text-left transition hover:bg-surface-2"
-            : "group flex min-h-14 w-full items-center gap-3 rounded-md border border-border bg-surface p-3 text-left transition hover:bg-surface-2"
-        }
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={menuId}
-        aria-label={`${displayName} account menu. Switch account or sign out.`}
-      >
-        <span
-          aria-hidden
-          className={`flex shrink-0 items-center justify-center rounded-sm bg-foreground text-xs font-semibold text-surface ${
-            compact ? "h-7 w-7" : "h-8 w-8"
-          }`}
+    <Popover
+      label="Account actions"
+      align={placement === "bar" ? "end" : "start"}
+      placement={panelPlacement}
+      panelClassName={panelWidth}
+      trigger={(props) => (
+        <button
+          {...props}
+          className={
+            compact
+              ? "group flex min-h-10 items-center gap-2 rounded-md border border-border bg-surface py-1 pl-1 pr-1.5 text-left transition hover:bg-surface-2"
+              : "group flex min-h-14 w-full items-center gap-3 rounded-md border border-border bg-surface p-3 text-left transition hover:bg-surface-2"
+          }
+          aria-label={`${displayName} account menu. Switch account or sign out.`}
         >
-          {initial}
-        </span>
-        {/* The "Account" caption used to sit beside the name and squeezed both
-            into ellipses at sidebar width. The chevron alone says it opens. */}
-        <span className={compact ? "hidden min-w-0 max-w-36 lg:block" : "min-w-0 flex-1"}>
-          <span className="block truncate text-sm font-medium text-foreground">{displayName}</span>
-          {!compact && (
-            <span className="block truncate text-xs text-muted">Switch or sign out</span>
-          )}
-        </span>
-        <Icon
-          name="chevronDown"
-          size={15}
-          className={`shrink-0 text-muted transition group-hover:text-foreground ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {open && (
-        <div
-          ref={menuRef}
-          id={menuId}
-          role="menu"
-          aria-label="Account actions"
-          onKeyDown={handleMenuKeyDown}
-          /* Opaque, not frosted. A translucent panel over a chart reads as a
-             toy overlay; a solid card with a hairline reads as a menu. */
-          className={`z-50 max-h-[calc(100dvh-2rem)] animate-rise overflow-y-auto rounded-lg border border-border bg-surface shadow-lg ${menuPosition}`}
-        >
+          <span
+            aria-hidden
+            className={`flex shrink-0 items-center justify-center rounded-sm bg-foreground text-xs font-semibold text-surface ${
+              compact ? "h-7 w-7" : "h-8 w-8"
+            }`}
+          >
+            {initial}
+          </span>
+          {/* The "Account" caption used to sit beside the name and squeezed both
+              into ellipses at sidebar width. The chevron alone says it opens. */}
+          <span className={compact ? "hidden min-w-0 max-w-36 lg:block" : "min-w-0 flex-1"}>
+            <span className="block truncate text-sm font-medium text-foreground">
+              {displayName}
+            </span>
+            {!compact && (
+              <span className="block truncate text-xs text-muted">Switch or sign out</span>
+            )}
+          </span>
+          <Icon
+            name="chevronDown"
+            size={15}
+            className={`shrink-0 text-muted transition group-hover:text-foreground ${
+              props["aria-expanded"] ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      )}
+    >
+      {({ close }) => (
+        <>
           <div className="flex items-center gap-3 border-b border-border p-4">
             <span
               aria-hidden
@@ -186,13 +139,18 @@ export function AccountMenu({
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
               <p className="truncate text-xs text-muted">{email}</p>
-              <p className="mt-1 text-3xs font-semibold uppercase tracking-wide text-muted">{roleLabel}</p>
+              <p className="mt-1 text-3xs font-semibold uppercase tracking-wide text-muted">
+                {roleLabel}
+              </p>
             </div>
           </div>
           <div className="p-1.5">
             <button
               role="menuitem"
-              onClick={() => void switchAccount()}
+              onClick={() => {
+                close();
+                void switchAccount();
+              }}
               disabled={busy}
               className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition hover:bg-surface-2 disabled:opacity-50"
             >
@@ -209,8 +167,8 @@ export function AccountMenu({
               Sign out
             </button>
           </div>
-        </div>
+        </>
       )}
-    </div>
+    </Popover>
   );
 }

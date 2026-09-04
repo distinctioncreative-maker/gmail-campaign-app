@@ -207,7 +207,7 @@ export function ProductTour({ autoStart = true }: { autoStart?: boolean }) {
       };
 
   return (
-    <div ref={dialogRef} className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Product tour">
+    <div ref={dialogRef} className="fixed inset-0 z-overlay" role="dialog" aria-modal="true" aria-label="Product tour">
       {/* Dimmed backdrop with an optional spotlight cutout. */}
       {spotlight ? (
         <div

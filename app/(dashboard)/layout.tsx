@@ -88,7 +88,7 @@ export default async function DashboardLayout({
     <UIProviders>
     <a
       href="#dashboard-main"
-      className="fixed left-3 top-3 z-[100] -translate-y-24 rounded-lg bg-surface px-4 py-3 text-sm font-semibold text-foreground shadow-lg transition focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary"
+      className="fixed left-3 top-3 z-skip -translate-y-24 rounded-lg bg-surface px-4 py-3 text-sm font-semibold text-foreground shadow-lg transition focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary"
     >
       Skip to main content
     </a>
@@ -113,7 +113,7 @@ export default async function DashboardLayout({
             positioned outside it, so opening the menu appeared to swallow
             the navigation. Moving it removes the conflict rather than
             patching the clipping. */}
-        <header className="glass sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
+        <header className="glass sticky top-0 z-chrome flex h-14 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="sm:hidden">
               <Wordmark />
