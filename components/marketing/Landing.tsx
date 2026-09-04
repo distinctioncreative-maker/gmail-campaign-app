@@ -435,10 +435,21 @@ export function Landing() {
                   number would sell the product short, and stating it without a
                   timeframe invites exactly the reading the acceptable-use
                   policy is aimed at. */}
+              {/* One beat per line, as blocks.
+                  These were three sentences separated by spaces under
+                  `text-wrap: balance`, so the browser balanced line LENGTHS
+                  across all three and broke wherever the arithmetic landed:
+                  "person." was orphaned onto the third line beside "Get
+                  replies.", which put the accent colour halfway through a line
+                  and split the middle beat across two. Three beats that are
+                  three blocks break at the beat at every width, and balance
+                  then does the job it is good at, inside each one. */}
               <h1>
-                Thousands a month.{" "}
-                <em>Sound like one person.</em>{" "}
-                Get replies.
+                <span className={styles.heroBeat}>Thousands a month.</span>
+                <span className={styles.heroBeat}>
+                  <em>Sound like one person.</em>
+                </span>
+                <span className={styles.heroBeat}>Get replies.</span>
               </h1>
               <p className={styles.heroLead}>
                 Cadence paces every campaign from your own Gmail and checks your

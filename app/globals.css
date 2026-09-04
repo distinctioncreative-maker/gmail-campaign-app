@@ -646,19 +646,6 @@ a.card-hover:focus-visible {
    A halo rather than a scale or an opacity fade: the dot itself stays exactly
    where it is and stays fully legible, and only the ring around it moves. A
    dot that shrinks and grows is a dot you cannot read at a glance. */
-@media (prefers-reduced-motion: reduce) {
-  /* The flash is the one that matters: motion used to report a change is
-     precisely what someone asking for stillness wants spared. The three
-     entrance animations go too.
-     `animation: none` leaves each element in its normal state (opaque, no
-     translate) rather than frozen at the first frame, which is what happens if
-     you only shorten the duration on a `both`-filled animation. */
-  .status-dot-flash,
-  .animate-rise,
-  .popover-panel,
-  .tooltip-panel { animation: none; }
-}
-
 @keyframes status-pulse {
   0%   { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 40%, transparent); }
   70%  { box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 0%, transparent); }
@@ -1100,6 +1087,28 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-rise { animation: rise 0.28s ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* The flash is the one that matters: motion used to report a change is
+     precisely what someone asking for stillness wants spared. The three
+     entrance animations go too.
+
+     `animation: none` leaves each element in its normal state (opaque, no
+     translate) rather than frozen at the first frame, which is what happens if
+     you only shorten the duration on a `both`-filled animation.
+
+     This block sits AFTER every rule it cancels, and that is load-bearing. A
+     media query adds no specificity, so an opt-out written above the
+     declaration it disables simply loses to it. That is not theoretical: this
+     block was above .animate-rise, and a browser set to reduce motion still
+     played the entrance animation on every dialog, toast and panel in the app.
+     Nothing failed, because naming a class in a reduced-motion block and
+     actually overriding it are different things. */
+  .status-dot-flash,
+  .animate-rise,
+  .popover-panel,
+  .tooltip-panel { animation: none; }
+}
 
 /* ── Mission-control Home (JARVIS pulse) ─────────────────────────── */
 /* The hero is a ruled panel. It previously carried two radial gradients, a

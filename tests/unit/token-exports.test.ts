@@ -182,6 +182,46 @@ describe("every animation can be turned off", () => {
     expect(animated.size).toBeGreaterThan(15);
   });
 
+  it("puts each opt-out after the rule it cancels, so it actually wins", () => {
+    /**
+     * A media query adds no specificity. An opt-out written above the
+     * declaration it disables loses to it, silently.
+     *
+     * This is not hypothetical. The block covering .animate-rise sat a few
+     * hundred lines above the rule that sets it, and a browser asking for
+     * reduced motion still played the entrance animation on every dialog,
+     * toast, popover and tooltip in the app. The rule below passed the whole
+     * time, because naming a class in a reduced-motion block and actually
+     * overriding it are different things, and only one of them is what the
+     * preference asked for. Rendering the page with the preference set is what
+     * found it; this is that check, made cheap.
+     */
+    const lastAnimatedAt = new Map<string, number>();
+    for (const rule of outside.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      const [full, selector, body] = rule;
+      if (!/\banimation(-name)?\s*:/.test(body)) continue;
+      if (/\banimation\s*:\s*none/.test(body)) continue;
+      for (const [, name] of selector.matchAll(/\.([\w-]+)/g)) {
+        lastAnimatedAt.set(name, Math.max(lastAnimatedAt.get(name) ?? 0, withoutComments.indexOf(full)));
+      }
+    }
+
+    const tooEarly: string[] = [];
+    for (const [name, definedAt] of lastAnimatedAt) {
+      const cancels = reducedMotionSpans.filter(([start, end]) => {
+        const text = withoutComments.slice(start, end);
+        return [...text.matchAll(/([^{}]+)\{([^{}]*)\}/g)].some(
+          ([, sel, body]) =>
+            new RegExp(`(^|,)\\s*\\.${name}\\s*(,|\\s|$)`).test(sel) &&
+            /animation:\s*none/.test(body)
+        );
+      });
+      if (cancels.length === 0) continue;
+      if (!cancels.some(([start]) => start > definedAt)) tooEarly.push(name);
+    }
+    expect(tooEarly.sort()).toEqual([]);
+  });
+
   it("has a reduced-motion opt-out for every animated class", () => {
     expect([...animated].filter((name) => !covered.has(name)).sort()).toEqual([]);
   });
