@@ -224,7 +224,7 @@ export function UIProviders({ children }: { children: ReactNode }) {
               aria-labelledby="ui-dialog-title"
               className="relative w-full max-w-md animate-rise rounded-2xl border border-border bg-surface p-6 shadow-xl"
             >
-              <h2 id="ui-dialog-title" className="text-lg text-foreground">
+              <h2 id="ui-dialog-title">
                 {confirmState.title}
               </h2>
               {confirmState.body && <p className="mt-2 text-muted">{confirmState.body}</p>}

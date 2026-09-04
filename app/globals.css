@@ -1118,14 +1118,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); }
    an intensity that does not tint the cards sitting on top of it. */
 
 
-/* shimmer sweep traveling along the activity line */
-@keyframes sheen-move { 0% { stroke-dasharray: 60 2000; stroke-dashoffset: 2000; } 100% { stroke-dasharray: 60 2000; stroke-dashoffset: 0; } }
-.pulse-sheen { display: none; }
-
-@media (prefers-reduced-motion: reduce) {
-  .pulse-sheen { animation: none; }
-}
-
 /* ── Seamless fintech polish ─────────────────────────────────────── */
 /* Smooth, consistent easing on all interactive surfaces. */
 a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease; }

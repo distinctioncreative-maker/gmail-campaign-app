@@ -8,7 +8,7 @@ import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { totalSent } from "@/lib/analytics/metrics";
 import type { Briefing, SetupStep } from "@/lib/home/dashboard";
 import type { Campaign } from "@/schemas/campaign";
-import { StatusDot } from "@/components/ui/StatusDot";
+import { StatusDot, type StatusTone } from "@/components/ui/StatusDot";
 
 /**
  * The presentational half of the dashboard home page. Each block takes the
@@ -16,11 +16,25 @@ import { StatusDot } from "@/components/ui/StatusDot";
  * of what a customer sees rather than 270 lines of nested JSX.
  */
 
-const STATUS_PILL: Record<string, { label: string; className: string; dot: string }> = {
-  SENDING: { label: "Sending live", className: "text-foreground", dot: "bg-primary" },
-  REPLIES: { label: "Replies waiting", className: "text-success", dot: "bg-success" },
-  READY: { label: "Systems ready", className: "text-muted", dot: "bg-muted" },
-  SETUP: { label: "Setup needed", className: "text-warning", dot: "bg-warning" },
+/**
+ * The one line that says what state the workspace is in.
+ *
+ * Mint carries exactly one meaning in this product: replies and healthy
+ * sending. Indigo is the brand and the thing you click. "Sending live" was
+ * indigo, which made the single most important healthy state on the screen
+ * read in the colour of a button, and left mint meaning "replies" here while
+ * it meant "healthy" everywhere else. Sending and replies are both mint now;
+ * the word says which, and the colour says it is fine.
+ *
+ * Idle is a neutral rather than --muted, which is a text colour: used as a
+ * background it is far lighter than any other dot on the screen, so "nothing
+ * is happening" was the loudest state in the set.
+ */
+const STATUS_PILL: Record<string, { label: string; tone: StatusTone; className: string }> = {
+  SENDING: { label: "Sending live", tone: "live", className: "text-foreground" },
+  REPLIES: { label: "Replies waiting", tone: "live", className: "text-success" },
+  READY: { label: "Systems ready", tone: "idle", className: "text-muted" },
+  SETUP: { label: "Setup needed", tone: "warning", className: "text-warning" },
 };
 
 export function HomeHero({
@@ -46,12 +60,12 @@ export function HomeHero({
       <div className="drift-field" aria-hidden />
       <div className="relative grid gap-6 lg:grid-cols-[1.05fr_1fr] lg:items-center">
         <div>
-          <div
-            className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-widest ${pill.className}`}
+          <StatusDot
+            tone={pill.tone}
+            className={`gap-2 text-xs font-semibold uppercase tracking-widest ${pill.className}`}
           >
-            <span aria-hidden className={`h-1.5 w-1.5 shrink-0 rounded-full ${pill.dot}`} />
             {pill.label}
-          </div>
+          </StatusDot>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
             {greeting}, {firstName}.
           </h1>
@@ -79,9 +93,19 @@ export function HomeHero({
           style={{ background: "color-mix(in srgb, var(--surface) 65%, transparent)" }}
         >
           <div className="mb-2 flex items-center justify-between">
-            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted">
-              Activity · 14 days
-            </p>
+            <div className="flex min-w-0 items-center gap-3">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted">
+                Activity · 14 days
+              </p>
+              {/* The chart drew an indigo area and mint dots and never said
+                  which was which, so the dots read as decoration scattered
+                  along the floor rather than as the number that matters most.
+                  Two words fix that. */}
+              <p className="flex shrink-0 items-center gap-2.5 text-2xs text-muted">
+                <StatusDot tone="brand">Sent</StatusDot>
+                <StatusDot tone="live">Replies</StatusDot>
+              </p>
+            </div>
             {isSendingNow ? (
               <LiveRefresh intervalMs={15000} />
             ) : (

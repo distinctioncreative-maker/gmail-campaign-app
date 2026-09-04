@@ -25,7 +25,7 @@ import type { ReactNode } from "react";
  * label beside it or a screen-reader one, because a red and a green circle are
  * the same circle to roughly one man in twelve.
  */
-export type StatusTone = "live" | "idle" | "warning" | "danger" | "neutral";
+export type StatusTone = "live" | "idle" | "warning" | "danger" | "neutral" | "brand";
 
 const TONE: Record<StatusTone, string> = {
   live: "bg-success",
@@ -33,6 +33,9 @@ const TONE: Record<StatusTone, string> = {
   warning: "bg-warning",
   danger: "bg-danger",
   neutral: "bg-muted-2",
+  /* For a chart legend, where the dot is a swatch naming a series rather than
+     a state. Indigo is what we sent; mint is what came back. */
+  brand: "bg-primary",
 };
 
 export function StatusDot({

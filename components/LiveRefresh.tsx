@@ -33,7 +33,12 @@ export function LiveRefresh({ intervalMs = 15000, label = "Live" }: { intervalMs
   }, [router, intervalMs]);
 
   return (
-    <StatusDot tone="live" flash={pulse} className="text-xs font-medium text-muted">
+    /* Neutral, not mint. This dot says "the page is refreshing itself", which
+       is a system state, and it sits inside a card where mint already means
+       replies. Two meanings for one colour eight pixels apart is worse than no
+       colour at all. The flash on each refresh is the actual signal; a standing
+       mint dot added nothing and spent a colour that was taken. */
+    <StatusDot tone="idle" flash={pulse} className="text-xs font-medium text-muted">
       {label}
     </StatusDot>
   );

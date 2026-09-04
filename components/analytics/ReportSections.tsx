@@ -37,7 +37,7 @@ export function ReportScopeBar({
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Reporting scope</p>
-        <h2 className="mt-0.5 text-lg text-foreground">{scopeName}</h2>
+        <h2 className="mt-0.5">{scopeName}</h2>
       </div>
       <div className="flex flex-wrap gap-2 text-xs text-muted">
         <span className="rounded-full border border-border bg-surface px-3 py-1.5">
@@ -157,7 +157,7 @@ export function OutcomesPanel({
 
   return (
     <section className="mt-6">
-      <h2 className="mb-3 text-sm uppercase tracking-wider text-muted">
+      <h2 className="mb-3">
         What it produced
       </h2>
       <StatGrid columns={4}>

@@ -53,7 +53,7 @@ export default async function DemoHomePage({
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm uppercase tracking-wider text-muted">
+        <h2>
           Your numbers
         </h2>
         <div className="flex overflow-hidden rounded-sm border border-border bg-surface text-xs">
@@ -122,7 +122,7 @@ export default async function DemoHomePage({
           first time anyone touched the parser, on a page whose job is to make a
           promise about exactly that. */}
       <section className="mt-10">
-        <h2 className="text-sm uppercase tracking-wider text-muted">
+        <h2>
           One message, every recipient different
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">

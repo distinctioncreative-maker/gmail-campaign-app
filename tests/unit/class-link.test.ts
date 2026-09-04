@@ -95,6 +95,32 @@ describe("every class this app writes itself is defined", () => {
     expect(defined.has("btn-primary")).toBe(true);
   });
 
+  it("has none whose every declaration switches it off", () => {
+    /**
+     * The third shape of the same bug, and the one the two rules either side
+     * of this miss.
+     *
+     * `--color-brass-on-ink` pointed at a deleted token; the token link step
+     * catches that. `live-dot` was applied and never defined; the rule below
+     * catches that. `.pulse-sheen` was defined as `display: none` and its
+     * element was still rendered in the chart, with a keyframe written for it
+     * and a reduced-motion opt-out protecting an animation that could never
+     * run. Everything resolved. Nothing rendered.
+     *
+     * A class whose only substantive declaration is `display: none` is either
+     * a deletion someone did not finish or markup that should not be there.
+     * Both are worth a failing test, because neither is visible any other way.
+     */
+    const disabled = [...used.keys()].filter((name) => {
+      const rules = [...globals.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(([, selector]) =>
+        new RegExp(`(^|,)\\s*\\.${name}\\s*(,|:|\\s|$)`).test(selector)
+      );
+      if (rules.length === 0) return false;
+      return rules.every(([, , body]) => /display:\s*none/.test(body));
+    });
+    expect(disabled).toEqual([]);
+  });
+
   it("has none that resolve to nothing", () => {
     const dangling = [...used.entries()]
       .filter(([name]) => !defined.has(name))

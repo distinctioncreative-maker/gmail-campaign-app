@@ -242,7 +242,7 @@ export default async function TeamPage() {
               <section key={team.teamId} className={depth > 0 ? "border-l border-border pl-3 sm:pl-6" : ""}>
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h2 className="text-lg">
+                    <h2>
                       {depth > 0 && <span aria-hidden className="mr-2 text-muted">↳</span>}
                       {team.name}
                     </h2>
@@ -263,7 +263,7 @@ export default async function TeamPage() {
 
           {isAdmin && unassigned.length > 0 && (
             <section>
-              <h2 className="mb-1 text-lg">Not on a team</h2>
+              <h2 className="mb-1">Not on a team</h2>
               <p className="mb-3 text-sm text-muted">
                 Use “Add a rep…” on a team above to place them.
               </p>

@@ -53,7 +53,7 @@ export default async function FeaturesPage() {
       <div className="flex flex-col gap-6">
         {FEATURE_CATEGORIES.map((category) => (
           <div key={category.id} className="card p-6 sm:p-7">
-            <h2 className="text-foreground">{category.name}</h2>
+            <h2>{category.name}</h2>
             <ul className="mt-3 flex flex-col divide-y divide-border">
               {category.features.map((f) => {
                 const badge = STATUS_BADGE[f.status];

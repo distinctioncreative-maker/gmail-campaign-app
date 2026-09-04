@@ -118,7 +118,7 @@ export function DeleteAccountCard({
             <Icon name="alert" size={20} />
           </span>
           <div className="min-w-0">
-            <h2 className="text-foreground">
+            <h2>
               {state.request.scope === "WORKSPACE"
                 ? "This workspace is scheduled for deletion"
                 : "Your account is scheduled for deletion"}

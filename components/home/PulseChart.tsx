@@ -76,7 +76,28 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
   const active = hover !== null ? geom.pts[hover] : last;
 
   return (
-    <div className="relative">
+    <div>
+      {/* The day's numbers, above the plot rather than over it.
+          This was absolutely positioned at the chart's top-left corner, which
+          is where the line spends most of its time when sending is going well:
+          the readout sat on top of the data it was describing. It never
+          floated to follow the point either, so the name was the only thing
+          about it that moved. A caption row costs one line of height and
+          collides with nothing. */}
+      <div className="mb-1 flex h-4 items-center gap-4 px-1 text-xs">
+        {!isEmpty && active && (
+          <>
+            <span className="text-muted">
+              <span className="font-semibold text-foreground tabular-nums">{active.sent}</span> sent
+            </span>
+            <span className="text-muted">
+              <span className="font-semibold text-success tabular-nums">{active.replied}</span> replies
+            </span>
+            <span className="text-muted">{active.day.slice(5)}</span>
+          </>
+        )}
+      </div>
+      <div className="relative">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full"
@@ -89,16 +110,6 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
           <linearGradient id={`area-${gid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity={isEmpty ? "0.18" : "0.38"} />
             <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id={`stroke-${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--primary)" />
-            <stop offset="55%" stopColor="var(--primary)" />
-            <stop offset="100%" stopColor="var(--info)" />
-          </linearGradient>
-          <linearGradient id={`sheen-${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--foreground)" stopOpacity="0" />
-            <stop offset="50%" stopColor="var(--foreground)" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="var(--foreground)" stopOpacity="0" />
           </linearGradient>
           <filter id={`glow-${gid}`} x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="3.2" result="b" />
@@ -130,32 +141,17 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
           id={`line-${gid}`}
           d={geom.linePath}
           fill="none"
-          stroke={`url(#stroke-${gid})`}
+          /* One series, one colour. This was a gradient running from --primary
+             to --info, which was the brass accent and is now a neutral grey,
+             so the most recent third of the line, which is the part anyone
+             reads first, rendered in the one colour the legend does not
+             name. */
+          stroke="var(--primary)"
           strokeWidth="2.75"
           strokeLinecap="round"
           filter={`url(#glow-${gid})`}
           className="draw-line"
         />
-        {/* moving shimmer sweep clipped to the line */}
-        <path
-          d={geom.linePath}
-          fill="none"
-          stroke={`url(#sheen-${gid})`}
-          strokeWidth="3"
-          strokeLinecap="round"
-          className="pulse-sheen"
-        />
-
-        {/* traveling glow dot along the line */}
-        {geom.pts.length > 1 && (
-          <circle r="4.5" fill="var(--surface)" opacity="0.95">
-            <animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="linear">
-              <mpath href={`#line-${gid}`} />
-            </animateMotion>
-            <animate attributeName="opacity" values="0;1;1;0" dur="3.4s" repeatCount="indefinite" />
-          </circle>
-        )}
-
         {/* reply markers */}
         {geom.pts.map((p, i) =>
           p.replied > 0 ? (
@@ -191,26 +187,14 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
         )}
       </svg>
 
-      {/* floating readout / empty hint */}
-      {isEmpty ? (
+      {isEmpty && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <span className="rounded-full bg-foreground/5 px-3 py-1 text-xs text-muted backdrop-blur">
             Your live activity appears here as you send
           </span>
         </div>
-      ) : (
-        active && (
-          <div className="pointer-events-none absolute left-0 top-0 flex gap-4 px-1 text-xs">
-            <span className="text-muted">
-              <span className="font-semibold text-foreground tabular-nums">{active.sent}</span> sent
-            </span>
-            <span className="text-muted">
-              <span className="font-semibold text-success tabular-nums">{active.replied}</span> replies
-            </span>
-            <span className="text-muted">{active.day.slice(5)}</span>
-          </div>
-        )
       )}
+      </div>
     </div>
   );
 }
