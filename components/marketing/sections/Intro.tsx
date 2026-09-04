@@ -44,17 +44,24 @@ export function Intro() {
               front of each claim, not the claim itself. */}
           <div className={styles.outcomeGrid} data-reveal data-stagger>
             {[
+              /* These name the failure. The four columns above already name
+                 the remedy, and until now these repeated it: "You approve every
+                 one." appeared word for word in both, one screen apart, and all
+                 three of these restated a card from that row. A section that
+                 says one thing twice reads as padding however well each half is
+                 written. The heading above promises three reasons outreach
+                 fails, so this is the three reasons. */
               [
                 "It never reached them",
-                "Sent from your own Gmail, paced across the day, with domain checks before launch.",
+                "A cold domain sending a burst of identical mail gets filtered before anyone reads a word.",
               ],
               [
                 "It read like a template",
-                "AI drafts in your brand voice from real lead context. You approve every one.",
+                "One message sent to five hundred people reads like one message sent to five hundred people.",
               ],
               [
                 "The reply went cold",
-                "Replies sorted by intent, kept in the original Gmail thread.",
+                "Someone answered, and the reply sat in a shared inbox nobody owns until it was too late to matter.",
               ],
             ].map(([title, copy], index) => (
               <article key={title}>
