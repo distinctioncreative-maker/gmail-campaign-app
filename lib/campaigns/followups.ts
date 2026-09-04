@@ -9,6 +9,7 @@ import {
 import { addBusinessDays, nextValidTime } from "@/lib/scheduling/window";
 import { enqueueTask } from "@/lib/tasks/enqueue";
 import { idempotencyKey } from "@/lib/campaigns/idempotency";
+import { queueTypeFor } from "@/lib/campaigns/queueType";
 
 function stepDelayMs(step: SequenceStep, from: number, campaign: Campaign): number {
   switch (step.delayUnit) {
@@ -63,7 +64,7 @@ export function buildNextFollowupQueueItem(
     ownerUserId: owner.userId,
     campaignId: campaign.campaignId,
     recipientId,
-    type: "SEND_FOLLOWUP",
+    type: queueTypeFor(campaign, "followup"),
     sequenceStep,
     scheduledAt,
     status: "SCHEDULED",

@@ -24,6 +24,7 @@ import { lookupBusinessByDomain, lookupDomainFor } from "@/lib/enrichment/busine
 import { aiWritingEnabled } from "@/lib/ai/enabled";
 import { mapWithConcurrency } from "@/lib/util/pool";
 import { idempotencyKey } from "@/lib/campaigns/idempotency";
+import { queueTypeFor } from "@/lib/campaigns/queueType";
 import { missingCommercialEmailPlaceholders } from "@/lib/campaigns/compliance";
 
 /** Safety caps for per-lead AI personalization at launch. */
@@ -280,7 +281,7 @@ export async function launchCampaign(
       ownerUserId: ctx.userId,
       campaignId: campaign.campaignId,
       recipientId: recipient.recipientId,
-      type: campaign.draftStrategy === "DRAFT_ONLY" ? "CREATE_INITIAL_DRAFT" : "SEND_INITIAL",
+      type: queueTypeFor(campaign, "initial"),
       sequenceStep: 0,
       scheduledAt: timestamps[i],
       status: "SCHEDULED",

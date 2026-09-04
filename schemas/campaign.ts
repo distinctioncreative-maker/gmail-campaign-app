@@ -255,12 +255,16 @@ export type Recipient = z.infer<typeof RecipientSchema>;
  * Only four of these are reachable, and the distinction matters enough to
  * write down rather than leave for the next person to grep out:
  *
- *   CREATE_INITIAL_DRAFT   produced by launch.ts when draftStrategy is
- *                          DRAFT_ONLY
- *   SEND_INITIAL           produced by launch.ts otherwise
- *   SEND_FOLLOWUP          produced by followups.ts
- *   CREATE_FOLLOWUP_DRAFT  HANDLED by the send worker, and produced by
- *                          nothing. See the note in lib/campaigns/followups.ts.
+ *   CREATE_INITIAL_DRAFT   initial message, draftStrategy DRAFT_ONLY
+ *   SEND_INITIAL           initial message, otherwise
+ *   CREATE_FOLLOWUP_DRAFT  follow-up, draftStrategy DRAFT_ONLY
+ *   SEND_FOLLOWUP          follow-up, otherwise
+ *
+ * All four are chosen by lib/campaigns/queueType.ts and by nothing else.
+ * CREATE_FOLLOWUP_DRAFT was handled by the worker and produced by nothing for
+ * as long as this note has existed, because followups.ts hard-coded
+ * SEND_FOLLOWUP: a DRAFT_ONLY campaign drafted its first message and sent
+ * every follow-up for real.
  *
  * CHECK_REPLY, CHECK_BOUNCE and SYNC_AUDIT_SHEET are produced by nothing and
  * handled by nothing. Reply and bounce detection run from cron/sweep, not from
