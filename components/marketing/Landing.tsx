@@ -93,7 +93,11 @@ export function Landing() {
           <div className={styles.footerLinks}>
             <a href="#workflow">Workflow</a>
             <a href="#features">Product</a>
-            <a href="#controls">Live demo</a>
+            {/* Was href="#controls", an anchor to the interactive demo section
+                that was removed. Nothing on the page has had that id since, so
+                the link did nothing when clicked. It goes where the nav's "See
+                it live" goes, which is where the demo actually lives now. */}
+            <Link href="/demo">Live demo</Link>
             <a href="#pricing">Pricing</a>
             <a href="#trust">Trust</a>
             <Link href="/terms">Terms</Link>

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /** CSS with comments stripped, because these rules are about what renders. */
@@ -74,5 +74,49 @@ describe("the public page is usable with a thumb", () => {
     // measured doing exactly that.
     expect(block).toMatch(/padding-block:\s*13px/);
     expect(block).toMatch(/margin-block:\s*-13px/);
+  });
+});
+
+/**
+ * Every in-page anchor points at something.
+ *
+ * The footer's "Live demo" link pointed at #controls, the id of the interactive
+ * demo section that was removed from this page. Nothing has carried that id
+ * since, so the link did nothing at all when clicked, and a dead link is
+ * invisible until someone clicks it and nothing happens.
+ */
+describe("no in-page link points at nothing", () => {
+  const sources = () => {
+    const paths = [
+      "components/marketing/Landing.tsx",
+      ...readdirSync("components/marketing/sections").map(
+        (f) => `components/marketing/sections/${f}`
+      ),
+    ];
+    // Comments stripped: this rule is about links that render. A comment
+    // explaining that an href USED to be #controls is not a link to #controls,
+    // and counting it as one is how a guard starts failing on its own
+    // documentation.
+    return paths
+      .map((p) =>
+        readFileSync(p, "utf8")
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+      )
+      .join("\n");
+  };
+
+  it("resolves every hash href to an id that the page renders", () => {
+    const markup = sources();
+    const targets = new Set(
+      [...markup.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id)
+    );
+    // Ids built from a constant, which the contact form does.
+    for (const [, name] of markup.matchAll(/const (CONTACT_\w+) =/g)) targets.add(name);
+    const hrefs = [...markup.matchAll(/href="#([^"]+)"/g)].map(([, id]) => id);
+    expect(hrefs.length).toBeGreaterThan(3);
+
+    const dead = hrefs.filter((id) => !targets.has(id));
+    expect(dead).toEqual([]);
   });
 });
