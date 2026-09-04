@@ -2024,9 +2024,14 @@
   color: var(--landing-action-on-ink);
 }
 
-/* Each beat owns its line. Balance still applies, but within a beat, which is
-   where it helps rather than where it orphans a word onto the next sentence. */
-.heroBeat {
+/* A heading written as several short sentences breaks at the sentences.
+   `text-wrap: balance` balances line LENGTHS, so left to itself it breaks a
+   three-sentence headline wherever the arithmetic lands: the hero orphaned
+   "person." onto the line with "Get replies.", and the outcome band orphaned
+   "More" onto the end of two lines running. One block per sentence breaks at
+   the sentence at every width, and balance then does the job it is good at,
+   inside each one. */
+.beat {
   display: block;
 }
 

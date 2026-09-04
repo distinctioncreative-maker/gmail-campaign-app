@@ -88,10 +88,37 @@ describe("the hero headline", () => {
   const markup = readFileSync("components/marketing/sections/Hero.tsx", "utf8");
 
   it("renders each beat as its own block", () => {
-    expect(landing).toMatch(/\.heroBeat \{[^}]*display: block/);
+    expect(landing).toMatch(/\.beat \{[^}]*display: block/);
     const h1 = /<h1>([\s\S]*?)<\/h1>/.exec(markup)?.[1] ?? "";
     expect(h1).toBeTruthy();
-    expect([...h1.matchAll(/className=\{styles\.heroBeat\}/g)].length).toBe(3);
+    expect([...h1.matchAll(/className=\{styles\.beat\}/g)].length).toBe(3);
+  });
+
+  it("uses beats for every multi-sentence heading, not just the hero", () => {
+    /**
+     * The hero was fixed first and the outcome band had the identical defect:
+     * "More replies. More meetings. More closed deals." broke as "More replies.
+     * More / meetings. More / closed deals.", orphaning the word "More" onto
+     * the end of two lines running. Fixing one instance of a rule and leaving
+     * the other is how a rule becomes a special case.
+     */
+    const bands = readdirSync("components/marketing/sections")
+      .filter((f) => f.endsWith(".tsx"))
+      .map((f) => [f, readFileSync(`components/marketing/sections/${f}`, "utf8")] as const);
+
+    const offenders: string[] = [];
+    for (const [file, source] of bands) {
+      // [, , inner] and not [, inner]: group 1 is the heading digit, group 2
+      // is the content. Getting that wrong makes this rule inspect the string
+      // "2", which has no sentences in it and therefore never fails.
+      for (const [, , inner] of source.matchAll(/<h([12])>([\s\S]*?)<\/h\1>/g)) {
+        if (/className=\{styles\.beat\}/.test(inner)) continue;
+        const text = inner.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+        // Two or more sentences in one heading and no beats.
+        if ((text.match(/[.!?](\s|$)/g) ?? []).length >= 2) offenders.push(`${file}: ${text}`);
+      }
+    }
+    expect(offenders).toEqual([]);
   });
 
   it("keeps the accent on exactly one whole beat", () => {

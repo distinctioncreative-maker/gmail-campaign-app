@@ -45,11 +45,11 @@ export function Hero() {
                 three blocks break at the beat at every width, and balance
                 then does the job it is good at, inside each one. */}
             <h1>
-              <span className={styles.heroBeat}>Thousands a month.</span>
-              <span className={styles.heroBeat}>
+              <span className={styles.beat}>Thousands a month.</span>
+              <span className={styles.beat}>
                 <em>Sound like one person.</em>
               </span>
-              <span className={styles.heroBeat}>Get replies.</span>
+              <span className={styles.beat}>Get replies.</span>
             </h1>
             <p className={styles.heroLead}>
               Cadence paces every campaign from your own Gmail and checks your

@@ -14,7 +14,11 @@ export function Outcome() {
         <div className={styles.shell}>
           <div className={styles.outcomeLayout} data-reveal>
             <div className={styles.outcomeCopy}>
-              <h2>More replies. More meetings. More closed deals.</h2>
+              <h2>
+                <span className={styles.beat}>More replies.</span>
+                <span className={styles.beat}>More meetings.</span>
+                <span className={styles.beat}>More closed deals.</span>
+              </h2>
               <p>
                 Volume is easy. Volume that still sounds like one person
                 writing to one person is the part that earns a reply.
