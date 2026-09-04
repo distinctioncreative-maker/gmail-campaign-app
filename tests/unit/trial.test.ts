@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { TRIAL_PERIOD_DAYS, trialDaysFor } from "@/lib/billing/plans";
 
@@ -62,7 +62,14 @@ describe("how the trial reaches Stripe", () => {
 });
 
 describe("saying so on the pricing page", () => {
-  const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+  const landing = [
+    "components/marketing/Landing.tsx",
+    ...readdirSync("components/marketing/sections").map(
+      (f) => `components/marketing/sections/${f}`
+    ),
+  ]
+    .map((p) => readFileSync(p, "utf8"))
+    .join("\n");
   const css = readFileSync("components/marketing/landing.module.css", "utf8");
   const pricing = readFileSync("lib/billing/publicPricing.ts", "utf8");
 

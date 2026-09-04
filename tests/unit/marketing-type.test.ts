@@ -85,7 +85,7 @@ describe("the marketing type has four weights", () => {
  * it is good at, inside each one.
  */
 describe("the hero headline", () => {
-  const markup = readFileSync("components/marketing/Landing.tsx", "utf8");
+  const markup = readFileSync("components/marketing/sections/Hero.tsx", "utf8");
 
   it("renders each beat as its own block", () => {
     expect(landing).toMatch(/\.heroBeat \{[^}]*display: block/);

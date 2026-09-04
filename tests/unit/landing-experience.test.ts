@@ -1,10 +1,32 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const landingSource = readFileSync(
-  "components/marketing/Landing.tsx",
-  "utf8"
-);
+/**
+ * The landing page's markup, wherever it lives.
+ *
+ * This used to be one 876-line file. It is now a shell plus nine band files
+ * plus a shared module, so a rule that reads only Landing.tsx would pass by
+ * looking at a file that no longer contains the thing it is checking. The
+ * rules did not change; where the markup lives did, so this follows it.
+ */
+const marketingSources = () => {
+  const paths = [
+    "components/marketing/Landing.tsx",
+    "components/marketing/shared.tsx",
+    ...readdirSync("components/marketing/sections")
+      .filter((f) => f.endsWith(".tsx"))
+      .map((f) => `components/marketing/sections/${f}`),
+  ];
+  // Non-vacuity: if the split is ever undone or renamed, this stops silently
+  // reading a smaller page than the one that ships.
+  if (paths.length < 10) throw new Error("marketing sources missing");
+  return paths;
+};
+
+const landingSource = marketingSources()
+  .map((p) => readFileSync(p, "utf8"))
+  .join("\n");
+
 const landingStyles = readFileSync(
   "components/marketing/landing.module.css",
   "utf8"
@@ -831,7 +853,7 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
      * and that the landing page still points at that place.
      */
     const demoPage = readFileSync("app/demo/page.tsx", "utf8");
-    const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+    const landing = landingSource;
     expect(demoPage).toContain("<VariationDemo />");
     expect(landing).toContain('href="/demo"');
   });
@@ -839,7 +861,7 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
   it("keeps the landing page free of the heavy inline demos", () => {
     // The feedback was that the how-it-works demo was too complicated and
     // tedious. This stops it, or anything like it, drifting back inline.
-    const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+    const landing = landingSource;
     for (const gone of ["<DemoTabs", "<HeroDemo", "<MessageDemo", "<OperationsDemo"]) {
       expect(landing, `${gone} stays off the landing page`).not.toContain(gone);
     }
@@ -855,7 +877,7 @@ describe("the variation demo sells a feature that had shipped in silence", () =>
     // named in the words someone happened to use in 2025: a copy pass that
     // shortened "rotates across them" to "rotates across your connected Gmail
     // accounts" broke this while making the page strictly better.
-    const landing = readFileSync("components/marketing/Landing.tsx", "utf8");
+    const landing = landingSource;
     const capabilities: Array<[string, RegExp]> = [
       ["inbox rotation", /rotat\w* across/i],
       ["warmup ramp", /ramps?\b[^.]{0,40}four weeks/i],
