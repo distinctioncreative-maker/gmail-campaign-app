@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { TeamManager, RosterActions, RemoveFromTeamButton } from "@/components/team/TeamManager";
 import type { Member, Team } from "@/schemas/user";
 import { formatPercent } from "@/lib/analytics/metrics";
+import { StatusDot } from "@/components/ui/StatusDot";
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -111,9 +112,9 @@ function Leaderboard({
                 <p className="truncate font-medium">{display}</p>
                 {!m.active && <span className="badge bg-border text-muted">disabled</span>}
                 {s.activeCampaigns > 0 && (
-                  <span className="live-dot inline-flex items-center gap-1 text-xs font-medium text-success">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success" /> live
-                  </span>
+                  <StatusDot tone="live" className="text-xs font-medium text-success">
+                    live
+                  </StatusDot>
                 )}
               </div>
               <p className="truncate text-sm text-muted">

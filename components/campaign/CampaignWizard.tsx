@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { badgeFor } from "@/components/imports/leadBadges";
-import { HelpTip } from "@/components/HelpTip";
+import { HelpTip } from "@/components/ui/Tooltip";
 import { useDraftAutosave } from "@/lib/hooks/useDraftAutosave";
 import { RestoreDraftBanner } from "@/components/RestoreDraftBanner";
 import { fetchJson } from "@/lib/fetchJson";

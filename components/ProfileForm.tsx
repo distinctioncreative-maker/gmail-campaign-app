@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { SenderProfile } from "@/schemas/userSettings";
-import { HelpTip } from "@/components/HelpTip";
+import { HelpTip } from "@/components/ui/Tooltip";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 

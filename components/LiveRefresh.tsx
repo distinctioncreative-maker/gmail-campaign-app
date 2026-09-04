@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { StatusDot } from "@/components/ui/StatusDot";
 
 /**
  * Keeps a server-rendered page live: periodically calls router.refresh() so
@@ -32,13 +33,8 @@ export function LiveRefresh({ intervalMs = 15000, label = "Live" }: { intervalMs
   }, [router, intervalMs]);
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted">
-      <span
-        aria-hidden
-        className={`h-1.5 w-1.5 rounded-full bg-success ${pulse ? "" : "live-dot"}`}
-        style={pulse ? { boxShadow: "0 0 0 4px color-mix(in srgb, var(--success) 25%, transparent)", transition: "box-shadow 0.9s ease" } : undefined}
-      />
+    <StatusDot tone="live" flash={pulse} className="text-xs font-medium text-muted">
       {label}
-    </span>
+    </StatusDot>
   );
 }

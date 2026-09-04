@@ -134,7 +134,7 @@ export function PulseChart({ data }: { data: PulseDay[] }) {
           strokeWidth="2.75"
           strokeLinecap="round"
           filter={`url(#glow-${gid})`}
-          className="pulse-line"
+          className="draw-line"
         />
         {/* moving shimmer sweep clipped to the line */}
         <path

@@ -110,8 +110,9 @@ export default async function SystemHealthPage() {
                   <td className="px-4 py-3 font-medium">{label}</td>
                   <td className="px-4 py-3 text-muted">{value}</td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${ok ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`} title={ok ? "Healthy" : "Needs attention"}>
+                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${ok ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`}>
                       <Icon name={ok ? "check" : "alert"} size={14} aria-hidden />
+                      <span className="sr-only">{ok ? "Healthy" : "Needs attention"}</span>
                     </span>
                   </td>
                 </TableRow>
@@ -135,8 +136,9 @@ export default async function SystemHealthPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${sweepFresh(at) ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`} title={sweepFresh(at) ? "Healthy" : "Needs attention"}>
+                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${sweepFresh(at) ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`}>
                       <Icon name={sweepFresh(at) ? "check" : "alert"} size={14} aria-hidden />
+                      <span className="sr-only">{sweepFresh(at) ? "Healthy" : "Needs attention"}</span>
                     </span>
                   </td>
                 </TableRow>

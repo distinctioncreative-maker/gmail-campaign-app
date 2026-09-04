@@ -8,6 +8,7 @@ import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { totalSent } from "@/lib/analytics/metrics";
 import type { Briefing, SetupStep } from "@/lib/home/dashboard";
 import type { Campaign } from "@/schemas/campaign";
+import { StatusDot } from "@/components/ui/StatusDot";
 
 /**
  * The presentational half of the dashboard home page. Each block takes the
@@ -50,7 +51,7 @@ export function HomeHero({
           <div
             className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-widest ${pill.className}`}
           >
-            <span aria-hidden className={`live-dot h-1.5 w-1.5 rounded-full ${pill.dot}`} />
+            <span aria-hidden className={`h-1.5 w-1.5 shrink-0 rounded-full ${pill.dot}`} />
             {pill.label}
             {orgName && <span className="text-muted">· {orgName}</span>}
           </div>
@@ -229,9 +230,9 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
             >
               <div className="flex items-center justify-between gap-2">
                 <p className="truncate font-medium">{c.name}</p>
-                <span className="live-dot flex items-center gap-1 text-xs font-medium text-success">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success" /> sending
-                </span>
+                <StatusDot tone="live" className="text-xs font-medium text-success">
+                  sending
+                </StatusDot>
               </div>
               <Meter value={pct} tone="good" height={8} className="mt-3" />
               <div className="mt-2 flex items-center justify-between text-xs text-muted">

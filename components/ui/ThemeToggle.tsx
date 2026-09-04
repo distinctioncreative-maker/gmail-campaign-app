@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 /** Light/dark toggle. Persists to localStorage and flips data-theme on <html>.
  * The no-flash inline script in the root layout sets the initial theme before
@@ -29,13 +30,17 @@ export function ThemeToggle() {
   }
 
   return (
-    <button
-      onClick={toggle}
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      title={dark ? "Light mode" : "Dark mode"}
-      className="rounded-lg p-2 text-muted transition hover:bg-surface-2 hover:text-foreground"
-    >
-      <Icon name={dark ? "sun" : "moon"} size={18} />
-    </button>
+    <Tooltip content={dark ? "Light mode" : "Dark mode"} placement="bottom">
+      {(props) => (
+        <button
+          {...props}
+          onClick={toggle}
+          aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+          className="rounded-md p-2 text-muted transition hover:bg-surface-2 hover:text-foreground"
+        >
+          <Icon name={dark ? "sun" : "moon"} size={18} />
+        </button>
+      )}
+    </Tooltip>
   );
 }

@@ -126,3 +126,75 @@ describe("the stacking order is named, ordered, and the only one in use", () => 
     expect(offenders).toEqual([]);
   });
 });
+
+/**
+ * Reduced motion is opted into, one class at a time.
+ *
+ * There is no blanket `* { animation: none }` rule in this file, and there
+ * should not be: several of these animations carry meaning that a hard stop
+ * would remove rather than calm. The cost of that choice is that every new
+ * animation has to remember to add itself, and four had not: the status dot's
+ * flash, and the three entrance animations on the dialog, the popover
+ * and the tooltip.
+ *
+ * An infinite loop is the exact thing this preference exists to spare someone,
+ * so the omission is not cosmetic. This is the reminder, written as a rule
+ * rather than as a habit.
+ */
+describe("every animation can be turned off", () => {
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  const reducedMotionSpans: Array<[number, number]> = [];
+  for (const match of withoutComments.matchAll(
+    /@media \(prefers-reduced-motion: reduce\)\s*\{/g
+  )) {
+    let i = match.index! + match[0].length;
+    let depth = 1;
+    while (depth > 0 && i < withoutComments.length) {
+      if (withoutComments[i] === "{") depth++;
+      else if (withoutComments[i] === "}") depth--;
+      i++;
+    }
+    reducedMotionSpans.push([match.index!, i]);
+  }
+
+  const insideReducedMotion = reducedMotionSpans
+    .map(([a, b]) => withoutComments.slice(a, b))
+    .join("");
+  let outside = withoutComments;
+  for (const [a, b] of [...reducedMotionSpans].reverse()) {
+    outside = outside.slice(0, a) + outside.slice(b);
+  }
+
+  const animated = new Set<string>();
+  for (const rule of outside.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const [, selector, body] = rule;
+    if (!/\banimation(-name)?\s*:/.test(body)) continue;
+    if (/\banimation\s*:\s*none/.test(body)) continue;
+    for (const [, name] of selector.matchAll(/\.([\w-]+)/g)) animated.add(name);
+  }
+  const covered = new Set(
+    [...insideReducedMotion.matchAll(/\.([\w-]+)/g)].map(([, name]) => name)
+  );
+
+  it("finds the animations, so the rule is not passing on an empty set", () => {
+    expect(reducedMotionSpans.length).toBeGreaterThan(4);
+    expect(animated.size).toBeGreaterThan(15);
+  });
+
+  it("has a reduced-motion opt-out for every animated class", () => {
+    expect([...animated].filter((name) => !covered.has(name)).sort()).toEqual([]);
+  });
+
+  it("still stops the one that reports a change", () => {
+    // Non-vacuity for the rule above: a reduced-motion block that named every
+    // class but set nothing would pass it. Checked by finding the rule this
+    // class is actually in rather than by proximity, because a nearby rule's
+    // `animation: none` will satisfy a regex window and prove nothing.
+    const rule = [...insideReducedMotion.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find(
+      ([, selector]) => /(^|,)\s*\.status-dot-flash\s*(,|$)/.test(selector.trim())
+    );
+    expect(rule, ".status-dot-flash must be in a reduced-motion rule").toBeTruthy();
+    expect(rule![2]).toMatch(/animation:\s*none/);
+  });
+});
