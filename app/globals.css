@@ -711,6 +711,49 @@ a.card-hover:focus-visible {
   animation: rise var(--dur-base) var(--ease-out) both;
 }
 
+/* ── The navigation rail ─────────────────────────────────── */
+/* Width and label visibility are CSS keyed off an attribute the pre-paint
+   script sets, not React state. Holding it in state would mean the server
+   rendering an expanded rail and every visitor who collapsed it watching it
+   collapse again on each navigation, and reading localStorage during render is
+   a hydration mismatch because the server has none. Both states are always in
+   the DOM; only this file decides which is shown. */
+.rail {
+  width: 15rem;
+  padding-inline: 1rem;
+  transition: width var(--dur-base) var(--ease-out);
+}
+.rail-head { justify-content: space-between; gap: 0.5rem; padding-left: 0.5rem; }
+.rail-mark { display: none; }
+.rail-sr-label { display: none; }
+.rail-rule { display: none; }
+.rail-chevron { transform: rotate(90deg); }
+
+:root[data-rail="collapsed"] .rail {
+  width: 4.5rem;
+  padding-inline: 0.75rem;
+}
+:root[data-rail="collapsed"] .rail-head { justify-content: center; padding-left: 0; }
+:root[data-rail="collapsed"] .rail-label { display: none; }
+:root[data-rail="collapsed"] .rail-sr-label { display: revert; }
+:root[data-rail="collapsed"] .rail-mark { display: block; }
+:root[data-rail="collapsed"] .rail-rule { display: block; }
+:root[data-rail="collapsed"] .rail-item { justify-content: center; padding-inline: 0; }
+/* The nav carries a 4px right padding so a scrollbar never sits on the links.
+   Collapsed, that padding is the whole reason every icon lands two pixels left
+   of the rail's centre line: the centring is correct, the box it centres in is
+   not. Two pixels is invisible on one icon and is precisely what a column of
+   five of them makes obvious. */
+:root[data-rail="collapsed"] .rail nav { padding-right: 0; }
+:root[data-rail="collapsed"] .rail-chevron { transform: rotate(-90deg); }
+/* The toggle sits under the mark rather than beside it, because at 72px there
+   is no beside. */
+:root[data-rail="collapsed"] .rail-head { flex-direction: column; gap: 0.75rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rail { transition: none; }
+}
+
 /* Frosted panel (sidebar / top bar). */
 .glass {
   background: color-mix(in srgb, var(--surface) 88%, transparent);

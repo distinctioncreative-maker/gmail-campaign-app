@@ -102,13 +102,20 @@ export default function RootLayout({
           The rule is "dark unless the person chose light". An explicit choice
           still wins in both directions, which is the part that matters.
 
+          The navigation rail rides along for the same reason. Its width is CSS
+          keyed off data-rail, so setting it here is what stops someone who
+          collapsed the rail from watching it collapse again on every single
+          navigation. React state could not do this without either a hydration
+          mismatch or that flash.
+
           try/catch because localStorage throws outright in some privacy modes,
           and the fallback still sets a theme rather than leaving the attribute
-          off, which would leave every token undefined.
+          off, which would leave every token undefined. The rail has no such
+          fallback because its default is the absence of the attribute.
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('massleader.theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}`,
+            __html: `try{var d=document.documentElement;var t=localStorage.getItem('massleader.theme');d.setAttribute('data-theme',t==='light'?'light':'dark');if(localStorage.getItem('massleader.rail')==='collapsed')d.setAttribute('data-rail','collapsed')}catch(e){document.documentElement.setAttribute('data-theme','dark')}`,
           }}
         />
       </head>

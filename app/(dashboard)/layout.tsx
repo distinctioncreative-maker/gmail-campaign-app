@@ -14,6 +14,8 @@ import { UIProviders } from "@/components/ui/UIProviders";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/ui/Logo";
 import { Icon } from "@/components/ui/Icon";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { StatusDot } from "@/components/ui/StatusDot";
 
 const BASE_NAV: NavItem[] = [
   { href: "/home", label: "Home", icon: "home", section: "Overview" },
@@ -99,7 +101,6 @@ export default async function DashboardLayout({
         email={email}
         role={role}
         roleLabel={roleLabel}
-        workspaceName={workspaceName}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         {/* One bar. This used to be three stacked strips: a mobile identity
@@ -114,15 +115,17 @@ export default async function DashboardLayout({
             the navigation. Moving it removes the conflict rather than
             patching the clipping. */}
         <header className="glass sticky top-0 z-chrome flex h-14 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
+          {/* The workspace name had three renderings above the fold on /home,
+              at three sizes in three colours. The breadcrumb is its one home
+              now, and it earns the space by saying where you are as well as
+              whose workspace it is. */}
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="sm:hidden">
+            <span className="shrink-0 sm:hidden">
               <Wordmark />
             </span>
-            {workspaceName && (
-              <span className="truncate text-sm font-medium text-foreground max-sm:max-w-[7rem] max-sm:border-l max-sm:border-border max-sm:pl-2.5 max-sm:text-2xs max-sm:text-muted">
-                {workspaceName}
-              </span>
-            )}
+            <span className="hidden min-w-0 sm:block">
+              <Breadcrumb workspaceName={workspaceName} items={nav} />
+            </span>
           </div>
 
           {/* The palette trigger sits with the workspace identity rather than
@@ -145,10 +148,7 @@ export default async function DashboardLayout({
                 rather than a coloured band, and it keeps the full sentence in
                 its title and screen-reader label. */}
             {sending.testMode ? (
-              <span
-                className="badge alert-warning shrink-0 border text-warning"
-                title="Test mode: emails only go to your test address, never real recipients."
-              >
+              <span className="badge alert-warning shrink-0 border text-warning">
                 <Icon name="shield" size={13} aria-hidden />
                 <span aria-hidden className="hidden sm:inline">
                   Test mode
@@ -158,18 +158,20 @@ export default async function DashboardLayout({
                 </span>
               </span>
             ) : (
-              <span
+              /* The live state was a bullet character typed into the markup,
+                 which inherits the text colour and sits on the text baseline
+                 rather than on the row's optical centre. It is the same dot
+                 every other live state in the app draws, so it uses the same
+                 component. */
+              <StatusDot
+                tone="live"
                 className="badge alert-success shrink-0 border text-success"
-                title="Live: campaigns send real emails to real recipients."
+                srLabel="Live: campaigns send real emails to real recipients."
               >
-                <span aria-hidden>●</span>
                 <span aria-hidden className="hidden sm:inline">
                   Live
                 </span>
-                <span className="sr-only">
-                  Live: campaigns send real emails to real recipients.
-                </span>
-              </span>
+              </StatusDot>
             )}
             <span className="hidden sm:block">
               <ThemeToggle />

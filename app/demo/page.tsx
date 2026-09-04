@@ -45,7 +45,6 @@ export default async function DemoHomePage({
       <HomeHero
         greeting="Good afternoon"
         firstName="Alex"
-        orgName={home.orgName}
         briefing={home.briefing}
         activity={home.activity}
         isSendingNow

@@ -26,7 +26,6 @@ const STATUS_PILL: Record<string, { label: string; className: string; dot: strin
 export function HomeHero({
   greeting,
   firstName,
-  orgName,
   briefing,
   activity,
   isSendingNow,
@@ -35,7 +34,6 @@ export function HomeHero({
 }: {
   greeting: string;
   firstName: string;
-  orgName: string | null;
   briefing: Briefing;
   activity: Array<{ day: string; sent: number; replied: number }>;
   isSendingNow: boolean;
@@ -53,7 +51,6 @@ export function HomeHero({
           >
             <span aria-hidden className={`h-1.5 w-1.5 shrink-0 rounded-full ${pill.dot}`} />
             {pill.label}
-            {orgName && <span className="text-muted">· {orgName}</span>}
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
             {greeting}, {firstName}.

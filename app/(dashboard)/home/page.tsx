@@ -210,7 +210,6 @@ export default async function HomePage({
       <HomeHero
         greeting={greetingFor(ctx.user.timezone)}
         firstName={ctx.user.displayName.split(" ")[0] || "there"}
-        orgName={home.orgName}
         briefing={home.briefing}
         activity={home.activity}
         isSendingNow={home.activeCampaigns.length > 0}

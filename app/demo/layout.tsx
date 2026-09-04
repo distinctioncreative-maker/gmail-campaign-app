@@ -6,6 +6,7 @@ import { UIProviders } from "@/components/ui/UIProviders";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Icon } from "@/components/ui/Icon";
 import { demoEnabled } from "@/lib/demo/enabled";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export const metadata: Metadata = {
   title: "Product tour",
@@ -43,16 +44,30 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
           email="alex@northwindpartners.com"
           role="ADMIN"
           roleLabel="Administrator"
-          workspaceName="Northwind Partners"
         />
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Same 56px rule as the real dashboard, so the tour reads as the
               product rather than as a mock of it. */}
           <header className="glass sticky top-0 z-chrome flex h-14 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 sm:px-6">
-            <span className="flex items-center gap-2 text-xs font-medium text-muted">
-              <Icon name="sparkles" size={14} aria-hidden />
-              Product tour with sample data. Nothing here sends email.
-            </span>
+            {/* The same breadcrumb the real dashboard carries, for the same
+                reason the rule below it is the same 56px: this should read as
+                the product rather than as a mock of it. */}
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="hidden min-w-0 sm:block">
+                <Breadcrumb
+                  workspaceName="Northwind Partners"
+                  items={DEMO_NAV}
+                  homeHref="/demo"
+                />
+              </span>
+              <span className="flex shrink-0 items-center gap-2 text-xs font-medium text-muted">
+                <Icon name="sparkles" size={14} aria-hidden />
+                <span className="hidden md:inline">
+                  Product tour with sample data. Nothing here sends email.
+                </span>
+                <span className="md:hidden">Sample data</span>
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <Link href="/" className="btn-ghost px-3 py-1.5 text-xs">
