@@ -277,15 +277,27 @@ describe("landing-page experience", () => {
   });
 
   it("keeps Log in visible and touchable when zoom creates a narrow viewport", () => {
-    const narrowStyles = landingStyles.match(
-      /@media \(max-width: 720px\) \{([\s\S]*?)\n\}\n\n@media \(max-width: 520px\)/
-    )?.[1] ?? "";
     expect(landingSource).toContain('<a className={styles.login} href="/sign-in">');
     expect(landingStyles).toMatch(
       /\.login \{[\s\S]*?display: inline-flex;[\s\S]*?min-height: 44px;/
     );
-    expect(narrowStyles).toContain(".login {");
-    expect(narrowStyles).not.toContain("display: none");
+
+    /**
+     * Stated as the rule rather than as "the block between 720px and 520px".
+     * That locator assumed those two media queries were adjacent, so adding a
+     * 560px block between them made this fail while nothing about Log in had
+     * changed. What actually matters is that no breakpoint hides it, which is
+     * checkable directly and does not care what else is in the file.
+     */
+    for (const [, selector, body] of landingStyles.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      if (!/display:\s*none/.test(body)) continue;
+      expect(
+        /(^|,)\s*\.login\s*(,|$)/.test(selector.trim()),
+        `a rule hides .login: ${selector.trim().slice(0, 60)}`
+      ).toBe(false);
+    }
+    // And the narrow breakpoint still gives it a size rather than dropping it.
+    expect(landingStyles).toMatch(/@media \(max-width: 720px\)[\s\S]*?\.login \{/);
   });
 
   it("qualifies deliverability claims instead of promising inbox placement", () => {

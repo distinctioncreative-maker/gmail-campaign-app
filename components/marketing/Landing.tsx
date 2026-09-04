@@ -46,7 +46,15 @@ export function Landing() {
             <a href="#trust">Trust</a>
           </div>
           <div className={styles.navActions}>
-            <a className={styles.login} href="/demo">
+            {/* Dropped on a phone. Three actions plus the wordmark do not fit
+                in 390px, and what was happening instead was silent: the grid
+                gave the actions the width they asked for and collapsed the
+                brand column to zero, so the page rendered with no wordmark at
+                all. "See it live" is the one of the three a first-time visitor
+                loses least by not seeing in the bar, because the hero is the
+                demo; "Log in" stays, because making a returning customer scroll
+                eight thousand pixels to the footer to find it is worse. */}
+            <a className={`${styles.login} ${styles.navDemo}`} href="/demo">
               See it live
             </a>
             <a className={styles.login} href="/sign-in">

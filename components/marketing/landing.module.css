@@ -1314,6 +1314,24 @@
   font-size: 12px;
 }
 
+/* Touch targets.
+   The footer links rendered 19px tall on a phone, which is under WCAG 2.5.8's
+   24px minimum, never mind the 44px the application itself holds for its own
+   mobile navigation. They are inline text in a wrapped list, so the fix is
+   vertical padding rather than a larger font: the type stays where it is and
+   the hit area grows around it. Negative margin keeps the visual rhythm of the
+   row, so this costs nothing in layout. */
+@media (pointer: coarse) {
+  .brand,
+  .footerLinks a,
+  .workflowFoot a,
+  .trustCopy > a,
+  .heroFoot a {
+    padding-block: 13px;
+    margin-block: -13px;
+  }
+}
+
 .copyright {
   grid-column: 1 / -1;
   margin: 0;
@@ -1476,6 +1494,7 @@
     display: none;
   }
 
+
   .trustLayout {
     grid-template-columns: 1fr;
     gap: 52px;
@@ -1601,14 +1620,29 @@
   }
 }
 
+@media (max-width: 560px) {
+  .navDemo {
+    display: none;
+  }
+
+  .navActions {
+    gap: 12px;
+  }
+}
+
 @media (max-width: 520px) {
   .brand {
     font-size: 16px;
   }
 
-  .brand > span > span:last-child {
-    display: none;
-  }
+  /* The rule that used to sit here hid `.brand > span > span:last-child`,
+     meaning to drop the wordmark's optional descriptor on a narrow screen.
+     Wordmark renders the descriptor only when one is passed, and nothing on
+     this page passes one, so there is exactly one span and :last-child matched
+     the name itself. Below 520px the marketing page rendered with no wordmark
+     at all, in the nav and in the footer, and had done for as long as the rule
+     existed. Nothing failed: an element styled out of existence looks the same
+     as one that was never meant to be there. */
 
   .waitForm {
     grid-template-columns: 1fr;
