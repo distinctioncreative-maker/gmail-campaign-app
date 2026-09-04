@@ -867,20 +867,31 @@
   color: var(--landing-muted);
 }
 
+/* One column, because there is only one child.
+   This was a two-column grid whose right half held the four interactive demos.
+   Those were deleted and the grid that reserved 1.08fr for them was not, so
+   the section rendered five steps crammed into a 525px column beside seven
+   hundred pixels of nothing: the most visible unfinished thing on the page,
+   and invisible in the markup, where the leftover column is not written down.
+   Same family as a class that resolves to nothing, one level up. */
 .workflow {
-  display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
-  align-items: center;
-  gap: 78px;
   margin-top: 64px;
 }
 
+/* The step reads across the full width: number, then what it is, then what it
+   does. A sequence laid out as a spec sheet rather than as a narrow column,
+   which is what the width is actually for. */
 .workflowSteps article {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: 44px minmax(0, 0.5fr) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 16px 32px;
   border-top: 1px solid var(--landing-line);
   padding: 23px 0;
+}
+
+.workflowSteps article > div {
+  display: contents;
 }
 
 .workflowSteps article:last-child {
@@ -901,9 +912,10 @@
 }
 
 .workflowSteps p {
-  margin: 7px 0 0;
+  margin: 0;
+  max-width: 62ch;
   color: var(--landing-muted);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.65;
 }
 
@@ -1464,10 +1476,23 @@
     display: none;
   }
 
-  .workflow,
   .trustLayout {
     grid-template-columns: 1fr;
     gap: 52px;
+  }
+
+  /* Narrow: the copy goes back under the title rather than beside it. */
+  .workflowSteps article {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .workflowSteps article > div {
+    display: block;
+  }
+
+  .workflowSteps p {
+    margin-top: 7px;
   }
 
   .composeMock {
