@@ -972,17 +972,12 @@
   margin-top: 56px;
 }
 
-@media (min-width: 981px) {
-  .featureGrid article:first-child {
-    grid-column: span 2;
-  }
-
-  /* A spanning card is wider, not taller, so its copy needs a measure or the
-     line length runs past comfortable reading. */
-  .featureGrid article:first-child p {
-    max-width: 52ch;
-  }
-}
+/* Nine cards, three columns, three rows.
+   The first card used to span two columns, which made ten column-slots for nine
+   cards: three full rows and then one card sitting alone with two empty slots
+   beside it. The span was there to give the first feature prominence, and the
+   price was a grid that reads as having run out rather than as having been
+   arranged. Being first is the prominence. */
 
 .featureGrid article {
   min-height: 236px;
