@@ -4,6 +4,10 @@ import { describe, expect, it } from "vitest";
 
 const globals = readFileSync("app/globals.css", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 
+/** Source with comments stripped, because these rules are about what renders. */
+const code = (source: string) =>
+  source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+
 function walk(dir: string, out: string[] = []) {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
@@ -14,6 +18,7 @@ function walk(dir: string, out: string[] = []) {
 }
 
 const components = [...walk("app"), ...walk("components")];
+const sources = components;
 
 /** Every `.foo` this stylesheet actually defines. */
 const defined = new Set(
@@ -127,5 +132,45 @@ describe("every class this app writes itself is defined", () => {
       .map(([name, paths]) => `${name} (${[...new Set(paths)].join(", ")})`)
       .sort();
     expect(dangling).toEqual([]);
+  });
+});
+
+/**
+ * The same two rules the marketing page holds, held for the app.
+ *
+ * Both were written after finding the bug on the public site, and both describe
+ * a shape rather than a place: a link pointing at an id nothing renders, and a
+ * rule hiding a `:last-child` that turns out to be an only child. Neither is
+ * about marketing. Leaving them scoped there means the next instance is only
+ * caught if it happens to land on the one page that already had it.
+ */
+describe("the app holds the rules the marketing page holds", () => {
+  it("has no in-page link pointing at an id nothing renders", () => {
+    const markup = sources
+      .map((p) => code(readFileSync(p, "utf8")))
+      .join("\n");
+    const targets = new Set([...markup.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id));
+    // Ids built from a template literal cannot be resolved statically; a link
+    // to one is not evidence of a dead anchor.
+    const hrefs = [...markup.matchAll(/href="#([^"${}]+)"/g)].map(([, id]) => id);
+    expect(hrefs.length).toBeGreaterThan(2);
+    expect(hrefs.filter((id) => !targets.has(id))).toEqual([]);
+  });
+
+  it("never hides a :last-child without requiring a sibling", () => {
+    /**
+     * `.brand > span > span:last-child { display: none }` meant to drop an
+     * optional descriptor and matched the wordmark itself, so the marketing
+     * page rendered with no logo below 520px for months. The stylesheet here is
+     * clean; the rule exists so it stays that way.
+     */
+    const offenders: string[] = [];
+    for (const [, selector, body] of globals.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      if (!/display:\s*none/.test(body)) continue;
+      if (!/:last-child/.test(selector)) continue;
+      if (/:not\(:first-child\)|:nth-child/.test(selector)) continue;
+      offenders.push(selector.trim().replace(/\s+/g, " ").slice(0, 80));
+    }
+    expect(offenders).toEqual([]);
   });
 });
