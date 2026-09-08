@@ -447,7 +447,7 @@ export function CampaignLeaderboard({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <Meter value={performance.replyRate} animate className="w-24" />
+                        <Meter value={performance.replyRate} tone="good" animate className="w-24" />
                         <span className="text-xs tabular-nums text-muted">
                           {formatPercent(performance.replyRate)}
                         </span>

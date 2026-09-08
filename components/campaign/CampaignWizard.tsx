@@ -12,6 +12,7 @@ import { SkeletonList } from "@/components/ui/Skeleton";
 import { SpamCheck } from "@/components/spam/SpamCheck";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import { Icon } from "@/components/ui/Icon";
+import { Meter } from "@/components/ui/charts/Meter";
 import { useConfirm } from "@/components/ui/UIProviders";
 import {
   assessPaceRisk,
@@ -448,12 +449,10 @@ export function CampaignWizard() {
         </span>
         <span>{Math.round(((step + 1) / STEPS.length) * 100)}%</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
-        <div
-          className="h-full rounded-full bg-success transition-all duration-300"
-          style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
-        />
-      </div>
+      {/* The one proportion bar in the product, rather than a twentieth
+          hand-rolled one. This was mint, which in this palette means a reply or
+          healthy sending; being on step two of five is neither. */}
+      <Meter value={step + 1} max={STEPS.length} height={6} />
       <ol className="mt-3 hidden flex-wrap gap-1.5 text-xs sm:flex" aria-label="Campaign steps">
         {STEPS.map((s, i) => (
           <li key={s}>

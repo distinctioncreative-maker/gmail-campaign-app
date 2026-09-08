@@ -211,7 +211,7 @@ export function OnboardingWizard({
         </span>
       </div>
 
-      <Meter value={step + 1} max={STEPS.length} tone="good" />
+      <Meter value={step + 1} max={STEPS.length} />
       <ol className="mt-3 grid grid-cols-4 gap-1 text-3xs sm:grid-cols-7 sm:text-xs" aria-label="Setup progress">
         {STEPS.map((label, index) => (
           <li

@@ -286,12 +286,20 @@ describe("progress bars", () => {
       }
     }
 
-    // Guard the guard, still: if the shape changes so nothing matches at all,
-    // this must fail loudly rather than pass vacuously. Two is the current real
-    // count. It has now stepped down twice, twelve to three to two, each time
-    // because bars moved into Meter rather than because the check stopped
-    // working, and each step was surfaced by this assertion rather than assumed.
-    expect(bars.length).toBeGreaterThanOrEqual(2);
+    /**
+     * Twelve, then three, then two, and now none. Each step down was surfaced
+     * by this assertion rather than assumed, and this is the last one: the
+     * campaign wizard and the demo campaigns table were the final two, and both
+     * now use Meter.
+     *
+     * So the invariant strengthens rather than disappears. "Every hand-rolled
+     * bar must be visible against its own track" becomes "there are no
+     * hand-rolled bars", which is the stronger claim and cannot pass vacuously:
+     * an empty list here is now the pass condition, and tests/unit/meter-tone.test.ts
+     * fails the moment one comes back. The loop below is kept because it costs
+     * nothing and would still catch an invisible bar the day one reappears.
+     */
+    expect(bars).toEqual([]);
     for (const bar of bars) {
       expect(`${bar.path}: ${bar.fill} on ${bar.track}`).toBe(
         `${bar.path}: ${bar.fill} on bg-surface-2`

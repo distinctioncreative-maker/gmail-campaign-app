@@ -268,7 +268,7 @@ export function CampaignsTable({
               </div>
               {/* The track is derived from the fill inside Meter, so the
                   1.00:1 invisible-bar bug this rule used to carry cannot recur. */}
-              <Meter value={c.progressRate} tone="good" height={8} className="mt-2" />
+              <Meter value={c.progressRate} height={8} className="mt-2" />
               <p className="mt-1 text-2xs text-muted">
                 {Math.min(c.recipients, c.initialSent)} of {c.recipients} leads
                 contacted
@@ -400,7 +400,7 @@ export function CampaignsTable({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex min-w-36 items-center gap-2">
-                    <Meter value={c.progressRate} tone="good" className="flex-1" />
+                    <Meter value={c.progressRate} className="flex-1" />
                     <span className="w-10 text-right text-xs tabular-nums text-muted">
                       {c.progressRate.toFixed(0)}%
                     </span>

@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { CountUp } from "@/components/ui/CountUp";
 import { DataTable, TableRow } from "@/components/ui/DataTable";
+import { Meter } from "@/components/ui/charts/Meter";
 import { LocalTime } from "@/components/LocalTime";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { campaignPerformance, formatPercent, totalSent } from "@/lib/analytics/metrics";
@@ -55,9 +56,7 @@ export default function DemoCampaignsPage() {
                   <td className="px-4 py-3"><span className={`badge ${badge.className}`}>{badge.label}</span></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-2">
-                        <div className="h-full rounded-full bg-success" style={{ width: `${pct}%` }} />
-                      </div>
+                      <Meter value={pct} height={6} className="w-24" />
                       <span className="text-xs tabular-nums text-muted">{pct.toFixed(0)}%</span>
                     </div>
                   </td>

@@ -179,7 +179,7 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
           A few minutes to your first send
         </span>
       </div>
-      <Meter value={done} max={steps.length} tone="good" height={6} className="mt-3 w-full" />
+      <Meter value={done} max={steps.length} height={6} className="mt-3 w-full" />
       <ol className="mt-4 flex flex-col gap-2">
         {steps.map((s, i) => {
           const isNext = i === nextIdx;
@@ -255,7 +255,7 @@ export function LiveCampaignCards({ campaigns }: { campaigns: Campaign[] }) {
                   sending
                 </StatusDot>
               </div>
-              <Meter value={pct} tone="good" height={8} className="mt-3" />
+              <Meter value={pct} height={8} className="mt-3" />
               <div className="mt-2 flex items-center justify-between text-xs text-muted">
                 <span className="tabular-nums">
                   {sent} of {total} sent
