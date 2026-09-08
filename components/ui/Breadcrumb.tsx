@@ -49,7 +49,7 @@ export function Breadcrumb({
         <li className="min-w-0 shrink">
           <Link
             href={homeHref}
-            className="block truncate rounded-sm text-muted transition-colors hover:text-foreground"
+            className="breadcrumb-link truncate rounded-sm text-muted transition-colors hover:text-foreground"
           >
             {workspaceName || "Workspace"}
           </Link>
@@ -61,7 +61,7 @@ export function Breadcrumb({
             </li>
             <li className="min-w-0 shrink-0">
               {onIndex ? (
-                <span className="truncate font-medium text-foreground" aria-current="page">
+                <span className="breadcrumb-link truncate font-medium text-foreground" aria-current="page">
                   {current.label}
                 </span>
               ) : (
@@ -70,7 +70,7 @@ export function Breadcrumb({
                 // which is why it can be a link rather than dead text.
                 <Link
                   href={current.href}
-                  className="truncate rounded-sm text-muted transition-colors hover:text-foreground"
+                  className="breadcrumb-link truncate rounded-sm text-muted transition-colors hover:text-foreground"
                 >
                   {current.label}
                 </Link>

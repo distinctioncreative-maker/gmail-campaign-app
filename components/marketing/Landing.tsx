@@ -54,7 +54,11 @@ export function Landing() {
                 loses least by not seeing in the bar, because the hero is the
                 demo; "Log in" stays, because making a returning customer scroll
                 eight thousand pixels to the footer to find it is worse. */}
-            <a className={`${styles.login} ${styles.navDemo}`} href="/demo">
+            <a
+              className={`${styles.login} ${styles.navDemo}`}
+              href="/demo"
+              data-responsive-hidden
+            >
               See it live
             </a>
             <a className={styles.login} href="/sign-in">

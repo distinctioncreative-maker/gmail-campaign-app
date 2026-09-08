@@ -36,7 +36,7 @@ export function ThemeToggle() {
           {...props}
           onClick={toggle}
           aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-          className="rounded-md p-2 text-muted transition hover:bg-surface-2 hover:text-foreground"
+          className="icon-button flex items-center justify-center rounded-md p-2 text-muted transition hover:bg-surface-2 hover:text-foreground"
         >
           <Icon name={dark ? "sun" : "moon"} size={18} />
         </button>

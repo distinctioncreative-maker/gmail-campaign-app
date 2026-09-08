@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "test:emulator": "firebase emulators:exec --only firestore --project outreach-rules-test \"vitest run --config vitest.emulator.config.ts\"",
-    "docs:features": "node scripts/generate-features-doc.mts"
+    "docs:features": "node scripts/generate-features-doc.mts",
+    "audit:render": "node scripts/render-audit.mjs"
   },
   "dependencies": {
     "@google-cloud/firestore": "^8.6.0",
@@ -46,6 +47,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "firebase-tools": "^15.24.0",
+    "playwright-core": "^1.56.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

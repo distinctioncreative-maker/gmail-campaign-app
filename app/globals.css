@@ -616,6 +616,14 @@ h2 { letter-spacing: -0.026em; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  /* A grid or flex item defaults to `min-width: auto`, which resolves to its
+     content's min-content width and therefore refuses to shrink. A card holding
+     a table with a 30rem minimum made its whole grid track 480px wide, so the
+     reports page scrolled sideways on a phone: the table's own overflow-x
+     container never got the chance to do its job, because the box around it had
+     already grown to fit. Measured at 438px of document in a 390px viewport,
+     and exactly 390 with this line. */
+  min-width: 0;
   /* Seated, not floating. The contact shadow is 1px and 4% opacity: you cannot
      see it, you can only see that the card is not painted onto the page. In
      dark, --edge-highlight carries the same job from the other direction. */
@@ -1033,6 +1041,37 @@ a.card-hover:focus-visible {
   transition: text-decoration-color var(--dur-base) var(--ease-out);
 }
 .link:hover { text-decoration-color: currentColor; }
+
+/* ── Target sizes ────────────────────────────────────────── */
+/* Two figures, because the thing pointing at a control decides which applies.
+   44px is the touch minimum and the app already holds it for its mobile
+   navigation; on a mouse the standard is WCAG 2.5.8's 24px, and applying 44
+   there would put a thumb-sized box around every inline link in a footer.
+
+   These are floors on standalone controls, not on links inside prose: a link in
+   a sentence is exempt from 2.5.8 precisely because padding it would break the
+   line it sits in. */
+.link,
+.breadcrumb-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+@media (pointer: coarse) {
+  .seg-btn,
+  .icon-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Height only: a standalone link is as wide as its label, and padding it
+     sideways would break the row it sits in. */
+  .link,
+  .breadcrumb-link {
+    min-height: 44px;
+  }
+}
 
 /* ── Form controls ───────────────────────────────────────── */
 /* Consistent feel across every input without touching each component. */

@@ -56,7 +56,12 @@ export default async function DemoHomePage({
         <h2>
           Your numbers
         </h2>
-        <div className="flex overflow-hidden rounded-sm border border-border bg-surface text-xs">
+        {/* The product's own segmented control, not a second one drawn to look
+            like it. This div hand-rolled the border, radius and padding, so it
+            rendered 28px tall against the real control's 36 and missed the
+            44px touch floor the shared class carries. The point of this page is
+            that it is the product. */}
+        <div className="segmented inline-flex">
           {(
             [
               ["all", "All time"],
@@ -67,11 +72,7 @@ export default async function DemoHomePage({
             <Link
               key={key}
               href={key === "all" ? "/demo" : `/demo?range=${key}`}
-              className={`border-r border-border px-3.5 py-1.5 font-medium transition last:border-r-0 ${
-                range === key
-                  ? "bg-foreground text-surface"
-                  : "text-muted hover:bg-surface-2 hover:text-foreground"
-              }`}
+              className={`seg-btn ${range === key ? "is-active" : ""}`}
             >
               {label}
             </Link>

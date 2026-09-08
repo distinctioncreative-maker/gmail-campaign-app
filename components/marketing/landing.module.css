@@ -1321,8 +1321,25 @@
    vertical padding rather than a larger font: the type stays where it is and
    the hit area grows around it. Negative margin keeps the visual rhythm of the
    row, so this costs nothing in layout. */
+/* On a mouse the floor is WCAG 2.5.8's 24px; these rendered 19 to 21. Padding
+   with matching negative margin, so the type stays where it is and only the hit
+   area grows. */
+.navLinks a,
+.login,
+.footerLinks a,
+.workflowFoot a,
+.trustCopy > a,
+.heroFoot a {
+  padding-block: 4px;
+  margin-block: -4px;
+}
+
+/* On a thumb it is 44px, which is what the application already holds for its
+   own mobile navigation. 12px landed on 43, measured, so it is 13. */
 @media (pointer: coarse) {
   .brand,
+  .navLinks a,
+  .login,
   .footerLinks a,
   .workflowFoot a,
   .trustCopy > a,
