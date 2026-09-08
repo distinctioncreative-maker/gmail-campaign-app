@@ -186,6 +186,118 @@ function collect(minTarget) {
     invisible.push(`${describe(el)} ${JSON.stringify(text.slice(0, 30))} inside a visible ${describe(parent)}`);
   }
 
+  /**
+   * Contrast, measured on the rendered pixel rather than on a pair of tokens.
+   *
+   * The token guards in tests/unit check the pairs someone thought to write
+   * down. They cannot see text that inherits a colour from three ancestors up,
+   * or sits on a translucent overlay, or lands on a surface the author did not
+   * have in mind. This walks up for the first opaque background and computes
+   * the ratio actually on screen.
+   *
+   * Thresholds are WCAG AA: 4.5:1, or 3:1 for large text, which is 24px and up,
+   * or 18.66px and up when bold.
+   */
+  const srgb = (c) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  /**
+   * Chrome serialises a computed background as `color(srgb r g b / a)` whenever
+   * the author wrote a wide-gamut or color-mix() value, and as `rgb()`
+   * otherwise. Parsing only the second means the first reads as "no background"
+   * and the walk carries on past it. That is not a small error: the marketing
+   * nav is a color-mix, so skipping it took the backdrop all the way up to the
+   * light page ground and reported the white wordmark on the dark bar at
+   * 1.04:1.
+   */
+  const parse = (value) => {
+    const v = value || "";
+    const modern = /color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\)/.exec(v);
+    if (modern) {
+      return {
+        r: parseFloat(modern[1]) * 255,
+        g: parseFloat(modern[2]) * 255,
+        b: parseFloat(modern[3]) * 255,
+        a: modern[4] === undefined ? 1 : parseFloat(modern[4]),
+      };
+    }
+    const legacy = /rgba?\(([^)]+)\)/.exec(v);
+    if (!legacy) return null;
+    const [r, g, b, a = "1"] = legacy[1].split(",").map((x) => parseFloat(x));
+    return { r, g, b, a };
+  };
+  const luminance = ({ r, g, b }) => 0.2126 * srgb(r) + 0.7152 * srgb(g) + 0.0722 * srgb(b);
+  const over = (fg, bg) => ({
+    r: fg.r * fg.a + bg.r * (1 - fg.a),
+    g: fg.g * fg.a + bg.g * (1 - fg.a),
+    b: fg.b * fg.a + bg.b * (1 - fg.a),
+    a: 1,
+  });
+
+  /**
+   * The first opaque background above this element, or null when it cannot be
+   * known.
+   *
+   * Null happens when something on the way up paints a gradient or an image:
+   * the colour behind the text is then a different value at every pixel and no
+   * amount of walking the tree will produce it. Reporting a guess there is
+   * worse than reporting nothing, because it is wrong in the loud direction.
+   * The first version of this returned white as a fallback and duly announced
+   * that the white hero headline had 1.04:1 against the dark band behind it.
+   */
+  function backdrop(el) {
+    let node = el;
+    let acc = null;
+    while (node && node !== document.documentElement.parentElement) {
+      const cs = getComputedStyle(node);
+      if (cs.backgroundImage && cs.backgroundImage !== "none") return null;
+      const c = parse(cs.backgroundColor);
+      if (c && c.a > 0) {
+        acc = acc ? over(acc, c) : c;
+        if (c.a >= 1) return { ...acc, a: 1 };
+      }
+      node = node.parentElement;
+    }
+    return acc && acc.a >= 1 ? acc : null;
+  }
+
+  const contrast = [];
+  const seen = new Set();
+  for (const el of document.querySelectorAll("body *")) {
+    if (el.children.length > 0) continue;
+    if (["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE"].includes(el.tagName)) continue;
+    const text = (el.textContent || "").trim();
+    if (!text) continue;
+    const r = rect(el);
+    if (r.width === 0 || r.height === 0) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility === "hidden" || parseFloat(cs.opacity) === 0) continue;
+    // sr-only
+    if (cs.position === "absolute" && (cs.clip !== "auto" || cs.clipPath !== "none")) continue;
+
+    const fg = parse(cs.color);
+    if (!fg) continue;
+    const bg = backdrop(el);
+    if (!bg) continue;
+    const flat = fg.a < 1 ? over(fg, bg) : fg;
+    const [hi, lo] = [luminance(flat), luminance(bg)].sort((a, b) => b - a);
+    const ratio = (hi + 0.05) / (lo + 0.05);
+
+    const size = parseFloat(cs.fontSize);
+    const weight = parseInt(cs.fontWeight, 10) || 400;
+    const large = size >= 24 || (size >= 18.66 && weight >= 700);
+    const need = large ? 3 : 4.5;
+    if (ratio + 0.01 >= need) continue;
+
+    const key = `${cs.color}|${cs.fontSize}|${text.slice(0, 20)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    contrast.push(
+      `${ratio.toFixed(2)}:1 (needs ${need}) ${describe(el)} ${JSON.stringify(text.slice(0, 30))}`
+    );
+  }
+
   const deadAnchors = [];
   for (const a of document.querySelectorAll('a[href^="#"]')) {
     const id = a.getAttribute("href").slice(1);
@@ -224,6 +336,7 @@ function collect(minTarget) {
     overflow,
     small,
     invisible,
+    contrast,
     deadAnchors,
     animating: [...animating].sort(),
     emptyTracks,
@@ -276,6 +389,7 @@ for (const route of ROUTES) {
       for (const o of r.overflow) note(route, width, theme, `overflows the viewport: ${o}`);
       for (const s of r.small) note(route, width, theme, `target under ${minTarget}px: ${s}`);
       for (const i of r.invisible) note(route, width, theme, `text renders at zero size: ${i}`);
+      for (const c of r.contrast) note(route, width, theme, `below AA contrast: ${c}`);
       for (const a of r.deadAnchors) note(route, width, theme, `anchor points at nothing: ${a}`);
       for (const g of r.emptyTracks) note(route, width, theme, `grid track with no child: ${g}`);
 

@@ -8,7 +8,7 @@ import { formatDealValue } from "@/lib/campaigns/outcomes";
  * point here is to demonstrate that the loop closes, not to invite a
  * signed-out visitor to write to a workspace that does not exist. */
 const OUTCOME: Record<string, { label: string; className: string }> = {
-  MEETING_BOOKED: { label: "Meeting booked", className: "bg-primary-soft text-primary" },
+  MEETING_BOOKED: { label: "Meeting booked", className: "bg-primary-soft text-primary-on-soft" },
   WON: { label: "Won", className: "bg-success-soft text-success" },
   LOST: { label: "Lost", className: "bg-surface-2 text-muted" },
 };

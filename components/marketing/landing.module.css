@@ -772,6 +772,21 @@
   text-transform: uppercase;
 }
 
+/* Shape is shared, colour is not, and this class had only ever been given the
+   paper half. --landing-action-deep is indigo darkened to sit on white; on the
+   two ink bands it rendered at 2.75:1 against the black behind it, at 11px, in
+   caps. The h2s in these same bands were fixed for exactly this reason a while
+   back and the eyebrow above them was left behind, which is what a rule written
+   per-element rather than per-ground does eventually.
+
+   Indigo comes back up on ink, the same way it does in the application's two
+   themes: 5.01:1, measured. */
+.trustSection .eyebrow,
+.finalPanel .eyebrow,
+.outcomeBand .eyebrow {
+  color: var(--landing-primary-on-ink);
+}
+
 /* Shape is shared, colour is not.
    These grouped rules used to paint the paper colour for everyone and let the
    two dark members repaint themselves a few hundred lines later. That worked,

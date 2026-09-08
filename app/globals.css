@@ -44,6 +44,12 @@
   --primary: #6d7cff;         /* 5.67:1 as text on the page */
   --primary-hover: #8793ff;   /* also the text colour on any indigo-tinted chip */
   --primary-soft: #23273e;    /* 14% indigo over the card, flattened */
+  /* Text ON that tint, which is not the same colour as text on a card.
+     --primary reads 4.18:1 against it and fails AA, which is the measurement
+     that decided the fill's label colour back when the palette was set; the
+     conclusion was written down and then applied to buttons only, so every
+     indigo chip in the product has been one step under ever since. 5.34:1. */
+  --primary-on-soft: #8793ff;
   --primary-contrast: #08090b; /* 5.67:1 on the fill */
   --brand-from: #6d7cff;
   --brand-to: #8793ff;
@@ -303,6 +309,7 @@
   --primary: #4a55ce;         /* 5.43:1 as text; white on the fill 6.03:1 */
   --primary-hover: #3f4aba;
   --primary-soft: #e6e7f8;
+  --primary-on-soft: #3f4aba;  /* 5.91:1 on the tint; --primary is 4.93 */
   --primary-contrast: #ffffff;
   --brand-from: #4a55ce;
   --brand-to: #3f4aba;
@@ -394,6 +401,7 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-on-soft: var(--primary-on-soft);
   --color-primary-contrast: var(--primary-contrast);
   --color-info: var(--info);
   --color-info-hover: var(--info-hover);

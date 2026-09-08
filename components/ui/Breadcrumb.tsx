@@ -56,7 +56,12 @@ export function Breadcrumb({
         </li>
         {current && (
           <>
-            <li aria-hidden className="shrink-0 text-border-firm">
+            {/* A separator drawn in a border colour measured 1.79:1, which is
+                a slash you have to look for. Decorative and aria-hidden, so it
+                is exempt from the contrast rule, and a breadcrumb whose
+                separator is invisible reads as a broken one. Quieter than the
+                links either side, still legible. */}
+            <li aria-hidden className="shrink-0 text-muted-2">
               /
             </li>
             <li className="min-w-0 shrink-0">

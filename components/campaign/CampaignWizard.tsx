@@ -852,7 +852,7 @@ export function CampaignWizard() {
                       aria-pressed={(customPace.pacingMode ?? "SPREAD") === mode}
                       className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
                         (customPace.pacingMode ?? "SPREAD") === mode
-                          ? "border-primary bg-primary-soft text-primary"
+                          ? "border-primary bg-primary-soft text-primary-on-soft"
                           : "border-border text-muted hover:bg-surface-2"
                       }`}
                     >

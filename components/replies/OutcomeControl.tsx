@@ -32,7 +32,7 @@ const OPTIONS: Array<{
     label: "Meeting booked",
     short: "Meeting",
     icon: "clock",
-    active: "border-primary bg-primary-soft text-primary",
+    active: "border-primary bg-primary-soft text-primary-on-soft",
   },
   {
     value: "WON",
