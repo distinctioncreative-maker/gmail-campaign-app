@@ -331,3 +331,47 @@ describe("progress bars", () => {
 
 
 });
+
+/**
+ * The email surface cannot use tokens, so a rule has to hold its literals
+ * together.
+ *
+ * Three places paint the recipient's email: the `[data-surface="email"]` scope
+ * for the composer, the preview iframe's srcDoc, and the button snippet the
+ * editor inserts into the message itself. The last two are sent to a mail
+ * client, where a custom property resolves to nothing, so they are hex by
+ * necessity rather than by carelessness.
+ *
+ * The cost of that is silent drift. The inserted button was `#1a1815`, a warm
+ * near-black from the brass palette, and it stayed that way through two
+ * repalettes because nothing connected it to anything: a literal inside a
+ * template string in an onClick has no relationship to a stylesheet. A customer's
+ * email was being drawn in a colour this product had deleted.
+ */
+describe("the email surface's literals agree with each other", () => {
+  const css = readFileSync("app/globals.css", "utf8");
+  const editor = readFileSync("components/templates/TemplateEditor.tsx", "utf8");
+
+  const emailInk = /\[data-surface="email"\]\s*\{[^}]*--foreground:\s*(#[0-9a-fA-F]{6})/.exec(
+    css
+  )?.[1];
+
+  it("has an email scope with an ink colour to agree with", () => {
+    expect(emailInk).toBeTruthy();
+  });
+
+  it("draws the inserted button and the preview in that same ink", () => {
+    // The button the editor puts inside the customer's message.
+    expect(editor).toMatch(new RegExp(`background:${emailInk};color:#ffffff`, "i"));
+    // And the preview iframe, which is what the sender checks their work in.
+    expect(editor.toLowerCase()).toContain(`color:${emailInk!.toLowerCase()}`);
+  });
+
+  it("keeps the email surface white, in the scope and in the preview", () => {
+    // Non-vacuity: the rules above pass if every literal becomes the same wrong
+    // colour. The recipient's email is white paper and that is not negotiable.
+    expect(css).toMatch(/\[data-surface="email"\]\s*\{[^}]*--surface:\s*#ffffff/);
+    expect(editor).toContain('background: "#ffffff"');
+    expect(editor).toContain("background:#fff");
+  });
+});

@@ -497,9 +497,18 @@ export function TemplateEditor({
               <button
                 onClick={() =>
                   insertHtmlAtCursor(
-                    // Inlined hex, not a token: this markup is sent inside an
-                    // email, where custom properties do not resolve.
-                    `<a href="https://example.com" style="display:inline-block;background:#1a1815;color:#ffffff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600">Book a call</a>`
+                    /* Inlined hex, not a token: this markup is sent inside an
+                       email, where custom properties do not resolve.
+
+                       The value is the email surface's own ink, the same
+                       #1d1d1f that [data-surface="email"] and the preview
+                       iframe use. It was #1a1815, a warm near-black left over
+                       from the brass palette, so a button in the customer's
+                       email was still being drawn in a colour this product
+                       deleted. Nothing catches that on its own: an email cannot
+                       reference a token, so the only thing keeping these three
+                       literals together is a rule that says so. */
+                    `<a href="https://example.com" style="display:inline-block;background:#1d1d1f;color:#ffffff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600">Book a call</a>`
                   )
                 }
                 className="editor-tool"
