@@ -123,6 +123,32 @@ describe("indigo and mint on a near-neutral ground", () => {
     }
   });
 
+  it("keeps a label readable on the chip it is painted on, not just on the card", () => {
+    /**
+     * The pair above checks every text token against the three grounds a page
+     * is built from, and a badge is not one of them. A chip paints its own
+     * background, so `--muted` on `--border` and `--primary` on
+     * `--primary-soft` are pairs nobody was measuring — and the first of them
+     * shipped at 4.28:1 in light on every Stopped, Cancelled and Removed label
+     * in the product until a browser was pointed at it.
+     *
+     * Each entry is a chip that exists in the app: the background token it
+     * fills with, and the token its text must use.
+     */
+    const chips = [
+      ["border", "muted-on-border"],
+      ["primary-soft", "primary-on-soft"],
+    ] as const;
+    for (const [name, block] of THEMES) {
+      for (const [ground, label] of chips) {
+        expect(
+          contrast(token(block, label), token(block, ground)),
+          `${name} --${label} on --${ground}`
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
   it("separates the card from the page and gives the hairline an edge", () => {
     // A card at 1.06:1 against its page is the separation of two things that
     // are the same colour. The brief's own surface ladder measured 1.06 to 1.08

@@ -90,7 +90,7 @@ export default async function DashboardLayout({
     <UIProviders>
     <a
       href="#dashboard-main"
-      className="fixed left-3 top-3 z-skip -translate-y-24 rounded-lg bg-surface px-4 py-3 text-sm font-semibold text-foreground shadow-lg transition focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary"
+      className="fixed left-3 top-3 z-skip inline-flex min-h-11 -translate-y-24 items-center rounded-lg bg-surface px-4 text-sm font-semibold text-foreground shadow-lg transition focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary"
     >
       Skip to main content
     </a>

@@ -658,6 +658,34 @@ describe("radius by element class", () => {
     expect(large.length).toBeLessThanOrEqual(8);
   });
 
+  it("makes the reel's dots a target rather than the bar they draw", () => {
+    /**
+     * The dots on Home were the bar: 4px tall, and 4px was the whole button.
+     * Two named controls a browser measured at 56x4 and 28x4, which no finger
+     * and few pointers can land on. The bar is now painted by a pseudo-element
+     * inside a band you can actually press, so the picture is unchanged and the
+     * target is real — and the height must stay on the button, not migrate back
+     * onto the thing that looks like a bar.
+     */
+    const css = read("app/globals.css");
+    expect(css).toMatch(/\.reel-dot \{[\s\S]*?height: 24px;/);
+    expect(css).toMatch(/@media \(max-width: 639px\) \{\s*\.reel-dot \{ height: 44px;/);
+    // The visible 4px track is the pseudo-element's, and only the pseudo-element's.
+    expect(css).toMatch(/\.reel-dot::before \{[\s\S]*?height: 4px;/);
+    const reelBlock = css.match(/\.reel-dot \{([\s\S]*?)\n\}/)?.[1] ?? "";
+    expect(reelBlock).not.toMatch(/height: 4px/);
+  });
+
+  it("gives the notification bell and the skip link a full touch target", () => {
+    /**
+     * Both were measured under 44px on a 390px viewport: the bell at 36x36 was
+     * the only icon button in the mobile bar, and the skip link — the first
+     * thing a keyboard user ever lands on — sat at 43px, one pixel short.
+     */
+    expect(read("components/NotificationBell.tsx")).toMatch(/min-h-11[^"]*min-w-11/);
+    expect(read("app/(dashboard)/layout.tsx")).toMatch(/min-h-11[\s\S]{0,400}Skip to main content/);
+  });
+
   it("gives the formatting toolbar a real target instead of nine copies of one string", () => {
     const css = read("app/globals.css");
     expect(css).toContain(".editor-tool");

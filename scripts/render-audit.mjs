@@ -69,7 +69,27 @@ const EXECUTABLE =
   process.env.AUDIT_CHROMIUM ?? (existsSync(PREINSTALLED) ? PREINSTALLED : undefined);
 
 /** `/demo` renders the real product components against fixtures, with no auth. */
-const PUBLIC_ROUTES = ["/", "/demo", "/demo/campaigns", "/demo/replies", "/demo/leads", "/demo/reports"];
+/**
+ * Everything reachable without signing in: the marketing page, the live demo,
+ * the legal and support pages, and the 404. The last group is the quiet half —
+ * nobody redesigns a privacy policy, so nobody looks at one, and it is exactly
+ * where a wall of unbroken 13px text or an overflowing table survives for
+ * months. The 404 is reached by asking for a path that does not exist.
+ */
+const PUBLIC_ROUTES = [
+  "/",
+  "/demo",
+  "/demo/campaigns",
+  "/demo/replies",
+  "/demo/leads",
+  "/demo/reports",
+  "/privacy",
+  "/terms",
+  "/compliance",
+  "/acceptable-use",
+  "/support",
+  "/no-such-page",
+];
 
 /**
  * The screens behind a login. Only visited when a session cookie is supplied,
@@ -140,16 +160,55 @@ function collect(minTarget) {
    * practice. Gating on the page genuinely scrolling is the difference between
    * reporting a layout bug and reporting a design that used overflow: hidden.
    */
+  /**
+   * An element inside its own scroll container is not what pushed the page
+   * sideways. A wide table in an `overflow-x: auto` div still reports a
+   * bounding box a thousand pixels across — that is the box, not the picture —
+   * and blaming it points the fix at the one place already doing the right
+   * thing. Ask instead whether anything between here and the body clips.
+   */
+  const clipped = (el) => {
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const ox = getComputedStyle(p).overflowX;
+      if (ox === "auto" || ox === "scroll" || ox === "hidden") return true;
+    }
+    return false;
+  };
   if (de.scrollWidth > de.clientWidth + 1) {
     for (const el of document.querySelectorAll("body *")) {
       if (!escapes(el)) continue;
-      if (el.parentElement && escapes(el.parentElement)) continue;
+      if (clipped(el)) continue;
+      if (el.parentElement && escapes(el.parentElement) && !clipped(el.parentElement)) continue;
       const r = rect(el);
       overflow.push(`${describe(el)} spans ${Math.round(r.left)}..${Math.round(r.right)}`);
+    }
+    /**
+     * The page scrolls and nothing owns it. Better to say so than to report
+     * clean: the reader can then look, and the tool has not lied.
+     */
+    if (overflow.length === 0) {
+      overflow.push(
+        `the page scrolls sideways (${de.scrollWidth}px of document in ${de.clientWidth}px)` +
+          ` but every element that escapes sits inside a scroll container`
+      );
     }
   }
 
   const small = [];
+  /**
+   * Every operable box on the page, which is more than the set that gets
+   * reported: the spacing rule below has to judge a link against the select
+   * next to it, not only against other links.
+   */
+  const targets = [];
+  for (const el of document.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea, [role="button"]'
+  )) {
+    const r = rect(el);
+    if (r.width > 0 && r.height > 0) targets.push({ el, r });
+  }
+
+  const undersized = [];
   for (const el of document.querySelectorAll("a[href], button:not([disabled])")) {
     const r = rect(el);
     if (r.width === 0 || r.height === 0) continue;
@@ -187,6 +246,36 @@ function collect(minTarget) {
       ? r.height < minTarget || r.width < minTarget
       : r.height < minTarget;
     if (!tooSmall) continue;
+    undersized.push({ el, r });
+  }
+
+  /**
+   * WCAG 2.5.8's spacing exception, which is the whole difference between a
+   * report you can act on and a wall of noise.
+   *
+   * An undersized target passes if a 24px circle centred on it does not reach
+   * another target's circle. This is exactly the case of a table: a lead name
+   * is 16px of text, and no padding will make it taller without turning the
+   * table into a list, but the row below it is forty-odd pixels away and no
+   * thumb is going to confuse the two. Without this rule every name in a
+   * three-hundred-row table is a finding, which drowns the two dots on Home
+   * that genuinely could not be pressed.
+   *
+   * The circle is the spec's 24px at both widths. The size threshold above
+   * still rises to 44 on a phone — that part is about whether a fingertip
+   * covers the target — but how far apart two things must be to be told apart
+   * is a property of the hand, not of the viewport.
+   */
+  const SPACING = 24;
+  const centre = (r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  for (const { el, r } of undersized) {
+    const c = centre(r);
+    const crowded = targets.some(({ el: other, r: otherRect }) => {
+      if (other === el || el.contains(other) || other.contains(el)) return false;
+      const o = centre(otherRect);
+      return Math.hypot(c.x - o.x, c.y - o.y) < SPACING;
+    });
+    if (!crowded) continue;
     const label = (el.innerText || el.getAttribute("aria-label") || "").trim().slice(0, 28);
     small.push(`${Math.round(r.width)}x${Math.round(r.height)} ${JSON.stringify(label)}`);
   }
@@ -200,7 +289,12 @@ function collect(minTarget) {
    * vanishes while its own parent is on screen is the wordmark bug, where the
    * nav rendered fine and the name inside it collapsed to nothing.
    */
-  const NON_VISUAL = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "TITLE", "HEAD"]);
+  // OPTION and OPTGROUP have no box at all while the select is closed, which is
+// every screenshot ever taken of a page. Reporting them said "your select is
+// broken" about sixty times across the app and was wrong every time.
+const NON_VISUAL = new Set([
+    "SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "TITLE", "HEAD", "OPTION", "OPTGROUP",
+  ]);
   const invisible = [];
   for (const el of document.querySelectorAll("body *")) {
     if (el.children.length > 0) continue;
@@ -430,7 +524,15 @@ for (const route of ROUTES) {
           /* private mode */
         }
       }, theme);
-      if (COOKIE) await addSession(context);
+      /**
+       * The public pages are visited as the public sees them, cookie or not.
+       *
+       * Signed in, `/` is not the marketing page: the app sends you to /home,
+       * which is correct behaviour and which the redirect check would otherwise
+       * report as a broken route four times. Measuring the marketing page while
+       * holding a session would also be measuring a page no visitor ever gets.
+       */
+      if (COOKIE && !PUBLIC_ROUTES.includes(route)) await addSession(context);
       const page = await context.newPage();
       await page.goto(BASE + route, { waitUntil: "networkidle" });
 
@@ -493,7 +595,7 @@ for (const route of ROUTES) {
     viewport: { width: 1440, height: 1000 },
     reducedMotion: "reduce",
   });
-  if (COOKIE) await addSession(context);
+  if (COOKIE && !PUBLIC_ROUTES.includes(route)) await addSession(context);
   const page = await context.newPage();
   await page.goto(BASE + route, { waitUntil: "networkidle" });
   await page.waitForTimeout(500);

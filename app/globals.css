@@ -50,6 +50,13 @@
      conclusion was written down and then applied to buttons only, so every
      indigo chip in the product has been one step under ever since. 5.34:1. */
   --primary-on-soft: #8793ff;
+  /* Muted text on a --border chip. The neutral badge (Stopped, Cancelled,
+     Removed, disabled) paints --muted on --border, a pair nobody checked
+     because both halves are "the quiet ones". It measures 5.03:1 here and
+     4.28:1 in light, so the light theme has been shipping a status label under
+     AA on every campaign list, report and team page. Same fix as the indigo
+     chip above: a colour for the one background it actually sits on. */
+  --muted-on-border: #a0a9b8;
   --primary-contrast: #08090b; /* 5.67:1 on the fill */
   --brand-from: #6d7cff;
   --brand-to: #8793ff;
@@ -310,6 +317,7 @@
   --primary-hover: #3f4aba;
   --primary-soft: #e6e7f8;
   --primary-on-soft: #3f4aba;  /* 5.91:1 on the tint; --primary is 4.93 */
+  --muted-on-border: #4e5566;  /* 5.21:1 on --border; --muted is 4.28 */
   --primary-contrast: #ffffff;
   --brand-from: #4a55ce;
   --brand-to: #3f4aba;
@@ -379,6 +387,7 @@
   --foreground: #1d1d1f;
   --muted: #5a6273;
   --muted-2: #6b7385;
+  --muted-on-border: #4e5566;
   --border: #d3d8e1;
   --border-firm: #bac1ce;
   color-scheme: light;
@@ -398,6 +407,7 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-muted-on-border: var(--muted-on-border);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
@@ -1335,24 +1345,46 @@ a, button, .seg-btn, .badge { transition: color 0.18s ease, background-color 0.1
    The dots double as the timer. A separate progress bar would be a second thing
    to look at saying the same thing, and the dot is already where the eye goes to
    find out how many slides there are. */
+/* The reel's dots are bars rather than boxes: 4px of visible height reads as
+   a progress track, which is the point. But 4px was also the whole button: two
+   named controls on Home that no finger and few pointers could land on. So the
+   button is now a band you can hit, 24px on a pointer and the full 44 on a
+   phone, and the bar it appears to be is painted inside it. Nothing about the
+   picture changes. */
 .reel-dot {
   position: relative;
-  height: 4px;
+  display: inline-block;
+  height: 24px;
   width: 28px;
-  overflow: hidden;
+  background: none;
+  transition: width var(--dur-base) var(--ease-out);
+}
+@media (max-width: 639px) {
+  .reel-dot { height: 44px; }
+}
+/* The visible track. Kept off the button itself so the button can be tall. */
+.reel-dot::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: calc(50% - 2px);
+  height: 4px;
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--foreground) 14%, transparent);
-  transition: width var(--dur-base) var(--ease-out),
-    background-color var(--dur-base) var(--ease-out);
+  transition: background-color var(--dur-base) var(--ease-out);
 }
-.reel-dot:hover { background: color-mix(in srgb, var(--foreground) 26%, transparent); }
+.reel-dot:hover::before { background: color-mix(in srgb, var(--foreground) 26%, transparent); }
 .reel-dot[data-active] { width: 56px; }
+/* Positioned to the track, not to the button, and transformed on one axis only
+   so the fill keyframes stay a pure scaleX. */
 .reel-dot-fill {
   position: absolute;
-  inset: 0;
+  inset-inline: 0;
+  top: calc(50% - 2px);
+  height: 4px;
   transform-origin: left;
   transform: scaleX(0);
-  border-radius: inherit;
+  border-radius: var(--radius-full);
   background: var(--primary);
 }
 /* Only the active dot with a live timer fills. Everything else, including the

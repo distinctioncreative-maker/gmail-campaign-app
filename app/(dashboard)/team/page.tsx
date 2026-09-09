@@ -110,7 +110,7 @@ function Leaderboard({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="truncate font-medium">{display}</p>
-                {!m.active && <span className="badge bg-border text-muted">disabled</span>}
+                {!m.active && <span className="badge bg-border text-muted-on-border">disabled</span>}
                 {s.activeCampaigns > 0 && (
                   <StatusDot tone="live" className="text-xs font-medium text-success">
                     live

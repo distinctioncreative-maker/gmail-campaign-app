@@ -61,14 +61,19 @@ export function NotificationBell() {
           <button
             {...props}
             aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
-            className="relative rounded-md p-2 text-muted transition hover:bg-surface-2 hover:text-foreground"
+            className="relative flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted transition hover:bg-surface-2 hover:text-foreground sm:min-h-9 sm:min-w-9"
           >
-            <Icon name="bell" size={20} />
-            {unread > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-3xs font-medium text-danger-contrast">
-                {unread}
-              </span>
-            )}
+            {/* The count is anchored to the bell, not to the button, so it
+                stays on the glyph rather than drifting into the corner when the
+                button grows to a full touch target on a phone. */}
+            <span className="relative inline-flex">
+              <Icon name="bell" size={20} />
+              {unread > 0 && (
+                <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-3xs font-medium text-danger-contrast">
+                  {unread}
+                </span>
+              )}
+            </span>
           </button>
         )}
       >

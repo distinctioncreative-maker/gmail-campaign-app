@@ -11,8 +11,8 @@ export const CAMPAIGN_STATUS_LABELS: Record<
   PREPARING: { label: "Preparing", className: "bg-info-soft text-info" },
   ACTIVE: { label: "Sending", className: "bg-success-soft text-success" },
   PAUSED: { label: "Paused", className: "bg-warning-soft text-warning" },
-  STOPPED: { label: "Stopped", className: "bg-border text-muted" },
-  CANCELLED: { label: "Cancelled", className: "bg-border text-muted" },
+  STOPPED: { label: "Stopped", className: "bg-border text-muted-on-border" },
+  CANCELLED: { label: "Cancelled", className: "bg-border text-muted-on-border" },
   COMPLETED: { label: "Finished", className: "bg-success-soft text-success" },
   ERROR: { label: "Needs attention", className: "bg-danger-soft text-danger" },
 };
@@ -27,9 +27,9 @@ export const RECIPIENT_STATUS_LABELS: Record<string, { label: string; className:
   REPLIED: { label: "Replied", className: "bg-success-soft text-success" },
   BOUNCED: { label: "Bounced", className: "bg-warning-soft text-warning" },
   UNSUBSCRIBED: { label: "Unsubscribed", className: "bg-warning-soft text-warning" },
-  SKIPPED: { label: "Removed", className: "bg-border text-muted" },
+  SKIPPED: { label: "Removed", className: "bg-border text-muted-on-border" },
   EXCLUDED: { label: "Excluded for safety", className: "bg-warning-soft text-warning" },
-  CANCELLED: { label: "Cancelled", className: "bg-border text-muted" },
+  CANCELLED: { label: "Cancelled", className: "bg-border text-muted-on-border" },
   ERROR: { label: "Needs attention", className: "bg-danger-soft text-danger" },
 };
 

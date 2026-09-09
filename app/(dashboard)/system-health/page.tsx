@@ -167,7 +167,7 @@ export default async function SystemHealthPage() {
                 <TableRow key={m.userId}>
                   <td className="px-4 py-3">
                     <span className="font-medium">{r.displayName || m.email}</span>
-                    {!m.active && <span className="ml-2 badge bg-border text-muted">disabled</span>}
+                    {!m.active && <span className="ml-2 badge bg-border text-muted-on-border">disabled</span>}
                     {r.displayName && <p className="text-sm text-muted">{m.email}</p>}
                   </td>
                   <td className="px-4 py-3">
