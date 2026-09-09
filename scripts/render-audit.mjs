@@ -27,7 +27,7 @@
  * Exits non-zero if any check fails, so it can gate a release.
  */
 import { chromium } from "playwright-core";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -36,12 +36,53 @@ const arg = (name, fallback) => {
 
 const BASE = arg("base", process.env.AUDIT_BASE ?? "http://localhost:3100");
 const SHOTS = arg("shots", null);
-/** The pre-installed browser. Playwright's own download is skipped in CI. */
+/**
+ * A `__session` cookie, so the signed-in screens can be measured too.
+ *
+ * Read from the command line or the environment and never written anywhere:
+ * it is a live credential that signs the holder in as that account until it
+ * expires. Without it the audit runs the public routes only, which is the
+ * right default.
+ */
+const COOKIE = arg("cookie", process.env.AUDIT_COOKIE ?? null);
+/**
+ * Which Chromium to drive.
+ *
+ * `AUDIT_CHROMIUM` wins. Failing that, a pre-installed browser is used if it is
+ * actually there, and otherwise this falls through to Playwright's own
+ * resolution so `npx playwright-core install chromium` is all a fresh machine
+ * needs. Hard-coding the path meant the script only ran where it was written,
+ * which is a poor property for the one tool that is supposed to tell you what
+ * your users see.
+ */
+const PREINSTALLED = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const EXECUTABLE =
-  process.env.AUDIT_CHROMIUM ?? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+  process.env.AUDIT_CHROMIUM ?? (existsSync(PREINSTALLED) ? PREINSTALLED : undefined);
 
 /** `/demo` renders the real product components against fixtures, with no auth. */
-const ROUTES = ["/", "/demo", "/demo/campaigns", "/demo/replies", "/demo/leads", "/demo/reports"];
+const PUBLIC_ROUTES = ["/", "/demo", "/demo/campaigns", "/demo/replies", "/demo/leads", "/demo/reports"];
+
+/**
+ * The screens behind a login. Only visited when a session cookie is supplied,
+ * because without one every single request redirects to the marketing page and
+ * the audit reports on the same page thirteen times.
+ */
+const AUTH_ROUTES = [
+  "/home",
+  "/campaigns",
+  "/replies",
+  "/leads",
+  "/reports",
+  "/templates",
+  "/sequences",
+  "/suppressions",
+  "/settings",
+  "/team",
+  "/deliverability",
+  "/help",
+];
+
+const ROUTES = COOKIE ? [...PUBLIC_ROUTES, ...AUTH_ROUTES] : PUBLIC_ROUTES;
 const WIDTHS = [1440, 390];
 const THEMES = ["dark", "light"];
 
@@ -344,7 +385,22 @@ function collect(minTarget) {
   };
 }
 
-const browser = await chromium.launch({ executablePath: EXECUTABLE });
+/** httpOnly and secure, matching how the app sets it in app/api/auth/session. */
+async function addSession(context) {
+  await context.addCookies([
+    {
+      name: "__session",
+      value: COOKIE,
+      domain: new URL(BASE).hostname,
+      path: "/",
+      httpOnly: true,
+      secure: new URL(BASE).protocol === "https:",
+      sameSite: "Lax",
+    },
+  ]);
+}
+
+const browser = await chromium.launch(EXECUTABLE ? { executablePath: EXECUTABLE } : {});
 if (SHOTS) mkdirSync(SHOTS, { recursive: true });
 
 for (const route of ROUTES) {
@@ -365,8 +421,28 @@ for (const route of ROUTES) {
           /* private mode */
         }
       }, theme);
+      if (COOKIE) await addSession(context);
       const page = await context.newPage();
       await page.goto(BASE + route, { waitUntil: "networkidle" });
+
+      /**
+       * Did we actually land on the page we asked for?
+       *
+       * An expired or wrong session cookie does not error: every guarded route
+       * quietly redirects to the marketing page, the audit measures that page
+       * twelve times, finds nothing wrong with it, and reports "clean across 18
+       * routes (signed in)". That is the worst possible output, because it is
+       * indistinguishable from success and it is what you get precisely when
+       * the credential you are relying on has stopped working.
+       */
+      const landed = new URL(page.url()).pathname.replace(/\/$/, "") || "/";
+      const asked = route.replace(/\/$/, "") || "/";
+      if (landed !== asked) {
+        note(route, width, theme, `redirected to ${landed} — not signed in, or the route moved`);
+        await context.close();
+        continue;
+      }
+
       // Settle scroll-triggered reveals so nothing is measured mid-transition.
       await page.evaluate(async () => {
         for (let y = 0; y < document.body.scrollHeight; y += 600) {
@@ -408,6 +484,7 @@ for (const route of ROUTES) {
     viewport: { width: 1440, height: 1000 },
     reducedMotion: "reduce",
   });
+  if (COOKIE) await addSession(context);
   const page = await context.newPage();
   await page.goto(BASE + route, { waitUntil: "networkidle" });
   await page.waitForTimeout(500);
@@ -432,4 +509,8 @@ if (failures.length > 0) {
   for (const f of failures) console.error(`  ${f}`);
   process.exit(1);
 }
-console.log(`render audit: clean across ${ROUTES.length} routes, ${WIDTHS.length} widths, ${THEMES.length} themes`);
+console.log(
+  `render audit: clean across ${ROUTES.length} routes` +
+    `${COOKIE ? " (signed in)" : " (public only)"}` +
+    `, ${WIDTHS.length} widths, ${THEMES.length} themes`
+);
