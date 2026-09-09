@@ -29,6 +29,8 @@
 import { chromium } from "playwright-core";
 import { existsSync, mkdirSync } from "node:fs";
 
+import { readCookie } from "./audit/cookie.mjs";
+
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
   return i > -1 ? process.argv[i + 1] : fallback;
@@ -44,7 +46,14 @@ const SHOTS = arg("shots", null);
  * expires. Without it the audit runs the public routes only, which is the
  * right default.
  */
-const COOKIE = arg("cookie", process.env.AUDIT_COOKIE ?? null);
+const COOKIE = (() => {
+  try {
+    return readCookie(arg("cookie", process.env.AUDIT_COOKIE ?? null)).value;
+  } catch (error) {
+    console.error(`render audit: ${error.message}`);
+    process.exit(1);
+  }
+})();
 /**
  * Which Chromium to drive.
  *
