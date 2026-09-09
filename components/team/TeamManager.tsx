@@ -146,7 +146,7 @@ export function TeamManager({
               <button
                 onClick={() => void removeTeam(t.teamId, t.name)}
                 disabled={busy}
-                className="text-xs font-medium text-danger hover:underline disabled:opacity-50"
+                className="inline-flex min-h-11 items-center px-1 text-xs font-medium text-danger hover:underline disabled:opacity-50 sm:min-h-6"
               >
                 Delete
               </button>

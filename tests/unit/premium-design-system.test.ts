@@ -676,6 +676,19 @@ describe("radius by element class", () => {
     expect(reelBlock).not.toMatch(/height: 4px/);
   });
 
+  it("gives a sort header and a row's delete its own height, not the cell's padding", () => {
+    /**
+     * Both were a bare line of 16px text. A browser measured the Sent header at
+     * 40x16 and Delete on Team at 39x16, and the second is a destructive
+     * control sitting directly under a select on a phone. Padding on the
+     * surrounding cell does not count: the button is what you press.
+     */
+    expect(read("components/SortTh.tsx")).toMatch(/min-h-11[^"`]*sm:min-h-6/);
+    expect(read("components/team/TeamManager.tsx")).toMatch(
+      /min-h-11[\s\S]{0,200}text-danger[\s\S]{0,200}sm:min-h-6/
+    );
+  });
+
   it("gives the notification bell and the skip link a full touch target", () => {
     /**
      * Both were measured under 44px on a 390px viewport: the bell at 36x36 was
