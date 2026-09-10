@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listCampaigns, listRecipients, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { ReplyFocus } from "@/components/replies/ReplyFocus";
 import { LocalTime } from "@/components/LocalTime";
 import { ScanRepliesButton } from "@/components/analytics/ScanRepliesButton";
@@ -247,7 +248,13 @@ export default async function RepliesPage() {
         ))}
       </StatGrid>
 
-      <div>
+      {/* The focus panel above carries its own label already, and a three-tile
+          strip labels itself. The queue was the one region that simply
+          appeared, with no line saying what it was or how it was ordered. */}
+      <Section
+        title="All replies"
+        description="Ranked so the interested ones come first, then by how recently they wrote."
+      >
         {rows.length === 0 ? (
           <EmptyState
             icon="reply"
@@ -399,7 +406,7 @@ export default async function RepliesPage() {
           </DataTable>
           </>
         )}
-      </div>
+      </Section>
     </div>
   );
 }

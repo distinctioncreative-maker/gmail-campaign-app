@@ -9,6 +9,7 @@ import { getUser } from "@/lib/repositories/users";
 import { statsForReps, type RepStats } from "@/lib/teams/stats";
 import { managedTeamIds, orderTeamsByHierarchy } from "@/lib/teams/hierarchy";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { LocalTime } from "@/components/LocalTime";
 import { type IconName } from "@/components/ui/Icon";
 import { CountUp } from "@/components/ui/CountUp";
@@ -204,7 +205,10 @@ export default async function TeamPage() {
       />
 
       {isAdmin && (
-        <div className="mb-6">
+        <Section
+          title="Team setup"
+          description="Create teams, choose their leads, and nest one under another."
+        >
           <TeamManager
             teams={teams.map((t) => ({
               teamId: t.teamId,
@@ -214,7 +218,7 @@ export default async function TeamPage() {
             }))}
             members={memberOptions}
           />
-        </div>
+        </Section>
       )}
 
       {visibleTeams.length === 0 ? (
@@ -239,36 +243,34 @@ export default async function TeamPage() {
               (m) => m.teamId !== team.teamId && (isAdmin || m.teamId === null)
             );
             return (
-              <section key={team.teamId} className={depth > 0 ? "border-l border-border pl-3 sm:pl-6" : ""}>
-                <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <h2>
-                      {depth > 0 && <span aria-hidden className="mr-2 text-muted">↳</span>}
-                      {team.name}
-                    </h2>
-                    <p className="text-sm text-muted">
-                      Lead: {team.leadUserId ? (emailById.get(team.leadUserId) ?? "Not available") : "none yet"} ·{" "}
-                      {roster.length} rep{roster.length === 1 ? "" : "s"}
-                    </p>
-                  </div>
-                  {canManage && <RosterActions teamId={team.teamId} assignable={assignable} />}
-                </div>
-                <div className="mb-3">
-                  <KpiTiles stats={rowsFor(roster).map((r) => r.stats)} />
-                </div>
+              /* The rule down the left already says "nested". The ↳ that used
+                 to sit in front of the name as well was the same fact told
+                 twice, in a glyph most fonts render at a different weight
+                 from the heading it prefixed. */
+              <Section
+                key={team.teamId}
+                title={team.name}
+                description={`Lead: ${
+                  team.leadUserId ? (emailById.get(team.leadUserId) ?? "Not available") : "none yet"
+                } · ${roster.length} rep${roster.length === 1 ? "" : "s"}`}
+                actions={
+                  canManage ? <RosterActions teamId={team.teamId} assignable={assignable} /> : undefined
+                }
+                className={depth > 0 ? "border-l border-border pl-3 sm:pl-6" : ""}
+              >
+                <KpiTiles stats={rowsFor(roster).map((r) => r.stats)} />
                 <Leaderboard rows={rowsFor(roster)} teamId={team.teamId} canManage={canManage} />
-              </section>
+              </Section>
             );
           })}
 
           {isAdmin && unassigned.length > 0 && (
-            <section>
-              <h2 className="mb-1">Not on a team</h2>
-              <p className="mb-3 text-sm text-muted">
-                Use “Add a rep…” on a team above to place them.
-              </p>
+            <Section
+              title="Not on a team"
+              description="Use “Add a rep…” on a team above to place them."
+            >
               <Leaderboard rows={rowsFor(unassigned)} teamId={null} canManage={false} />
-            </section>
+            </Section>
           )}
         </div>
       )}

@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth/requireUser";
 import { ownerFromCtx } from "@/lib/repositories/campaigns";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { CAMPAIGN_STATUS_LABELS } from "@/lib/campaigns/statusLabels";
 import { ReplyHeatmap, TrendChart, BestSendTimes } from "@/components/analytics/Charts";
 import { ExportCsvButton } from "@/components/analytics/ExportCsvButton";
@@ -105,69 +106,78 @@ export default async function ReportsPage({
         rangeDays={rangeDays}
       />
 
-      <ReportKpis totals={report.totals} ttr={report.ttr} rangeDays={rangeDays} />
-
-      <OutcomesPanel totals={report.totals} />
-
-      {report.best ? <BestCampaignCallout best={report.best} /> : null}
-
-      {report.scanIsCapped ? (
-        <p className="mt-3 text-sm text-muted">
-          Timing charts analyze the {MAX_CAMPAIGNS_SCANNED} most recently updated campaigns with
-          sends. Headline totals and the comparison table still include every campaign in this
-          view.
-        </p>
-      ) : null}
+      {/* Five named groups, where there were eleven blocks in one column. The
+          numbers first, then the shape of the campaign, then when it happened,
+          then where it went out from, then the comparison. The panels inside a
+          group keep their own titles but as h3s, so they sit under the group
+          name instead of competing with it. */}
+      <Section title="Results" description={`The selected cohort over the last ${rangeDays} days.`}>
+        <ReportKpis totals={report.totals} ttr={report.ttr} rangeDays={rangeDays} />
+        <OutcomesPanel totals={report.totals} />
+        {report.best ? <BestCampaignCallout best={report.best} /> : null}
+        {report.scanIsCapped ? (
+          <p className="text-sm text-muted">
+            Timing charts analyze the {MAX_CAMPAIGNS_SCANNED} most recently updated campaigns with
+            sends. Headline totals and the comparison table still include every campaign in this
+            view.
+          </p>
+        ) : null}
+      </Section>
 
       {/* Hero chart: effort in, conversations out, on one canvas. */}
-      <section className="card p-6 sm:p-7 mt-6">
-        <h2>Outreach trend</h2>
-        <p className="mt-1 text-sm text-muted">
-          Initial sends and replies from the selected cohort over the last {rangeDays} days.
-          Replies use their own scale so a strong day still stands out against send volume.
-        </p>
-        <div>
+      <Section
+        title="Outreach trend"
+        description={`Initial sends and replies over the last ${rangeDays} days. Replies use their own scale so a strong day still stands out against send volume.`}
+      >
+        <div className="card p-6 sm:p-7">
           <TrendChart rows={report.trend} />
         </div>
-      </section>
+      </Section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <CampaignFunnel steps={report.funnel} />
+      <Section
+        title="Conversion and timing"
+        description="Where the cohort drops off, and when the replies that do come actually arrive."
+      >
+        <div className="grid gap-6 xl:grid-cols-2">
+          <CampaignFunnel steps={report.funnel} />
 
-        <section className="card p-6 sm:p-7">
-          <h2>When replies arrive</h2>
-          <p className="mb-4 mt-1 text-sm text-muted">
-            Darker cells mean more replies in {ctx.user.timezone}.
-          </p>
-          <ReplyHeatmap grid={report.heatmap} />
-        </section>
+          <section className="card p-6 sm:p-7">
+            <h3>When replies arrive</h3>
+            <p className="mb-4 mt-1 text-sm text-muted">
+              Darker cells mean more replies in {ctx.user.timezone}.
+            </p>
+            <ReplyHeatmap grid={report.heatmap} />
+          </section>
 
-        <section className="card p-6 sm:p-7">
-          <h2>Best send hours</h2>
-          <p className="mb-4 mt-1 text-sm text-muted">
-            Reply rate by the local hour the initial email was sent. Hours need at least two sends
-            to appear.
-          </p>
-          <BestSendTimes rows={report.bestHours} />
-        </section>
+          <section className="card p-6 sm:p-7">
+            <h3>Best send hours</h3>
+            <p className="mb-4 mt-1 text-sm text-muted">
+              Reply rate by the local hour the initial email was sent. Hours need at least two sends
+              to appear.
+            </p>
+            <BestSendTimes rows={report.bestHours} />
+          </section>
 
-        <TimeToReplyPanel ttr={report.ttr} />
-      </div>
+          <TimeToReplyPanel ttr={report.ttr} />
+        </div>
+      </Section>
 
-      <div>
+      <Section title="Delivery" description="Which mailboxes carried the sending, and what tracking saw.">
         <InboxBreakdownPanel inboxes={report.inboxes} />
         <TrackedEngagementPanel
           trackedCampaignCount={report.trackedCampaignCount}
           tracking={report.tracking}
         />
-      </div>
+      </Section>
 
+      <Section title="By campaign">
       <CampaignLeaderboard
         rows={report.leaderboard}
         rangeDays={rangeDays}
         isScopedToOne={report.selectedCampaign !== null}
         showFilterHint={!report.selectedCampaign && report.allCampaigns.length > 1}
       />
+      </Section>
     </div>
   );
 }
