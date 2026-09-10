@@ -2,6 +2,7 @@ import "server-only";
 import crypto from "node:crypto";
 import { Timestamp } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
+import { reportError } from "@/lib/observability/report";
 
 export interface RateWindow {
   count: number;
@@ -31,7 +32,9 @@ export function applyRateLimit(
 /**
  * Firestore-backed fixed-window limiter. Returns true when the caller is within
  * the limit (and records the hit), false when it should be rejected. Fails open
- * on a transaction error so a limiter glitch never blocks legitimate use.
+ * on a transaction error so a limiter glitch never blocks legitimate use,
+ * unless the caller asks for fail-closed. Either way the error is reported:
+ * a limiter that refuses traffic must be able to say why.
  */
 export async function enforceRateLimit(
   bucket: string,
@@ -58,7 +61,15 @@ export async function enforceRateLimit(
       }
       return allowed;
     });
-  } catch {
+  } catch (err) {
+    /**
+     * Never silently. A fail-closed bucket that cannot reach Firestore refuses
+     * every request with the ordinary "limit reached" message, forever, and
+     * this catch used to discard the only evidence of why. The AI bucket is
+     * fail-closed, so a permissions change or a missing index on `rateLimits`
+     * would have looked exactly like a customer using the feature too much.
+     */
+    reportError(err, { scope: "rateLimit", kind: bucket });
     return options.failClosed !== true;
   }
 }
