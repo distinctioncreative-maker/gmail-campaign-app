@@ -88,6 +88,10 @@ const EnvSchema = z.object({
   // Optional AI email writer. Set GEMINI_API_KEY (a free Google AI Studio
   // key) to enable "Write with AI" in the template editor.
   GEMINI_API_KEY: z.string().default(""),
+  // Must be a model THIS key can serve. Google retires models on a schedule,
+  // and a retired one fails every AI request with a 404 rather than degrading;
+  // list what a key can use with
+  // https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_KEY
   GEMINI_MODEL: z.string().default("gemini-2.0-flash"),
 });
 

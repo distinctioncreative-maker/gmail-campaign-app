@@ -1,4 +1,5 @@
 import "server-only";
+import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
@@ -43,7 +44,7 @@ export async function generateReply(ctx: ReplyContext): Promise<GeneratedReply> 
     .filter(Boolean)
     .join("\n");
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const url = geminiEndpoint();
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -56,9 +57,7 @@ export async function generateReply(ctx: ReplyContext): Promise<GeneratedReply> 
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    throw new Error(
-      `The AI writer had a problem (${res.status}). ${detail.slice(0, 140) || "Please try again."}`
-    );
+    throw geminiFailure(res.status, detail, "The AI writer");
   }
 
   const data = (await res.json()) as {

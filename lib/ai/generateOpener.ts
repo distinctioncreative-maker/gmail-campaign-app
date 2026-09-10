@@ -1,4 +1,5 @@
 import "server-only";
+import { geminiEndpoint } from "@/lib/ai/gemini";
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
@@ -56,7 +57,7 @@ export async function generateOpener(input: {
     .join("\n") || "A recipient with no additional details; keep it universal and warm.";
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+    const url = geminiEndpoint();
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -1,4 +1,5 @@
 import "server-only";
+import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
 import { env } from "@/lib/env";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { normalizeTagName, MAX_CONTACT_TAG_LENGTH } from "@/lib/leads/tags";
@@ -134,7 +135,7 @@ export async function organizeLeads(leads: LeadForOrganizing[]): Promise<Propose
     })
     .join("\n");
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const url = geminiEndpoint();
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -149,9 +150,7 @@ export async function organizeLeads(leads: LeadForOrganizing[]): Promise<Propose
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    throw new Error(
-      `The AI had a problem (${res.status}). ${detail.slice(0, 140) || "Please try again."}`
-    );
+    throw geminiFailure(res.status, detail, "The AI");
   }
 
   const data = (await res.json()) as {

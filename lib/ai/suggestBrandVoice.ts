@@ -1,4 +1,5 @@
 import "server-only";
+import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
 import { env } from "@/lib/env";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { BRAND_TONES, EMPTY_BRAND_VOICE, type BrandTone, type BrandVoice } from "@/lib/ai/brandVoice";
@@ -60,7 +61,7 @@ export async function suggestBrandVoice(
 ): Promise<BrandVoiceSuggestion> {
   if (!env.GEMINI_API_KEY) throw new AiNotConfiguredError();
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const url = geminiEndpoint();
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -81,9 +82,7 @@ export async function suggestBrandVoice(
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    throw new Error(
-      `Could not read that site (${res.status}). ${detail.slice(0, 140) || "Please try again."}`
-    );
+    throw geminiFailure(res.status, detail, "Reading that site");
   }
 
   const data = (await res.json()) as {

@@ -1,4 +1,5 @@
 import "server-only";
+import { geminiEndpoint } from "@/lib/ai/gemini";
 import { firestore } from "@/lib/firebase/admin";
 import { env } from "@/lib/env";
 import { fetchPageText } from "@/lib/net/fetchPage";
@@ -95,7 +96,7 @@ async function summarizeSite(domain: string): Promise<string> {
   const page = await fetchPageText(`https://${domain}`);
   if (!page.ok) return "";
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const url = geminiEndpoint();
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
