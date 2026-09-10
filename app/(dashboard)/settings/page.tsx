@@ -7,6 +7,7 @@ import { ProfileForm } from "@/components/ProfileForm";
 import { ComplianceCard } from "@/components/settings/ComplianceCard";
 import { DisplayNameForm } from "@/components/DisplayNameForm";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 import { BillingCard } from "@/components/admin/BillingCard";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
@@ -61,87 +62,97 @@ export default async function SettingsPage({
         </p>
       )}
 
-      <div className="max-w-2xl space-y-6">
-        {ctx.role === "ADMIN" && (
-          <div className="animate-rise">
-            <BillingCard />
-          </div>
-        )}
-        {ctx.role === "ADMIN" && capabilities.invites && (
-          <div className="animate-rise">
-            <InviteTeamCard solo={ctx.tenantType === "CONSUMER"} />
-          </div>
-        )}
-        <div className="card p-6 sm:p-7 animate-rise">
-          <h2>Your name</h2>
-          <p className="mt-1 text-muted">
-            Shown in the account menu and on Team pages instead of your email address.
-          </p>
-          <div className="mt-4">
-            <DisplayNameForm initial={ctx.user.displayName} />
-          </div>
-        </div>
-        {/* The pool replaces the single-connection card. A customer with one
-            inbox sees one row and the same actions they always had; a customer
-            with several sees where their capacity actually comes from. */}
-        <div className="animate-rise" style={{ animationDelay: "35ms" }}>
-          <InboxPoolCard />
-        </div>
-        {/* Before the profile, because it is what tells you which parts of the
-            profile you actually have to fill in. */}
-        <div className="animate-rise" style={{ animationDelay: "70ms" }}>
-          <ComplianceCard />
-        </div>
-        <div
-          id="sender-profile"
-          className="animate-rise scroll-mt-24"
-          style={{ animationDelay: "105ms" }}
+      {/* Six named groups, where there were eleven cards in one column.
+          The order the comments below defend was real and is kept: compliance
+          immediately before the profile it tells you how to fill in, export
+          immediately above the deletion you would regret doing first. What was
+          missing was any signal to the reader about which of these eleven
+          things belonged with which.
+
+          The per-card `animate-rise` delays are gone. They ran 35, 70, 88, 96,
+          98, 105, 105 and 140ms: two of them identical, none of them derivable
+          from anything, and a choreographed entrance on a settings page is
+          motion for its own sake. */}
+      <div className="max-w-2xl">
+        {/* First, because it is what breaks and what blocks a launch. */}
+        <Section
+          title="Sending"
+          description="Where your email leaves from, and the two things every commercial message must carry."
         >
-          <CollapsibleCard
-            title="Sender profile & sending defaults"
-            /* Was "Optional", and collapsed by default, while two fields inside
-               it, the postal address and the opt-out sentence, block campaign
-               launch. Anyone who took that description at face value met the
-               rule as a refusal rather than as a step. It now opens by itself
-               when either is still missing. */
-            description="Your signature, the postal address and opt-out line required on commercial email, and default campaign pacing."
-            storageKey="settings.senderProfile"
-            defaultOpen={
-              !profile.physicalAddress.trim() || !profile.unsubscribeText.trim()
-            }
-          >
-            <ProfileForm initial={profile} />
-          </CollapsibleCard>
-        </div>
-        {/* Admin only, both of them: a key is a credential to the whole
-            workspace's data, and a webhook decides where that data is sent. */}
-        {ctx.role === "ADMIN" ? (
-          <div className="animate-rise" style={{ animationDelay: "88ms" }}>
-            <ApiKeysCard />
+          {/* The pool replaces the single-connection card. A customer with one
+              inbox sees one row and the same actions they always had; a customer
+              with several sees where their capacity actually comes from. */}
+          <InboxPoolCard />
+          {/* Before the profile, because it is what tells you which parts of the
+              profile you actually have to fill in. */}
+          <ComplianceCard />
+          <div id="sender-profile" className="scroll-mt-24">
+            <CollapsibleCard
+              title="Sender profile & sending defaults"
+              /* Was "Optional", and collapsed by default, while two fields inside
+                 it, the postal address and the opt-out sentence, block campaign
+                 launch. Anyone who took that description at face value met the
+                 rule as a refusal rather than as a step. It now opens by itself
+                 when either is still missing. */
+              description="Your signature, the postal address and opt-out line required on commercial email, and default campaign pacing."
+              storageKey="settings.senderProfile"
+              defaultOpen={
+                !profile.physicalAddress.trim() || !profile.unsubscribeText.trim()
+              }
+            >
+              <ProfileForm initial={profile} />
+            </CollapsibleCard>
           </div>
-        ) : null}
-        {ctx.role === "ADMIN" ? (
-          <div className="animate-rise" style={{ animationDelay: "96ms" }}>
-            <WebhooksCard />
+        </Section>
+
+        <Section title="Your account">
+          <div className="card p-6 sm:p-7">
+            <h3>Your name</h3>
+            <p className="mt-1 text-muted">
+              Shown in the account menu and on Team pages instead of your email address.
+            </p>
+            <div className="mt-4">
+              <DisplayNameForm initial={ctx.user.displayName} />
+            </div>
           </div>
-        ) : null}
-        {/* Every member, not admins only: this is about your own account. */}
-        <div className="animate-rise" style={{ animationDelay: "98ms" }}>
+          {/* Every member, not admins only: this is about your own account. */}
           <SessionsCard
             lastLoginAt={ctx.user.lastLoginAt}
             sessionsRevokedAt={ctx.user.sessionsRevokedAt}
           />
-        </div>
-        {/* Export sits immediately above deletion on purpose: taking your
-            data out is the thing you want to do first if you are about to
-            delete it, and finding that out afterwards is too late. */}
-        <div className="animate-rise" style={{ animationDelay: "105ms" }}>
+        </Section>
+
+        {ctx.role === "ADMIN" && (
+          <Section title="Workspace">
+            <BillingCard />
+            {capabilities.invites && (
+              <InviteTeamCard solo={ctx.tenantType === "CONSUMER"} />
+            )}
+          </Section>
+        )}
+
+        {/* Admin only, both of them: a key is a credential to the whole
+            workspace's data, and a webhook decides where that data is sent. */}
+        {ctx.role === "ADMIN" && (
+          <Section
+            title="Developer access"
+            description="Programmatic access to this workspace. Treat both as credentials."
+          >
+            <ApiKeysCard />
+            <WebhooksCard />
+          </Section>
+        )}
+
+        {/* Export sits immediately above deletion on purpose: taking your data
+            out is the thing you want to do first if you are about to delete it,
+            and finding that out afterwards is too late. The group carries a rule
+            and a wider gap, because being last in a column was never a warning. */}
+        <Section
+          title="Your data"
+          description="Take a copy out, or close the account for good."
+          tone="danger"
+        >
           <ExportDataCard counts={exportCounts} />
-        </div>
-        {/* Last, and visually separated: the only control here that destroys
-            work belongs at the bottom of the page, not beside the ones people
-            use every day. */}
-        <div className="animate-rise border-t border-border pt-6" style={{ animationDelay: "140ms" }}>
           <DeleteAccountCard
             initial={{
               request: deletion.request,
@@ -153,7 +164,7 @@ export default async function SettingsPage({
             canDeleteWorkspace={ctx.role === "ADMIN"}
             soloWorkspace={deletion.verdict.effectiveScope === "WORKSPACE"}
           />
-        </div>
+        </Section>
       </div>
     </div>
   );

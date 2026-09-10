@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function NewTemplatePage() {
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="New template"
         description="Write the email once, then reuse it across campaigns."

@@ -48,7 +48,7 @@ export default async function RepCampaignPage({
   const rep = members.find((m) => m.userId === userId);
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title={campaign.name}
         description={`${sent} sent · ${campaign.replyCount} repl${

@@ -29,6 +29,7 @@ import { assessEngagement } from "@/lib/campaigns/engagementPace";
 import { CampaignSectionNav } from "@/components/campaign/CampaignSectionNav";
 import { LaunchCelebration } from "@/components/campaign/LaunchCelebration";
 import { EntityHeader } from "@/components/ui/EntityHeader";
+import { Section } from "@/components/ui/Section";
 import { DataTable, TableRow } from "@/components/ui/DataTable";
 
 export default async function CampaignDetailPage({
@@ -238,7 +239,8 @@ export default async function CampaignDetailPage({
 
       <CampaignSectionNav showControls={campaign.deletedAt === null} />
 
-      <div id="overview" className="grid scroll-mt-24 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <Section id="overview" title="Overview">
+      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="card p-6 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -302,6 +304,7 @@ export default async function CampaignDetailPage({
           </dl>
         </section>
       </div>
+      </Section>
 
       <div>
         <StatGrid columns={6}>
@@ -369,10 +372,9 @@ export default async function CampaignDetailPage({
       ) : null}
 
       {abRows.length > 0 && (
+        <Section title="Template performance (A/B)">
         <div className="card p-6 sm:p-7">
-          <h2>Template performance (A/B)</h2>
           <DataTable
-            className="mt-3"
             head={
               <>
                 <th className="py-2 pr-4">Template</th>
@@ -410,11 +412,11 @@ export default async function CampaignDetailPage({
                 })}
           </DataTable>
         </div>
+        </Section>
       )}
 
       <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <div id="recipients" className="scroll-mt-24">
-          <h2 className="mb-3">Recipients</h2>
+        <Section id="recipients" title="Recipients">
           <RecipientTable
             campaignId={campaign.campaignId}
             campaignStatus={campaign.status}
@@ -431,9 +433,8 @@ export default async function CampaignDetailPage({
               gmailThreadId: r.gmailThreadId,
             }))}
           />
-        </div>
-        <div id="activity" className="scroll-mt-24">
-          <h2 className="mb-3">Activity</h2>
+        </Section>
+        <Section id="activity" title="Activity">
           <div className="card p-5 sm:p-6">
             {events.length === 0 ? (
               <p className="text-muted">Nothing yet.</p>
@@ -458,7 +459,7 @@ export default async function CampaignDetailPage({
               </ul>
             )}
           </div>
-        </div>
+        </Section>
       </div>
     </div>
   );

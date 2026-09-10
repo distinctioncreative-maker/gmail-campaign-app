@@ -847,10 +847,20 @@ describe("page rhythm", () => {
   it("declares the rhythm once, from tokens", () => {
     expect(css).toMatch(/--space-section:\s*[\d.]+rem;/);
     expect(css).toMatch(/--space-block:\s*[\d.]+rem;/);
+    expect(css).toMatch(/--space-group:\s*[\d.]+rem;/);
     expect(css).toMatch(
       /\.page-sections > \* \+ \* \{\s*margin-top: var\(--space-section\);/
     );
-    expect(css).toMatch(/\.section-head \{\s*margin-bottom: var\(--space-block\);/);
+    // A labelled group sits further from the next group than its own heading
+    // sits from its content. That difference is the whole of what reads as
+    // structure, so both halves come from tokens and neither is a magic number.
+    expect(css).toMatch(/\.section \+ \.section \{\s*margin-top: var\(--space-group\);/);
+    expect(css).toMatch(/margin-bottom: var\(--space-block\);/);
+    const group = Number(css.match(/--space-group:\s*([\d.]+)rem;/)![1]);
+    const block = Number(css.match(/--space-block:\s*([\d.]+)rem;/)![1]);
+    const section = Number(css.match(/--space-section:\s*([\d.]+)rem;/)![1]);
+    expect(group).toBeGreaterThan(section);
+    expect(section).toBeGreaterThan(block);
   });
 
   it("is adopted by the pages that had the worst spread", () => {

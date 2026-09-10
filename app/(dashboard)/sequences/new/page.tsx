@@ -7,7 +7,7 @@ export default async function NewSequencePage() {
   const ctx = await requireUser();
   const templates = await listTemplates(ctx);
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="New follow-up sequence"
         description="Set what goes out next, and when to stop once someone replies."

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Section } from "@/components/ui/Section";
 import { requireUser } from "@/lib/auth/requireUser";
 import { getLeadList, listLeadLists } from "@/lib/repositories/leadLists";
 import { countContactsInList, listContactsPage } from "@/lib/repositories/contacts";
@@ -86,8 +87,7 @@ export default async function LeadListDetailPage({
         <ImportChooser listId={list.listId} />
       </div>
 
-      <div>
-        <h2 className="section-head">Leads in this list ({totalContacts.toLocaleString()})</h2>
+      <Section title={`Leads in this list (${totalContacts.toLocaleString()})`}>
         {totalContacts === 0 ? (
           <EmptyState
             variant="inline"
@@ -111,7 +111,7 @@ export default async function LeadListDetailPage({
             />
           </>
         )}
-      </div>
+      </Section>
     </div>
   );
 }

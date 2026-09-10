@@ -18,7 +18,7 @@ export default async function ContactSupportPage() {
   const ctx = await requireUser();
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Contact support"
         description={`Tell us what is going wrong and we reply within ${SUPPORT_RESPONSE_TARGET}. Your workspace context comes along automatically, so you do not have to describe your setup.`}

@@ -95,7 +95,7 @@ export default async function SystemHealthPage() {
   ];
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="System health"
         description="Troubleshooting console: platform checks, background sweeps, and each person's connection at a glance."

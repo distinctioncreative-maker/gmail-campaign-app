@@ -43,7 +43,7 @@ export default async function ContactDetailPage({
   ];
 
   return (
-    <div>
+    <div className="page-sections">
       {/* The four states were previously four differently-shaped pills rendered
           into `actions`, each with its own colour classes written inline. They
           are one badge now, chosen in a single expression, so the states are

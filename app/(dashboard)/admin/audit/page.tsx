@@ -18,7 +18,7 @@ export default async function AuditPage() {
   }
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Activity log"
         description="Every administrative change to this workspace, in the order it happened."

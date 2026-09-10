@@ -16,7 +16,7 @@ export default async function SequencesPage() {
   const sequences = await listSequences(ctx);
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Follow-up sequences"
         description="Automatic follow-ups that stop the moment someone replies."

@@ -6,6 +6,7 @@ import { ImportChooser } from "@/components/imports/ImportChooser";
 import { ContactsTable, type ContactRow } from "@/components/ContactsTable";
 import { LeadListsBar } from "@/components/leads/LeadListsBar";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { CountUp } from "@/components/ui/CountUp";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import {
@@ -142,13 +143,10 @@ export default async function LeadsPage({
         </div>
       )}
 
-      <div>
-        <div className="section-head">
-          <h2>Contact directory</h2>
-          <p className="mt-1 text-sm text-muted">
-            {totalContacts.toLocaleString()} total leads. Search, filter, and organize this page of {rows.length.toLocaleString()}.
-          </p>
-        </div>
+      <Section
+        title="Contact directory"
+        description={`${totalContacts.toLocaleString()} total leads. Search, filter, and organize this page of ${rows.length.toLocaleString()}.`}
+      >
         <ContactsTable
           contacts={rows}
           leadLists={lists.map((list) => ({ listId: list.listId, name: list.name }))}
@@ -161,7 +159,7 @@ export default async function LeadsPage({
           shown={rows.length}
           total={totalContacts}
         />
-      </div>
+      </Section>
     </div>
   );
 }

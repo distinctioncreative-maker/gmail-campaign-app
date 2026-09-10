@@ -17,7 +17,7 @@ export default async function EditSequencePage({
   if (!sequence) notFound();
 
   return (
-    <div>
+    <div className="page-sections">
       <EntityHeader
         kicker="Follow-up sequence"
         title={sequence.name}

@@ -16,7 +16,7 @@ export default async function EditTemplatePage({
   if (!template) notFound();
 
   return (
-    <div>
+    <div className="page-sections">
       <EntityHeader
         kicker="Template"
         title={template.name}

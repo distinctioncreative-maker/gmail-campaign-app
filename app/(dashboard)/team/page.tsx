@@ -193,7 +193,7 @@ export default async function TeamPage() {
   const emailById = new Map(members.map((m) => [m.userId, m.email]));
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="Team"
         description={

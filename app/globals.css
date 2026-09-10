@@ -250,6 +250,10 @@
   /* Rhythm. Two values, because two is how many relationships a page actually
      has between blocks: peers, and a heading with its own content. */
   --space-section: 1.75rem;
+  /* Between two labelled groups. Wider than --space-section, which separates
+     unlabelled blocks: a heading needs air above it or it reads as a caption
+     for the thing it follows rather than a title for the thing it precedes. */
+  --space-group: 2.75rem;
   --space-block: 0.75rem;
 
   /* Elevation ladder.
@@ -620,10 +624,52 @@ h2 { letter-spacing: -0.026em; }
   margin-top: var(--space-section);
 }
 
-/* A heading and the thing it introduces. Closer than two sections, because
-   proximity is what says they belong together. */
+/* ── Sections ─────────────────────────────────────────────────
+   A labelled group inside a page, rendered by components/ui/Section.tsx.
+
+   The pages did not lack styling, they lacked a spine: nine of twelve had a
+   title and then an undifferentiated stack of cards. Grouping is made almost
+   entirely of space here rather than of boxes, because a group drawn as
+   another bordered panel just nests one card inside another and says nothing.
+   Two labelled groups sit further apart than a label sits from the thing it
+   labels, and that difference alone is what reads as structure. */
+.section + .section {
+  margin-top: var(--space-group);
+}
 .section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-block);
   margin-bottom: var(--space-block);
+}
+/* Size and weight come from the base `h2` rule, which already places this one
+   step below the page title. Nothing is re-specified here so the two cannot
+   drift apart. */
+.section-title {
+  min-width: 0;
+}
+.section-description {
+  margin-top: 0.25rem;
+  max-width: 42rem;
+  font-size: var(--text-sm);
+  line-height: var(--lh-relaxed, 1.6);
+  color: var(--muted);
+}
+/* Cards stacked inside one group belong to each other, so they sit closer
+   than groups do. */
+.section-body > * + * {
+  margin-top: var(--space-block);
+}
+/* Destructive groups. Being last in a column is not a warning: a rule and a
+   wider gap say plainly that what follows is different in kind from what came
+   before it. The heading keeps its ordinary colour, because a red title on a
+   panel a user visits deliberately is theatre. */
+.section-danger {
+  margin-top: calc(var(--space-group) * 1.5);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-group);
 }
 
 /* ── Surfaces ─────────────────────────────────────────────── */

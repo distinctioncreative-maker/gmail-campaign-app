@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/requireUser";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { StatTile, StatGrid } from "@/components/ui/StatTile";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -93,7 +94,7 @@ export default async function RepDetailPage({
         </StatGrid>
       </div>
 
-      <h2 className="section-head">Campaigns</h2>
+      <Section title="Campaigns">
       {campaigns.length === 0 ? (
         <EmptyState
           variant="inline"
@@ -146,6 +147,7 @@ export default async function RepDetailPage({
               })}
             </DataTable>
       )}
+      </Section>
     </div>
   );
 }

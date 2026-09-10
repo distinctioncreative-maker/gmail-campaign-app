@@ -45,7 +45,7 @@ export default async function CampaignsPage({
   );
 
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title={
           view === "deleted"

@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { checkDomainAuth } from "@/lib/deliverability/dnsLookup";
 import { getPostmasterStats } from "@/lib/deliverability/postmaster";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Section } from "@/components/ui/Section";
 import { DataTable, TableRow } from "@/components/ui/DataTable";
 import { formatPercent } from "@/lib/analytics/metrics";
 import { getBenchmarksSnapshot } from "@/lib/benchmarks/read";
@@ -62,16 +63,22 @@ export default async function DeliverabilityPage() {
         description={`Is ${domain} set up to land in inboxes? Domain authentication is checked live; reputation comes from Google Postmaster Tools.`}
       />
 
-      {/* Directly under the header, above the DNS checks. It is the one thing
-          on this page a customer can fix that nothing else on the page covers,
-          and the shared-domain exposure applies to every account by default. */}
-      <div>
+      {/* First, because it is the one thing on this page a customer can fix that
+          nothing else here covers, and the shared-domain exposure applies to
+          every account by default. It used to float in a bare div between the
+          page title and the first heading, belonging to nothing. */}
+      <Section
+        title="Link tracking domain"
+        description="Click and open links are rewritten through this domain. On the shared default, your reputation is pooled with every other account."
+      >
         <TrackingDomainCard isAdmin={ctx.role === "ADMIN"} />
-      </div>
+      </Section>
 
       {/* DNS auth: zero setup, always available */}
-      <section>
-      <h2 className="section-head">Domain authentication</h2>
+      <Section
+        title="Domain authentication"
+        description={`These three records tell inbox providers your email is genuinely from ${domain}. All green here removes the most common structural cause of spam foldering.`}
+      >
       <div className="card divide-y divide-border overflow-hidden">
         {dnsChecks.map((c) => (
           <div key={c.id} className="flex flex-wrap items-start gap-3 p-4">
@@ -84,15 +91,10 @@ export default async function DeliverabilityPage() {
           </div>
         ))}
       </div>
-      <p className="mt-2 text-sm text-muted">
-        These three records tell inbox providers your email is genuinely from {domain}. All-green
-        here removes the most common structural cause of spam foldering.
-      </p>
-      </section>
+      </Section>
 
       {/* Postmaster */}
-      <section>
-      <h2 className="section-head">Google Postmaster Tools</h2>
+      <Section title="Google Postmaster Tools">
       {postmaster.state === "OK" ? (
         <>
           <div className="mb-4">
@@ -220,11 +222,10 @@ export default async function DeliverabilityPage() {
           )}
         </div>
       )}
-      </section>
+      </Section>
 
       {/* Deliverability Insights: anonymized, cross-user benchmarks */}
-      <section>
-      <h2 className="section-head">Deliverability insights</h2>
+      <Section title="Deliverability insights">
       {surfacedDimensions.length === 0 ? (
         <div className="card p-6 sm:p-7 text-sm text-muted">
           <p className="font-medium text-foreground">Still gathering data</p>
@@ -252,18 +253,21 @@ export default async function DeliverabilityPage() {
           </div>
         </>
       )}
-      </section>
+      </Section>
 
-      <div className="card p-6 sm:p-7">
-        <h3>If replies are low, work this list in order</h3>
-        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">
+      {/* Was a loose card after the last section, reading as an afterthought
+          rather than the summary it is. */}
+      <Section title="If replies are low, work this list in order">
+        <div className="card p-6 sm:p-7">
+          <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted">
           <li>Fix anything red or amber above: authentication is the foundation.</li>
           <li>{dailyLimitTip(surfacedDimensions)}</li>
           <li>Run the spam checker on your template (Templates → your template) and cut risky wording.</li>
           <li>Personalize the first line: identical bodies to hundreds of people is the pattern filters hunt for.</li>
           <li>Replies often arrive after the first day. Compare qualified-reply trends within your own audience and offer instead of treating one broad benchmark as a promise.</li>
-        </ol>
-      </div>
+          </ol>
+        </div>
+      </Section>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function NewCampaignPage() {
   return (
-    <div>
+    <div className="page-sections">
       <PageHeader
         title="New campaign"
         description="Pick who it goes to, what it says, and how fast it sends."
