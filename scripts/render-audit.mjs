@@ -88,6 +88,7 @@ const PUBLIC_ROUTES = [
   "/compliance",
   "/acceptable-use",
   "/support",
+  "/sign-in",
   "/no-such-page",
 ];
 
@@ -97,6 +98,7 @@ const PUBLIC_ROUTES = [
  * the audit reports on the same page thirteen times.
  */
 const AUTH_ROUTES = [
+  // The list screens.
   "/home",
   "/campaigns",
   "/replies",
@@ -109,9 +111,49 @@ const AUTH_ROUTES = [
   "/team",
   "/deliverability",
   "/help",
+  /**
+   * The screens where the work actually happens, none of which any tool had
+   * ever rendered.
+   *
+   * The list screens above are the simple half of the app. The wizard is where
+   * a campaign is built, the editor is the richest UI in the product, and
+   * onboarding decides whether a new account ever reaches either. Every real
+   * defect this audit has found came from rendering a page rather than reading
+   * it, and these had only ever been read.
+   */
+  "/campaigns/new",
+  "/templates/new",
+  "/sequences/new",
+  "/leads/sourcing",
+  "/onboarding",
+  "/help/contact",
+  "/admin",
+  "/admin/audit",
+  "/admin/features",
+  "/admin/waitlist",
+  "/system-health",
+  "/owner",
 ];
 
-const ROUTES = COOKIE ? [...PUBLIC_ROUTES, ...AUTH_ROUTES] : PUBLIC_ROUTES;
+/**
+ * Detail screens, which cannot be named in advance because their URLs contain
+ * the id of a real record.
+ *
+ * Each entry says where to look and what to follow: open the list page, take
+ * the first link matching the pattern, and audit that. A workspace with no
+ * templates yet simply contributes no template-editor finding, which is
+ * correct: there is nothing to render.
+ */
+const DISCOVERED = [
+  { from: "/campaigns", pattern: /^\/campaigns\/[^/]+$/, label: "campaign detail" },
+  { from: "/templates", pattern: /^\/templates\/[^/]+$/, label: "template editor" },
+  { from: "/sequences", pattern: /^\/sequences\/[^/]+$/, label: "sequence detail" },
+  { from: "/leads", pattern: /^\/leads\/[^/]+$/, label: "lead detail" },
+  { from: "/team", pattern: /^\/team\/[^/]+$/, label: "team member" },
+];
+
+/** A fresh array either way: discovery pushes onto it below. */
+const ROUTES = COOKIE ? [...PUBLIC_ROUTES, ...AUTH_ROUTES] : [...PUBLIC_ROUTES];
 const WIDTHS = [1440, 390];
 const THEMES = ["dark", "light"];
 
@@ -505,6 +547,41 @@ async function addSession(context) {
 
 const browser = await chromium.launch(EXECUTABLE ? { executablePath: EXECUTABLE } : {});
 if (SHOTS) mkdirSync(SHOTS, { recursive: true });
+
+/**
+ * Resolve the detail screens by asking the app for one of each.
+ *
+ * Hard-coding a record id would tie the audit to one workspace and rot the
+ * first time that record was deleted. Following a link from the list page is
+ * how a person reaches these screens anyway, so it stays true for whoever runs
+ * it.
+ */
+if (COOKIE) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await addSession(context);
+  const page = await context.newPage();
+  for (const { from, pattern, label } of DISCOVERED) {
+    try {
+      await page.goto(BASE + from, { waitUntil: "networkidle" });
+      const found = await page.evaluate(
+        (source) =>
+          [...document.querySelectorAll("a[href]")]
+            .map((a) => new URL(a.href, location.origin).pathname)
+            .find((path) => new RegExp(source).test(path)) ?? null,
+        pattern.source
+      );
+      if (found) {
+        ROUTES.push(found);
+        console.log(`  discovered ${label}: ${found}`);
+      } else {
+        console.log(`  no ${label} to render (nothing in ${from})`);
+      }
+    } catch {
+      console.log(`  could not reach ${from} to find a ${label}`);
+    }
+  }
+  await context.close();
+}
 
 for (const route of ROUTES) {
   for (const width of WIDTHS) {
