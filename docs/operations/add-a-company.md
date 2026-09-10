@@ -132,7 +132,13 @@ EOF
 ```bash
 SESSION_SECRET=$(openssl rand -base64 48)
 
-gcloud run deploy cadence --source . --region us-central1 --allow-unauthenticated \
+# Build from the repo's own Dockerfile. `--source .` hands the directory to
+# Cloud Build's universal builder, which guesses the language: it has guessed
+# Python for this repo and failed the build asking for a main.py.
+IMAGE=us-central1-docker.pkg.dev/PROJECT_ID/cloud-run-source-deploy/cadence:latest
+gcloud builds submit --tag "$IMAGE"
+
+gcloud run deploy cadence --image "$IMAGE" --region us-central1 --allow-unauthenticated \
   --memory 1Gi \
   --set-env-vars "^##^GOOGLE_CLOUD_PROJECT_ID=PROJECT_ID##FIREBASE_PROJECT_ID=PROJECT_ID##ALLOWED_GOOGLE_WORKSPACE_DOMAIN=COMPANY_DOMAIN##SESSION_SECRET=${SESSION_SECRET}##TOKEN_KMS_KEY_RESOURCE=projects/PROJECT_ID/locations/us-central1/keyRings/cadence/cryptoKeys/gmail-tokens##TEST_EMAIL_DESTINATION=TEST_EMAIL##GOOGLE_OAUTH_CLIENT_ID=YOUR_OAUTH_CLIENT_ID##GOOGLE_OAUTH_CLIENT_SECRET=YOUR_OAUTH_CLIENT_SECRET"
 ```

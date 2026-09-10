@@ -1,0 +1,42 @@
+# What the image build does not need.
+#
+# There was no .dockerignore, which worked only by accident: the Dockerfile
+# does `COPY --from=deps /app/node_modules ./node_modules` and then `COPY . .`,
+# so any node_modules in the build context overwrites the one that stage just
+# installed. On Cloud Build the context happened to exclude it, because gcloud
+# derives its ignores from .gitignore. Building the same Dockerfile locally
+# did not have that protection.
+.git
+.github
+node_modules
+.next
+out
+build
+coverage
+
+# Not used by `next build`, and every megabyte here is upload time and layer
+# cache churn.
+#
+# `tests` is deliberately NOT in this list. app/api/test/[check]/route.ts
+# imports a fixture from tests/fixtures, so the production build genuinely
+# needs it; excluding it fails the build with "Can't resolve
+# @/tests/fixtures/salesforce-sample". That production code depends on a test
+# fixture at all is worth untangling, but it is true today.
+docs
+scripts
+.firebase
+*.log
+*.tsbuildinfo
+.playwright-mcp
+
+# Never build a secret into an image. .env.example and .env.production are
+# deliberately not listed: the first is documentation and the second carries
+# the NEXT_PUBLIC_* values the client bundle is compiled with.
+.env
+.env.local
+.env.*.local
+
+# gcloud, unlike docker, would otherwise derive this list from .gitignore,
+# which means whatever is untracked in a working copy gets uploaded to the
+# build. That is how a directory with no Python in it was handed to Cloud
+# Build's universal builder and came back asking for a main.py.
