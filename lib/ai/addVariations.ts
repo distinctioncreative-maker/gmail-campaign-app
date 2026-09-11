@@ -1,5 +1,6 @@
 import "server-only";
-import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+
 import { env } from "@/lib/env";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
@@ -126,33 +127,12 @@ export async function addVariations(
     ? `${SYSTEM}\n\nBRAND VOICE: every option you write must fit this voice.\n${brandContext.trim()}`
     : SYSTEM;
 
-  const url = geminiEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: JSON.stringify({ subject, html }) }],
-        },
-      ],
-      // Some creativity is the point here (the options should not all be the
-      // same word), but not enough to start rewriting the email.
-      generationConfig: { temperature: 0.6, responseMimeType: "application/json" },
-    }),
+  const text = await callModel({
+    system: system,
+    user: JSON.stringify({ subject, html }),
+    temperature: 0.6,
+    label: "The AI",
   });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw geminiFailure(res.status, detail, "The AI");
-  }
-
-  const data = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
   let parsed: { subject?: unknown; html?: unknown };
   try {

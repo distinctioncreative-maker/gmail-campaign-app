@@ -1,5 +1,6 @@
 import "server-only";
-import { geminiEndpoint } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
@@ -57,27 +58,11 @@ export async function generateOpener(input: {
     .join("\n") || "A recipient with no additional details; keep it universal and warm.";
 
   try {
-    const url = geminiEndpoint();
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: who }] }],
-        // Lower when grounded: with real facts in hand the job is to use them
-        // faithfully, and the drift a high temperature buys is drift away from
-        // the only thing keeping the line true.
-        generationConfig: {
-          temperature: grounded ? 0.5 : 0.85,
-          responseMimeType: "application/json",
-        },
-      }),
+    const text = await callModel({
+      system: system,
+      user: who,
+      temperature: grounded ? 0.5 : 0.85,
     });
-    if (!res.ok) return "";
-    const data = (await res.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
     let parsed: { line?: unknown };
     try {
       parsed = JSON.parse(text);

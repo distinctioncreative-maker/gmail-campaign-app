@@ -1,5 +1,6 @@
 import "server-only";
-import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
@@ -44,26 +45,12 @@ export async function generateReply(ctx: ReplyContext): Promise<GeneratedReply> 
     .filter(Boolean)
     .join("\n");
 
-  const url = geminiEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: "user", parts: [{ text: parts }] }],
-      generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
-    }),
+  const text = await callModel({
+    system: system,
+    user: parts,
+    temperature: 0.7,
+    label: "The AI writer",
   });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw geminiFailure(res.status, detail, "The AI writer");
-  }
-
-  const data = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
   let parsed: { html?: unknown };
   try {

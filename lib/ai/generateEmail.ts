@@ -1,5 +1,6 @@
 import "server-only";
-import { AiUnavailableError, geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+import { AiUnavailableError } from "@/lib/ai/gemini";
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
@@ -45,26 +46,12 @@ export async function generateEmail(
     ? `${SYSTEM}\n\nBRAND MEMORY: weave these facts in naturally, in a FRESH way each time (never copy the wording verbatim, vary the angle and hook):\n${brandContext.trim()}`
     : SYSTEM;
 
-  const url = geminiEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.8, responseMimeType: "application/json" },
-    }),
+  const text = await callModel({
+    system: system,
+    user: prompt,
+    temperature: 0.8,
+    label: "The AI writer",
   });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw geminiFailure(res.status, detail, "The AI writer");
-  }
-
-  const data = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
   let parsed: { subject?: unknown; html?: unknown };
   try {

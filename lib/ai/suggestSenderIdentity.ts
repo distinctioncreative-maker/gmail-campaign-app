@@ -1,5 +1,6 @@
 import "server-only";
-import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+
 import { env } from "@/lib/env";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 
@@ -53,29 +54,12 @@ export async function suggestSenderIdentity(
 ): Promise<SenderIdentitySuggestion> {
   if (!env.GEMINI_API_KEY) throw new AiNotConfiguredError();
 
-  const url = geminiEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM }] },
-      contents: [{ role: "user", parts: [{ text: `Website: ${siteUrl}\n\n${pageText}` }] }],
-      // As low as it goes. This is transcription, and the field it fills is a
-      // legal footer on commercial email: a hallucinated street address is a
-      // compliance problem printed on every message the customer sends.
-      generationConfig: { temperature: 0, responseMimeType: "application/json" },
-    }),
+  const text = await callModel({
+    system: SYSTEM,
+    user: `Website: ${siteUrl}\n\n${pageText}`,
+    temperature: 0,
+    label: "Reading that site",
   });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw geminiFailure(res.status, detail, "Reading that site");
-  }
-
-  const data = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
   let parsed: Record<string, unknown>;
   try {

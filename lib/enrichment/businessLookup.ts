@@ -1,5 +1,6 @@
 import "server-only";
-import { geminiEndpoint } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+
 import { firestore } from "@/lib/firebase/admin";
 import { env } from "@/lib/env";
 import { fetchPageText } from "@/lib/net/fetchPage";
@@ -96,24 +97,11 @@ async function summarizeSite(domain: string): Promise<string> {
   const page = await fetchPageText(`https://${domain}`);
   if (!page.ok) return "";
 
-  const url = geminiEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM }] },
-      contents: [{ role: "user", parts: [{ text: page.text }] }],
-      // Extraction, not writing. A creative setting here invents details about a
-      // real company that then get quoted back to them.
-      generationConfig: { temperature: 0.1, responseMimeType: "application/json" },
-    }),
+  const text = await callModel({
+    system: SYSTEM,
+    user: page.text,
+    temperature: 0.1,
   });
-  if (!res.ok) return "";
-
-  const data = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   let parsed: { summary?: unknown };
   try {
     parsed = JSON.parse(text);

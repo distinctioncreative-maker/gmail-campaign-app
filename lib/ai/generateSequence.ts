@@ -1,5 +1,6 @@
 import "server-only";
-import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
@@ -32,25 +33,12 @@ export async function generateSequence(input: {
     ? `${SYSTEM}\n\nBRAND MEMORY: weave in naturally, fresh each step:\n${input.brandContext.trim()}`
     : SYSTEM;
 
-  const url = geminiEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: "user", parts: [{ text: input.prompt }] }],
-      generationConfig: { temperature: 0.8, responseMimeType: "application/json" },
-    }),
+  const text = await callModel({
+    system: system,
+    user: input.prompt,
+    temperature: 0.8,
+    label: "The AI writer",
   });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw geminiFailure(res.status, detail, "The AI writer");
-  }
-
-  const data = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   let parsed: { steps?: unknown };
   try {
     parsed = JSON.parse(text);

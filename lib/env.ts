@@ -98,6 +98,19 @@ const EnvSchema = z.object({
   // actually serve with
   // https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_KEY
   GEMINI_MODEL: z.string().default("gemini-flash-latest"),
+  // Which provider serves the AI features. "gemini" (default) or "groq".
+  // Groq speaks OpenAI's chat-completions shape, as do Cerebras, OpenRouter,
+  // Mistral and Together, so the same adapter reaches all of them.
+  //
+  // Worth knowing when choosing: Google's free tier may use free-tier inputs
+  // and outputs to improve their models, and these prompts carry customers'
+  // lead names and email copy. Groq does not train on inputs or outputs on any
+  // plan. The free option with the better data terms is not the Google one.
+  AI_PROVIDER: z.string().default("gemini"),
+  GROQ_API_KEY: z.string().default(""),
+  // Groq retired its Llama models in August 2026; check the console for what
+  // your key can actually serve rather than trusting a default that ages.
+  GROQ_MODEL: z.string().default("openai/gpt-oss-120b"),
 });
 
 export const env = EnvSchema.parse(process.env);

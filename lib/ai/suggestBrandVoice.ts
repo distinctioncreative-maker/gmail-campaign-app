@@ -1,5 +1,6 @@
 import "server-only";
-import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
+import { callModel } from "@/lib/ai/callModel";
+
 import { env } from "@/lib/env";
 import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { BRAND_TONES, EMPTY_BRAND_VOICE, type BrandTone, type BrandVoice } from "@/lib/ai/brandVoice";
@@ -61,34 +62,12 @@ export async function suggestBrandVoice(
 ): Promise<BrandVoiceSuggestion> {
   if (!env.GEMINI_API_KEY) throw new AiNotConfiguredError();
 
-  const url = geminiEndpoint();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM }] },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `Website: ${siteUrl}\n\nPage text:\n${pageText}` }],
-        },
-      ],
-      // Low temperature on purpose. This is an extraction task, and the failure
-      // mode of a creative setting here is a confident fabrication in a field
-      // that ends up quoted to a stranger.
-      generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
-    }),
+  const text = await callModel({
+    system: SYSTEM,
+    user: `Website: ${siteUrl}\n\nPage text:\n${pageText}`,
+    temperature: 0.2,
+    label: "Reading that site",
   });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw geminiFailure(res.status, detail, "Reading that site");
-  }
-
-  const data = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
   let parsed: Record<string, unknown>;
   try {
