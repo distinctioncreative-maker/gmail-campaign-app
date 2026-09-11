@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { AiUnavailableError } from "@/lib/ai/gemini";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
@@ -6,7 +7,6 @@ import { getRecipient, ownerFromCtx } from "@/lib/repositories/campaigns";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { getSenderProfile } from "@/lib/repositories/userSettings";
 import { generateReply } from "@/lib/ai/generateReply";
-import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { assertAiWritingEnabled } from "@/lib/ai/enabled";
 import { createReplyDraft } from "@/lib/gmail/drafts";
 import { getThreadSubject } from "@/lib/gmail/threads";
@@ -66,7 +66,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
       brandContext: settings.aiBrandContext,
     });
   } catch (err) {
-    if (err instanceof AiNotConfiguredError) {
+    if (err instanceof AiUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
     throw err;

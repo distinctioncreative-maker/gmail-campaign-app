@@ -16,6 +16,30 @@ import { reportError } from "@/lib/observability/report";
  * plainly enough that the person reading it can fix it without asking anyone.
  */
 
+/**
+ * A failure the person using the app cannot do anything about: the key, its
+ * billing, its quota, or the configured model. All of those belong to whoever
+ * runs the deployment.
+ *
+ * The distinction is not pedantry. Before this, the raw text went straight to
+ * the client, so a depleted prepaid balance told every sales rep in every
+ * customer workspace to "go to AI Studio and manage your project and billing",
+ * with a link to the operator's project. They can act on none of it, and in a
+ * multi-tenant product it puts the operator's infrastructure in front of
+ * tenants.
+ *
+ * `detail` keeps the full text for the log; `message` is what a user may see.
+ */
+export class AiUnavailableError extends Error {
+  constructor(
+    readonly detail: string,
+    message = "AI writing is temporarily unavailable. Please try again shortly."
+  ) {
+    super(message);
+    this.name = "AiUnavailableError";
+  }
+}
+
 /** The endpoint for the configured model. */
 export function geminiEndpoint(): string {
   return `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
@@ -54,15 +78,30 @@ function quotaDetail(body: string): string {
  *
  * @param label what the user was trying to do, e.g. "The AI writer".
  */
+/**
+ * Statuses that mean the deployment is at fault rather than the request:
+ * the key is rejected or lacks permission, its quota or credits are spent, or
+ * the configured model is not one it can serve. None of them change if the
+ * user rewrites their prompt and tries again.
+ */
+const OPERATOR_FAULT = new Set([401, 402, 403, 404, 429]);
+
 export function geminiFailure(status: number, body: string, label = "The AI"): Error {
-  const error = buildGeminiError(status, body, label);
+  const built = buildGeminiError(status, body, label);
+  const error = OPERATOR_FAULT.has(status)
+    ? new AiUnavailableError(built.message)
+    : built;
   /**
    * Also to the server log, always. What a user sees is a toast they will
    * describe to you in their own words a day later; what you need is the
    * status, the model, and Google's own sentence, in a place you can query.
    * `reportError` redacts secrets and truncates before it writes.
    */
-  reportError(error, { scope: "gemini", kind: `http_${status}` });
+  /**
+   * The log gets the full account either way, including the part a client must
+   * not see. `reportError` redacts secrets and truncates before writing.
+   */
+  reportError(new Error(built.message), { scope: "gemini", kind: `http_${status}` });
   return error;
 }
 

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { AiUnavailableError } from "@/lib/ai/gemini";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { assertWritesAllowed } from "@/lib/platform/readonly";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { assertAiWritingEnabled } from "@/lib/ai/enabled";
-import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { aiRequestAllowed } from "@/lib/ai/rateLimit";
 import { listContacts, updateContactDetails, getContact } from "@/lib/repositories/contacts";
 import { organizeLeads, MAX_LEADS_PER_PASS } from "@/lib/ai/organizeLeads";
@@ -27,7 +27,7 @@ export const GET = handleApiErrors(async () => {
   try {
     assertAiWritingEnabled(settings);
   } catch (err) {
-    if (err instanceof AiNotConfiguredError) {
+    if (err instanceof AiUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
     throw err;

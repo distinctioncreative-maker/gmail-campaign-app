@@ -1,5 +1,5 @@
 import "server-only";
-import { geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
+import { AiUnavailableError, geminiEndpoint, geminiFailure } from "@/lib/ai/gemini";
 import { env } from "@/lib/env";
 import { sanitizeEmailHtml } from "@/lib/sanitize/html";
 
@@ -8,9 +8,15 @@ export interface GeneratedEmail {
   html: string;
 }
 
-export class AiNotConfiguredError extends Error {
+/**
+ * No key at all. A sibling of the other operator faults rather than a
+ * separate idea: both mean the deployment cannot serve AI right now and the
+ * caller cannot change that, so routes can test for one thing.
+ */
+export class AiNotConfiguredError extends AiUnavailableError {
   constructor(message = "AI writing isn't set up yet. Add a GEMINI_API_KEY to enable it.") {
-    super(message);
+    super(message, message);
+    this.name = "AiNotConfiguredError";
   }
 }
 

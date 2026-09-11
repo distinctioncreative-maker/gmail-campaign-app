@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { AiUnavailableError } from "@/lib/ai/gemini";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
-import { generateEmail, AiNotConfiguredError } from "@/lib/ai/generateEmail";
+import { generateEmail } from "@/lib/ai/generateEmail";
 import { getOrgSettings, resolveBrandContext } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled, assertAiWritingEnabled } from "@/lib/ai/enabled";
 import { aiRequestAllowed } from "@/lib/ai/rateLimit";
@@ -37,11 +38,13 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     const email = await generateEmail(prompt, resolveBrandContext(settings, profileId));
     return NextResponse.json(email);
   } catch (err) {
-    if (err instanceof AiNotConfiguredError) {
+    if (err instanceof AiUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
-    // Surface the real reason (e.g. a bad API key → 400) instead of a generic
-    // 500, so the fix is obvious.
+    // Everything the operator owns (key, billing, quota, model) is an
+    // AiUnavailableError and was handled above with a message safe to show a
+    // tenant. What is left is the caller's own request or a transient upstream
+    // fault, where the real reason genuinely helps the person reading it.
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "The AI writer failed. Please try again." },
       { status: 502 }

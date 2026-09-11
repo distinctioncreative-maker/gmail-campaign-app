@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { AiUnavailableError } from "@/lib/ai/gemini";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { handleApiErrors } from "@/lib/api";
 import { generateSequence } from "@/lib/ai/generateSequence";
-import { AiNotConfiguredError } from "@/lib/ai/generateEmail";
 import { getOrgSettings } from "@/lib/repositories/orgSettings";
 import { aiWritingEnabled, assertAiWritingEnabled } from "@/lib/ai/enabled";
 import { aiRequestAllowed } from "@/lib/ai/rateLimit";
@@ -30,7 +30,7 @@ export const POST = handleApiErrors(async (req: NextRequest) => {
     const result = await generateSequence({ prompt, brandContext: settings.aiBrandContext });
     return NextResponse.json(result);
   } catch (err) {
-    if (err instanceof AiNotConfiguredError) {
+    if (err instanceof AiUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
     throw err;
