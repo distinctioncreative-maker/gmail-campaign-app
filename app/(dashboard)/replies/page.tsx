@@ -284,14 +284,6 @@ export default async function RepliesPage() {
                   </p>
                 )}
                 <p className="mt-1.5 truncate text-sm text-muted">{r.campaignName}</p>
-                <div className="mt-2.5 border-t border-border pt-2.5">
-                  <OutcomeControl
-                    campaignId={r.campaignId}
-                    recipientId={r.recipientId}
-                    status={r.dealStatus}
-                    valueCents={r.dealValueCents}
-                  />
-                </div>
                 <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted">
                   <span><LocalTime value={r.repliedAt} /> · {formatDuration(r.timeToReplyMs)}</span>
                   <div className="flex items-center gap-2">
@@ -303,6 +295,8 @@ export default async function RepliesPage() {
                         email={r.email}
                         fallbackSnippet={r.snippet}
                         compact
+                        dealStatus={r.dealStatus}
+                        dealValueCents={r.dealValueCents}
                       />
                     )}
                     {aiEnabled && r.intent !== "NOT_INTERESTED" && (
@@ -335,7 +329,6 @@ export default async function RepliesPage() {
                 <th className="px-4 py-3">Intent</th>
                 <th className="px-4 py-3">Campaign</th>
                 <th className="px-4 py-3">Replied</th>
-                <th className="px-4 py-3">Outcome</th>
                 <th className="px-4 py-3" />
               </>
             }
@@ -367,14 +360,6 @@ export default async function RepliesPage() {
                       <LocalTime value={r.repliedAt} />
                       <p className="mt-0.5">{formatDuration(r.timeToReplyMs)}</p>
                     </td>
-                    <td className="px-4 py-3">
-                      <OutcomeControl
-                        campaignId={r.campaignId}
-                        recipientId={r.recipientId}
-                        status={r.dealStatus}
-                        valueCents={r.dealValueCents}
-                      />
-                    </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-3">
                         {r.gmailThreadId && (
@@ -384,6 +369,8 @@ export default async function RepliesPage() {
                             fullName={r.fullName}
                             email={r.email}
                             fallbackSnippet={r.snippet}
+                            dealStatus={r.dealStatus}
+                            dealValueCents={r.dealValueCents}
                           />
                         )}
                         {aiEnabled && r.intent !== "NOT_INTERESTED" && (

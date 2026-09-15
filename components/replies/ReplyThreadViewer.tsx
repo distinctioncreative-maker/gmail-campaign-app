@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { Icon } from "@/components/ui/Icon";
+import { OutcomeControl } from "@/components/replies/OutcomeControl";
+import type { DealStatus } from "@/schemas/campaign";
 
 interface ThreadMessage {
   from: string;
@@ -23,6 +25,8 @@ export function ReplyThreadViewer({
   email,
   fallbackSnippet,
   compact = false,
+  dealStatus,
+  dealValueCents,
 }: {
   campaignId: string;
   recipientId: string;
@@ -30,6 +34,12 @@ export function ReplyThreadViewer({
   email: string;
   fallbackSnippet: string;
   compact?: boolean;
+  /**
+   * The deal outcome, shown in the footer below. Optional so the viewer can
+   * still be opened from a place that has no outcome to offer.
+   */
+  dealStatus?: DealStatus | null;
+  dealValueCents?: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -109,6 +119,20 @@ export function ReplyThreadViewer({
                 <p className="text-sm text-muted">No message content found in this thread yet.</p>
               )}
             </div>
+            {/* The outcome belongs here rather than on the row it came from.
+                It used to render against every reply in the queue, which asked
+                a rep to classify a deal before reading a word of what the
+                person actually said. Here they have just read it. */}
+            {dealStatus !== undefined && (
+              <div className="border-t border-border px-6 py-4">
+                <OutcomeControl
+                  campaignId={campaignId}
+                  recipientId={recipientId}
+                  status={dealStatus}
+                  valueCents={dealValueCents ?? null}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

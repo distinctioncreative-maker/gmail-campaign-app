@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   counterDelta,
@@ -214,5 +215,43 @@ describe("deal value parsing", () => {
   it("formats without cents, because pipeline is not an invoice", () => {
     expect(formatDealValue(120_000)).toBe("$1,200");
     expect(formatDealValue(0)).toBe("$0");
+  });
+});
+
+describe("where the outcome control lives", () => {
+  /**
+   * Placement, not existence. The control rendered against every reply in the
+   * queue, on both the mobile card and the desktop table, which asked a rep to
+   * classify a deal before reading a word of what the person had written. It
+   * now sits in the thread viewer, where the reply has just been read, and in
+   * the focus panel, which is the one reply being worked deliberately.
+   *
+   * Everything the outcome feeds stays: Revenue won on Home, revenue per email
+   * in Reports, the export, and the webhook payload. This asserts the move did
+   * not quietly become a deletion.
+   */
+  const repliesPage = readFileSync("app/(dashboard)/replies/page.tsx", "utf8");
+  const threadViewer = readFileSync("components/replies/ReplyThreadViewer.tsx", "utf8");
+
+  it("is off both reply rows", () => {
+    // One import plus the focus panel, and nothing else.
+    expect((repliesPage.match(/<OutcomeControl/g) ?? []).length).toBe(1);
+    expect(repliesPage).not.toContain('<th className="px-4 py-3">Outcome</th>');
+  });
+
+  it("is reachable from the thread viewer, which is where the reply is read", () => {
+    expect(threadViewer).toContain("<OutcomeControl");
+    expect(threadViewer).toMatch(/dealStatus\?: DealStatus \| null/);
+  });
+
+  it("still receives the deal state wherever the viewer is opened from", () => {
+    // Both the compact (mobile) and full (desktop) viewers, or the footer
+    // renders empty and the move becomes a removal.
+    expect((repliesPage.match(/dealStatus=\{r\.dealStatus\}/g) ?? []).length).toBe(2);
+  });
+
+  it("keeps everything the outcome feeds", () => {
+    expect(readFileSync("lib/analytics/report.ts", "utf8")).toContain("revenuePerEmailCents");
+    expect(readFileSync("app/(dashboard)/home/page.tsx", "utf8")).toContain("Revenue won");
   });
 });
