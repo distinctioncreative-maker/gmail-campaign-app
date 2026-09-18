@@ -1,4 +1,5 @@
 import "server-only";
+import type { gmail_v1 } from "googleapis";
 import { gmailForUser } from "./client";
 import { applySendSafety } from "./safety";
 
@@ -99,9 +100,85 @@ export function buildMime(input: {
 }
 
 /**
- * Send one email through the user's connected Gmail. The test-mode
- * safety gate is applied here, immediately before the API call: there
- * is no send path around it.
+ * Everything that must happen before an email can be sent, and nothing that
+ * sends one.
+ *
+ * The split exists because the caller has to know when the risk of a duplicate
+ * begins, and it does not begin here. Resolving the connection, decrypting the
+ * refresh token, refreshing the access token, recording the API call, applying
+ * the safety gate and building the MIME can all fail, and none of them put a
+ * byte on the wire. The send worker used to treat a failure in any of them as
+ * "Gmail may have accepted this, we cannot tell" and strand the recipient for
+ * good. A token that would not refresh looked identical to a half-delivered
+ * email.
+ *
+ * So: this half may fail freely and be retried. `dispatchSend` may not.
+ */
+export async function prepareSend(input: SendEmailInput): Promise<PreparedSend> {
+  const safe = applySendSafety(
+    { to: input.to, subject: input.subject },
+    input.testMode,
+    input.verifiedTestDestination
+  );
+  // The token refresh lives in here, and it is the failure that made this
+  // split necessary.
+  const gmail = await gmailForUser(input.userId, input.connectionId);
+  const raw = encodeMessage(
+    buildMime({
+      to: safe.to,
+      subject: safe.subject,
+      htmlBody: input.htmlBody,
+      textBody: input.textBody,
+      inReplyToMessageId: input.inReplyToMessageId,
+      references: input.references,
+      unsubscribeUrl: input.unsubscribeUrl,
+    })
+  );
+  return { gmail, raw, threadId: input.threadId, safe };
+}
+
+/** A prepared message, ready for the one call that cannot be taken back. */
+export interface PreparedSend {
+  gmail: gmail_v1.Gmail;
+  raw: string;
+  threadId?: string;
+  safe: { to: string; subject: string };
+}
+
+/**
+ * The point of no return: one API call and nothing else.
+ *
+ * A failure here genuinely is ambiguous, because Gmail may have accepted the
+ * message and lost the response. Nothing in this function may be retried.
+ */
+export async function dispatchSend(prepared: PreparedSend): Promise<{
+  gmailMessageId: string;
+  gmailThreadId: string;
+  effectiveTo: string;
+  effectiveSubject: string;
+}> {
+  const res = await prepared.gmail.users.messages.send({
+    userId: "me",
+    requestBody: { threadId: prepared.threadId, raw: prepared.raw },
+  });
+  if (!res.data.id || !res.data.threadId) {
+    throw new Error("Gmail accepted the request without a message/thread identifier");
+  }
+  return {
+    gmailMessageId: res.data.id,
+    gmailThreadId: res.data.threadId,
+    effectiveTo: prepared.safe.to,
+    effectiveSubject: prepared.safe.subject,
+  };
+}
+
+/**
+ * Send one email through the user's connected Gmail. The test-mode safety gate
+ * is applied in `prepareSend`: there is no send path around it.
+ *
+ * Kept for callers that have no duplicate to worry about (the setup test send,
+ * the reply draft). The campaign send worker calls the two halves separately,
+ * because only it needs to know where the boundary is.
  */
 export async function sendEmail(input: SendEmailInput): Promise<{
   gmailMessageId: string;
@@ -109,40 +186,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   effectiveTo: string;
   effectiveSubject: string;
 }> {
-  const safe = applySendSafety(
-    { to: input.to, subject: input.subject },
-    input.testMode,
-    input.verifiedTestDestination
-  );
-  const gmail = await gmailForUser(input.userId, input.connectionId);
-
-  const res = await gmail.users.messages.send({
-    userId: "me",
-    requestBody: {
-      threadId: input.threadId,
-      raw: encodeMessage(
-        buildMime({
-          to: safe.to,
-          subject: safe.subject,
-          htmlBody: input.htmlBody,
-          textBody: input.textBody,
-          inReplyToMessageId: input.inReplyToMessageId,
-          references: input.references,
-          unsubscribeUrl: input.unsubscribeUrl,
-        })
-      ),
-    },
-  });
-  if (!res.data.id || !res.data.threadId) {
-    throw new Error("Gmail accepted the request without a message/thread identifier");
-  }
-
-  return {
-    gmailMessageId: res.data.id,
-    gmailThreadId: res.data.threadId,
-    effectiveTo: safe.to,
-    effectiveSubject: safe.subject,
-  };
+  return dispatchSend(await prepareSend(input));
 }
 
 /**
@@ -150,44 +194,30 @@ export async function sendEmail(input: SendEmailInput): Promise<{
  * destination safety gate as sends, so a TEST workspace never leaves a draft
  * addressed to a real recipient that could be sent accidentally from Gmail.
  */
-export async function createEmailDraft(input: SendEmailInput): Promise<GmailDeliveryResult & {
-  gmailDraftId: string;
-}> {
-  const safe = applySendSafety(
-    { to: input.to, subject: input.subject },
-    input.testMode,
-    input.verifiedTestDestination
-  );
-  const gmail = await gmailForUser(input.userId, input.connectionId);
-
-  const res = await gmail.users.drafts.create({
+/** The draft equivalent of `dispatchSend`. Same rule: one call, never retried. */
+export async function dispatchDraft(prepared: PreparedSend): Promise<
+  GmailDeliveryResult & { gmailDraftId: string }
+> {
+  const res = await prepared.gmail.users.drafts.create({
     userId: "me",
     requestBody: {
-      message: {
-        threadId: input.threadId,
-        raw: encodeMessage(
-          buildMime({
-            to: safe.to,
-            subject: safe.subject,
-            htmlBody: input.htmlBody,
-            textBody: input.textBody,
-            inReplyToMessageId: input.inReplyToMessageId,
-            references: input.references,
-            unsubscribeUrl: input.unsubscribeUrl,
-          })
-        ),
-      },
+      message: { threadId: prepared.threadId, raw: prepared.raw },
     },
   });
   if (!res.data.id || !res.data.message?.id || !res.data.message.threadId) {
     throw new Error("Gmail accepted the draft without complete identifiers");
   }
-
   return {
     gmailDraftId: res.data.id,
     gmailMessageId: res.data.message.id,
     gmailThreadId: res.data.message.threadId,
-    effectiveTo: safe.to,
-    effectiveSubject: safe.subject,
+    effectiveTo: prepared.safe.to,
+    effectiveSubject: prepared.safe.subject,
   };
+}
+
+export async function createEmailDraft(input: SendEmailInput): Promise<GmailDeliveryResult & {
+  gmailDraftId: string;
+}> {
+  return dispatchDraft(await prepareSend(input));
 }

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyTaskRequest, TaskAuthError } from "@/lib/tasks/verifyOidc";
+import { commitDelivered } from "@/lib/campaigns/commitDelivered";
 import {
   claimQueueItem,
-  commitDeliveryResult,
   getCampaign,
   getDailyCount,
   getInboxDailyCount,
@@ -44,7 +44,7 @@ import {
   valuesFromContact,
   valuesFromSenderProfile,
 } from "@/lib/personalization/render";
-import { createEmailDraft, sendEmail } from "@/lib/gmail/send";
+import { dispatchDraft, dispatchSend, prepareSend } from "@/lib/gmail/send";
 import { localDayKey, nextValidTime } from "@/lib/scheduling/window";
 import { enqueueTask } from "@/lib/tasks/enqueue";
 import {
@@ -80,6 +80,7 @@ const AUTO_PAUSE_ERROR_THRESHOLD = 5;
 // be retried before we give up on the item. Failures at/after the Gmail send
 // are never auto-retried (the outcome is ambiguous: a retry could double-send).
 const MAX_PRESEND_ATTEMPTS = 4;
+
 
 /**
  * Cloud Tasks worker: send (or draft) one campaign message.
@@ -641,8 +642,6 @@ export async function POST(req: NextRequest) {
       finalHtml = appendVisibleUnsubscribeLink(finalHtml, signedUnsubscribeUrl);
     }
 
-    // Past this point a failure's outcome is ambiguous: never retry.
-    reachedDeliveryAttempt = true;
     const deliveryInput = {
       userId: ownerUserId,
       // The inbox chosen above, named explicitly. Falling back to the default
@@ -659,16 +658,28 @@ export async function POST(req: NextRequest) {
       inReplyToMessageId: threaded ? recipient.initialMessageId ?? undefined : undefined,
       unsubscribeUrl: signedUnsubscribeUrl,
     };
-    const result = isDraft
-      ? await createEmailDraft(deliveryInput)
-      : await sendEmail(deliveryInput);
+    /**
+     * Everything that can fail without sending happens first: the connection
+     * lookup, the token decrypt, the token refresh, the safety gate and the
+     * MIME build. A failure in any of them is a pre-send failure and lands in
+     * the retry branch below, which is what the comment there always claimed.
+     *
+     * The flag used to be set above this line, so a Gmail token that would not
+     * refresh was recorded as "we cannot confirm whether this was delivered"
+     * and the recipient was stranded for good, having never been written to.
+     */
+    const prepared = await prepareSend(deliveryInput);
+
+    // Past this point a failure's outcome is ambiguous: never retry.
+    reachedDeliveryAttempt = true;
+    const result = isDraft ? await dispatchDraft(prepared) : await dispatchSend(prepared);
 
     // 7–8. Atomically record the message, recipient, queue, and campaign
     // counter so a post-Gmail Firestore failure cannot leave partial state.
     const now = Date.now();
     if (isDraft) {
       const draftResult = result as typeof result & { gmailDraftId: string };
-      await commitDeliveryResult(owner, campaignId, {
+      await commitDelivered(owner, campaignId, item.idempotencyKey, {
         idempotencyKey: item.idempotencyKey,
         queueItemId,
         recipientId: item.recipientId,
@@ -712,7 +723,7 @@ export async function POST(req: NextRequest) {
       item.sequenceStep,
       now
     );
-    const deliveryCommit = await commitDeliveryResult(owner, campaignId, {
+    const deliveryCommit = await commitDelivered(owner, campaignId, item.idempotencyKey, {
       idempotencyKey: item.idempotencyKey,
       queueItemId,
       recipientId: item.recipientId,
